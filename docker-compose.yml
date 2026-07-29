@@ -1,0 +1,168 @@
+name: ustapilot
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ustapilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ustapilot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ustapilot_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ustapilot}
+      # Türkçe karakterlerin doğru sıralanması için
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      # Host portları başka projelerle çakışmasın diye UstaPilot'a özeldir.
+      - "${POSTGRES_PORT:-5442}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ustapilot} -d ${POSTGRES_DB:-ustapilot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks: [ustapilot]
+
+  redis:
+    image: redis:7-alpine
+    container_name: ustapilot-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6389}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [ustapilot]
+
+  minio:
+    image: minio/minio:latest
+    container_name: ustapilot-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-ustapilot}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-ustapilot_dev_password}
+    ports:
+      - "${MINIO_PORT:-9010}:9000"
+      - "${MINIO_CONSOLE_PORT:-9011}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks: [ustapilot]
+
+  # Kovaları oluşturur ve çıkar. Uygulama kovanın varlığına güvenebilir.
+  minio-init:
+    image: minio/mc:latest
+    container_name: ustapilot-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-ustapilot}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-ustapilot_dev_password}
+      S3_BUCKET: ${S3_BUCKET:-ustapilot}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${S3_ACCESS_KEY} $${S3_SECRET_KEY};
+      mc mb --ignore-existing local/$${S3_BUCKET};
+      mc mb --ignore-existing local/$${S3_BUCKET}-private;
+      mc anonymous set download local/$${S3_BUCKET};
+      echo 'MinIO kovaları hazır';
+      "
+    networks: [ustapilot]
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+      target: ${BUILD_TARGET:-production}
+    container_name: ustapilot-backend
+    restart: unless-stopped
+    # Varsayılan `docker compose up` yalnızca altyapıyı ayağa kaldırır; uygulamalar
+    # geliştirme sırasında host üzerinde çalışır. Tam yığın için: --profile full
+    profiles: [full]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      API_PORT: 3000
+      API_PREFIX: ${API_PREFIX:-api/v1}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ustapilot}:${POSTGRES_PASSWORD:-ustapilot_dev_password}@postgres:5432/${POSTGRES_DB:-ustapilot}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9010}
+      S3_BUCKET: ${S3_BUCKET:-ustapilot}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-ustapilot}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-ustapilot_dev_password}
+      SEED_DEMO_ACCOUNTS: ${SEED_DEMO_ACCOUNTS:-true}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks: [ustapilot]
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/admin.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3000/api/v1}
+    container_name: ustapilot-admin
+    restart: unless-stopped
+    profiles: [full]
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      HOSTNAME: "0.0.0.0"
+    ports:
+      - "${ADMIN_PORT:-3001}:3001"
+    networks: [ustapilot]
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+
+networks:
+  ustapilot:
+    driver: bridge

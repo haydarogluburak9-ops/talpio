@@ -1,0 +1,149 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20.11"
+  FLUTTER_VERSION: "3.35.0"
+
+jobs:
+  node:
+    name: Backend & Admin
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ustapilot
+          POSTGRES_PASSWORD: ustapilot_ci_password
+          POSTGRES_DB: ustapilot_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ustapilot -d ustapilot_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://ustapilot:ustapilot_ci_password@localhost:5432/ustapilot_test?schema=public
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_ACCESS_SECRET: ci_access_secret_that_is_long_enough_32
+      JWT_REFRESH_SECRET: ci_refresh_secret_that_is_long_enough_32
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Prisma istemcisini üret
+        run: npm run db:generate --workspace @ustapilot/backend
+
+      - name: Biçim kontrolü
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tip kontrolü
+        run: npm run typecheck
+
+      - name: Migration'ları uygula
+        run: npm run db:migrate:deploy --workspace @ustapilot/backend
+
+      - name: Seed
+        run: npm run db:seed --workspace @ustapilot/backend
+
+      - name: Testler
+        run: npm run test
+
+      - name: Derleme
+        run: npm run build
+
+  flutter:
+    name: Mobil
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Bağımlılıkları kur
+        run: flutter pub get
+
+      - name: Yerelleştirme dosyalarını üret
+        run: flutter gen-l10n
+
+      - name: Biçim kontrolü
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Statik analiz
+        run: flutter analyze
+
+      - name: Testler
+        run: flutter test
+
+  docker:
+    name: Docker imajları
+    runs-on: ubuntu-latest
+    needs: node
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Backend imajı
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/backend.Dockerfile
+          target: production
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Admin imajı
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/admin.Dockerfile
+          push: false
+          build-args: |
+            NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin

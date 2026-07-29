@@ -1,0 +1,25 @@
+**/node_modules
+**/dist
+**/build
+**/.next
+**/coverage
+**/.turbo
+
+# Flutter uygulaması konteyner imajlarına dahil edilmez
+apps/mobile
+
+.git
+.github
+.vscode
+.idea
+docs
+
+**/.env
+**/.env.*
+!**/.env.example
+
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+docker/volumes

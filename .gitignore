@@ -1,0 +1,81 @@
+# Bağımlılıklar
+node_modules/
+.pnp
+.pnp.js
+
+# Derleme çıktıları
+dist/
+build/
+out/
+.next/
+coverage/
+*.tsbuildinfo
+
+# Ortam değişkenleri
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+# Loglar
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editör / IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+*.swp
+*.swo
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker / yerel veri
+docker/volumes/
+.docker-data/
+
+# Prisma
+# Üretilen istemci `prisma generate` ile her kurulumda yeniden oluşturulur.
+apps/backend/src/generated/
+apps/backend/prisma/*.db
+apps/backend/prisma/*.db-journal
+
+# Yüklenen dosyalar (yerel)
+uploads/
+tmp/
+
+# Flutter / Dart
+apps/mobile/.dart_tool/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/.packages
+apps/mobile/build/
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Flutter/Flutter.framework
+apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/ios/Flutter/ephemeral/
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/android/app/google-services.json
+apps/mobile/ios/Runner/GoogleService-Info.plist
+apps/mobile/**/*.g.dart
+apps/mobile/**/*.freezed.dart
+apps/mobile/**/*.mocks.dart
+# `flutter gen-l10n` çıktısı
+apps/mobile/lib/core/localization/generated/
+
+# Gizli anahtarlar
+*.pem
+*.p12
+*.keystore
+*.jks
+!apps/mobile/android/app/debug.keystore
+secrets/

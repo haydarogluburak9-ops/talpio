@@ -1,0 +1,90 @@
+// UstaPilot veritabanı şeması
+// Faz 1: bağlantı, migration ve seed altyapısının doğrulanması için çekirdek tablolar.
+// Faz 2'de tüm alan modelleri (User, JobRequest, Offer, Payment, ...) eklenecektir.
+//
+// Adlandırma kuralı: Prisma tarafında camelCase, PostgreSQL tarafında snake_case.
+// Bu ayrım @map/@@map ile sağlanır ve tüm modellerde uygulanmalıdır.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// Prisma 7'de bağlantı adresi şemada tutulmaz:
+// CLI için `prisma.config.ts`, çalışma zamanı için sürücü adaptörü kullanılır.
+datasource db {
+  provider = "postgresql"
+}
+
+/// Admin panelinden yönetilebilen, koda gömülmeyen sistem parametreleri.
+model SystemSetting {
+  id          String   @id @default(uuid(7))
+  key         String   @unique
+  value       Json
+  description String?
+  /// Yalnızca admin tarafından okunabilen ayarlar için true.
+  isSecret    Boolean  @default(false) @map("is_secret")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@map("system_settings")
+}
+
+/// Desteklenen ülkeler. Çok ülkeli büyüme için konum hiyerarşisinin kökü.
+model Country {
+  id            String   @id @default(uuid(7))
+  /// ISO 3166-1 alpha-2
+  code          String   @unique @db.Char(2)
+  name          String
+  phoneCode     String   @map("phone_code")
+  currency      String   @db.Char(3)
+  defaultLocale String   @map("default_locale")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  cities City[]
+
+  @@map("countries")
+}
+
+/// Şehirler. İlk pazar: Gaziantep.
+model City {
+  id        String   @id @default(uuid(7))
+  countryId String   @map("country_id")
+  name      String
+  /// Türkiye için plaka kodu gibi resmî kod.
+  code      String?
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  country   Country    @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  districts District[]
+
+  @@unique([countryId, name])
+  @@index([countryId, isActive])
+  @@map("cities")
+}
+
+/// İlçeler. Ustaların hizmet bölgesi seçimi bu seviyede yapılır.
+model District {
+  id        String   @id @default(uuid(7))
+  cityId    String   @map("city_id")
+  name      String
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, name])
+  @@index([cityId, isActive])
+  @@map("districts")
+}

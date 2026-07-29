@@ -1,0 +1,52 @@
+{
+  "@@locale": "tr",
+
+  "appName": "UstaPilot",
+  "appTagline": "Doğru usta. Doğru fiyat. Güvenli hizmet.",
+
+  "commonRetry": "Tekrar dene",
+  "commonCancel": "Vazgeç",
+  "commonContinue": "Devam et",
+  "commonClose": "Kapat",
+  "commonSave": "Kaydet",
+  "commonSearch": "Ara",
+  "commonLoading": "Yükleniyor",
+  "commonRefresh": "Yenile",
+
+  "errorGenericTitle": "Bir şeyler ters gitti",
+  "errorGenericMessage": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
+  "errorNetworkTitle": "Bağlantı kurulamadı",
+  "errorNetworkMessage": "İnternet bağlantınızı kontrol edip tekrar deneyin.",
+  "errorTimeoutMessage": "Sunucu zamanında yanıt vermedi. Lütfen tekrar deneyin.",
+  "errorServerMessage": "Sunucuda bir sorun oluştu. Kısa süre sonra tekrar deneyin.",
+  "errorUnauthorizedMessage": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
+
+  "emptyStateTitle": "Burada henüz bir şey yok",
+  "emptyStateMessage": "İçerik eklendiğinde burada görünecek.",
+
+  "roleCustomer": "Müşteri",
+  "roleMaster": "Usta",
+
+  "systemStatusTitle": "Sistem bağlantısı",
+  "systemStatusSubtitle": "Uygulamanın API ile bağlantı durumu",
+  "systemStatusHealthy": "Bağlantı sağlıklı",
+  "systemStatusDegraded": "Bazı servisler yanıt vermiyor",
+  "systemStatusUnreachable": "API sunucusuna ulaşılamıyor",
+  "systemStatusComponentUp": "Çalışıyor",
+  "systemStatusComponentDown": "Erişilemiyor",
+  "systemStatusEnvironment": "Ortam: {environment}",
+  "@systemStatusEnvironment": {
+    "placeholders": {
+      "environment": { "type": "String" }
+    }
+  },
+  "systemStatusResponseTime": "{milliseconds} ms",
+  "@systemStatusResponseTime": {
+    "placeholders": {
+      "milliseconds": { "type": "int" }
+    }
+  },
+
+  "phaseNoticeTitle": "Geliştirme aşaması",
+  "phaseNoticeMessage": "Faz 1 tamamlandı: tema, yönlendirme, çoklu dil ve API bağlantısı hazır. Kayıt ve giriş ekranları Faz 2 ile eklenecek."
+}
