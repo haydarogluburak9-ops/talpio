@@ -65,11 +65,48 @@ export class AppConfigService {
     };
   }
 
+  get storage(): {
+    driver: Env['STORAGE_DRIVER'];
+    endpoint: string;
+    publicUrl: string;
+    region: string;
+    bucket: string;
+    accessKey: string;
+    secretKey: string;
+    forcePathStyle: boolean;
+    maxUploadBytes: number;
+    allowedImageMime: string[];
+    allowedDocumentMime: string[];
+  } {
+    return {
+      driver: this.get('STORAGE_DRIVER'),
+      endpoint: this.get('S3_ENDPOINT'),
+      publicUrl: this.get('S3_PUBLIC_URL'),
+      region: this.get('S3_REGION'),
+      bucket: this.get('S3_BUCKET'),
+      accessKey: this.get('S3_ACCESS_KEY'),
+      secretKey: this.get('S3_SECRET_KEY'),
+      forcePathStyle: this.get('S3_FORCE_PATH_STYLE'),
+      maxUploadBytes: this.get('MAX_UPLOAD_SIZE_MB') * 1024 * 1024,
+      allowedImageMime: this.get('ALLOWED_IMAGE_MIME'),
+      allowedDocumentMime: this.get('ALLOWED_DOCUMENT_MIME'),
+    };
+  }
+
+  /** Herkese açık dosyaların tarayıcıdan erişilebilir kök adresi. */
+  get fileBaseUrl(): string {
+    return `${this.get('S3_PUBLIC_URL')}/${this.get('S3_BUCKET')}`;
+  }
+
   get defaultLocale(): string {
     return this.get('DEFAULT_LOCALE');
   }
 
   get supportedLocales(): string[] {
     return this.get('SUPPORTED_LOCALES');
+  }
+
+  get defaultCurrency(): string {
+    return this.get('DEFAULT_CURRENCY');
   }
 }

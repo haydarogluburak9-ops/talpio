@@ -1,8 +1,13 @@
+// Derlenmiş çıktıdaki `@common/*` gibi yolları çalışma zamanında çözer; bu kayıt
+// aliaslı ilk içe aktarmadan önce gelmelidir.
+import 'module-alias/register';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger as PinoLogger } from 'nestjs-pino';
 
@@ -21,13 +26,23 @@ async function bootstrap(): Promise<void> {
 
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(compression());
+  // Web istemcisi yenileme jetonunu HTTP-only çerezde taşır.
+  app.use(cookieParser());
   app.set('trust proxy', 1);
 
   app.enableCors({
     origin: config.corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language', 'Idempotency-Key'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept-Language',
+      'Idempotency-Key',
+      'X-Client-Platform',
+      'X-Device-Id',
+      'X-Device-Name',
+    ],
     exposedHeaders: ['x-request-id'],
   });
 

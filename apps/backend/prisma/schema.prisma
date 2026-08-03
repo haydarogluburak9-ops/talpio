@@ -1,9 +1,13 @@
 // UstaPilot veritabanı şeması
-// Faz 1: bağlantı, migration ve seed altyapısının doğrulanması için çekirdek tablolar.
-// Faz 2'de tüm alan modelleri (User, JobRequest, Offer, Payment, ...) eklenecektir.
 //
 // Adlandırma kuralı: Prisma tarafında camelCase, PostgreSQL tarafında snake_case.
-// Bu ayrım @map/@@map ile sağlanır ve tüm modellerde uygulanmalıdır.
+// Bu ayrım @map/@@map ile sağlanır ve tüm modellerde uygulanır.
+//
+// Para birimi: tutarlar daima en küçük birimde (TRY için kuruş) tam sayı olarak
+// tutulur. Kayan noktalı tip hiçbir parasal alanda kullanılmaz.
+//
+// Silme: kullanıcı verisi taşıyan modellerde `deletedAt` ile yumuşak silme
+// uygulanır; kayıt fiziksel olarak silinmez.
 
 generator client {
   provider     = "prisma-client"
@@ -16,6 +20,268 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ---------------------------------------------------------------------------
+// Sayılabilir tipler. Değerler packages/types içindeki sabitlerle birebir aynıdır.
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  SUPPORT
+  ADMIN
+  SUPER_ADMIN
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+
+  @@map("user_status")
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+
+  @@map("verification_status")
+}
+
+enum DocumentType {
+  IDENTITY
+  TAX_CERTIFICATE
+  CRAFTSMANSHIP_CERTIFICATE
+  VOCATIONAL_QUALIFICATION
+  INSURANCE
+  OTHER
+
+  @@map("document_type")
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+
+  @@map("document_status")
+}
+
+enum JobRequestStatus {
+  DRAFT
+  PUBLISHED
+  OFFERS_RECEIVED
+  PROVIDER_SELECTED
+  SCHEDULED
+  PROVIDER_EN_ROUTE
+  IN_PROGRESS
+  AWAITING_CUSTOMER_APPROVAL
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  REFUNDING
+
+  @@map("job_request_status")
+}
+
+enum JobSize {
+  SMALL
+  MEDIUM
+  LARGE
+  UNKNOWN
+
+  @@map("job_size")
+}
+
+enum JobTimeSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+  FLEXIBLE
+
+  @@map("job_time_slot")
+}
+
+enum OfferStatus {
+  DRAFT
+  SUBMITTED
+  WITHDRAWN
+  ACCEPTED
+  REJECTED
+  EXPIRED
+
+  @@map("offer_status")
+}
+
+enum OfferPriceType {
+  FIXED
+  STARTING_FROM
+  AFTER_INSPECTION
+  HOURLY
+
+  @@map("offer_price_type")
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  IN_PROGRESS
+  AWAITING_APPROVAL
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+
+  @@map("order_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  SETTLED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+
+  @@map("payment_status")
+}
+
+enum TransactionType {
+  PAYMENT
+  COMMISSION
+  PAYOUT
+  REFUND
+  ADJUSTMENT
+  SUBSCRIPTION
+
+  @@map("transaction_type")
+}
+
+enum CommissionType {
+  PERCENTAGE
+  FIXED
+  HYBRID
+
+  @@map("commission_type")
+}
+
+enum ReviewStatus {
+  PUBLISHED
+  PENDING_MODERATION
+  HIDDEN
+
+  @@map("review_status")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+  BLOCKED
+
+  @@map("conversation_status")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  LOCATION
+  SYSTEM
+  OFFER
+  APPOINTMENT
+
+  @@map("message_type")
+}
+
+enum NotificationType {
+  JOB_PUBLISHED
+  JOB_MATCHED
+  OFFER_RECEIVED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  OFFER_EXPIRING
+  MESSAGE_RECEIVED
+  APPOINTMENT_REMINDER
+  PROVIDER_EN_ROUTE
+  JOB_STARTED
+  JOB_COMPLETED
+  REVIEW_REQUESTED
+  REVIEW_RECEIVED
+  PAYMENT_RECEIVED
+  PAYOUT_SENT
+  DOCUMENT_APPROVED
+  DOCUMENT_REJECTED
+  SUPPORT_REPLY
+  CAMPAIGN
+
+  @@map("notification_type")
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+  SMS
+
+  @@map("notification_channel")
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+
+  @@map("device_platform")
+}
+
+enum ComplaintStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+
+  @@map("complaint_status")
+}
+
+enum ComplaintSubjectType {
+  USER
+  JOB_REQUEST
+  OFFER
+  REVIEW
+  MESSAGE
+
+  @@map("complaint_subject_type")
+}
+
+enum SupportTicketStatus {
+  OPEN
+  WAITING_CUSTOMER
+  WAITING_SUPPORT
+  RESOLVED
+  CLOSED
+
+  @@map("support_ticket_status")
+}
+
+enum VerificationTokenPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  PHONE_VERIFICATION
+
+  @@map("verification_token_purpose")
+}
+
+// ---------------------------------------------------------------------------
+// Sistem ve konum
+// ---------------------------------------------------------------------------
 
 /// Admin panelinden yönetilebilen, koda gömülmeyen sistem parametreleri.
 model SystemSetting {
@@ -63,8 +329,11 @@ model City {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  country   Country    @relation(fields: [countryId], references: [id], onDelete: Restrict)
-  districts District[]
+  country         Country          @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  districts       District[]
+  addresses       Address[]
+  jobRequests     JobRequest[]
+  commissionRules CommissionRule[]
 
   @@unique([countryId, name])
   @@index([countryId, isActive])
@@ -82,9 +351,861 @@ model District {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  city          City                  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  neighborhoods Neighborhood[]
+  addresses     Address[]
+  jobRequests   JobRequest[]
+  serviceAreas  ProviderServiceArea[]
 
   @@unique([cityId, name])
   @@index([cityId, isActive])
   @@map("districts")
+}
+
+/// Mahalleler. Adres netliği için isteğe bağlı üçüncü seviye.
+model Neighborhood {
+  id         String   @id @default(uuid(7))
+  districtId String   @map("district_id")
+  name       String
+  postalCode String?  @map("postal_code")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  district    District     @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  addresses   Address[]
+  jobRequests JobRequest[]
+
+  @@unique([districtId, name])
+  @@map("neighborhoods")
+}
+
+// ---------------------------------------------------------------------------
+// Hizmet kataloğu
+// ---------------------------------------------------------------------------
+
+/// Hizmet kategorileri. Koda gömülmez; admin panelinden yönetilir.
+model ServiceCategory {
+  id          String   @id @default(uuid(7))
+  slug        String   @unique
+  name        String
+  description String?
+  /// Arayüzün kendi ikon kümesinden seçtiği anahtar; dosya yolu değil.
+  iconKey     String?  @map("icon_key")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  subcategories    ServiceSubcategory[]
+  providerServices ProviderService[]
+  jobRequests      JobRequest[]
+  commissionRules  CommissionRule[]
+
+  @@index([isActive, sortOrder])
+  @@map("service_categories")
+}
+
+model ServiceSubcategory {
+  id         String   @id @default(uuid(7))
+  categoryId String   @map("category_id")
+  slug       String
+  name       String
+  sortOrder  Int      @default(0) @map("sort_order")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  category         ServiceCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  providerServices ProviderService[]
+  jobRequests      JobRequest[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId, isActive, sortOrder])
+  @@map("service_subcategories")
+}
+
+// ---------------------------------------------------------------------------
+// Kimlik ve profiller
+// ---------------------------------------------------------------------------
+
+model User {
+  id              String     @id @default(uuid(7))
+  email           String     @unique
+  /// E.164 biçiminde. Benzersizdir ama zorunlu değildir.
+  phone           String?    @unique
+  /// Argon2id özeti. Sosyal girişle açılan hesaplarda boş olabilir.
+  passwordHash    String?    @map("password_hash")
+  fullName        String     @map("full_name")
+  role            UserRole   @default(CUSTOMER)
+  status          UserStatus @default(PENDING_VERIFICATION)
+  locale          String     @default("tr")
+  avatarFileId    String?    @map("avatar_file_id")
+  emailVerifiedAt DateTime?  @map("email_verified_at")
+  phoneVerifiedAt DateTime?  @map("phone_verified_at")
+  lastActiveAt    DateTime?  @map("last_active_at")
+  /// Ardışık hatalı giriş sayacı; brute-force korumasını besler.
+  failedLoginCount Int       @default(0) @map("failed_login_count")
+  lockedUntil     DateTime?  @map("locked_until")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
+
+  avatar             FileAsset?          @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  customerProfile    CustomerProfile?
+  providerProfile    ProviderProfile?
+  sessions           UserSession[]
+  verificationTokens VerificationToken[]
+  addresses          Address[]
+  jobRequests        JobRequest[]
+  orders             Order[]
+  reviews            Review[]
+  favoriteProviders  FavoriteProvider[]
+  notifications      Notification[]
+  deviceTokens       DeviceToken[]
+  messages           Message[]
+  conversationSeats  ConversationParticipant[]
+  supportTickets     SupportTicket[]      @relation("TicketOwner")
+  assignedTickets    SupportTicket[]      @relation("TicketAssignee")
+  supportMessages    SupportMessage[]
+  complaints         Complaint[]
+  auditLogs          AuditLog[]
+  uploadedFiles      FileAsset[]          @relation("FileOwner")
+  reviewedDocuments  ProviderDocument[]   @relation("DocumentReviewer")
+  jobStatusChanges   JobStatusHistory[]
+
+  @@index([role, status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// Cihaz bazlı oturum. Yenileme jetonu yalnızca özet olarak saklanır.
+model UserSession {
+  id               String    @id @default(uuid(7))
+  userId           String    @map("user_id")
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  deviceId         String?   @map("device_id")
+  deviceName       String?   @map("device_name")
+  platform         DevicePlatform @default(WEB)
+  ipAddress        String?   @map("ip_address")
+  userAgent        String?   @map("user_agent")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastUsedAt       DateTime? @map("last_used_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+/// E-posta doğrulama, şifre sıfırlama ve telefon kodu için tek kullanımlık jeton.
+model VerificationToken {
+  id        String                   @id @default(uuid(7))
+  userId    String                   @map("user_id")
+  purpose   VerificationTokenPurpose
+  tokenHash String                   @unique @map("token_hash")
+  expiresAt DateTime                 @map("expires_at")
+  consumedAt DateTime?               @map("consumed_at")
+  attempts  Int                      @default(0)
+  createdAt DateTime                 @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@map("verification_tokens")
+}
+
+model CustomerProfile {
+  id                 String   @id @default(uuid(7))
+  userId             String   @unique @map("user_id")
+  defaultAddressId   String?  @map("default_address_id")
+  completedJobCount  Int      @default(0) @map("completed_job_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("customer_profiles")
+}
+
+model ProviderProfile {
+  id                     String             @id @default(uuid(7))
+  userId                 String             @unique @map("user_id")
+  businessName           String?            @map("business_name")
+  about                  String?
+  experienceYears        Int?               @map("experience_years")
+  verificationStatus     VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  isPremium              Boolean            @default(false) @map("is_premium")
+  acceptsUrgentJobs      Boolean            @default(true) @map("accepts_urgent_jobs")
+  canIssueInvoice        Boolean            @default(false) @map("can_issue_invoice")
+  /// Toplu istatistikler. Yorum ve iş kayıtlarından türetilir, önbellek amaçlıdır.
+  averageRating          Decimal?           @map("average_rating") @db.Decimal(3, 2)
+  reviewCount            Int                @default(0) @map("review_count")
+  completedJobCount      Int                @default(0) @map("completed_job_count")
+  cancelledJobCount      Int                @default(0) @map("cancelled_job_count")
+  averageResponseMinutes Int?               @map("average_response_minutes")
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+  deletedAt              DateTime?          @map("deleted_at")
+
+  user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services     ProviderService[]
+  serviceAreas ProviderServiceArea[]
+  documents    ProviderDocument[]
+  availability ProviderAvailability[]
+  wallet       ProviderWallet?
+  offers       Offer[]
+  orders       Order[]
+  reviews      Review[]
+  favoritedBy  FavoriteProvider[]
+
+  @@index([verificationStatus])
+  @@index([deletedAt])
+  @@map("provider_profiles")
+}
+
+model ProviderService {
+  id                 String   @id @default(uuid(7))
+  providerProfileId  String   @map("provider_profile_id")
+  categoryId         String   @map("category_id")
+  subcategoryId      String?  @map("subcategory_id")
+  /// Kuruş cinsinden başlangıç fiyatı. Zorunlu değildir.
+  startingPriceMinor Int?     @map("starting_price_minor")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  providerProfile ProviderProfile     @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  category        ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory     ServiceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+
+  @@unique([providerProfileId, categoryId, subcategoryId])
+  @@index([categoryId])
+  @@map("provider_services")
+}
+
+model ProviderServiceArea {
+  id                String   @id @default(uuid(7))
+  providerProfileId String   @map("provider_profile_id")
+  districtId        String   @map("district_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  district        District        @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  @@unique([providerProfileId, districtId])
+  @@index([districtId])
+  @@map("provider_service_areas")
+}
+
+model ProviderDocument {
+  id                String         @id @default(uuid(7))
+  providerProfileId String         @map("provider_profile_id")
+  type              DocumentType
+  status            DocumentStatus @default(PENDING)
+  fileId            String         @map("file_id")
+  expiresAt         DateTime?      @map("expires_at")
+  reviewedByUserId  String?        @map("reviewed_by_user_id")
+  reviewedAt        DateTime?      @map("reviewed_at")
+  rejectionReason   String?        @map("rejection_reason")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  deletedAt         DateTime?      @map("deleted_at")
+
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  file            FileAsset       @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  reviewedBy      User?           @relation("DocumentReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([providerProfileId, status])
+  @@index([status, createdAt])
+  @@map("provider_documents")
+}
+
+model ProviderAvailability {
+  id                String   @id @default(uuid(7))
+  providerProfileId String   @map("provider_profile_id")
+  /// 0 = Pazar ... 6 = Cumartesi
+  dayOfWeek         Int      @map("day_of_week") @db.SmallInt
+  /// Ustanın yerel saatiyle "HH:mm".
+  startTime         String   @map("start_time")
+  endTime           String   @map("end_time")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([providerProfileId, dayOfWeek, startTime])
+  @@map("provider_availability")
+}
+
+model Address {
+  id             String    @id @default(uuid(7))
+  userId         String    @map("user_id")
+  title          String
+  cityId         String    @map("city_id")
+  districtId     String    @map("district_id")
+  neighborhoodId String?   @map("neighborhood_id")
+  addressLine    String    @map("address_line")
+  latitude       Decimal?  @db.Decimal(9, 6)
+  longitude      Decimal?  @db.Decimal(9, 6)
+  isDefault      Boolean   @default(false) @map("is_default")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city         City          @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  district     District      @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
+  jobRequests  JobRequest[]
+
+  @@index([userId, deletedAt])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------------------
+// Dosyalar
+// ---------------------------------------------------------------------------
+
+/// Nesne deposundaki dosyaların üst verisi. İçerik S3/MinIO üzerinde durur.
+model FileAsset {
+  id             String    @id @default(uuid(7))
+  ownerUserId    String?   @map("owner_user_id")
+  storageKey     String    @unique @map("storage_key")
+  mimeType       String    @map("mime_type")
+  sizeBytes      Int       @map("size_bytes")
+  originalName   String?   @map("original_name")
+  checksum       String?
+  /// Herkese açık okunabilir mi? Belgeler daima gizlidir.
+  isPublic       Boolean   @default(false) @map("is_public")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  owner              User?               @relation("FileOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  userAvatars        User[]              @relation("UserAvatar")
+  jobAttachments     JobAttachment[]
+  messageAttachments MessageAttachment[]
+  providerDocuments  ProviderDocument[]
+
+  @@index([ownerUserId])
+  @@map("file_assets")
+}
+
+// ---------------------------------------------------------------------------
+// İş talepleri ve teklifler
+// ---------------------------------------------------------------------------
+
+model JobRequest {
+  id                 String           @id @default(uuid(7))
+  customerId         String           @map("customer_id")
+  categoryId         String           @map("category_id")
+  subcategoryId      String?          @map("subcategory_id")
+  title              String
+  description        String
+  status             JobRequestStatus @default(DRAFT)
+  isUrgent           Boolean          @default(false) @map("is_urgent")
+  size               JobSize          @default(UNKNOWN)
+  materialsIncluded  Boolean?         @map("materials_included")
+  inspectionRequired Boolean          @default(false) @map("inspection_required")
+  /// Kuruş cinsinden yaklaşık bütçe. Zorunlu değildir.
+  budgetMinor        Int?             @map("budget_minor")
+  currency           String           @default("TRY") @db.Char(3)
+  problemStartedAt   DateTime?        @map("problem_started_at")
+  preferredDate      DateTime?        @map("preferred_date")
+  preferredTimeSlot  JobTimeSlot      @default(FLEXIBLE) @map("preferred_time_slot")
+  addressId          String?          @map("address_id")
+  cityId             String           @map("city_id")
+  districtId         String           @map("district_id")
+  neighborhoodId     String?          @map("neighborhood_id")
+  latitude           Decimal?         @db.Decimal(9, 6)
+  longitude          Decimal?         @db.Decimal(9, 6)
+  offerCount         Int              @default(0) @map("offer_count")
+  publishedAt        DateTime?        @map("published_at")
+  expiresAt          DateTime?        @map("expires_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  deletedAt          DateTime?        @map("deleted_at")
+
+  customer      User                @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  category      ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory   ServiceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  address       Address?            @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  city          City                @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  district      District            @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  neighborhood  Neighborhood?       @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
+  attachments   JobAttachment[]
+  statusHistory JobStatusHistory[]
+  offers        Offer[]
+  order         Order?
+  conversations Conversation[]
+
+  @@index([status, publishedAt])
+  @@index([customerId, status])
+  @@index([categoryId, districtId, status])
+  @@index([deletedAt])
+  @@map("job_requests")
+}
+
+model JobAttachment {
+  id           String   @id @default(uuid(7))
+  jobRequestId String   @map("job_request_id")
+  fileId       String   @map("file_id")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  jobRequest JobRequest @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
+  file       FileAsset  @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@unique([jobRequestId, fileId])
+  @@map("job_attachments")
+}
+
+/// Durum değişikliklerinin denetlenebilir geçmişi. Anlaşmazlıklarda kanıttır.
+model JobStatusHistory {
+  id                String            @id @default(uuid(7))
+  jobRequestId      String            @map("job_request_id")
+  fromStatus        JobRequestStatus? @map("from_status")
+  toStatus          JobRequestStatus  @map("to_status")
+  changedByUserId   String?           @map("changed_by_user_id")
+  note              String?
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  jobRequest JobRequest @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
+  changedBy  User?      @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([jobRequestId, createdAt])
+  @@map("job_status_history")
+}
+
+model Offer {
+  id                       String         @id @default(uuid(7))
+  jobRequestId             String         @map("job_request_id")
+  providerProfileId        String         @map("provider_profile_id")
+  status                   OfferStatus    @default(SUBMITTED)
+  /// Kuruş cinsinden teklif tutarı.
+  amountMinor              Int            @map("amount_minor")
+  currency                 String         @default("TRY") @db.Char(3)
+  priceType                OfferPriceType @default(FIXED) @map("price_type")
+  estimatedDurationMinutes Int?           @map("estimated_duration_minutes")
+  availableFrom            DateTime?      @map("available_from")
+  materialsIncluded        Boolean        @default(false) @map("materials_included")
+  note                     String?
+  validUntil               DateTime       @map("valid_until")
+  submittedAt              DateTime?      @map("submitted_at")
+  respondedAt              DateTime?      @map("responded_at")
+  rejectionReason          String?        @map("rejection_reason")
+  createdAt                DateTime       @default(now()) @map("created_at")
+  updatedAt                DateTime       @updatedAt @map("updated_at")
+  deletedAt                DateTime?      @map("deleted_at")
+
+  jobRequest      JobRequest      @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  order           Order?
+
+  /// Bir usta aynı işe yalnızca bir teklif verebilir.
+  @@unique([jobRequestId, providerProfileId])
+  @@index([providerProfileId, status])
+  @@index([status, validUntil])
+  @@map("offers")
+}
+
+model Order {
+  id                String      @id @default(uuid(7))
+  jobRequestId      String      @unique @map("job_request_id")
+  offerId           String      @unique @map("offer_id")
+  customerId        String      @map("customer_id")
+  providerProfileId String      @map("provider_profile_id")
+  status            OrderStatus @default(PENDING_PAYMENT)
+  /// Tutarlar kuruş cinsindendir ve teklif kabul anında dondurulur.
+  totalMinor        Int         @map("total_minor")
+  commissionMinor   Int         @map("commission_minor")
+  payoutMinor       Int         @map("payout_minor")
+  currency          String      @default("TRY") @db.Char(3)
+  appliedRateBps    Int         @default(0) @map("applied_rate_bps")
+  scheduledAt       DateTime?   @map("scheduled_at")
+  startedAt         DateTime?   @map("started_at")
+  completedAt       DateTime?   @map("completed_at")
+  approvedAt        DateTime?   @map("approved_at")
+  cancelledAt       DateTime?   @map("cancelled_at")
+  cancellationReason String?    @map("cancellation_reason")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  deletedAt         DateTime?   @map("deleted_at")
+
+  jobRequest      JobRequest      @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
+  offer           Offer           @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  customer        User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Restrict)
+  payments        Payment[]
+  transactions    Transaction[]
+  review          Review?
+  conversations   Conversation[]
+  supportTickets  SupportTicket[]
+
+  @@index([customerId, status])
+  @@index([providerProfileId, status])
+  @@map("orders")
+}
+
+// ---------------------------------------------------------------------------
+// Değerlendirme
+// ---------------------------------------------------------------------------
+
+model Review {
+  id                  String       @id @default(uuid(7))
+  orderId             String       @unique @map("order_id")
+  customerId          String       @map("customer_id")
+  providerProfileId   String       @map("provider_profile_id")
+  status              ReviewStatus @default(PUBLISHED)
+  ratingQuality       Int          @map("rating_quality") @db.SmallInt
+  ratingPunctuality   Int          @map("rating_punctuality") @db.SmallInt
+  ratingCommunication Int          @map("rating_communication") @db.SmallInt
+  ratingValue         Int          @map("rating_value") @db.SmallInt
+  ratingTidiness      Int          @map("rating_tidiness") @db.SmallInt
+  /// Alt puanların ortalaması; sıralamada tekrar hesaplanmasın diye saklanır.
+  overallRating       Decimal      @map("overall_rating") @db.Decimal(3, 2)
+  comment             String?
+  photoFileIds        String[]     @map("photo_file_ids")
+  moderationNote      String?      @map("moderation_note")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  deletedAt           DateTime?    @map("deleted_at")
+
+  order           Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customer        User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  reply           ReviewReply?
+
+  @@index([providerProfileId, status, createdAt])
+  @@map("reviews")
+}
+
+model ReviewReply {
+  id        String    @id @default(uuid(7))
+  reviewId  String    @unique @map("review_id")
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@map("review_replies")
+}
+
+model FavoriteProvider {
+  id                String   @id @default(uuid(7))
+  customerId        String   @map("customer_id")
+  providerProfileId String   @map("provider_profile_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  customer        User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, providerProfileId])
+  @@map("favorite_providers")
+}
+
+// ---------------------------------------------------------------------------
+// Mesajlaşma
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id           String             @id @default(uuid(7))
+  jobRequestId String?            @map("job_request_id")
+  orderId      String?            @map("order_id")
+  status       ConversationStatus @default(ACTIVE)
+  lastMessageAt DateTime?         @map("last_message_at")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  deletedAt    DateTime?          @map("deleted_at")
+
+  jobRequest   JobRequest?               @relation(fields: [jobRequestId], references: [id], onDelete: SetNull)
+  order        Order?                    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([jobRequestId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String    @id @default(uuid(7))
+  conversationId String    @map("conversation_id")
+  userId         String    @map("user_id")
+  lastReadAt     DateTime? @map("last_read_at")
+  isMuted        Boolean   @default(false) @map("is_muted")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String      @id @default(uuid(7))
+  conversationId String      @map("conversation_id")
+  /// Sistem mesajlarında boştur.
+  senderId       String?     @map("sender_id")
+  type           MessageType @default(TEXT)
+  body           String?
+  latitude       Decimal?    @db.Decimal(9, 6)
+  longitude      Decimal?    @db.Decimal(9, 6)
+  /// İstemcinin ürettiği kimlik; aynı mesajın iki kez yazılmasını engeller.
+  clientMessageId String?    @map("client_message_id")
+  /// İletişim bilgisi paylaşımı şüphesiyle işaretlenmiş mesaj.
+  isFlagged      Boolean     @default(false) @map("is_flagged")
+  readAt         DateTime?   @map("read_at")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  deletedAt      DateTime?   @map("deleted_at")
+
+  conversation Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?               @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  attachments  MessageAttachment[]
+
+  @@unique([conversationId, clientMessageId])
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id        String   @id @default(uuid(7))
+  messageId String   @map("message_id")
+  fileId    String   @map("file_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  message Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    FileAsset @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@unique([messageId, fileId])
+  @@map("message_attachments")
+}
+
+// ---------------------------------------------------------------------------
+// Bildirimler
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String                @id @default(uuid(7))
+  userId    String                @map("user_id")
+  type      NotificationType
+  /// Metin istemcide çözülür; sunucu yalnızca değişkenleri gönderir.
+  params    Json                  @default("{}")
+  channels  NotificationChannel[]
+  deepLink  String?               @map("deep_link")
+  readAt    DateTime?             @map("read_at")
+  sentAt    DateTime?             @map("sent_at")
+  createdAt DateTime              @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model DeviceToken {
+  id         String         @id @default(uuid(7))
+  userId     String         @map("user_id")
+  platform   DevicePlatform
+  token      String         @unique
+  locale     String         @default("tr")
+  lastSeenAt DateTime       @default(now()) @map("last_seen_at")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// Ödeme ve muhasebe
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id                String        @id @default(uuid(7))
+  orderId           String        @map("order_id")
+  status            PaymentStatus @default(PENDING)
+  amountMinor       Int           @map("amount_minor")
+  currency          String        @default("TRY") @db.Char(3)
+  /// Etkin ödeme sağlayıcısının adı. İlk aşamada "mock".
+  providerName      String        @default("mock") @map("provider_name")
+  providerReference String?       @map("provider_reference")
+  /// Aynı ödemenin iki kez alınmasını engelleyen istemci anahtarı.
+  idempotencyKey    String?       @unique @map("idempotency_key")
+  authorizedAt      DateTime?     @map("authorized_at")
+  capturedAt        DateTime?     @map("captured_at")
+  refundedAt        DateTime?     @map("refunded_at")
+  failureReason     String?       @map("failure_reason")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  transactions Transaction[]
+
+  @@index([orderId, status])
+  @@map("payments")
+}
+
+/// Değişmez muhasebe hareketi. Kayıtlar güncellenmez, yalnızca eklenir.
+model Transaction {
+  id                String          @id @default(uuid(7))
+  paymentId         String?         @map("payment_id")
+  orderId           String?         @map("order_id")
+  walletId          String?         @map("wallet_id")
+  type              TransactionType
+  /// İşaretli tutar: girişler pozitif, çıkışlar negatiftir.
+  amountMinor       Int             @map("amount_minor")
+  currency          String          @default("TRY") @db.Char(3)
+  balanceAfterMinor Int?            @map("balance_after_minor")
+  description       String?
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  payment Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  order   Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  wallet  ProviderWallet? @relation(fields: [walletId], references: [id], onDelete: SetNull)
+
+  @@index([walletId, createdAt])
+  @@index([orderId])
+  @@map("transactions")
+}
+
+model ProviderWallet {
+  id                String   @id @default(uuid(7))
+  providerProfileId String   @unique @map("provider_profile_id")
+  currency          String   @default("TRY") @db.Char(3)
+  balanceMinor      Int      @default(0) @map("balance_minor")
+  /// İş tamamlanana kadar bloke edilen hakediş.
+  pendingMinor      Int      @default(0) @map("pending_minor")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+
+  @@map("provider_wallets")
+}
+
+model CommissionRule {
+  id              String         @id @default(uuid(7))
+  name            String
+  type            CommissionType @default(PERCENTAGE)
+  /// Baz puan: 1250 = %12,5
+  rateBps         Int            @map("rate_bps")
+  fixedMinor      Int            @default(0) @map("fixed_minor")
+  premiumRateBps  Int?           @map("premium_rate_bps")
+  categoryId      String?        @map("category_id")
+  cityId          String?        @map("city_id")
+  minAmountMinor  Int?           @map("min_amount_minor")
+  maxAmountMinor  Int?           @map("max_amount_minor")
+  priority        Int            @default(0)
+  isActive        Boolean        @default(true) @map("is_active")
+  validFrom       DateTime?      @map("valid_from")
+  validUntil      DateTime?      @map("valid_until")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  deletedAt       DateTime?      @map("deleted_at")
+
+  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  city     City?            @relation(fields: [cityId], references: [id], onDelete: SetNull)
+
+  @@index([isActive, priority])
+  @@map("commission_rules")
+}
+
+// ---------------------------------------------------------------------------
+// Destek, şikâyet ve denetim
+// ---------------------------------------------------------------------------
+
+model SupportTicket {
+  id               String              @id @default(uuid(7))
+  userId           String              @map("user_id")
+  subject          String
+  status           SupportTicketStatus @default(OPEN)
+  assignedToUserId String?             @map("assigned_to_user_id")
+  orderId          String?             @map("order_id")
+  lastMessageAt    DateTime?           @map("last_message_at")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+  deletedAt        DateTime?           @map("deleted_at")
+
+  user       User             @relation("TicketOwner", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo User?            @relation("TicketAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  order      Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  messages   SupportMessage[]
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id             String    @id @default(uuid(7))
+  ticketId       String    @map("ticket_id")
+  senderId       String    @map("sender_id")
+  body           String
+  isFromStaff    Boolean   @default(false) @map("is_from_staff")
+  attachmentIds  String[]  @map("attachment_ids")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("support_messages")
+}
+
+model Complaint {
+  id             String               @id @default(uuid(7))
+  reporterId     String               @map("reporter_id")
+  status         ComplaintStatus      @default(OPEN)
+  subjectType    ComplaintSubjectType @map("subject_type")
+  subjectId      String               @map("subject_id")
+  reason         String
+  description    String?
+  resolutionNote String?              @map("resolution_note")
+  resolvedAt     DateTime?            @map("resolved_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  deletedAt      DateTime?            @map("deleted_at")
+
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([subjectType, subjectId])
+  @@map("complaints")
+}
+
+/// Yönetsel işlemlerin değişmez kaydı. Hassas alanlar maskelenerek yazılır.
+model AuditLog {
+  id         String   @id @default(uuid(7))
+  actorId    String?  @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  changes    Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
 }

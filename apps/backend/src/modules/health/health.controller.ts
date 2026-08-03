@@ -4,11 +4,13 @@ import { HealthCheck, HealthCheckService, type HealthCheckResult } from '@nestjs
 
 import { RawResponse } from '@common/decorators/raw-response.decorator';
 import { AppConfigService } from '@config/app-config.service';
+import { Public } from '@modules/auth/decorators/public.decorator';
 
 import { PrismaHealthIndicator } from './indicators/prisma.health';
 import { RedisHealthIndicator } from './indicators/redis.health';
 
 @ApiTags('Health')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

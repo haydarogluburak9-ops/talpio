@@ -57,8 +57,8 @@ describe('ResponseInterceptor', () => {
         limit: 20,
         total: 45,
         totalPages: 3,
-        hasNext: true,
-        hasPrevious: true,
+        hasNextPage: true,
+        hasPreviousPage: true,
       },
     });
   });

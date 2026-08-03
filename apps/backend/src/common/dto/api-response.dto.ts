@@ -2,18 +2,22 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import type { AppErrorDetail } from '../errors/app.exception';
 
+/**
+ * `@ustapilot/types` içindeki PaginationMeta ile birebir aynı olmalıdır;
+ * istemciler zarfı o tiple okur.
+ */
 export interface PaginationMeta {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface CursorMeta {
   nextCursor: string | null;
-  hasNext: boolean;
+  hasNextPage: boolean;
 }
 
 export interface ApiSuccessResponse<T> {
@@ -60,8 +64,8 @@ export class PaginationMetaDto implements PaginationMeta {
   @ApiProperty({ example: 20 }) limit!: number;
   @ApiProperty({ example: 134 }) total!: number;
   @ApiProperty({ example: 7 }) totalPages!: number;
-  @ApiProperty({ example: true }) hasNext!: boolean;
-  @ApiProperty({ example: false }) hasPrevious!: boolean;
+  @ApiProperty({ example: true }) hasNextPage!: boolean;
+  @ApiProperty({ example: false }) hasPreviousPage!: boolean;
 }
 
 export function buildPaginationMeta(total: number, page: number, limit: number): PaginationMeta {
@@ -71,8 +75,8 @@ export function buildPaginationMeta(total: number, page: number, limit: number):
     limit,
     total,
     totalPages,
-    hasNext: page < totalPages,
-    hasPrevious: page > 1,
+    hasNextPage: page < totalPages,
+    hasPreviousPage: page > 1,
   };
 }
 
