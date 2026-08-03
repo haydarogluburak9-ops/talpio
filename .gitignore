@@ -11,6 +11,9 @@ out/
 coverage/
 *.tsbuildinfo
 
+# Turborepo görev önbelleği ve günlükleri
+.turbo/
+
 # Ortam değişkenleri
 .env
 .env.*
@@ -51,31 +54,36 @@ apps/backend/prisma/*.db-journal
 uploads/
 tmp/
 
-# Flutter / Dart
-apps/mobile/.dart_tool/
-apps/mobile/.flutter-plugins
-apps/mobile/.flutter-plugins-dependencies
-apps/mobile/.packages
-apps/mobile/build/
-apps/mobile/ios/Pods/
-apps/mobile/ios/.symlinks/
-apps/mobile/ios/Flutter/Flutter.framework
-apps/mobile/ios/Flutter/Flutter.podspec
-apps/mobile/ios/Flutter/ephemeral/
-apps/mobile/android/.gradle/
-apps/mobile/android/local.properties
-apps/mobile/android/app/google-services.json
-apps/mobile/ios/Runner/GoogleService-Info.plist
-apps/mobile/**/*.g.dart
-apps/mobile/**/*.freezed.dart
-apps/mobile/**/*.mocks.dart
+# Expo / React Native (apps/mobile kendi .gitignore dosyasını da taşır)
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+
+# Flutter / Dart — arşivlenmiş iskelet
+apps/mobile-flutter/.dart_tool/
+apps/mobile-flutter/.flutter-plugins
+apps/mobile-flutter/.flutter-plugins-dependencies
+apps/mobile-flutter/.packages
+apps/mobile-flutter/build/
+apps/mobile-flutter/ios/Pods/
+apps/mobile-flutter/ios/.symlinks/
+apps/mobile-flutter/ios/Flutter/Flutter.framework
+apps/mobile-flutter/ios/Flutter/Flutter.podspec
+apps/mobile-flutter/ios/Flutter/ephemeral/
+apps/mobile-flutter/android/.gradle/
+apps/mobile-flutter/android/local.properties
+apps/mobile-flutter/android/app/google-services.json
+apps/mobile-flutter/ios/Runner/GoogleService-Info.plist
+apps/mobile-flutter/**/*.g.dart
+apps/mobile-flutter/**/*.freezed.dart
+apps/mobile-flutter/**/*.mocks.dart
 # `flutter gen-l10n` çıktısı
-apps/mobile/lib/core/localization/generated/
+apps/mobile-flutter/lib/core/localization/generated/
 
 # Gizli anahtarlar
 *.pem
 *.p12
 *.keystore
 *.jks
-!apps/mobile/android/app/debug.keystore
+!apps/mobile-flutter/android/app/debug.keystore
 secrets/
