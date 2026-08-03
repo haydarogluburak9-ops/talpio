@@ -85,6 +85,8 @@ export const envSchema = z
     // Ödeme
     PAYMENT_DRIVER: z.enum(['mock', 'iyzico', 'paytr']).default('mock'),
     PAYMENT_CURRENCY: z.string().length(3).default('TRY'),
+    /** Sağlayıcı webhook'larının imzasını doğrulayan paylaşılan gizli anahtar. */
+    PAYMENT_WEBHOOK_SECRET: z.string().min(16).default('change_me_payment_webhook_secret'),
     DEFAULT_COMMISSION_BPS: z.coerce.number().int().min(0).max(10000).default(1250),
     DEFAULT_COMMISSION_FIXED_MINOR: z.coerce.number().int().min(0).default(0),
 
@@ -107,6 +109,22 @@ export const envSchema = z
           code: 'custom',
           path: ['JWT_ACCESS_SECRET'],
           message: 'Production ortamında varsayılan JWT gizli anahtarları kullanılamaz.',
+        });
+      }
+      // Mock sağlayıcı para hareketi yapmadan ödemeyi başarılı sayar; canlıda
+      // seçilmesi tahsil edilmemiş siparişlerin ödenmiş görünmesi demektir.
+      if (env.PAYMENT_DRIVER === 'mock') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['PAYMENT_DRIVER'],
+          message: 'Mock ödeme sağlayıcısı production ortamında kullanılamaz.',
+        });
+      }
+      if (weakSecret(env.PAYMENT_WEBHOOK_SECRET)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['PAYMENT_WEBHOOK_SECRET'],
+          message: 'Production ortamında varsayılan webhook gizli anahtarı kullanılamaz.',
         });
       }
     }

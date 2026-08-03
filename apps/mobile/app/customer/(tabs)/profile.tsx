@@ -29,6 +29,7 @@ export default function CustomerProfileScreen() {
     },
     { icon: 'receipt-outline' as const, label: t('order.listTitle'), href: '/customer/orders' },
     { icon: 'star-outline' as const, label: t('review.writtenTitle'), href: '/customer/reviews' },
+    { icon: 'card-outline' as const, label: t('payment.historyTitle'), href: '/customer/payments' },
     { icon: 'heart-outline' as const, label: t('nav.favorites'), href: '/customer/providers' },
     { icon: 'settings-outline' as const, label: t('settings.title'), href: '/customer/settings' },
   ];

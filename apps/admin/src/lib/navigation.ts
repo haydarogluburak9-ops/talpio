@@ -73,9 +73,9 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Finans',
     items: [
-      { label: 'Ödemeler', href: '/payments', icon: CreditCard, planned: true },
-      { label: 'İşlemler', href: '/transactions', icon: Receipt, planned: true },
-      { label: 'Komisyonlar', href: '/commissions', icon: Percent, planned: true },
+      { label: 'Ödemeler', href: '/payments', icon: CreditCard },
+      { label: 'İşlemler', href: '/transactions', icon: Receipt },
+      { label: 'Komisyonlar', href: '/commissions', icon: Percent },
       { label: 'Abonelikler', href: '/subscriptions', icon: Wallet, planned: true },
     ],
   },

@@ -21,8 +21,8 @@ Tek bir backend ve tek bir veritabanı üç istemciye hizmet eder: responsive we
 | Dosya yükleme (görsel, belge, ek)        | Uçtan uca çalışıyor — web ve mobil                                                  |
 | Profil (kullanıcı, usta, hizmet, bölge)  | Uçtan uca çalışıyor — web ve mobil                                                  |
 | Değerlendirme (puanla, cevapla, listele) | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Ödeme sağlayıcısı entegrasyonu           | Ekranlar hazır, API uçları henüz yazılmadı                                          |
-| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, denetim ve katalog gerçek veriyle; finans, destek ve büyüme modülleri iskelet |
+| Ödeme (tahsilat, iade, cüzdan, webhook)  | Uçtan uca çalışıyor — mock sağlayıcıyla; gerçek sağlayıcı adaptörü yazılmadı        |
+| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, denetim ve katalog gerçek veriyle; destek ve büyüme modülleri iskelet |
 
 Ekranlarda sahte veri gösterilmez. Bir uç henüz bağlı değilse ekran bunu açıkça belirtir; uydurma sayı veya örnek kayıt basılmaz.
 
@@ -294,6 +294,7 @@ npm run smoke:auth      # kayıt, giriş, jeton yenileme, oturum kapatma
 npm run smoke:jobs      # talep oluşturma, listeleme, iptal
 npm run smoke:offers    # teklif verme, kabul, ret, geri çekme
 npm run smoke:orders    # ödeme, başlatma, tamamlama, onay, iptal
+npm run smoke:payments  # tahsilat, istemci anahtarı, sağlayıcı reddi, webhook imzası, iade
 npm run smoke:reviews   # değerlendirme, ortalama puan, usta cevabı, herkese açık liste
 npm run smoke:messages  # sohbet açma, mesaj gönderme, okundu işaretleme
 npm run smoke:files     # yükleme, sahiplik ve tür kontrolleri
@@ -309,7 +310,7 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 
 | Konu                    | Varsayım                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| Ödeme sağlayıcısı       | `PaymentProvider` arayüzü + mock. iyzico sandbox ilk aday.                                           |
+| Ödeme sağlayıcısı       | `PaymentProvider` arayüzü + mock sürücü (`PAYMENT_DRIVER`). iyzico sandbox ilk aday. |
 | SMS / OTP               | Mock sürücü; Netgsm veya Twilio için adaptör noktası hazır.                                          |
 | Push bildirim           | Expo Notifications altyapısı kurulu; FCM/APNs proje anahtarları henüz yok.                           |
 | Harita                  | Soyut harita katmanı; Google Maps varsayılan, Mapbox alternatif.                                     |

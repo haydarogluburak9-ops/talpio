@@ -12,11 +12,14 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   UserRole,
+  type AdminCommissionRuleSummary,
   type AdminDashboard,
   type AdminJobSummary,
   type AdminOfferSummary,
   type AdminOrderSummary,
+  type AdminPaymentSummary,
   type AdminProviderSummary,
+  type AdminTransactionSummary,
   type AdminUserSummary,
   type AuditLogEntry,
 } from '@ustapilot/types';
@@ -30,10 +33,13 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { AdminService, type RequestContext } from './admin.service';
 import { AuditLogService } from './audit-log.service';
 import {
+  ListAdminCommissionsQueryDto,
   ListAdminJobsQueryDto,
   ListAdminOffersQueryDto,
   ListAdminOrdersQueryDto,
+  ListAdminPaymentsQueryDto,
   ListAdminProvidersQueryDto,
+  ListAdminTransactionsQueryDto,
   ListAdminUsersQueryDto,
   ListAuditLogsQueryDto,
   UpdateUserStatusDto,
@@ -151,6 +157,36 @@ export class AdminController {
   @ApiOkResponse({ description: 'Sayfalanmış sipariş listesi' })
   listOrders(@Query() query: ListAdminOrdersQueryDto): Promise<PaginatedResult<AdminOrderSummary>> {
     return this.admin.listOrders(query);
+  }
+
+  @Get('payments')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Ödeme listesi' })
+  @ApiOkResponse({ description: 'Sayfalanmış ödeme listesi' })
+  listPayments(
+    @Query() query: ListAdminPaymentsQueryDto,
+  ): Promise<PaginatedResult<AdminPaymentSummary>> {
+    return this.admin.listPayments(query);
+  }
+
+  @Get('transactions')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Muhasebe hareketleri' })
+  @ApiOkResponse({ description: 'Sayfalanmış hareket listesi' })
+  listTransactions(
+    @Query() query: ListAdminTransactionsQueryDto,
+  ): Promise<PaginatedResult<AdminTransactionSummary>> {
+    return this.admin.listTransactions(query);
+  }
+
+  @Get('commissions')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Komisyon kuralları' })
+  @ApiOkResponse({ description: 'Sayfalanmış komisyon kuralı listesi' })
+  listCommissions(
+    @Query() query: ListAdminCommissionsQueryDto,
+  ): Promise<PaginatedResult<AdminCommissionRuleSummary>> {
+    return this.admin.listCommissionRules(query);
   }
 
   @Get('audit-logs')

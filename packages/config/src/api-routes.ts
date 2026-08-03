@@ -103,6 +103,9 @@ export const API_ROUTES = {
     checkout: '/payments/checkout',
     webhook: '/payments/webhook',
     transactions: '/payments/transactions',
+    /** Ustanın cüzdan özeti: kullanılabilir bakiye ve bloke hakediş. */
+    wallet: '/payments/wallet',
+    refund: (id: string) => `/payments/${id}/refund`,
   },
   support: {
     tickets: '/support/tickets',
@@ -127,6 +130,7 @@ export const API_ROUTES = {
     offers: '/admin/offers',
     orders: '/admin/orders',
     payments: '/admin/payments',
+    transactions: '/admin/transactions',
     commissions: '/admin/commissions',
     categories: '/admin/categories',
     locations: '/admin/locations',

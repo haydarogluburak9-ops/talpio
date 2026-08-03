@@ -19,6 +19,8 @@ import { useEffect } from 'react';
 import { useMyOffers } from '@/features/offers/use-offers';
 import { OrderCard } from '@/features/orders/order-card';
 import { useMyOrders } from '@/features/orders/use-orders';
+import { useProviderWallet } from '@/features/payments/use-payments';
+import { ProviderWallet } from '@/features/payments/provider-wallet';
 import { ReceivedReviews } from '@/features/reviews/received-reviews';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
@@ -75,27 +77,20 @@ export function ProviderDashboard() {
         </CardContent>
       </Card>
 
+      <ProviderWallet />
+
       <ReceivedReviews />
     </div>
   );
 }
 
-/**
- * Panel ölçümleri gerçek uçlardan gelir. Hakediş toplamı için cüzdan ucu henüz
- * yok; o kutu uç bağlanana kadar yer tutmaz.
- */
+/** Panel ölçümleri gerçek uçlardan gelir; bloke hakediş cüzdan özetinden okunur. */
 function Metrics() {
   const locale = publicEnv.defaultLocale;
   const activeOrders = useMyOrders({ status: ACTIVE_ORDER_STATUSES, limit: 1 });
   const pendingOffers = useMyOffers({ status: [OfferStatus.SUBMITTED], limit: 1 });
   const completedOrders = useMyOrders({ status: [OrderStatus.COMPLETED], limit: 100 });
-
-  // Hakediş, tamamlanmamış siparişlerin bloke tutarıdır; cüzdan ucu gelene kadar
-  // sipariş listesinden hesaplanır.
-  const pendingPayout = activeOrders.data?.items.reduce(
-    (sum, order) => sum + order.providerPayout.amountMinor,
-    0,
-  );
+  const wallet = useProviderWallet();
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -116,12 +111,8 @@ function Metrics() {
       />
       <Metric
         label={t('provider.pendingPayout')}
-        value={
-          pendingPayout === undefined
-            ? null
-            : formatMoney({ amountMinor: pendingPayout, currency: 'TRY' }, locale)
-        }
-        isPending={activeOrders.isPending}
+        value={wallet.data ? formatMoney(wallet.data.pending, locale) : null}
+        isPending={wallet.isPending}
       />
     </div>
   );

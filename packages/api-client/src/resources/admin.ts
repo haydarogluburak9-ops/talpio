@@ -1,15 +1,20 @@
 import { API_ROUTES } from '@ustapilot/config';
 import type {
+  AdminCommissionRuleSummary,
   AdminDashboard,
   AdminJobSummary,
   AdminOfferSummary,
   AdminOrderSummary,
+  AdminPaymentSummary,
   AdminProviderSummary,
+  AdminTransactionSummary,
   AdminUserSummary,
   AuditLogEntry,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
+  PaymentStatus,
+  TransactionType,
   UserRole,
   UserStatus,
   VerificationStatus,
@@ -46,6 +51,20 @@ export interface ListAdminOffersParams extends AdminListParams {
 
 export interface ListAdminOrdersParams extends AdminListParams {
   status?: OrderStatus[];
+}
+
+export interface ListAdminPaymentsParams extends AdminListParams {
+  status?: PaymentStatus[];
+  orderId?: string;
+}
+
+export interface ListAdminTransactionsParams extends AdminListParams {
+  type?: TransactionType[];
+  orderId?: string;
+}
+
+export interface ListAdminCommissionsParams extends AdminListParams {
+  isActive?: boolean;
 }
 
 export interface ListAuditLogsParams extends AdminListParams {
@@ -144,6 +163,39 @@ export function createAdminResource(http: HttpClient) {
       return http.paginated<AdminOrderSummary>(API_ROUTES.admin.orders, {
         method: 'GET',
         query: { ...params, status: params.status?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listPayments(
+      params: ListAdminPaymentsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminPaymentSummary>> {
+      return http.paginated<AdminPaymentSummary>(API_ROUTES.admin.payments, {
+        method: 'GET',
+        query: { ...params, status: params.status?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listTransactions(
+      params: ListAdminTransactionsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminTransactionSummary>> {
+      return http.paginated<AdminTransactionSummary>(API_ROUTES.admin.transactions, {
+        method: 'GET',
+        query: { ...params, type: params.type?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listCommissionRules(
+      params: ListAdminCommissionsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminCommissionRuleSummary>> {
+      return http.paginated<AdminCommissionRuleSummary>(API_ROUTES.admin.commissions, {
+        method: 'GET',
+        query: { ...params },
         ...(signal ? { signal } : {}),
       });
     },

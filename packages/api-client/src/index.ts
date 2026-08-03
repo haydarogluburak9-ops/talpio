@@ -8,6 +8,7 @@ export * from './resources/catalog';
 export * from './resources/jobs';
 export * from './resources/offers';
 export * from './resources/orders';
+export * from './resources/payments';
 export * from './resources/messages';
 export * from './resources/files';
 export * from './resources/users';

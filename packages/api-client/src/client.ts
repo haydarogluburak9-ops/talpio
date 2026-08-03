@@ -9,6 +9,7 @@ import { createFilesResource } from './resources/files';
 import { createMessagesResource } from './resources/messages';
 import { createOffersResource } from './resources/offers';
 import { createOrdersResource } from './resources/orders';
+import { createPaymentsResource } from './resources/payments';
 import { createProvidersResource } from './resources/providers';
 import { createReviewsResource } from './resources/reviews';
 import { createUsersResource } from './resources/users';
@@ -32,6 +33,7 @@ export function createApiClient(options: HttpClientOptions) {
     jobs: createJobsResource(http),
     offers: createOffersResource(http),
     orders: createOrdersResource(http),
+    payments: createPaymentsResource(http),
     messages: createMessagesResource(http),
     files: createFilesResource(http),
     users: createUsersResource(http),

@@ -3,18 +3,26 @@ import {
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
+  PaymentStatus,
+  TransactionType,
   UserRole,
   UserStatus,
   VerificationStatus,
 } from '@ustapilot/types';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 
 /** Virgülle ayrılmış çoklu değer; sorgu dizgisinde dizi taşımanın en kısa yolu. */
 const toArray = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' ? value.split(',').filter(Boolean) : value;
+
+const toBoolean = ({ value }: { value: unknown }): unknown => {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return value;
+};
 
 export class ListAdminUsersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ enum: UserRole, isArray: true })
@@ -75,6 +83,41 @@ export class ListAdminOrdersQueryDto extends PaginationQueryDto {
   @Transform(toArray)
   @IsEnum(OrderStatus, { each: true })
   status?: OrderStatus[];
+}
+
+export class ListAdminPaymentsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: PaymentStatus, isArray: true })
+  @IsOptional()
+  @Transform(toArray)
+  @IsEnum(PaymentStatus, { each: true })
+  status?: PaymentStatus[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  orderId?: string;
+}
+
+export class ListAdminTransactionsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: TransactionType, isArray: true })
+  @IsOptional()
+  @Transform(toArray)
+  @IsEnum(TransactionType, { each: true })
+  type?: TransactionType[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  orderId?: string;
+}
+
+/** Komisyon kuralları salt okunur listelenir; süzgeç yalnızca etkinlik durumudur. */
+export class ListAdminCommissionsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ description: 'Yalnızca etkin kurallar.' })
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isActive?: boolean;
 }
 
 export class ListAuditLogsQueryDto extends PaginationQueryDto {

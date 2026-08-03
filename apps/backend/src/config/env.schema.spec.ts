@@ -58,6 +58,23 @@ describe('validateEnv', () => {
     ).toThrow(/varsayılan JWT gizli anahtarları/);
   });
 
+  it('production ortamında mock ödeme sağlayıcısını reddeder', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        NODE_ENV: 'production',
+        PAYMENT_DRIVER: 'mock',
+        PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
+      }),
+    ).toThrow(/Mock ödeme sağlayıcısı production/);
+  });
+
+  it('production ortamında varsayılan webhook anahtarını reddeder', () => {
+    expect(() =>
+      validateEnv({ ...baseEnv, NODE_ENV: 'production', PAYMENT_DRIVER: 'iyzico' }),
+    ).toThrow(/varsayılan webhook gizli anahtarı/);
+  });
+
   it('development ortamında demo hesaplarına izin verir', () => {
     const env = validateEnv({ ...baseEnv, SEED_DEMO_ACCOUNTS: 'true' });
 

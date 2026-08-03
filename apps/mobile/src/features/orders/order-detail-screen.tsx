@@ -12,6 +12,7 @@ import { ErrorState, LoadingState } from '@/components/state-views';
 import { OrderStatusPill } from '@/components/status-pill';
 import { Text } from '@/components/text';
 import { useOpenConversation } from '@/features/messages/use-messages';
+import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
@@ -265,6 +266,9 @@ function OrderDetailContent({
           </Text>
         ) : null}
       </Card>
+
+      {/* Makbuz müşterinin ödemesini gösterir; ustanın karşılığı cüzdan ekranıdır. */}
+      {isProvider ? null : <OrderPaymentSection order={order} />}
 
       <OrderReviewSection order={order} isProvider={isProvider} />
     </Screen>

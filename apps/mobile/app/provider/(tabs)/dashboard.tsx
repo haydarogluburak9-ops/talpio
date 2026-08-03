@@ -9,7 +9,8 @@ import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { useMyOffersInfinite } from '@/features/offers/use-offers';
-import { flattenOrderPages, useMyOrdersInfinite } from '@/features/orders/use-orders';
+import { useMyOrdersInfinite } from '@/features/orders/use-orders';
+import { useProviderWallet } from '@/features/payments/use-payments';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
@@ -35,13 +36,7 @@ export default function ProviderDashboardScreen() {
   const activeOrders = useMyOrdersInfinite({ status: ACTIVE_ORDER_STATUSES });
   const completedOrders = useMyOrdersInfinite({ status: [OrderStatus.COMPLETED] });
   const pendingOffers = useMyOffersInfinite({ status: [OfferStatus.SUBMITTED] });
-
-  // Bekleyen hakediş, tamamlanmamış siparişlerin bloke tutarıdır; cüzdan ucu
-  // gelene kadar sipariş listesinden hesaplanır.
-  const pendingPayout = flattenOrderPages(activeOrders.data?.pages).reduce(
-    (sum, order) => sum + order.providerPayout.amountMinor,
-    0,
-  );
+  const wallet = useProviderWallet();
 
   const metrics = [
     { label: t('provider.activeJobsTitle'), value: totalOf(activeOrders.data?.pages) },
@@ -49,9 +44,7 @@ export default function ProviderDashboardScreen() {
     { label: t('offer.listTitle'), value: totalOf(pendingOffers.data?.pages) },
     {
       label: t('provider.pendingPayout'),
-      value: activeOrders.data
-        ? formatMoney({ amountMinor: pendingPayout, currency: 'TRY' }, locale)
-        : '—',
+      value: wallet.data ? formatMoney(wallet.data.pending, locale) : '—',
     },
   ];
 
@@ -65,6 +58,7 @@ export default function ProviderDashboardScreen() {
         void activeOrders.refetch();
         void completedOrders.refetch();
         void pendingOffers.refetch();
+        void wallet.refetch();
       }}
       refreshing={refreshing}
     >
@@ -113,6 +107,13 @@ export default function ProviderDashboardScreen() {
         <Text variant="bodyStrong">{t('review.receivedTitle')}</Text>
         <Text variant="caption" tone="muted">
           {t('review.replyHint')}
+        </Text>
+      </Card>
+
+      <Card onPress={() => router.push('/provider/wallet')}>
+        <Text variant="bodyStrong">{t('payment.walletTitle')}</Text>
+        <Text variant="caption" tone="muted">
+          {t('payment.pendingHint')}
         </Text>
       </Card>
     </Screen>

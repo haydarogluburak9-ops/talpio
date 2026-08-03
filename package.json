@@ -38,6 +38,7 @@
     "smoke:jobs": "node scripts/smoke-jobs.mjs",
     "smoke:offers": "node scripts/smoke-offers.mjs",
     "smoke:orders": "node scripts/smoke-orders.mjs",
+    "smoke:payments": "node scripts/smoke-payments.mjs",
     "smoke:reviews": "node scripts/smoke-reviews.mjs",
     "smoke:messages": "node scripts/smoke-messages.mjs",
     "smoke:files": "node scripts/smoke-files.mjs",

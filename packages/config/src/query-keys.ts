@@ -58,6 +58,15 @@ export const queryKeys = {
     forProvider: (providerId: string, params?: Record<string, unknown>) =>
       ['reviews', 'provider', providerId, params ?? {}] as const,
   },
+  payments: {
+    all: () => ['payments'] as const,
+    list: (params?: Record<string, unknown>) => ['payments', 'list', params ?? {}] as const,
+    detail: (id: string) => ['payments', 'detail', id] as const,
+    forOrder: (orderId: string) => ['payments', 'order', orderId] as const,
+    transactions: (params?: Record<string, unknown>) =>
+      ['payments', 'transactions', params ?? {}] as const,
+    wallet: () => ['payments', 'wallet'] as const,
+  },
   support: {
     tickets: (params?: Record<string, unknown>) => ['support', 'tickets', params ?? {}] as const,
     ticket: (id: string) => ['support', 'tickets', id] as const,
@@ -70,6 +79,11 @@ export const queryKeys = {
     jobs: (params?: Record<string, unknown>) => ['admin', 'jobs', params ?? {}] as const,
     offers: (params?: Record<string, unknown>) => ['admin', 'offers', params ?? {}] as const,
     orders: (params?: Record<string, unknown>) => ['admin', 'orders', params ?? {}] as const,
+    payments: (params?: Record<string, unknown>) => ['admin', 'payments', params ?? {}] as const,
+    transactions: (params?: Record<string, unknown>) =>
+      ['admin', 'transactions', params ?? {}] as const,
+    commissions: (params?: Record<string, unknown>) =>
+      ['admin', 'commissions', params ?? {}] as const,
     auditLogs: (params?: Record<string, unknown>) => ['admin', 'audit-logs', params ?? {}] as const,
     providerDocuments: (params?: Record<string, unknown>) =>
       ['admin', 'provider-documents', params ?? {}] as const,

@@ -93,6 +93,22 @@ export class AppConfigService {
     };
   }
 
+  get payment(): {
+    driver: Env['PAYMENT_DRIVER'];
+    currency: string;
+    webhookSecret: string;
+    defaultCommissionBps: number;
+    defaultCommissionFixedMinor: number;
+  } {
+    return {
+      driver: this.get('PAYMENT_DRIVER'),
+      currency: this.get('PAYMENT_CURRENCY'),
+      webhookSecret: this.get('PAYMENT_WEBHOOK_SECRET'),
+      defaultCommissionBps: this.get('DEFAULT_COMMISSION_BPS'),
+      defaultCommissionFixedMinor: this.get('DEFAULT_COMMISSION_FIXED_MINOR'),
+    };
+  }
+
   /** Herkese açık dosyaların tarayıcıdan erişilebilir kök adresi. */
   get fileBaseUrl(): string {
     return `${this.get('S3_PUBLIC_URL')}/${this.get('S3_BUCKET')}`;

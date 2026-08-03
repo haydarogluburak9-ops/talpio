@@ -19,6 +19,9 @@ import { AppConfigService } from './config/app-config.service';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+    // Ödeme webhook'unun imzası ham gövde üzerinden doğrulanır; ayrıştırılmış
+    // nesneden yeniden üretilen JSON baytı baytına aynı olmayabilir.
+    rawBody: true,
   });
 
   const config = app.get(AppConfigService);

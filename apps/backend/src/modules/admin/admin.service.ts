@@ -6,11 +6,14 @@ import {
   UserRole,
   UserStatus,
   VerificationStatus,
+  type AdminCommissionRuleSummary,
   type AdminDashboard,
   type AdminJobSummary,
   type AdminOfferSummary,
   type AdminOrderSummary,
+  type AdminPaymentSummary,
   type AdminProviderSummary,
+  type AdminTransactionSummary,
   type AdminUserSummary,
 } from '@ustapilot/types';
 
@@ -21,23 +24,32 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
 import {
+  adminCommissionInclude,
   adminJobInclude,
   adminOfferInclude,
   adminOrderInclude,
+  adminPaymentInclude,
   adminProviderInclude,
+  adminTransactionInclude,
   adminUserInclude,
+  toAdminCommissionRule,
   toAdminJob,
   toAdminOffer,
   toAdminOrder,
+  toAdminPayment,
   toAdminProvider,
+  toAdminTransaction,
   toAdminUser,
 } from './admin.mapper';
 import { AuditLogService, type AuditEntryInput } from './audit-log.service';
 import type {
+  ListAdminCommissionsQueryDto,
   ListAdminJobsQueryDto,
   ListAdminOffersQueryDto,
   ListAdminOrdersQueryDto,
+  ListAdminPaymentsQueryDto,
   ListAdminProvidersQueryDto,
+  ListAdminTransactionsQueryDto,
   ListAdminUsersQueryDto,
   UpdateUserStatusDto,
   UpdateVerificationDto,
@@ -453,6 +465,94 @@ export class AdminService {
     ]);
 
     return PaginatedResult.of(rows.map(toAdminOrder), total, query.page, query.limit);
+  }
+
+  async listPayments(
+    query: ListAdminPaymentsQueryDto,
+  ): Promise<PaginatedResult<AdminPaymentSummary>> {
+    const where = {
+      ...(query.status ? { status: { in: query.status } } : {}),
+      ...(query.orderId ? { orderId: query.orderId } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              { providerReference: { contains: query.q, mode: 'insensitive' as const } },
+              {
+                order: {
+                  jobRequest: { title: { contains: query.q, mode: 'insensitive' as const } },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.payment.findMany({
+        where,
+        include: adminPaymentInclude,
+        orderBy: query.toOrderBy(['createdAt', 'amountMinor']),
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.payment.count({ where }),
+    ]);
+
+    return PaginatedResult.of(rows.map(toAdminPayment), total, query.page, query.limit);
+  }
+
+  /** Muhasebe hareketleri değişmezdir; panel bunları yalnızca okur. */
+  async listTransactions(
+    query: ListAdminTransactionsQueryDto,
+  ): Promise<PaginatedResult<AdminTransactionSummary>> {
+    const where = {
+      ...(query.type ? { type: { in: query.type } } : {}),
+      ...(query.orderId ? { orderId: query.orderId } : {}),
+      ...(query.q ? { description: { contains: query.q, mode: 'insensitive' as const } } : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where,
+        include: adminTransactionInclude,
+        orderBy: query.toOrderBy(['createdAt', 'amountMinor']),
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.transaction.count({ where }),
+    ]);
+
+    return PaginatedResult.of(rows.map(toAdminTransaction), total, query.page, query.limit);
+  }
+
+  /**
+   * Komisyon kuralları.
+   *
+   * Panelden düzenlenemez: yürürlükteki oran her yeni siparişin tutarını
+   * belirler ve geçmişe dönük bir hata para kaybıdır. Değişiklik önce
+   * geçerlilik aralığı, önizleme ve denetim kaydıyla birlikte tasarlanmalıdır.
+   */
+  async listCommissionRules(
+    query: ListAdminCommissionsQueryDto,
+  ): Promise<PaginatedResult<AdminCommissionRuleSummary>> {
+    const where = {
+      deletedAt: null,
+      ...(query.isActive === undefined ? {} : { isActive: query.isActive }),
+      ...(query.q ? { name: { contains: query.q, mode: 'insensitive' as const } } : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.commissionRule.findMany({
+        where,
+        include: adminCommissionInclude,
+        orderBy: query.toOrderBy(['priority', 'rateBps', 'createdAt'], { priority: 'desc' }),
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.commissionRule.count({ where }),
+    ]);
+
+    return PaginatedResult.of(rows.map(toAdminCommissionRule), total, query.page, query.limit);
   }
 
   private entry(

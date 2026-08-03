@@ -2,12 +2,16 @@ import {
   JOB_STATUS_TONES,
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
+  PAYMENT_STATUS_TONES,
   type StatusTone,
 } from '@ustapilot/config';
 import {
+  CommissionType,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
+  PaymentStatus,
+  TransactionType,
   UserRole,
   UserStatus,
   VerificationStatus,
@@ -91,11 +95,37 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   [OrderStatus.DISPUTED]: 'İtirazlı',
 };
 
-export { JOB_STATUS_TONES, OFFER_STATUS_TONES, ORDER_STATUS_TONES };
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  [PaymentStatus.PENDING]: 'Bekliyor',
+  [PaymentStatus.AUTHORIZED]: 'Provizyon',
+  [PaymentStatus.CAPTURED]: 'Tahsil edildi',
+  [PaymentStatus.SETTLED]: 'Mutabık',
+  [PaymentStatus.FAILED]: 'Başarısız',
+  [PaymentStatus.REFUNDED]: 'İade edildi',
+  [PaymentStatus.PARTIALLY_REFUNDED]: 'Kısmi iade',
+};
+
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
+  [TransactionType.PAYMENT]: 'Ödeme',
+  [TransactionType.COMMISSION]: 'Komisyon',
+  [TransactionType.PAYOUT]: 'Hakediş',
+  [TransactionType.REFUND]: 'İade',
+  [TransactionType.ADJUSTMENT]: 'Düzeltme',
+  [TransactionType.SUBSCRIPTION]: 'Abonelik',
+};
+
+export const COMMISSION_TYPE_LABELS: Record<CommissionType, string> = {
+  [CommissionType.PERCENTAGE]: 'Yüzdelik',
+  [CommissionType.FIXED]: 'Sabit',
+  [CommissionType.HYBRID]: 'Karma',
+};
+
+export { JOB_STATUS_TONES, OFFER_STATUS_TONES, ORDER_STATUS_TONES, PAYMENT_STATUS_TONES };
 
 /** Denetim kaydı eylemlerinin okunur karşılıkları. */
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
   'user.status.updated': 'Hesap durumu değiştirildi',
   'user.sessions.revoked': 'Oturumlar kapatıldı',
   'provider.verification.updated': 'Usta doğrulaması güncellendi',
+  'payment.refunded': 'Ödeme iade edildi',
 };

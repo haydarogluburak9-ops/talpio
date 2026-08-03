@@ -14,15 +14,22 @@ export interface Payment extends BaseEntity {
   failureReason?: string | null;
 }
 
-export interface Transaction extends BaseEntity {
+/**
+ * Muhasebe hareketi. Kayıt değişmezdir; bu yüzden `BaseEntity` gibi bir
+ * güncelleme zamanı taşımaz, düzeltme ters kayıtla yapılır.
+ */
+export interface Transaction {
+  id: string;
   paymentId?: string | null;
   orderId?: string | null;
   walletId?: string | null;
   type: TransactionType;
+  /** İşaretli tutar: girişler pozitif, çıkışlar negatiftir. */
   amount: Money;
   /** İşlem sonrası bakiye. Cüzdan hareketlerinde doldurulur. */
   balanceAfterMinor?: number | null;
   description?: string | null;
+  createdAt: string;
 }
 
 export interface CommissionRule extends BaseEntity {
@@ -61,4 +68,16 @@ export interface ProviderWallet extends BaseEntity {
   balanceMinor: number;
   /** İş tamamlanana kadar bloke edilen tutar (kuruş). */
   pendingMinor: number;
+}
+
+/**
+ * Usta ekranlarında gösterilen cüzdan özeti.
+ *
+ * Cüzdan kaydı ilk ödemeyle açıldığı için henüz iş almamış ustada satır yoktur;
+ * özet bu durumda sıfır tutarlarla döner, böylece ekran boş kalmaz.
+ */
+export interface ProviderWalletSummary {
+  balance: Money;
+  /** İş onaylanana kadar bloke tutulan hakediş. */
+  pending: Money;
 }

@@ -1,10 +1,13 @@
-import { JobRequestStatus, OrderStatus, UserRole } from '@ustapilot/types';
+import { JobRequestStatus, OrderStatus, PaymentStatus, UserRole } from '@ustapilot/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
+import type { PaymentProvider } from '@infra/payments/payment-provider';
 import type { PrismaService } from '@infra/prisma/prisma.service';
+import type { AuditLogService } from '@modules/admin/audit-log.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { PaymentsService } from '@modules/payments/payments.service';
 
 import type { ListOrdersQueryDto } from './dto/list-orders-query.dto';
 import type { OrderRow } from './order.mapper';
@@ -97,7 +100,7 @@ type PrismaMock = {
   providerProfile: { findFirst: jest.Mock; update: jest.Mock };
   customerProfile: { updateMany: jest.Mock };
   providerWallet: { upsert: jest.Mock; update: jest.Mock; updateMany: jest.Mock };
-  payment: { create: jest.Mock; findUnique: jest.Mock };
+  payment: { create: jest.Mock; findUnique: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
   transaction: { create: jest.Mock };
   $transaction: jest.Mock;
 };
@@ -125,6 +128,8 @@ function createPrismaMock(): PrismaMock {
     payment: {
       create: jest.fn().mockResolvedValue({ id: 'payment-1' }),
       findUnique: jest.fn().mockResolvedValue(null),
+      findFirst: jest.fn().mockResolvedValue(null),
+      update: jest.fn().mockResolvedValue({ id: 'payment-1' }),
     },
     transaction: { create: jest.fn().mockResolvedValue({}) },
     $transaction: jest.fn(),
@@ -135,12 +140,50 @@ function createPrismaMock(): PrismaMock {
   return mock;
 }
 
-function createService(prisma: PrismaMock): OrdersService {
+type ProviderMock = {
+  [K in keyof PaymentProvider]: PaymentProvider[K] extends (...args: never[]) => unknown
+    ? jest.Mock
+    : PaymentProvider[K];
+};
+
+/** Belirlenebilir sağlayıcı: her çağrı başarılı biter, testler tek tek bozar. */
+function createGatewayMock(): ProviderMock {
+  return {
+    name: 'test',
+    authorize: jest.fn().mockResolvedValue({
+      status: PaymentStatus.AUTHORIZED,
+      providerReference: 'ref-1',
+      failureReason: null,
+    }),
+    capture: jest.fn().mockResolvedValue({
+      status: PaymentStatus.CAPTURED,
+      providerReference: 'ref-1',
+      failureReason: null,
+    }),
+    refund: jest.fn().mockResolvedValue({
+      status: PaymentStatus.REFUNDED,
+      providerReference: 'ref-1',
+      failureReason: null,
+    }),
+    parseWebhook: jest.fn(),
+  };
+}
+
+/**
+ * Ödeme servisi taklit edilmez: sipariş akışının defter kayıtlarını gerçekten
+ * yazdığı doğrulanmak isteniyor, yalnızca sağlayıcı ve veritabanı kesiliyor.
+ */
+function createService(prisma: PrismaMock, gateway: ProviderMock): OrdersService {
   const config = {
     fileBaseUrl: 'http://localhost:9000/ustapilot',
+    payment: { currency: 'TRY' },
   } as unknown as AppConfigService;
 
-  return new OrdersService(prisma as unknown as PrismaService, config);
+  const audit = { record: jest.fn() } as unknown as AuditLogService;
+
+  const payments = new PaymentsService(prisma as unknown as PrismaService, config, audit, gateway);
+
+  return new OrdersService(prisma as unknown as PrismaService, config, payments);
 }
 
 /** `skip` ve `toOrderBy` prototip üzerinde olduğundan gerçek DTO örneği kurulur. */
@@ -176,11 +219,13 @@ async function codeOfRejection(run: () => Promise<unknown>): Promise<string> {
 
 describe('OrdersService', () => {
   let prisma: PrismaMock;
+  let gateway: ProviderMock;
   let service: OrdersService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = createService(prisma);
+    gateway = createGatewayMock();
+    service = createService(prisma, gateway);
   });
 
   describe('ödeme', () => {
@@ -243,6 +288,48 @@ describe('OrdersService', () => {
       await expect(codeOfRejection(() => service.pay(otherCustomer, ORDER_ID, {}))).resolves.toBe(
         'FORBIDDEN_RESOURCE',
       );
+    });
+
+    it('tahsilatı sağlayıcı üzerinden yürütür', async () => {
+      await service.pay(customer, ORDER_ID, {});
+
+      const authorized = firstCallArg<{ amountMinor: number; currency: string }>(gateway.authorize);
+      expect(authorized.amountMinor).toBe(250000);
+      expect(authorized.currency).toBe('TRY');
+      expect(gateway.capture).toHaveBeenCalled();
+    });
+
+    it('sağlayıcı reddederse siparişi ödeme bekliyor durumunda bırakır', async () => {
+      gateway.authorize.mockResolvedValue({
+        status: PaymentStatus.FAILED,
+        providerReference: null,
+        failureReason: 'Kart provizyonu reddedildi.',
+      });
+
+      await expect(codeOfRejection(() => service.pay(customer, ORDER_ID, {}))).resolves.toBe(
+        'PAYMENT_FAILED',
+      );
+
+      expect(prisma.order.update).not.toHaveBeenCalled();
+      expect(prisma.providerWallet.upsert).not.toHaveBeenCalled();
+    });
+
+    it('sağlayıcı reddettiğinde başarısız ödeme kaydı yazar', async () => {
+      gateway.authorize.mockResolvedValue({
+        status: PaymentStatus.FAILED,
+        providerReference: null,
+        failureReason: 'Kart provizyonu reddedildi.',
+      });
+
+      await codeOfRejection(() => service.pay(customer, ORDER_ID, { idempotencyKey: 'key-1' }));
+
+      const { data } = firstCallArg<{
+        data: { status: PaymentStatus; failureReason: string; idempotencyKey?: string | null };
+      }>(prisma.payment.create);
+      expect(data.status).toBe(PaymentStatus.FAILED);
+      expect(data.failureReason).toBe('Kart provizyonu reddedildi.');
+      // Para hareketi olmadığı için aynı anahtarla tekrar denenebilmelidir.
+      expect(data.idempotencyKey).toBeUndefined();
     });
   });
 
@@ -362,6 +449,71 @@ describe('OrdersService', () => {
       await service.cancel(customer, ORDER_ID, {});
 
       expect(prisma.providerWallet.updateMany).toHaveBeenCalled();
+    });
+
+    it('ödenmiş siparişte tahsilatı iade eder', async () => {
+      prisma.order.findFirst.mockResolvedValue(
+        orderRow({ status: OrderStatus.PAID, jobRequest: jobAt(JobRequestStatus.SCHEDULED) }),
+      );
+      prisma.payment.findFirst.mockResolvedValue({
+        id: 'payment-1',
+        amountMinor: 250000,
+        currency: 'TRY',
+        providerReference: 'ref-1',
+      });
+
+      await service.cancel(customer, ORDER_ID, {});
+
+      expect(gateway.refund).toHaveBeenCalled();
+
+      const { data } = firstCallArg<{ data: { status: PaymentStatus; refundedAt: Date } }>(
+        prisma.payment.update,
+      );
+      expect(data.status).toBe(PaymentStatus.REFUNDED);
+      expect(data.refundedAt).toBeInstanceOf(Date);
+    });
+
+    it('iadeyi ters muhasebe hareketi olarak yazar', async () => {
+      prisma.order.findFirst.mockResolvedValue(
+        orderRow({ status: OrderStatus.PAID, jobRequest: jobAt(JobRequestStatus.SCHEDULED) }),
+      );
+      prisma.payment.findFirst.mockResolvedValue({
+        id: 'payment-1',
+        amountMinor: 250000,
+        currency: 'TRY',
+        providerReference: 'ref-1',
+      });
+
+      await service.cancel(customer, ORDER_ID, {});
+
+      const { data } = firstCallArg<{ data: { type: string; amountMinor: number } }>(
+        prisma.transaction.create,
+      );
+      expect(data.type).toBe('REFUND');
+      expect(data.amountMinor).toBe(-250000);
+    });
+
+    it('sağlayıcı iadeyi reddederse siparişi iptal etmez', async () => {
+      prisma.order.findFirst.mockResolvedValue(
+        orderRow({ status: OrderStatus.PAID, jobRequest: jobAt(JobRequestStatus.SCHEDULED) }),
+      );
+      prisma.payment.findFirst.mockResolvedValue({
+        id: 'payment-1',
+        amountMinor: 250000,
+        currency: 'TRY',
+        providerReference: 'ref-1',
+      });
+      gateway.refund.mockResolvedValue({
+        status: PaymentStatus.FAILED,
+        providerReference: 'ref-1',
+        failureReason: 'İade penceresi kapandı.',
+      });
+
+      await expect(codeOfRejection(() => service.cancel(customer, ORDER_ID, {}))).resolves.toBe(
+        'PAYMENT_FAILED',
+      );
+
+      expect(prisma.order.update).not.toHaveBeenCalled();
     });
 
     it('iş başladıktan sonra iptal ettirmez', async () => {

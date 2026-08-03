@@ -2,10 +2,16 @@ import {
   JOB_STATUS_TONES,
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
+  PAYMENT_STATUS_TONES,
   type SupportedLocale,
 } from '@ustapilot/config';
-import { jobStatusLabel, offerStatusLabel, orderStatusLabel } from '@ustapilot/localization';
-import type { JobRequestStatus, OfferStatus, OrderStatus } from '@ustapilot/types';
+import {
+  jobStatusLabel,
+  offerStatusLabel,
+  orderStatusLabel,
+  paymentStatusLabel,
+} from '@ustapilot/localization';
+import type { JobRequestStatus, OfferStatus, OrderStatus, PaymentStatus } from '@ustapilot/types';
 
 import { Badge } from '@/components/badge';
 
@@ -41,4 +47,14 @@ export function OrderStatusPill({
   locale: SupportedLocale;
 }) {
   return <Badge tone={ORDER_STATUS_TONES[status]} label={orderStatusLabel(status, locale)} />;
+}
+
+export function PaymentStatusPill({
+  status,
+  locale,
+}: {
+  status: PaymentStatus;
+  locale: SupportedLocale;
+}) {
+  return <Badge tone={PAYMENT_STATUS_TONES[status]} label={paymentStatusLabel(status, locale)} />;
 }

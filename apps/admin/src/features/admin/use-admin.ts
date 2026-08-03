@@ -2,10 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
+  ListAdminCommissionsParams,
   ListAdminJobsParams,
   ListAdminOffersParams,
   ListAdminOrdersParams,
+  ListAdminPaymentsParams,
   ListAdminProvidersParams,
+  ListAdminTransactionsParams,
   ListAdminUsersParams,
   ListAuditLogsParams,
 } from '@ustapilot/api-client';
@@ -64,6 +67,30 @@ export function useAdminOrders(params: ListAdminOrdersParams) {
   return useQuery({
     queryKey: queryKeys.admin.orders(keyParams(params)),
     queryFn: ({ signal }) => apiClient.admin.listOrders(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminPayments(params: ListAdminPaymentsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.payments(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listPayments(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminTransactions(params: ListAdminTransactionsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.transactions(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listTransactions(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminCommissionRules(params: ListAdminCommissionsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.commissions(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listCommissionRules(params, signal),
     placeholderData: (previous) => previous,
   });
 }

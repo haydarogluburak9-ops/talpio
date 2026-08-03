@@ -20,6 +20,7 @@ import { JobCard } from '@/features/jobs/job-card';
 import { useMyJobs } from '@/features/jobs/use-jobs';
 import { OrderCard } from '@/features/orders/order-card';
 import { useMyOrders } from '@/features/orders/use-orders';
+import { PaymentHistory } from '@/features/payments/payment-history';
 import { t } from '@/lib/i18n';
 
 import { useLogout, useSession } from './use-session';
@@ -111,6 +112,8 @@ export function AccountOverview() {
           <RecentOrders />
         </CardContent>
       </Card>
+
+      <PaymentHistory />
     </div>
   );
 }

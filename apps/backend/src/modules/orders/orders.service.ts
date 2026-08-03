@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { canTransitionJobStatus, canTransitionOrderStatus } from '@ustapilot/business-logic';
-import { JobRequestStatus, OrderStatus, UserRole, type Order } from '@ustapilot/types';
+import { canTransitionOrderStatus } from '@ustapilot/business-logic';
+import { OrderStatus, PaymentStatus, UserRole, type Order } from '@ustapilot/types';
 
 import type { Prisma } from '@/generated/prisma/client';
-import { PaymentStatus, TransactionType } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { PaymentsService, type ChargeIntent } from '@modules/payments/payments.service';
 
 import type { CancelOrderDto, CompleteOrderDto, PayOrderDto } from './dto/order-action.dto';
 import type { ListOrdersQueryDto } from './dto/list-orders-query.dto';
+import { syncJobStatus } from './job-status.sync';
 import { orderInclude, toOrder, type OrderRow } from './order.mapper';
 
 const SORTABLE_FIELDS = ['createdAt', 'scheduledAt', 'updatedAt'] as const;
@@ -19,23 +20,12 @@ const SORTABLE_FIELDS = ['createdAt', 'scheduledAt', 'updatedAt'] as const;
 /** Siparişin iptal edilebildiği durumlar. İş başladıktan sonra iptal yerine anlaşmazlık açılır. */
 const CANCELLABLE: OrderStatus[] = [OrderStatus.PENDING_PAYMENT, OrderStatus.PAID];
 
-/**
- * Siparişin durumu ile işin durumu birlikte ilerler. İş akışı müşteri ve usta
- * ekranlarında talep üzerinden okunduğu için ikisi ayrı düşmemelidir.
- */
-const JOB_STATUS_FOR_ORDER: Partial<Record<OrderStatus, JobRequestStatus>> = {
-  [OrderStatus.PAID]: JobRequestStatus.SCHEDULED,
-  [OrderStatus.IN_PROGRESS]: JobRequestStatus.IN_PROGRESS,
-  [OrderStatus.AWAITING_APPROVAL]: JobRequestStatus.AWAITING_CUSTOMER_APPROVAL,
-  [OrderStatus.COMPLETED]: JobRequestStatus.COMPLETED,
-  [OrderStatus.CANCELLED]: JobRequestStatus.CANCELLED,
-};
-
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
+    private readonly payments: PaymentsService,
   ) {}
 
   /**
@@ -82,9 +72,8 @@ export class OrdersService {
   /**
    * Müşteri ödemeyi tamamlar.
    *
-   * Ödeme sağlayıcısı henüz bağlı değildir; kayıt "mock" sağlayıcıyla açılır ve
-   * anında tahsil edilmiş sayılır. Hakediş, iş onaylanana kadar ustanın
-   * cüzdanında bloke tutulur.
+   * Tahsilat etkin ödeme sağlayıcısı üzerinden yapılır; hakediş, iş onaylanana
+   * kadar ustanın cüzdanında bloke tutulur.
    */
   async pay(user: AuthenticatedUser, id: string, dto: PayOrderDto): Promise<Order> {
     const row = await this.requireOwnOrderAsCustomer(user, id);
@@ -110,35 +99,29 @@ export class OrdersService {
 
     this.assertTransition(row.status, OrderStatus.PAID);
 
-    const now = new Date();
+    const intent: ChargeIntent = {
+      orderId: id,
+      amountMinor: row.totalMinor,
+      currency: row.currency,
+      idempotencyKey: dto.idempotencyKey ?? null,
+    };
+
+    // Sağlayıcı çağrısı işlemin dışında yapılır; dış servis beklenirken sipariş
+    // satırının kilitli kalması ve hata kaydının geri alınması istenmez.
+    const outcome = await this.payments.charge(intent);
+
+    if (outcome.status !== PaymentStatus.CAPTURED) {
+      await this.payments.recordFailure(intent, outcome);
+
+      throw new AppException('PAYMENT_FAILED', {
+        message: outcome.failureReason ?? 'Ödeme alınamadı.',
+        context: { orderId: id },
+      });
+    }
 
     const updated = await this.prisma.$transaction(async (tx) => {
-      const payment = await tx.payment.create({
-        data: {
-          orderId: id,
-          status: PaymentStatus.CAPTURED,
-          amountMinor: row.totalMinor,
-          currency: row.currency,
-          providerName: 'mock',
-          providerReference: `mock_${id}`,
-          idempotencyKey: dto.idempotencyKey ?? null,
-          authorizedAt: now,
-          capturedAt: now,
-        },
-      });
-
-      await tx.transaction.create({
-        data: {
-          paymentId: payment.id,
-          orderId: id,
-          type: TransactionType.PAYMENT,
-          amountMinor: row.totalMinor,
-          currency: row.currency,
-          description: 'Sipariş ödemesi tahsil edildi',
-        },
-      });
-
-      await this.holdPayout(tx, row);
+      await this.payments.recordCapture(tx, intent, outcome);
+      await this.payments.holdPayout(tx, row);
 
       const order = await tx.order.update({
         where: { id },
@@ -149,7 +132,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.syncJobStatus(tx, row, OrderStatus.PAID, user.id, 'Ödeme alındı');
+      await this.syncJob(tx, row, OrderStatus.PAID, user.id, 'Ödeme alındı');
 
       return order;
     });
@@ -169,7 +152,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.syncJobStatus(tx, row, OrderStatus.IN_PROGRESS, user.id, 'Usta işe başladı');
+      await this.syncJob(tx, row, OrderStatus.IN_PROGRESS, user.id, 'Usta işe başladı');
 
       return order;
     });
@@ -189,7 +172,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.syncJobStatus(
+      await this.syncJob(
         tx,
         row,
         OrderStatus.AWAITING_APPROVAL,
@@ -222,7 +205,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.releasePayout(tx, row);
+      await this.payments.releasePayout(tx, row);
 
       await tx.providerProfile.update({
         where: { id: row.providerProfileId },
@@ -234,7 +217,7 @@ export class OrdersService {
         data: { completedJobCount: { increment: 1 } },
       });
 
-      await this.syncJobStatus(tx, row, OrderStatus.COMPLETED, user.id, 'Müşteri işi onayladı');
+      await this.syncJob(tx, row, OrderStatus.COMPLETED, user.id, 'Müşteri işi onayladı');
 
       return order;
     });
@@ -257,11 +240,16 @@ export class OrdersService {
 
     const now = new Date();
 
+    // İade sağlayıcı çağrısı işlemin dışında kalır. Sağlayıcı parayı geri
+    // vermezse iptal de yapılmaz: sipariş kapanıp paranın platformda kalması
+    // sessiz bir kayıp olurdu.
+    const refund =
+      row.status === OrderStatus.PAID ? await this.payments.prepareRefund(id, dto.reason) : null;
+
     const updated = await this.prisma.$transaction(async (tx) => {
-      // Ödeme alınmışsa bloke hakediş serbest bırakılır; iade akışı ödeme
-      // sağlayıcısı bağlandığında eklenecektir.
       if (row.status === OrderStatus.PAID) {
-        await this.releaseHold(tx, row);
+        if (refund) await this.payments.recordRefund(tx, refund, id);
+        await this.payments.releaseHold(tx, row);
       }
 
       const order = await tx.order.update({
@@ -274,7 +262,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.syncJobStatus(
+      await this.syncJob(
         tx,
         row,
         OrderStatus.CANCELLED,
@@ -381,92 +369,19 @@ export class OrdersService {
     return row;
   }
 
-  /**
-   * İşin durumunu siparişle aynı hizaya çeker.
-   *
-   * Geçiş tablosu izin vermiyorsa iş durumu olduğu gibi bırakılır; sipariş
-   * akışı bir veri tutarsızlığı yüzünden kilitlenmemelidir.
-   */
-  private async syncJobStatus(
+  private syncJob(
     tx: Prisma.TransactionClient,
     row: OrderRow,
     orderStatus: OrderStatus,
     userId: string,
     note: string,
   ): Promise<void> {
-    const target = JOB_STATUS_FOR_ORDER[orderStatus];
-    if (!target) return;
-
-    const from = row.jobRequest.status;
-    if (from === target) return;
-    if (!canTransitionJobStatus(from, target)) return;
-
-    await tx.jobRequest.update({ where: { id: row.jobRequestId }, data: { status: target } });
-
-    await tx.jobStatusHistory.create({
-      data: {
-        jobRequestId: row.jobRequestId,
-        fromStatus: from,
-        toStatus: target,
-        changedByUserId: userId,
-        note,
-      },
-    });
-  }
-
-  /** Ödeme alındığında hakediş cüzdanda bloke edilir. */
-  private async holdPayout(tx: Prisma.TransactionClient, row: OrderRow): Promise<void> {
-    await tx.providerWallet.upsert({
-      where: { providerProfileId: row.providerProfileId },
-      create: {
-        providerProfileId: row.providerProfileId,
-        currency: row.currency,
-        pendingMinor: row.payoutMinor,
-      },
-      update: { pendingMinor: { increment: row.payoutMinor } },
-    });
-  }
-
-  /** Onayla birlikte bloke tutar kullanılabilir bakiyeye geçer. */
-  private async releasePayout(tx: Prisma.TransactionClient, row: OrderRow): Promise<void> {
-    if (row.status !== OrderStatus.AWAITING_APPROVAL) return;
-
-    const wallet = await tx.providerWallet.update({
-      where: { providerProfileId: row.providerProfileId },
-      data: {
-        pendingMinor: { decrement: row.payoutMinor },
-        balanceMinor: { increment: row.payoutMinor },
-      },
-    });
-
-    await tx.transaction.create({
-      data: {
-        orderId: row.id,
-        walletId: wallet.id,
-        type: TransactionType.PAYOUT,
-        amountMinor: row.payoutMinor,
-        currency: row.currency,
-        balanceAfterMinor: wallet.balanceMinor,
-        description: 'Hakediş serbest bırakıldı',
-      },
-    });
-
-    await tx.transaction.create({
-      data: {
-        orderId: row.id,
-        type: TransactionType.COMMISSION,
-        amountMinor: -row.commissionMinor,
-        currency: row.currency,
-        description: 'Platform komisyonu',
-      },
-    });
-  }
-
-  /** İptalde bloke hakediş geri alınır. */
-  private async releaseHold(tx: Prisma.TransactionClient, row: OrderRow): Promise<void> {
-    await tx.providerWallet.updateMany({
-      where: { providerProfileId: row.providerProfileId },
-      data: { pendingMinor: { decrement: row.payoutMinor } },
-    });
+    return syncJobStatus(
+      tx,
+      { jobRequestId: row.jobRequestId, jobStatus: row.jobRequest.status },
+      orderStatus,
+      userId,
+      note,
+    );
   }
 }

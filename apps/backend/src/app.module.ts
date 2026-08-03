@@ -7,6 +7,7 @@ import { ResponseInterceptor } from '@common/interceptors/response.interceptor';
 import { AppConfigService } from '@config/app-config.service';
 import { AppConfigModule } from '@config/config.module';
 import { LoggerModule } from '@infra/logging/logger.module';
+import { PaymentProviderModule } from '@infra/payments/payment-provider.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { RedisModule } from '@infra/redis/redis.module';
 import { StorageModule } from '@infra/storage/storage.module';
@@ -22,6 +23,7 @@ import { LocationsModule } from '@modules/locations/locations.module';
 import { MessagesModule } from '@modules/messages/messages.module';
 import { OffersModule } from '@modules/offers/offers.module';
 import { OrdersModule } from '@modules/orders/orders.module';
+import { PaymentsModule } from '@modules/payments/payments.module';
 import { ProvidersModule } from '@modules/providers/providers.module';
 import { ReviewsModule } from '@modules/reviews/reviews.module';
 import { UsersModule } from '@modules/users/users.module';
@@ -47,6 +49,7 @@ import { UsersModule } from '@modules/users/users.module';
     PrismaModule,
     RedisModule,
     StorageModule,
+    PaymentProviderModule,
     HealthModule,
     AuthModule,
     CatalogModule,
@@ -54,6 +57,7 @@ import { UsersModule } from '@modules/users/users.module';
     JobsModule,
     OffersModule,
     OrdersModule,
+    PaymentsModule,
     MessagesModule,
     FilesModule,
     UsersModule,

@@ -27,6 +27,7 @@ export default function ProviderLayout() {
       <Stack.Screen name="offers/[id]" options={{ title: t('offer.detailTitle') }} />
       <Stack.Screen name="orders/[id]" options={{ title: t('order.detailTitle') }} />
       <Stack.Screen name="reviews/index" options={{ title: t('review.receivedTitle') }} />
+      <Stack.Screen name="wallet/index" options={{ title: t('payment.walletTitle') }} />
       <Stack.Screen name="messages/index" options={{ title: t('messaging.listTitle') }} />
       <Stack.Screen name="chat/[id]" options={{ title: t('messaging.chatTitle') }} />
       <Stack.Screen name="profile/edit" options={{ title: t('profile.title') }} />

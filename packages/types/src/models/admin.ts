@@ -1,8 +1,11 @@
 import type { UserRole } from '../enums/roles';
 import type {
+  CommissionType,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
+  PaymentStatus,
+  TransactionType,
   UserStatus,
   VerificationStatus,
 } from '../enums/statuses';
@@ -123,6 +126,61 @@ export interface AdminOrderSummary {
   total: Money;
   commission: Money;
   createdAt: string;
+}
+
+/**
+ * Yönetim listelerinde gösterilen ödeme satırı.
+ *
+ * `providerName` siparişi üstlenen ustayı, `paymentProvider` ödemeyi yürüten
+ * sağlayıcıyı belirtir; ikisi farklı kavramdır.
+ */
+export interface AdminPaymentSummary {
+  id: string;
+  orderId: string;
+  jobTitle: string;
+  customerName: string;
+  providerName: string;
+  status: PaymentStatus;
+  amount: Money;
+  paymentProvider: string;
+  providerReference?: string | null;
+  failureReason?: string | null;
+  refundedAt?: string | null;
+  createdAt: string;
+}
+
+/** Yönetim listelerinde gösterilen muhasebe hareketi. */
+export interface AdminTransactionSummary {
+  id: string;
+  type: TransactionType;
+  /** İşaretli tutar: girişler pozitif, çıkışlar negatiftir. */
+  amount: Money;
+  balanceAfterMinor?: number | null;
+  description?: string | null;
+  orderId?: string | null;
+  paymentId?: string | null;
+  /** Cüzdan hareketlerinde ustanın adı; ödeme hareketlerinde `null`. */
+  walletOwnerName?: string | null;
+  createdAt: string;
+}
+
+/** Yönetim listelerinde gösterilen komisyon kuralı. */
+export interface AdminCommissionRuleSummary {
+  id: string;
+  name: string;
+  type: CommissionType;
+  /** Baz puan: 1250 = %12,5. */
+  rateBps: number;
+  fixedMinor: number;
+  premiumRateBps?: number | null;
+  categoryName?: string | null;
+  cityName?: string | null;
+  minAmountMinor?: number | null;
+  maxAmountMinor?: number | null;
+  priority: number;
+  isActive: boolean;
+  validFrom?: string | null;
+  validUntil?: string | null;
 }
 
 /**

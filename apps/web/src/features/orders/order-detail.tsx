@@ -19,6 +19,7 @@ import { useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { useOpenConversation } from '@/features/messages/use-messages';
+import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
@@ -255,6 +256,9 @@ function OrderDetailView({ order }: { order: Order }) {
           ) : null}
         </CardContent>
       </Card>
+
+      {/* Makbuz müşterinin ödemesini gösterir; ustanın karşılığı cüzdan özetidir. */}
+      {!isProvider ? <OrderPaymentSection order={order} /> : null}
 
       <OrderReviewSection order={order} isProvider={isProvider} />
     </div>
