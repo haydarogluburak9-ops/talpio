@@ -51,6 +51,10 @@ export const queryKeys = {
     unreadCount: () => ['notifications', 'unread-count'] as const,
   },
   reviews: {
+    all: () => ['reviews'] as const,
+    mine: (params?: Record<string, unknown>) => ['reviews', 'mine', params ?? {}] as const,
+    detail: (id: string) => ['reviews', 'detail', id] as const,
+    forOrder: (orderId: string) => ['reviews', 'order', orderId] as const,
     forProvider: (providerId: string, params?: Record<string, unknown>) =>
       ['reviews', 'provider', providerId, params ?? {}] as const,
   },

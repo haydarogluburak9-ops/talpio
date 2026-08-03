@@ -10,6 +10,7 @@ import { createMessagesResource } from './resources/messages';
 import { createOffersResource } from './resources/offers';
 import { createOrdersResource } from './resources/orders';
 import { createProvidersResource } from './resources/providers';
+import { createReviewsResource } from './resources/reviews';
 import { createUsersResource } from './resources/users';
 
 /**
@@ -35,6 +36,7 @@ export function createApiClient(options: HttpClientOptions) {
     files: createFilesResource(http),
     users: createUsersResource(http),
     providers: createProvidersResource(http),
+    reviews: createReviewsResource(http),
     admin: createAdminResource(http),
   };
 }

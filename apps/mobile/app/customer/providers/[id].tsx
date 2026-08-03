@@ -1,7 +1,8 @@
-import { PendingScreen } from '@/components/pending-screen';
-import { useI18n } from '@/lib/i18n';
+import { useLocalSearchParams } from 'expo-router';
+
+import { ProviderReviewsScreen } from '@/features/reviews/provider-reviews-screen';
 
 export default function ProviderProfileScreen() {
-  const { t } = useI18n();
-  return <PendingScreen title={t('provider.profileTitle')} icon="person-circle-outline" />;
+  const params = useLocalSearchParams<{ id: string }>();
+  return <ProviderReviewsScreen providerId={params.id ?? ''} />;
 }

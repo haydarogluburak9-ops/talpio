@@ -140,6 +140,8 @@ export interface Review extends BaseEntity {
   overallRating: number;
   comment?: string | null;
   photoUrls: string[];
+  /** Yorumu yazan müşteri. Ad soyad maskelenerek taşınır. */
+  customer?: CustomerSummary;
   reply?: ReviewReply | null;
 }
 

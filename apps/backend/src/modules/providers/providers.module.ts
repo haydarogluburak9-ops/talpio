@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 
+import { ReviewsModule } from '@modules/reviews/reviews.module';
+
 import { ProvidersController } from './providers.controller';
 import { ProvidersService } from './providers.service';
 
 @Module({
+  imports: [ReviewsModule],
   controllers: [ProvidersController],
   providers: [ProvidersService],
   exports: [ProvidersService],

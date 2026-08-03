@@ -19,6 +19,7 @@ import { useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { useOpenConversation } from '@/features/messages/use-messages';
+import { OrderReviewSection } from '@/features/reviews/order-review-section';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
 
@@ -108,6 +109,15 @@ function OrderDetailView({ order }: { order: Order }) {
               className="text-sm font-medium text-brand-600 hover:underline"
             >
               {t('order.forJob')}: {order.job.title}
+            </Link>
+          ) : null}
+
+          {!isProvider && order.provider ? (
+            <Link
+              href={`/ustalar/${order.providerProfileId}`}
+              className="text-sm font-medium text-brand-600 hover:underline"
+            >
+              {t('provider.profileTitle')}: {order.provider.displayName}
             </Link>
           ) : null}
 
@@ -245,6 +255,8 @@ function OrderDetailView({ order }: { order: Order }) {
           ) : null}
         </CardContent>
       </Card>
+
+      <OrderReviewSection order={order} isProvider={isProvider} />
     </div>
   );
 }

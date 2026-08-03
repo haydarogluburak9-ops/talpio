@@ -12,6 +12,7 @@ import { ErrorState, LoadingState } from '@/components/state-views';
 import { OrderStatusPill } from '@/components/status-pill';
 import { Text } from '@/components/text';
 import { useOpenConversation } from '@/features/messages/use-messages';
+import { OrderReviewSection } from '@/features/reviews/order-review-section';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -92,6 +93,7 @@ function OrderDetailContent({
   refreshing: boolean;
 }) {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const isProvider = variant === 'provider';
 
   const pay = usePayOrder(order.id);
@@ -130,6 +132,15 @@ function OrderDetailContent({
         </Text>
 
         <OpenChatButton orderId={order.id} variant={variant} />
+
+        {isProvider ? null : (
+          <Button
+            label={t('provider.profileTitle')}
+            variant="outline"
+            size="sm"
+            onPress={() => router.push(`/customer/providers/${order.providerProfileId}`)}
+          />
+        )}
       </Card>
 
       <Card>
@@ -254,6 +265,8 @@ function OrderDetailContent({
           </Text>
         ) : null}
       </Card>
+
+      <OrderReviewSection order={order} isProvider={isProvider} />
     </Screen>
   );
 }

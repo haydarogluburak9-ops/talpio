@@ -19,6 +19,7 @@ import { useEffect } from 'react';
 import { useMyOffers } from '@/features/offers/use-offers';
 import { OrderCard } from '@/features/orders/order-card';
 import { useMyOrders } from '@/features/orders/use-orders';
+import { ReceivedReviews } from '@/features/reviews/received-reviews';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
 
@@ -73,6 +74,8 @@ export function ProviderDashboard() {
           <ActiveOrders />
         </CardContent>
       </Card>
+
+      <ReceivedReviews />
     </div>
   );
 }

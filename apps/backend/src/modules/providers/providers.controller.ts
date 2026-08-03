@@ -1,15 +1,20 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   UserRole,
   type ProviderProfile,
   type ProviderService,
   type ProviderSummary,
+  type Review,
 } from '@ustapilot/types';
 
+import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
+import { Public } from '@modules/auth/decorators/public.decorator';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { ListProviderReviewsQueryDto } from '@modules/reviews/dto/list-reviews-query.dto';
+import { ReviewsService } from '@modules/reviews/reviews.service';
 
 import {
   ReplaceProviderServiceAreasDto,
@@ -22,7 +27,10 @@ import { ProvidersService } from './providers.service';
 @ApiBearerAuth()
 @Controller('providers')
 export class ProvidersController {
-  constructor(private readonly providers: ProvidersService) {}
+  constructor(
+    private readonly providers: ProvidersService,
+    private readonly reviews: ReviewsService,
+  ) {}
 
   /**
    * Sabit yollar `:id` parametresinden önce tanımlanmalıdır; aksi halde "me"
@@ -77,10 +85,27 @@ export class ProvidersController {
     return this.providers.replaceMyServiceAreas(user, dto);
   }
 
+  /** Kart ve yorumlar aynı sayfada durur; biri ziyaretçiye açıksa diğeri de açık olmalı. */
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Ustanın herkese açık kartı' })
   @ApiOkResponse({ description: 'Usta özeti' })
   getById(@Param('id', ParseUUIDPipe) id: string): Promise<ProviderSummary> {
     return this.providers.getPublicById(id);
+  }
+
+  /**
+   * Yorumlar usta kartının bir parçası olduğu için değerlendirme modülü yerine
+   * burada durur; ziyaretçi profili görebiliyorsa yorumları da görebilmelidir.
+   */
+  @Get(':id/reviews')
+  @Public()
+  @ApiOperation({ summary: 'Ustanın herkese açık değerlendirmeleri' })
+  @ApiOkResponse({ description: 'Sayfalı değerlendirme listesi' })
+  listReviews(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ListProviderReviewsQueryDto,
+  ): Promise<PaginatedResult<Review>> {
+    return this.reviews.listForProvider(id, query);
   }
 }

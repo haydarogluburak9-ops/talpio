@@ -23,6 +23,7 @@ import { MessagesModule } from '@modules/messages/messages.module';
 import { OffersModule } from '@modules/offers/offers.module';
 import { OrdersModule } from '@modules/orders/orders.module';
 import { ProvidersModule } from '@modules/providers/providers.module';
+import { ReviewsModule } from '@modules/reviews/reviews.module';
 import { UsersModule } from '@modules/users/users.module';
 
 @Module({
@@ -57,6 +58,7 @@ import { UsersModule } from '@modules/users/users.module';
     FilesModule,
     UsersModule,
     ProvidersModule,
+    ReviewsModule,
     AdminModule,
   ],
   providers: [

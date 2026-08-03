@@ -108,6 +108,13 @@ export default function ProviderDashboardScreen() {
           {t('offer.compareTitle')}
         </Text>
       </Card>
+
+      <Card onPress={() => router.push('/provider/reviews')}>
+        <Text variant="bodyStrong">{t('review.receivedTitle')}</Text>
+        <Text variant="caption" tone="muted">
+          {t('review.replyHint')}
+        </Text>
+      </Card>
     </Screen>
   );
 }
