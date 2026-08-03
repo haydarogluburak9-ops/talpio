@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "UstaPilot",
+    "slug": "ustapilot",
+    "scheme": "ustapilot",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ustapilot.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "İş talebinize fotoğraf eklemek için kameraya erişim gerekir.",
+        "NSPhotoLibraryUsageDescription": "İş talebinize fotoğraf eklemek için galeriye erişim gerekir.",
+        "NSLocationWhenInUseUsageDescription": "Size en yakın ustaları gösterebilmek için konumunuza erişim gerekir."
+      }
+    },
+    "android": {
+      "package": "com.ustapilot.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#021B32",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "platforms": ["ios", "android"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#021B32",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "İş talebinize fotoğraf eklemek için galeriye erişim gerekir.",
+          "cameraPermission": "İş talebinize fotoğraf eklemek için kameraya erişim gerekir."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Size en yakın ustaları gösterebilmek için konumunuza erişim gerekir."
+        }
+      ],
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
