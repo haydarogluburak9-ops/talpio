@@ -4,13 +4,50 @@
 
 Hizmet ihtiyacı olan müşterilerle profesyonel ustaları buluşturan pazaryeri platformu. İlk pazar Gaziantep'tir; mimari çok şehirli, çok ülkeli ve çok dilli büyümeye göre tasarlanmıştır.
 
-Platform üç uygulamadan oluşur: Flutter mobil uygulama (müşteri ve usta rolleri), NestJS modüler monolit API ve Next.js yönetim paneli.
+Tek bir backend ve tek bir veritabanı üç istemciye hizmet eder: responsive web sitesi, iOS/Android mobil uygulama ve yönetim paneli. İş kuralları, tipler, doğrulama şemaları ve API istemcisi paylaşılan TypeScript paketlerinde yaşar; her istemci yalnızca kendi arayüzünü yazar.
 
 ## Durum
 
-**Faz 1 tamamlandı.** Monorepo iskeleti, altyapı servisleri, çekirdek backend katmanları, admin paneli kabuğu ve Flutter uygulama iskeleti çalışır durumdadır. Üç istemci de gerçek API'ye bağlanır — sağlık kontrolü uçtan uca doğrulanmıştır.
+| Alan                                     | Durum                                                                              |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| Monorepo, paylaşılan paketler            | Çalışıyor                                                                          |
+| Veritabanı şeması (tüm alan modelleri)   | Çalışıyor                                                                          |
+| Kimlik doğrulama (kayıt/giriş/yenile)    | Uçtan uca çalışıyor — web ve mobil                                                 |
+| Katalog (kategoriler, konumlar)          | Uçtan uca çalışıyor — web, mobil ve admin                                          |
+| İş talebi (oluştur, listele, iptal)      | Uçtan uca çalışıyor — web ve mobil                                                  |
+| Teklif (ver, listele, kabul/ret/geri çek)| Uçtan uca çalışıyor — web ve mobil                                                  |
+| Sipariş (ödeme, başlat, teslim, onay)    | Uçtan uca çalışıyor — web ve mobil                                                  |
+| Mesajlaşma (sohbet, gönder, okundu)      | Uçtan uca çalışıyor — web ve mobil                                                  |
+| Dosya yükleme (görsel, belge, ek)        | Uçtan uca çalışıyor — web ve mobil                                                  |
+| Profil (kullanıcı, usta, hizmet, bölge)  | Uçtan uca çalışıyor — web ve mobil                                                  |
+| Değerlendirme ve ödeme sağlayıcısı       | Ekranlar hazır, API uçları henüz yazılmadı                                          |
+| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, denetim ve katalog gerçek veriyle; finans, destek ve büyüme modülleri iskelet |
 
-Alan modelleri (User, JobRequest, Offer, Payment ...) ve kimlik doğrulama Faz 2 ile gelir. Yol haritası için [docs/05-roadmap-and-risks.md](docs/05-roadmap-and-risks.md).
+Ekranlarda sahte veri gösterilmez. Bir uç henüz bağlı değilse ekran bunu açıkça belirtir; uydurma sayı veya örnek kayıt basılmaz.
+
+## Mimari
+
+```
+                    ┌──────────────────────────┐
+                    │   NestJS API (:3000)     │
+                    │   PostgreSQL + Redis     │
+                    └────────────┬─────────────┘
+                                 │ /api/v1
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+┌───────┴────────┐      ┌────────┴────────┐      ┌────────┴────────┐
+│ Web (Next.js)  │      │ Mobil (Expo)    │      │ Admin (Next.js) │
+│    :3002       │      │  iOS / Android  │      │     :3001       │
+└───────┬────────┘      └────────┬────────┘      └────────┬────────┘
+        │                        │                        │
+        └────────────────────────┼────────────────────────┘
+                                 │
+              packages/  types · config · validation
+                         business-logic · api-client
+                         localization · ui
+```
+
+Jeton taşıma yöntemi platforma göre değişir, kimlik akışı değişmez: web'de yenileme jetonu HTTP-only çerezde (JavaScript erişemez), mobilde `expo-secure-store` içinde (Keychain / Keystore) tutulur. İstemci `X-Client-Platform` başlığıyla kendini tanıtır, sunucu buna göre çerez veya gövde ile yanıt verir.
 
 ## Dokümantasyon
 
@@ -19,17 +56,17 @@ Alan modelleri (User, JobRequest, Offer, Payment ...) ve kimlik doğrulama Faz 2
 | [01-architecture.md](docs/01-architecture.md)                       | Sistem mimarisi, monorepo yapısı, teknoloji kararları      |
 | [02-data-model.md](docs/02-data-model.md)                           | Varlık ilişkileri, tablo tasarımı, para ve konum modelleri |
 | [03-api.md](docs/03-api.md)                                         | Endpoint listesi, yanıt zarfı, hata kodları                |
-| [04-screens-and-permissions.md](docs/04-screens-and-permissions.md) | Mobil/admin ekran listeleri ve yetki matrisi               |
+| [04-screens-and-permissions.md](docs/04-screens-and-permissions.md) | Ekran listeleri ve yetki matrisi                           |
 | [05-roadmap-and-risks.md](docs/05-roadmap-and-risks.md)             | Fazlara ayrılmış plan, teknik riskler, MVP dışı kapsam     |
 
 ## Gereksinimler
 
-| Araç           | Sürüm            |
-| -------------- | ---------------- |
-| Node.js        | >= 20.11         |
-| npm            | >= 10            |
-| Docker Desktop | Compose v2 ile   |
-| Flutter        | >= 3.35 (stable) |
+| Araç                | Sürüm          |
+| ------------------- | -------------- |
+| Node.js             | >= 20.11       |
+| npm                 | >= 10          |
+| Docker Desktop      | Compose v2 ile |
+| Expo Go / EAS (opsiyonel) | SDK 57 uyumlu |
 
 ## Hızlı başlangıç
 
@@ -37,23 +74,37 @@ Alan modelleri (User, JobRequest, Offer, Payment ...) ve kimlik doğrulama Faz 2
 git clone <repo-url> usta-pilot
 cd usta-pilot
 
-cp .env.example .env      # Windows: Copy-Item .env.example .env
+cp .env.example .env                          # Windows: Copy-Item .env.example .env
+cp apps/backend/.env.example apps/backend/.env
+cp apps/web/.env.example apps/web/.env.local
+cp apps/admin/.env.example apps/admin/.env.local
+cp apps/mobile/.env.example apps/mobile/.env
+
 npm install
 
-npm run docker:up         # PostgreSQL, Redis, MinIO
-npm run db:migrate        # şemayı uygula
-npm run db:seed           # Gaziantep + sistem ayarları
-npm run dev               # backend (:3000) + admin (:3001)
+npm run docker:up      # PostgreSQL, Redis, MinIO
+npm run db:migrate     # şemayı uygula
+npm run db:seed        # konumlar, kategoriler, komisyon kuralları, demo hesaplar
+npm run dev            # API + web + admin
 ```
 
-Mobil uygulama ayrı çalışır:
+Mobil uygulama ayrı bir süreçtir (Metro bundler kendi terminalini ister):
 
 ```bash
-cd apps/mobile
-flutter pub get
-flutter gen-l10n         # yerelleştirme sınıflarını üretir
-flutter run
+npm run dev:mobile     # ardından Expo Go ile QR kodu okutun
 ```
+
+### Mobil cihazdan API'ye erişim
+
+`localhost` telefonun kendisini işaret eder. `apps/mobile/.env` içindeki adresi ortamınıza göre ayarlayın:
+
+| Ortam                 | Adres                          |
+| --------------------- | ------------------------------ |
+| Android emülatörü     | `http://10.0.2.2:3000/api/v1`  |
+| iOS simülatörü        | `http://localhost:3000/api/v1` |
+| Fiziksel cihaz (LAN)  | `http://<makine-ip>:3000/api/v1` |
+
+Fiziksel cihaz kullanıyorsanız makinenizin IP adresini `CORS_ORIGINS` listesine eklemeniz gerekmez — Expo istemcisi `Origin` başlığı göndermez.
 
 ### Adresler
 
@@ -62,6 +113,7 @@ flutter run
 | API             | http://localhost:3000/api/v1       |
 | Swagger         | http://localhost:3000/docs         |
 | Sağlık kontrolü | http://localhost:3000/health/ready |
+| Web sitesi      | http://localhost:3002              |
 | Admin paneli    | http://localhost:3001              |
 | MinIO konsolu   | http://localhost:9011              |
 | PostgreSQL      | localhost:5442                     |
@@ -80,40 +132,68 @@ usta-pilot/
 │   │       ├── common/   yanıt zarfı, hata modeli, DTO'lar
 │   │       ├── config/   Zod ile doğrulanan ortam değişkenleri
 │   │       ├── infra/    Prisma, Redis, logging
-│   │       └── modules/  alan modülleri
+│   │       └── modules/  alan modülleri (auth, catalog, locations ...)
+│   ├── web/              Next.js müşteri sitesi (responsive)
 │   ├── admin/            Next.js yönetim paneli
-│   └── mobile/           Flutter uygulaması (feature-first)
-├── docker/               Dockerfile'lar ve init script'leri
-├── docs/                 mimari ve tasarım dokümanları
+│   ├── mobile/           Expo + React Native (iOS / Android)
+│   └── mobile-flutter/   arşivlenmiş Flutter iskeleti (kullanılmıyor)
+├── packages/
+│   ├── types/            roller, durumlar, model ve API sözleşmesi tipleri
+│   ├── config/           sabitler, limitler, API yolları, sorgu anahtarları
+│   ├── validation/       Zod şemaları (istemci ve sunucu aynı şemayı kullanır)
+│   ├── business-logic/   durum geçişleri, komisyon, yetki matrisi, sıralama
+│   ├── api-client/       fetch tabanlı HTTP istemcisi, jeton depoları
+│   ├── localization/     TR/EN mesaj katalogları, para ve tarih biçimlendirme
+│   └── ui/               web tasarım token'ları ve paylaşılan React bileşenleri
+├── docker/
+├── docs/
 └── docker-compose.yml
 ```
 
-Flutter tarafında her özellik `data / domain / presentation` katmanlarına ayrılır. Backend tarafında her modül kendi controller, service ve DTO sınırları içinde kalır.
+`packages/ui` yalnızca web ve admin tarafından kullanılır; React Native CSS değişkenlerini okuyamadığı için mobil kendi token dosyasını (`apps/mobile/src/theme/tokens.ts`) tutar. İki dosya aynı renk ve ölçek değerlerini paylaşır.
+
+## Paylaşılan paketler ne içerir
+
+| Paket             | Örnek içerik                                                                    |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `types`           | `UserRole`, `JobStatus`, `OfferStatus`, `CurrentUser`, `ApiErrorResponse`        |
+| `config`          | `API_ROUTES`, `queryKeys`, `JOB`, `OFFER`, `COMMISSION`, durum renk eşlemeleri   |
+| `validation`      | `registerSchema`, `loginSchema`, `createJobRequestSchema`, `createOfferSchema`   |
+| `business-logic`  | `canTransition`, `calculateCommission`, `permissionsForRole`, `rankProviders`    |
+| `api-client`      | `createApiClient`, otomatik jeton yenileme, `ApiError` eşlemesi                 |
+| `localization`    | `createTranslator`, `formatMoneyMinor`, `formatDateTime`, durum etiketleri       |
+| `ui`              | `Button`, `Card`, `Badge`, `Field`, `StatusPill`, `EmptyState`, `ErrorState`     |
+
+Aynı Zod şeması hem istemcide (anında geri bildirim) hem sunucuda (asıl güvenlik sınırı) çalışır. İstemci doğrulaması hiçbir zaman güvenlik önlemi sayılmaz.
 
 ## Komutlar
 
 Kök dizinden çalıştırılır ve tüm workspace'lere yayılır.
 
-| Komut                    | Açıklama                                                   |
-| ------------------------ | ---------------------------------------------------------- |
-| `npm run dev`            | Backend ve admin panelini birlikte izleme modunda başlatır |
-| `npm run build`          | Tüm workspace'leri derler                                  |
-| `npm run lint`           | ESLint                                                     |
-| `npm run test`           | Jest                                                       |
-| `npm run typecheck`      | TypeScript tip kontrolü                                    |
-| `npm run format`         | Prettier ile biçimlendirir                                 |
-| `npm run db:migrate`     | Migration oluşturur ve uygular                             |
-| `npm run db:seed`        | Seed verisini yükler                                       |
-| `npm run db:studio`      | Prisma Studio                                              |
-| `npm run docker:up`      | Altyapı servisleri (Postgres, Redis, MinIO)                |
-| `npm run docker:up:full` | Backend ve admin dahil tam yığın                           |
-| `npm run docker:down`    | Tüm kapsayıcıları durdurur                                 |
+| Komut                    | Açıklama                                              |
+| ------------------------ | ----------------------------------------------------- |
+| `npm run dev`            | API, web ve admin'i birlikte izleme modunda başlatır  |
+| `npm run dev:api`        | Yalnızca backend                                      |
+| `npm run dev:web`        | Yalnızca web sitesi                                   |
+| `npm run dev:admin`      | Yalnızca yönetim paneli                               |
+| `npm run dev:mobile`     | Expo geliştirme sunucusu                              |
+| `npm run build`          | Tüm workspace'leri derler                             |
+| `npm run lint`           | ESLint                                                |
+| `npm run test`           | Jest                                                  |
+| `npm run typecheck`      | TypeScript tip kontrolü                               |
+| `npm run format`         | Prettier ile biçimlendirir                            |
+| `npm run db:migrate`     | Migration oluşturur ve uygular                        |
+| `npm run db:seed`        | Tohum verisini yükler                                 |
+| `npm run db:studio`      | Prisma Studio                                         |
+| `npm run docker:up`      | Altyapı servisleri (Postgres, Redis, MinIO)           |
+| `npm run docker:up:full` | Backend ve admin dahil tam yığın                      |
+| `npm run docker:down`    | Tüm kapsayıcıları durdurur                            |
 
-Flutter komutları `apps/mobile` içinden çalıştırılır: `flutter analyze`, `flutter test`, `flutter gen-l10n`.
+Turborepo görev bağımlılıklarını yönetir: bir uygulamayı derlemeden önce bağımlı olduğu paketler otomatik derlenir.
 
 ## Docker
 
-Varsayılan `docker compose up` yalnızca altyapıyı ayağa kaldırır; backend ve admin geliştirme sırasında host üzerinde çalışır çünkü hot reload bu şekilde çok daha hızlıdır.
+Varsayılan `docker compose up` yalnızca altyapıyı ayağa kaldırır; backend ve web geliştirme sırasında host üzerinde çalışır çünkü hot reload bu şekilde çok daha hızlıdır.
 
 Tam yığını kapsayıcı içinde çalıştırmak için `full` profili kullanılır:
 
@@ -123,9 +203,38 @@ npm run docker:up:full
 
 ## Ortam değişkenleri
 
-Tüm değişkenler `.env.example` içinde açıklamalarıyla listelenmiştir. Backend bunları Zod şemasıyla doğrular (`apps/backend/src/config/env.schema.ts`); eksik veya geçersiz bir değer varsa uygulama başlamaz.
+Her uygulamanın kendi `.env.example` dosyası vardır:
 
-Production ortamında şema iki ek kural uygular: demo hesapları etkinleştirilemez ve varsayılan JWT gizli anahtarları kullanılamaz.
+| Dosya                       | Kapsam                                              |
+| --------------------------- | --------------------------------------------------- |
+| `.env.example`              | Docker Compose altyapı servisleri                   |
+| `apps/backend/.env.example` | API, veritabanı, JWT, sağlayıcılar                  |
+| `apps/web/.env.example`     | Web sitesi (yalnızca `NEXT_PUBLIC_`)                |
+| `apps/admin/.env.example`   | Yönetim paneli (yalnızca `NEXT_PUBLIC_`)            |
+| `apps/mobile/.env.example`  | Mobil uygulama (yalnızca `EXPO_PUBLIC_`)            |
+
+`NEXT_PUBLIC_` ve `EXPO_PUBLIC_` önekli değişkenler istemci paketine gömülür ve cihazdan okunabilir. Gizli anahtarlar yalnızca backend'de tutulur.
+
+Backend değişkenlerini açılışta Zod şemasıyla doğrular (`apps/backend/src/config/env.schema.ts`); eksik veya geçersiz bir değer varsa uygulama istek almadan durur. Production ortamında iki ek kural uygulanır: demo hesapları etkinleştirilemez ve `change_me` içeren JWT gizli anahtarları reddedilir.
+
+## Kimlik doğrulama
+
+| Uç                       | Açıklama                                              |
+| ------------------------ | ----------------------------------------------------- |
+| `POST /auth/register`    | Müşteri veya usta hesabı oluşturur                    |
+| `POST /auth/login`       | E-posta ve şifreyle oturum açar                       |
+| `POST /auth/refresh`     | Yenileme jetonuyla yeni erişim jetonu üretir          |
+| `POST /auth/logout`      | Bulunulan cihazdaki oturumu kapatır                   |
+| `POST /auth/logout-all`  | Tüm cihazlardaki oturumları kapatır                   |
+| `GET  /auth/me`          | Oturum açmış kullanıcı ve rol izinleri                |
+
+Uygulanan önlemler:
+
+- Parolalar **argon2id** ile özetlenir (bcrypt değil); her kayıt kendi tuzunu taşır.
+- Yenileme jetonu opak ve tek kullanımlıktır; veritabanında yalnızca SHA-256 özeti saklanır. Kullanılan jeton iptal edilip yenisi verilir.
+- Erişim jetonu kısa ömürlüdür (varsayılan 15 dk) ve oturum kimliği taşır. Oturum iptal edildiğinde imza geçerli olsa bile istek reddedilir.
+- Ardışık hatalı girişler hesabı geçici olarak kilitler; var olmayan kullanıcı için de parola doğrulaması yapılır, böylece yanıt süresi hesabın varlığını sızdırmaz.
+- Kimlik doğrulama **varsayılan olarak zorunludur**. Herkese açık uçlar `@Public()` ile açıkça işaretlenir; bir ucu korumayı unutmak değil, açmak bilinçli bir karardır.
 
 ## API sözleşmesi
 
@@ -159,18 +268,38 @@ Hata yanıtı:
 
 ## Veritabanı
 
-Prisma tarafında camelCase, PostgreSQL tarafında snake_case adlandırma kullanılır; eşleme `@map` / `@@map` ile yapılır. Tüm modellerde UUIDv7 birincil anahtar, `createdAt` ve `updatedAt` alanları bulunur; kullanıcı verisi tutan tablolara ayrıca `deletedAt` eklenir.
+Prisma tarafında camelCase, PostgreSQL tarafında snake_case adlandırma kullanılır; eşleme `@map` / `@@map` ile yapılır. Tüm modellerde UUID birincil anahtar, `createdAt` ve `updatedAt` alanları bulunur; kullanıcı verisi tutan tablolara ayrıca `deletedAt` eklenir.
 
-Parasal tutarlar kayıt altında **kuruş cinsinden integer** olarak saklanır. Kayan noktalı tip kullanılmaz.
+Parasal tutarlar kayıt altında **kuruş cinsinden integer** olarak saklanır. Kayan noktalı tip hiçbir parasal alanda kullanılmaz.
+
+Kategoriler ve konumlar veritabanından gelir; hiçbir istemcide sabit liste tutulmaz. Yeni şehir veya kategori eklemek kod dağıtımı gerektirmez.
 
 ## Testler
 
-| Kapsam                 | Komut                                         | Durum   |
-| ---------------------- | --------------------------------------------- | ------- |
-| Backend birim          | `npm run test --workspace @ustapilot/backend` | 12 test |
-| Flutter birim + widget | `cd apps/mobile && flutter test`              | 12 test |
+```bash
+npm run test                                    # tümü
+npm run test --workspace @ustapilot/backend     # backend
+npm run test --workspace @ustapilot/validation  # doğrulama şemaları
+```
 
-Faz 1 testleri ortam değişkeni doğrulamasını, yanıt zarfı interceptor'ını, mobil API istemcisinin hata eşlemesini ve açılış/yönlendirme akışını kapsar. Kimlik doğrulama, teklif ve ödeme akışlarının entegrasyon testleri ilgili fazlarda eklenir.
+Kapsam: ortam değişkeni doğrulaması, yanıt zarfı interceptor'ı, parola özetleme, jeton üretimi ve süre ayrıştırma, rol tabanlı yetkilendirme matrisi, durum geçiş kuralları, komisyon hesabı, usta sıralaması, yerelleştirme biçimlendirmesi ve kayıt/giriş/talep/teklif şemaları.
+
+### Duman testleri
+
+Her akışın uçtan uca doğrulaması ayrı bir betiktedir. Çalışan bir API, tohumlanmış veritabanı ve dosya testleri için MinIO gerektirir.
+
+```bash
+npm run smoke:auth      # kayıt, giriş, jeton yenileme, oturum kapatma
+npm run smoke:jobs      # talep oluşturma, listeleme, iptal
+npm run smoke:offers    # teklif verme, kabul, ret, geri çekme
+npm run smoke:orders    # ödeme, başlatma, tamamlama, onay, iptal
+npm run smoke:messages  # sohbet açma, mesaj gönderme, okundu işaretleme
+npm run smoke:files     # yükleme, sahiplik ve tür kontrolleri
+npm run smoke:profile   # kullanıcı/usta profili, hizmet ve bölge yönetimi
+npm run smoke:admin     # panel özeti, kullanıcı ve usta yönetimi, denetim kaydı
+```
+
+Betikler tek tek çalıştırılır: her biri yeni hesaplar açtığı için art arda çalıştırmak kimlik uçlarındaki hız sınırına (`AUTH_THROTTLE_LIMIT`) takılır.
 
 ## Varsayımlar
 
@@ -180,7 +309,7 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 | ----------------------- | ---------------------------------------------------------------------------------------------------- |
 | Ödeme sağlayıcısı       | `PaymentProvider` arayüzü + mock. iyzico sandbox ilk aday.                                           |
 | SMS / OTP               | Mock sürücü; Netgsm veya Twilio için adaptör noktası hazır.                                          |
-| Push bildirim           | Firebase Cloud Messaging varsayılır; proje anahtarları henüz yok.                                    |
+| Push bildirim           | Expo Notifications altyapısı kurulu; FCM/APNs proje anahtarları henüz yok.                           |
 | Harita                  | Soyut harita katmanı; Google Maps varsayılan, Mapbox alternatif.                                     |
 | Hukuki metinler         | KVKK aydınlatma metni, gizlilik politikası ve kullanım koşulları yer tutucudur; hukuki onay gerekir. |
 | App Store / Google Play | Yayıncı hesapları ve sertifikalar tanımlı değil.                                                     |
@@ -188,12 +317,10 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 
 ## Demo hesapları
 
-Yalnızca development seed'inde oluşturulur; `SEED_DEMO_ACCOUNTS` production ortamında etkinleştirilemez.
+Yalnızca `SEED_DEMO_ACCOUNTS=true` iken oluşturulur; şema bu değerin production ortamında true olmasını reddeder.
 
 | Rol     | E-posta               | Parola    |
 | ------- | --------------------- | --------- |
 | Admin   | admin@ustapilot.com   | Demo1234! |
 | Müşteri | musteri@ustapilot.com | Demo1234! |
 | Usta    | usta@ustapilot.com    | Demo1234! |
-
-Kullanıcı modelleri Faz 2 ile eklendiğinde bu hesaplar seed'e dahil edilir.
