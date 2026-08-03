@@ -1,0 +1,199 @@
+/*
+  UstaPilot tasarım sistemi - ortak belirteçler.
+
+  Web ve admin bu dosyayı import eder; ekranlarda doğrudan renk kodu
+  kullanılmaz, yalnızca aşağıdaki anlamsal belirteçler kullanılır.
+  Aynı palet apps/mobile/src/theme/tokens.ts içinde birebir yansıtılır.
+
+  Palet logodan örneklenmiştir: lacivert kelime markası #14375a, koyu banner
+  zemini #021b32, turuncu konum işareti #fc8c0a. Tüm tonlar bu üç değerin
+  ton açısına (lacivert 210°, turuncu 32°) sabitlenmiştir.
+*/
+
+/*
+  Tailwind v4'te `dark:` varyantı öntanımlı olarak `prefers-color-scheme`
+  medya sorgusuna bağlıdır. Tema anahtarımız ise <html> üzerindeki `.dark`
+  sınıfını değiştirir. İkisi bağlanmazsa `dark:` yardımcı sınıfları işletim
+  sistemi ayarına takılı kalır ve uygulama içi anahtar onları etkilemez.
+*/
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Marka - logo laciverti: güven ve profesyonellik */
+  --color-brand-50: #eff4fa;
+  --color-brand-100: #dae7f4;
+  --color-brand-200: #b5cde7;
+  --color-brand-300: #86aad4;
+  --color-brand-400: #5484bb;
+  --color-brand-500: #30629c;
+  --color-brand-600: #1e4c7c;
+  --color-brand-700: #14375a; /* logo kelime markası */
+  --color-brand-800: #0a2743;
+  --color-brand-900: #021b32; /* logo banner zemini */
+  --color-brand-950: #01101f;
+
+  /* Vurgu - logo turuncusu: aksiyon ve usta vurgusu */
+  --color-accent-50: #fff4e6;
+  --color-accent-100: #ffe4c2;
+  --color-accent-200: #ffc688;
+  --color-accent-300: #ffa64d;
+  --color-accent-400: #fd9522;
+  --color-accent-500: #fc8c0a; /* logo konum işareti */
+  --color-accent-600: #de7205;
+  --color-accent-700: #b35b06;
+  --color-accent-800: #8d470b;
+  --color-accent-900: #733a0d;
+
+  /*
+    Durum renkleri. Vurgu artık marka turuncusu olduğu için "warning" daha sarı
+    bir amberde, "info" ise lacivertten ayrışsın diye gök mavisinde tutulur;
+    aksi halde durum rozetleri marka renkleriyle karışır.
+  */
+  --color-success-50: #ecfdf3;
+  --color-success-500: #16a34a;
+  --color-success-700: #15803d;
+  --color-warning-50: #fefce8;
+  --color-warning-500: #eab308;
+  --color-warning-700: #a16207;
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-info-50: #eff9ff;
+  --color-info-500: #0ea5e9;
+  --color-info-700: #0369a1;
+
+  /* Yarıçap ve gölge ölçeği */
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+  --shadow-soft: 0 1px 2px rgb(2 27 50 / 0.05), 0 8px 24px -12px rgb(2 27 50 / 0.14);
+  --shadow-raised: 0 2px 4px rgb(2 27 50 / 0.07), 0 16px 40px -16px rgb(2 27 50 / 0.2);
+}
+
+:root {
+  --background: #f5f7fa;
+  --surface: #ffffff;
+  --surface-muted: #eef2f7;
+  --foreground: #0a2038;
+  --foreground-muted: #55697f;
+  --border: #dfe5ed;
+  --ring: var(--color-brand-600);
+
+  /*
+    Durum bildirimleri için tema duyarlı yüzey/metin çiftleri. Sabit `-50`
+    tonları koyu temada beyaz kalıp metni okunmaz hale getirdiği için doğrudan
+    kullanılmaz; bileşenler daima bu ikiliyi birlikte kullanır.
+  */
+  --success-surface: var(--color-success-50);
+  --success-on-surface: var(--color-success-700);
+  --warning-surface: var(--color-warning-50);
+  --warning-on-surface: var(--color-warning-700);
+  --danger-surface: var(--color-danger-50);
+  --danger-on-surface: var(--color-danger-700);
+  --info-surface: var(--color-info-50);
+  --info-on-surface: var(--color-info-700);
+}
+
+/*
+  Koyu tema logonun koyu banner'ından türetilir; yüzeyler nötr siyah yerine
+  lacivert tabanlıdır.
+*/
+.dark {
+  --background: #02101d;
+  --surface: #05192e;
+  --surface-muted: #0b2540;
+  --foreground: #e9eef5;
+  --foreground-muted: #93a6bd;
+  --border: #16304e;
+  /* Lacivert zeminde mavi odak halkası kaybolur; turuncu net görünür. */
+  --ring: var(--color-accent-400);
+
+  /* Koyu zeminde yüzey saydam bir tint, metin ise açık tondur. */
+  --success-surface: rgb(22 163 74 / 0.18);
+  --success-on-surface: #6ee7a8;
+  --warning-surface: rgb(234 179 8 / 0.18);
+  --warning-on-surface: #fcd34d;
+  --danger-surface: rgb(220 38 38 / 0.2);
+  --danger-on-surface: #fca5a5;
+  --info-surface: rgb(14 165 233 / 0.18);
+  --info-on-surface: #7dd3fc;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-success-surface: var(--success-surface);
+  --color-success-on-surface: var(--success-on-surface);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-on-surface: var(--warning-on-surface);
+  --color-danger-surface: var(--danger-surface);
+  --color-danger-on-surface: var(--danger-on-surface);
+  --color-info-surface: var(--info-surface);
+  --color-info-on-surface: var(--info-on-surface);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono-stack);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Dokunmatik hedefler mobilde 44px altına düşmemeli. */
+  @media (pointer: coarse) {
+    button,
+    a[role='button'],
+    [role='tab'] {
+      min-height: 44px;
+    }
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    background-color: var(--surface-muted);
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  /* Uzun kelimeler dar ekranlarda taşmasın. */
+  .text-balance-safe {
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
