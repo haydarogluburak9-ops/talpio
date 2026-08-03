@@ -15,6 +15,7 @@ import {
   Receipt,
   Settings,
   ShieldCheck,
+  ShoppingBag,
   Star,
   Tag,
   TrendingUp,
@@ -27,7 +28,11 @@ export interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
-  /** Faz planında henüz uygulanmamış ekranlar için. */
+  /**
+   * Sayfa mevcut ancak API ucu henüz bağlı değil. Bağlantı gezilebilir kalır:
+   * ekran modülün kapsamını açıklar, bu yüzden erişimi engellemek bilgi kaybı
+   * olurdu.
+   */
   planned?: boolean;
 }
 
@@ -44,24 +49,25 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Kullanıcılar',
     items: [
-      { label: 'Kullanıcılar', href: '/users', icon: Users, planned: true },
-      { label: 'Ustalar', href: '/masters', icon: Building2, planned: true },
-      { label: 'Usta doğrulamaları', href: '/verifications', icon: BadgeCheck, planned: true },
+      { label: 'Kullanıcılar', href: '/users', icon: Users },
+      { label: 'Ustalar', href: '/masters', icon: Building2 },
+      { label: 'Usta doğrulamaları', href: '/verifications', icon: BadgeCheck },
     ],
   },
   {
     title: 'İşler',
     items: [
-      { label: 'İş talepleri', href: '/job-requests', icon: ClipboardList, planned: true },
-      { label: 'Teklifler', href: '/offers', icon: Handshake, planned: true },
+      { label: 'İş talepleri', href: '/job-requests', icon: ClipboardList },
+      { label: 'Teklifler', href: '/offers', icon: Handshake },
+      { label: 'Siparişler', href: '/orders', icon: ShoppingBag },
       { label: 'Yorumlar', href: '/reviews', icon: Star, planned: true },
     ],
   },
   {
     title: 'Katalog',
     items: [
-      { label: 'Kategoriler', href: '/categories', icon: LayoutGrid, planned: true },
-      { label: 'Konumlar', href: '/locations', icon: MapPin, planned: true },
+      { label: 'Kategoriler', href: '/categories', icon: LayoutGrid },
+      { label: 'Konumlar', href: '/locations', icon: MapPin },
     ],
   },
   {
@@ -93,7 +99,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Sistem ayarları', href: '/settings', icon: Settings, planned: true },
       { label: 'Yetkiler', href: '/settings/roles', icon: ShieldCheck, planned: true },
-      { label: 'Denetim kayıtları', href: '/audit-logs', icon: FileText, planned: true },
+      { label: 'Denetim kayıtları', href: '/audit-logs', icon: FileText },
     ],
   },
 ];

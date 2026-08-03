@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../'),
   reactStrictMode: true,
   poweredByHeader: false,
+  // Kaynak olarak yayımlanan monorepo paketleri Next tarafından derlenir.
+  transpilePackages: ['@ustapilot/ui'],
   async headers() {
     return [
       {
