@@ -6,13 +6,23 @@ import {
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  ReviewStatus,
   TransactionType,
   UserRole,
   UserStatus,
   VerificationStatus,
 } from '@ustapilot/types';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsDefined,
+  IsEnum,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 
@@ -158,6 +168,40 @@ export class ListAuditLogsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   actorId?: string;
+}
+
+export class ListAdminReviewsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: ReviewStatus, isArray: true })
+  @IsOptional()
+  @Transform(toArray)
+  @IsEnum(ReviewStatus, { each: true })
+  status?: ReviewStatus[];
+}
+
+/** Panelden uygulanan yayın / gizleme kararları. */
+export const MODERATABLE_REVIEW_STATUSES = [ReviewStatus.PUBLISHED, ReviewStatus.HIDDEN] as const;
+
+export class UpdateReviewModerationDto {
+  @ApiProperty({ enum: MODERATABLE_REVIEW_STATUSES })
+  @IsIn(MODERATABLE_REVIEW_STATUSES)
+  status!: (typeof MODERATABLE_REVIEW_STATUSES)[number];
+
+  @ApiPropertyOptional({ description: 'Denetim kaydına ve satıra yazılan gerekçe.' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  moderationNote?: string;
+}
+
+export class UpdateSystemSettingDto {
+  @ApiProperty({ description: 'Ayar anahtarı.' })
+  @IsString()
+  @MaxLength(120)
+  key!: string;
+
+  @ApiProperty({ description: 'JSON değeri.' })
+  @IsDefined()
+  value!: unknown;
 }
 
 /**

@@ -21,8 +21,11 @@ import {
   type AdminOrderSummary,
   type AdminPaymentSummary,
   type AdminProviderSummary,
+  type AdminReviewSummary,
+  type AdminRoleMatrix,
   type AdminSupportTicketDetail,
   type AdminSupportTicketSummary,
+  type AdminSystemSetting,
   type AdminTransactionSummary,
   type AdminUserSummary,
   type AuditLogEntry,
@@ -53,9 +56,12 @@ import {
   ListAdminOrdersQueryDto,
   ListAdminPaymentsQueryDto,
   ListAdminProvidersQueryDto,
+  ListAdminReviewsQueryDto,
   ListAdminTransactionsQueryDto,
   ListAdminUsersQueryDto,
   ListAuditLogsQueryDto,
+  UpdateReviewModerationDto,
+  UpdateSystemSettingDto,
   UpdateUserStatusDto,
   UpdateVerificationDto,
 } from './dto/admin-query.dto';
@@ -276,6 +282,57 @@ export class AdminController {
     @Body() dto: UpdateComplaintDto,
   ): Promise<AdminComplaintSummary> {
     return this.support.updateComplaint(id, dto);
+  }
+
+  @Get('reviews')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Değerlendirme listesi' })
+  @ApiOkResponse({ description: 'Sayfalanmış değerlendirme listesi' })
+  listReviews(
+    @Query() query: ListAdminReviewsQueryDto,
+  ): Promise<PaginatedResult<AdminReviewSummary>> {
+    return this.admin.listReviews(query);
+  }
+
+  @Patch('reviews/:id')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Değerlendirmeyi yayınlar veya gizler' })
+  @ApiOkResponse({ description: 'Güncellenmiş değerlendirme' })
+  updateReviewModeration(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateReviewModerationDto,
+    @Req() request: Request,
+  ): Promise<AdminReviewSummary> {
+    return this.admin.updateReviewModeration(actor, id, dto, contextFrom(request));
+  }
+
+  @Get('settings/roles')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Rol ve izin matrisi' })
+  @ApiOkResponse({ description: 'Salt okunur izin matrisi' })
+  listRoleMatrix(): AdminRoleMatrix {
+    return this.admin.listRoleMatrix();
+  }
+
+  @Get('settings')
+  @Roles(...WRITE_ROLES)
+  @ApiOperation({ summary: 'Sistem ayarları' })
+  @ApiOkResponse({ description: 'Anahtar-değer ayar listesi' })
+  listSettings(): Promise<AdminSystemSetting[]> {
+    return this.admin.listSettings();
+  }
+
+  @Patch('settings')
+  @Roles(...WRITE_ROLES)
+  @ApiOperation({ summary: 'Sistem ayarını günceller' })
+  @ApiOkResponse({ description: 'Güncellenmiş ayar' })
+  updateSetting(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Body() dto: UpdateSystemSettingDto,
+    @Req() request: Request,
+  ): Promise<AdminSystemSetting> {
+    return this.admin.updateSetting(actor, dto, contextFrom(request));
   }
 
   @Get('audit-logs')

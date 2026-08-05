@@ -94,10 +94,12 @@ export const queryKeys = {
       ['admin', 'complaints', params ?? {}] as const,
     notifications: (params?: Record<string, unknown>) =>
       ['admin', 'notifications', params ?? {}] as const,
+    reviews: (params?: Record<string, unknown>) => ['admin', 'reviews', params ?? {}] as const,
     auditLogs: (params?: Record<string, unknown>) => ['admin', 'audit-logs', params ?? {}] as const,
     providerDocuments: (params?: Record<string, unknown>) =>
       ['admin', 'provider-documents', params ?? {}] as const,
     settings: () => ['admin', 'settings'] as const,
+    roles: () => ['admin', 'settings', 'roles'] as const,
   },
   system: {
     health: () => ['system', 'health'] as const,

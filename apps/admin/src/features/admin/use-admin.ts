@@ -11,11 +11,14 @@ import type {
   ListAdminOrdersParams,
   ListAdminPaymentsParams,
   ListAdminProvidersParams,
+  ListAdminReviewsParams,
   ListAdminSupportTicketsParams,
   ListAdminTransactionsParams,
   ListAdminUsersParams,
   ListAuditLogsParams,
   UpdateAdminComplaintBody,
+  UpdateAdminReviewBody,
+  UpdateAdminSettingBody,
   UpdateAdminSupportTicketBody,
 } from '@ustapilot/api-client';
 import { queryKeys } from '@ustapilot/config';
@@ -176,6 +179,54 @@ export function useAuditLogs(params: ListAuditLogsParams) {
     queryKey: queryKeys.admin.auditLogs(keyParams(params)),
     queryFn: ({ signal }) => apiClient.admin.listAuditLogs(params, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminReviews(params: ListAdminReviewsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.reviews(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listReviews(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useUpdateReviewModeration() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { id: string; body: UpdateAdminReviewBody }) =>
+      apiClient.admin.updateReview(input.id, input.body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit-logs'] });
+    },
+  });
+}
+
+export function useAdminSettings() {
+  return useQuery({
+    queryKey: queryKeys.admin.settings(),
+    queryFn: ({ signal }) => apiClient.admin.listSettings(signal),
+  });
+}
+
+export function useUpdateSetting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: UpdateAdminSettingBody) => apiClient.admin.updateSetting(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.settings() });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit-logs'] });
+    },
+  });
+}
+
+export function useAdminRoles() {
+  return useQuery({
+    queryKey: queryKeys.admin.roles(),
+    queryFn: ({ signal }) => apiClient.admin.listRoles(signal),
+    staleTime: 60_000,
   });
 }
 

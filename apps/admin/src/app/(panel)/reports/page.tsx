@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { ReportsPanel } from '@/features/admin/reports-panel';
 
 export const metadata: Metadata = { title: 'Raporlar' };
 
@@ -18,6 +19,8 @@ export default function ReportsPage() {
       description="Platform büyümesini ve operasyonel göstergeleri izleyin."
       dataSource="GET /admin/dashboard"
       capabilities={CAPABILITIES}
-    />
+    >
+      <ReportsPanel />
+    </ModuleScaffold>
   );
 }

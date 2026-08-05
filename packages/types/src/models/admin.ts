@@ -1,5 +1,5 @@
 import type { NotificationChannel, NotificationType } from '../enums/messaging';
-import type { UserRole } from '../enums/roles';
+import type { Permission, UserRole } from '../enums/roles';
 import type {
   CommissionType,
   ComplaintStatus,
@@ -7,6 +7,7 @@ import type {
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  ReviewStatus,
   SupportTicketStatus,
   TransactionType,
   UserStatus,
@@ -263,4 +264,47 @@ export interface AuditLogEntry {
   changes?: Record<string, unknown> | null;
   ipAddress?: string | null;
   createdAt: string;
+}
+
+/** Yönetim listelerinde gösterilen değerlendirme satırı. */
+export interface AdminReviewSummary {
+  id: string;
+  orderId: string;
+  customerId: string;
+  customerName: string;
+  providerProfileId: string;
+  providerName: string;
+  jobTitle: string;
+  status: ReviewStatus;
+  overallRating: number;
+  comment?: string | null;
+  moderationNote?: string | null;
+  hasReply: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Sistem ayarı satırı.
+ *
+ * `isSecret` olanların `value` alanı maskelenmiş metindir; ham sır panellerde
+ * ve liste yanıtlarında taşınmaz.
+ */
+export interface AdminSystemSetting {
+  id: string;
+  key: string;
+  value: unknown;
+  description?: string | null;
+  isSecret: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Rol → izin matrisinin salt okunur paneli. */
+export interface AdminRoleMatrix {
+  roles: Array<{
+    role: UserRole;
+    permissions: Permission[];
+  }>;
+  allPermissions: Permission[];
 }

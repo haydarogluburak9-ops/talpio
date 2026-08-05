@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { SettingsPanel } from '@/features/admin/settings-panel';
 
 export const metadata: Metadata = { title: 'Sistem ayarları' };
 
@@ -16,8 +17,10 @@ export default function SettingsPage() {
     <ModuleScaffold
       title="Sistem ayarları"
       description="Platform genelindeki yapılandırmayı yönetin."
-      dataSource="GET /admin/settings"
+      dataSource="PATCH /admin/settings"
       capabilities={CAPABILITIES}
-    />
+    >
+      <SettingsPanel />
+    </ModuleScaffold>
   );
 }

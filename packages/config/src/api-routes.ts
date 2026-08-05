@@ -141,6 +141,7 @@ export const API_ROUTES = {
     categories: '/admin/categories',
     locations: '/admin/locations',
     reviews: '/admin/reviews',
+    reviewById: (id: string) => `/admin/reviews/${id}`,
     complaints: '/admin/complaints',
     complaintById: (id: string) => `/admin/complaints/${id}`,
     supportTickets: '/admin/support-tickets',
@@ -148,6 +149,7 @@ export const API_ROUTES = {
     supportTicketMessages: (id: string) => `/admin/support-tickets/${id}/messages`,
     notifications: '/admin/notifications',
     settings: '/admin/settings',
+    settingsRoles: '/admin/settings/roles',
     auditLogs: '/admin/audit-logs',
   },
   health: {

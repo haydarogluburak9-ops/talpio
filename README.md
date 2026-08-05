@@ -23,7 +23,7 @@ Tek bir backend ve tek bir veritabanı üç istemciye hizmet eder: responsive we
 | Değerlendirme (puanla, cevapla, listele) | Uçtan uca çalışıyor — web ve mobil                                                  |
 | Ödeme (tahsilat, iade, cüzdan, webhook)  | Uçtan uca çalışıyor — mock sağlayıcıyla; gerçek sağlayıcı adaptörü yazılmadı        |
 | Bildirim (in-app, mock push/e-posta/SMS) | Uçtan uca çalışıyor — olay bağlantıları, web/mobil liste, admin izleme; gerçek sağlayıcı adaptörü yazılmadı |
-| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, bildirim, denetim ve katalog gerçek veriyle; destek ve kalan büyüme modülleri iskelet |
+| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, bildirim, destek, şikâyet, değerlendirme, ayar, yetki, rapor, denetim ve katalog gerçek veriyle; kampanya ve abonelik iskelet (veri modeli yok) |
 
 Ekranlarda sahte veri gösterilmez. Bir uç henüz bağlı değilse ekran bunu açıkça belirtir; uydurma sayı veya örnek kayıt basılmaz.
 

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { ROLE_PERMISSIONS } from '@ustapilot/business-logic';
 import { deepLinks } from '@ustapilot/config';
 import {
   JobRequestStatus,
   NotificationType,
   OfferStatus,
   OrderStatus,
+  Permission,
+  ReviewStatus,
   UserRole,
   UserStatus,
   VerificationStatus,
@@ -16,6 +19,9 @@ import {
   type AdminOrderSummary,
   type AdminPaymentSummary,
   type AdminProviderSummary,
+  type AdminReviewSummary,
+  type AdminRoleMatrix,
+  type AdminSystemSetting,
   type AdminTransactionSummary,
   type AdminUserSummary,
 } from '@ustapilot/types';
@@ -27,7 +33,10 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 
+import type { Prisma } from '@/generated/prisma/client';
+
 import {
+  SECRET_SETTING_MASK,
   adminCommissionInclude,
   adminJobInclude,
   adminNotificationInclude,
@@ -35,6 +44,7 @@ import {
   adminOrderInclude,
   adminPaymentInclude,
   adminProviderInclude,
+  adminReviewInclude,
   adminTransactionInclude,
   adminUserInclude,
   toAdminCommissionRule,
@@ -44,6 +54,8 @@ import {
   toAdminOrder,
   toAdminPayment,
   toAdminProvider,
+  toAdminReview,
+  toAdminSystemSetting,
   toAdminTransaction,
   toAdminUser,
 } from './admin.mapper';
@@ -56,8 +68,11 @@ import type {
   ListAdminOrdersQueryDto,
   ListAdminPaymentsQueryDto,
   ListAdminProvidersQueryDto,
+  ListAdminReviewsQueryDto,
   ListAdminTransactionsQueryDto,
   ListAdminUsersQueryDto,
+  UpdateReviewModerationDto,
+  UpdateSystemSettingDto,
   UpdateUserStatusDto,
   UpdateVerificationDto,
 } from './dto/admin-query.dto';
@@ -616,6 +631,186 @@ export class AdminService {
     ]);
 
     return PaginatedResult.of(rows.map(toAdminCommissionRule), total, query.page, query.limit);
+  }
+
+  async listReviews(query: ListAdminReviewsQueryDto): Promise<PaginatedResult<AdminReviewSummary>> {
+    const where = {
+      deletedAt: null,
+      ...(query.status?.length ? { status: { in: query.status } } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              { comment: { contains: query.q, mode: 'insensitive' as const } },
+              { customer: { fullName: { contains: query.q, mode: 'insensitive' as const } } },
+              {
+                providerProfile: {
+                  OR: [
+                    { businessName: { contains: query.q, mode: 'insensitive' as const } },
+                    { user: { fullName: { contains: query.q, mode: 'insensitive' as const } } },
+                  ],
+                },
+              },
+              {
+                order: {
+                  jobRequest: { title: { contains: query.q, mode: 'insensitive' as const } },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where,
+        include: adminReviewInclude,
+        orderBy: query.toOrderBy(['createdAt', 'overallRating']),
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.review.count({ where }),
+    ]);
+
+    return PaginatedResult.of(rows.map(toAdminReview), total, query.page, query.limit);
+  }
+
+  /**
+   * Değerlendirmeyi yayınlar veya gizler.
+   *
+   * Yayın durumu değişince usta ortalama puanı yeniden hesaplanır; aksi halde
+   * gizlenen yorum profilde görünmeye devam ederdi.
+   */
+  async updateReviewModeration(
+    actor: AuthenticatedUser,
+    id: string,
+    dto: UpdateReviewModerationDto,
+    context: RequestContext,
+  ): Promise<AdminReviewSummary> {
+    const current = await this.prisma.review.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, status: true, providerProfileId: true, moderationNote: true },
+    });
+
+    if (!current) throw AppException.notFound('Değerlendirme', id);
+
+    const publishedChanged =
+      (current.status === ReviewStatus.PUBLISHED) !== (dto.status === ReviewStatus.PUBLISHED);
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.review.update({
+        where: { id },
+        data: {
+          status: dto.status,
+          ...(dto.moderationNote !== undefined ? { moderationNote: dto.moderationNote } : {}),
+        },
+        include: adminReviewInclude,
+      });
+
+      if (publishedChanged) {
+        await this.refreshProviderRating(tx, current.providerProfileId);
+      }
+
+      return row;
+    });
+
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'review.moderation.updated',
+        entityType: 'Review',
+        entityId: id,
+        changes: {
+          from: current.status,
+          to: dto.status,
+          moderationNote: dto.moderationNote ?? current.moderationNote ?? null,
+        },
+      }),
+    );
+
+    return toAdminReview(updated);
+  }
+
+  async listSettings(): Promise<AdminSystemSetting[]> {
+    const rows = await this.prisma.systemSetting.findMany({
+      orderBy: { key: 'asc' },
+    });
+
+    return rows.map(toAdminSystemSetting);
+  }
+
+  async updateSetting(
+    actor: AuthenticatedUser,
+    dto: UpdateSystemSettingDto,
+    context: RequestContext,
+  ): Promise<AdminSystemSetting> {
+    const current = await this.prisma.systemSetting.findUnique({
+      where: { key: dto.key },
+    });
+
+    if (!current) throw AppException.notFound('Sistem ayarı', dto.key);
+
+    if (current.isSecret && dto.value === SECRET_SETTING_MASK) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Gizli ayarın maskelenmiş değeri kaydedilemez; yeni bir değer girin.',
+      });
+    }
+
+    const updated = await this.prisma.systemSetting.update({
+      where: { key: dto.key },
+      data: { value: dto.value as Prisma.InputJsonValue },
+    });
+
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'setting.updated',
+        entityType: 'SystemSetting',
+        entityId: updated.id,
+        changes: {
+          key: dto.key,
+          from: current.isSecret ? SECRET_SETTING_MASK : current.value,
+          to: current.isSecret ? SECRET_SETTING_MASK : dto.value,
+        },
+      }),
+    );
+
+    return toAdminSystemSetting(updated);
+  }
+
+  /** İzin matrisi kodda sabittir; paneli salt okunur yansıtır. */
+  listRoleMatrix(): AdminRoleMatrix {
+    const roles = Object.values(UserRole).map((role) => ({
+      role,
+      permissions: [...ROLE_PERMISSIONS[role]],
+    }));
+
+    return {
+      roles,
+      allPermissions: Object.values(Permission),
+    };
+  }
+
+  /**
+   * Ustanın ortalama puanı yayınlanmış yorumlardan yeniden hesaplanır.
+   * Sayaç körlemesine artırılmaz; gizlenen yorum profili şişirmez.
+   */
+  private async refreshProviderRating(
+    tx: Prisma.TransactionClient,
+    providerProfileId: string,
+  ): Promise<void> {
+    const aggregate = await tx.review.aggregate({
+      where: { providerProfileId, status: ReviewStatus.PUBLISHED, deletedAt: null },
+      _avg: { overallRating: true },
+      _count: { _all: true },
+    });
+
+    const average = aggregate._avg.overallRating;
+
+    await tx.providerProfile.update({
+      where: { id: providerProfileId },
+      data: {
+        averageRating: average === null ? null : Math.round(Number(average) * 100) / 100,
+        reviewCount: aggregate._count._all,
+      },
+    });
   }
 
   private entry(

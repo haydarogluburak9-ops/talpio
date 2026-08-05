@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { RolesPanel } from '@/features/admin/roles-panel';
 
 export const metadata: Metadata = { title: 'Yetkiler' };
 
@@ -18,6 +19,8 @@ export default function RolesPage() {
       description="Rollerin hangi işlemleri yapabileceğini görüntüleyin."
       dataSource="GET /admin/settings/roles"
       capabilities={CAPABILITIES}
-    />
+    >
+      <RolesPanel />
+    </ModuleScaffold>
   );
 }

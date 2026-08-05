@@ -60,7 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'İş talepleri', href: '/job-requests', icon: ClipboardList },
       { label: 'Teklifler', href: '/offers', icon: Handshake },
       { label: 'Siparişler', href: '/orders', icon: ShoppingBag },
-      { label: 'Yorumlar', href: '/reviews', icon: Star, planned: true },
+      { label: 'Yorumlar', href: '/reviews', icon: Star },
     ],
   },
   {
@@ -91,14 +91,14 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Kampanyalar', href: '/promotions', icon: Tag, planned: true },
       { label: 'Bildirimler', href: '/notifications', icon: Bell },
-      { label: 'Raporlar', href: '/reports', icon: TrendingUp, planned: true },
+      { label: 'Raporlar', href: '/reports', icon: TrendingUp },
     ],
   },
   {
     title: 'Sistem',
     items: [
-      { label: 'Sistem ayarları', href: '/settings', icon: Settings, planned: true },
-      { label: 'Yetkiler', href: '/settings/roles', icon: ShieldCheck, planned: true },
+      { label: 'Sistem ayarları', href: '/settings', icon: Settings },
+      { label: 'Yetkiler', href: '/settings/roles', icon: ShieldCheck },
       { label: 'Denetim kayıtları', href: '/audit-logs', icon: FileText },
     ],
   },

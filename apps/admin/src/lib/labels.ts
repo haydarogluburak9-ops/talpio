@@ -4,6 +4,7 @@ import {
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
   PAYMENT_STATUS_TONES,
+  REVIEW_STATUS_TONES,
   SUPPORT_TICKET_STATUS_TONES,
   type StatusTone,
 } from '@ustapilot/config';
@@ -15,6 +16,8 @@ import {
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  Permission,
+  ReviewStatus,
   SupportTicketStatus,
   TransactionType,
   UserRole,
@@ -148,12 +151,57 @@ export const COMPLAINT_SUBJECT_LABELS: Record<ComplaintSubjectType, string> = {
   [ComplaintSubjectType.MESSAGE]: 'Mesaj',
 };
 
+export const REVIEW_STATUS_LABELS: Record<ReviewStatus, string> = {
+  [ReviewStatus.PUBLISHED]: 'Yayında',
+  [ReviewStatus.PENDING_MODERATION]: 'Moderasyonda',
+  [ReviewStatus.HIDDEN]: 'Gizli',
+};
+
+export const PERMISSION_LABELS: Record<Permission, string> = {
+  [Permission.JOB_CREATE]: 'İş oluşturma',
+  [Permission.JOB_READ_OWN]: 'Kendi işini okuma',
+  [Permission.JOB_READ_ANY]: 'Tüm işleri okuma',
+  [Permission.JOB_UPDATE_OWN]: 'Kendi işini güncelleme',
+  [Permission.JOB_CANCEL_OWN]: 'Kendi işini iptal',
+  [Permission.JOB_MODERATE]: 'İş moderasyonu',
+  [Permission.OFFER_CREATE]: 'Teklif oluşturma',
+  [Permission.OFFER_READ_OWN]: 'Kendi teklifini okuma',
+  [Permission.OFFER_READ_FOR_OWN_JOB]: 'İşine gelen teklifleri okuma',
+  [Permission.OFFER_READ_ANY]: 'Tüm teklifleri okuma',
+  [Permission.OFFER_WITHDRAW_OWN]: 'Teklif geri çekme',
+  [Permission.OFFER_ACCEPT]: 'Teklif kabul',
+  [Permission.ORDER_READ_OWN]: 'Kendi siparişini okuma',
+  [Permission.ORDER_READ_ANY]: 'Tüm siparişleri okuma',
+  [Permission.ORDER_UPDATE_STATUS]: 'Sipariş durumu güncelleme',
+  [Permission.MESSAGE_SEND]: 'Mesaj gönderme',
+  [Permission.MESSAGE_READ_OWN]: 'Kendi mesajını okuma',
+  [Permission.MESSAGE_READ_ANY]: 'Tüm mesajları okuma',
+  [Permission.REVIEW_CREATE]: 'Değerlendirme yazma',
+  [Permission.REVIEW_REPLY]: 'Değerlendirmeye yanıt',
+  [Permission.REVIEW_MODERATE]: 'Değerlendirme moderasyonu',
+  [Permission.PROVIDER_PROFILE_MANAGE_OWN]: 'Kendi usta profili',
+  [Permission.PROVIDER_DOCUMENT_UPLOAD_OWN]: 'Belge yükleme',
+  [Permission.PROVIDER_DOCUMENT_VERIFY]: 'Belge doğrulama',
+  [Permission.PAYMENT_READ_OWN]: 'Kendi ödemesini okuma',
+  [Permission.PAYMENT_READ_ANY]: 'Tüm ödemeleri okuma',
+  [Permission.PAYMENT_REFUND]: 'İade',
+  [Permission.SUPPORT_TICKET_CREATE]: 'Destek talebi açma',
+  [Permission.SUPPORT_TICKET_READ_OWN]: 'Kendi destek talebini okuma',
+  [Permission.SUPPORT_TICKET_HANDLE]: 'Destek talebi yönetme',
+  [Permission.CATALOG_MANAGE]: 'Katalog yönetimi',
+  [Permission.USER_MANAGE]: 'Kullanıcı yönetimi',
+  [Permission.SETTINGS_MANAGE]: 'Sistem ayarları',
+  [Permission.ROLE_MANAGE]: 'Rol yönetimi',
+  [Permission.AUDIT_LOG_READ]: 'Denetim kaydı okuma',
+};
+
 export {
   COMPLAINT_STATUS_TONES,
   JOB_STATUS_TONES,
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
   PAYMENT_STATUS_TONES,
+  REVIEW_STATUS_TONES,
   SUPPORT_TICKET_STATUS_TONES,
 };
 
@@ -163,4 +211,6 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   'user.sessions.revoked': 'Oturumlar kapatıldı',
   'provider.verification.updated': 'Usta doğrulaması güncellendi',
   'payment.refunded': 'Ödeme iade edildi',
+  'review.moderation.updated': 'Değerlendirme moderasyonu',
+  'setting.updated': 'Sistem ayarı güncellendi',
 };

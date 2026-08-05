@@ -4,6 +4,7 @@ import {
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  ReviewStatus,
   SupportTicketStatus,
 } from '@ustapilot/types';
 
@@ -74,4 +75,10 @@ export const COMPLAINT_STATUS_TONES: Record<ComplaintStatus, StatusTone> = {
   [ComplaintStatus.UNDER_REVIEW]: 'info',
   [ComplaintStatus.RESOLVED]: 'success',
   [ComplaintStatus.REJECTED]: 'danger',
+};
+
+export const REVIEW_STATUS_TONES: Record<ReviewStatus, StatusTone> = {
+  [ReviewStatus.PUBLISHED]: 'success',
+  [ReviewStatus.PENDING_MODERATION]: 'warning',
+  [ReviewStatus.HIDDEN]: 'neutral',
 };

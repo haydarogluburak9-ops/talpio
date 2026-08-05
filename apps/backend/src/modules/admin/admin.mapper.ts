@@ -6,6 +6,8 @@ import type {
   AdminOrderSummary,
   AdminPaymentSummary,
   AdminProviderSummary,
+  AdminReviewSummary,
+  AdminSystemSetting,
   AdminTransactionSummary,
   AdminUserSummary,
   NotificationParams,
@@ -248,4 +250,59 @@ function toNotificationParams(value: Prisma.JsonValue): NotificationParams {
     if (typeof item === 'string' || typeof item === 'number') params[key] = item;
   }
   return params;
+}
+
+export const adminReviewInclude = {
+  customer: { select: { fullName: true } },
+  providerProfile: {
+    select: { businessName: true, user: { select: { fullName: true } } },
+  },
+  order: { select: { jobRequest: { select: { title: true } } } },
+  reply: { select: { id: true } },
+} satisfies Prisma.ReviewInclude;
+
+type AdminReviewRow = Prisma.ReviewGetPayload<{ include: typeof adminReviewInclude }>;
+
+export function toAdminReview(row: AdminReviewRow): AdminReviewSummary {
+  const profile = row.providerProfile;
+
+  return {
+    id: row.id,
+    orderId: row.orderId,
+    customerId: row.customerId,
+    customerName: row.customer.fullName,
+    providerProfileId: row.providerProfileId,
+    providerName: profile.businessName ?? profile.user.fullName,
+    jobTitle: row.order.jobRequest.title,
+    status: row.status,
+    overallRating: Number(row.overallRating),
+    comment: row.comment,
+    moderationNote: row.moderationNote,
+    hasReply: row.reply !== null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+/** Gizli ayarların ham değeri liste yanıtında taşınmaz. */
+export const SECRET_SETTING_MASK = '********';
+
+export function toAdminSystemSetting(row: {
+  id: string;
+  key: string;
+  value: Prisma.JsonValue;
+  description: string | null;
+  isSecret: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}): AdminSystemSetting {
+  return {
+    id: row.id,
+    key: row.key,
+    value: row.isSecret ? SECRET_SETTING_MASK : row.value,
+    description: row.description,
+    isSecret: row.isSecret,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }

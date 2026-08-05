@@ -9,8 +9,11 @@ import type {
   AdminOrderSummary,
   AdminPaymentSummary,
   AdminProviderSummary,
+  AdminReviewSummary,
+  AdminRoleMatrix,
   AdminSupportTicketDetail,
   AdminSupportTicketSummary,
+  AdminSystemSetting,
   AdminTransactionSummary,
   AdminUserSummary,
   AuditLogEntry,
@@ -21,6 +24,7 @@ import type {
   NotificationChannel,
   NotificationType,
   PaymentStatus,
+  ReviewStatus,
   SupportMessage,
   SupportTicketStatus,
   TransactionType,
@@ -109,6 +113,20 @@ export interface UpdateAdminComplaintBody {
 export interface ListAuditLogsParams extends AdminListParams {
   entityType?: string;
   actorId?: string;
+}
+
+export interface ListAdminReviewsParams extends AdminListParams {
+  status?: ReviewStatus[];
+}
+
+export interface UpdateAdminReviewBody {
+  status: Extract<ReviewStatus, 'PUBLISHED' | 'HIDDEN'>;
+  moderationNote?: string;
+}
+
+export interface UpdateAdminSettingBody {
+  key: string;
+  value: unknown;
 }
 
 export function createAdminResource(http: HttpClient) {
@@ -304,6 +322,37 @@ export function createAdminResource(http: HttpClient) {
       return http.paginated<AuditLogEntry>(API_ROUTES.admin.auditLogs, {
         method: 'GET',
         query: { ...params },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listReviews(
+      params: ListAdminReviewsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminReviewSummary>> {
+      return http.paginated<AdminReviewSummary>(API_ROUTES.admin.reviews, {
+        method: 'GET',
+        query: { ...params, status: params.status?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    updateReview(id: string, body: UpdateAdminReviewBody): Promise<AdminReviewSummary> {
+      return http.patch<AdminReviewSummary>(API_ROUTES.admin.reviewById(id), body);
+    },
+
+    listSettings(signal?: AbortSignal): Promise<AdminSystemSetting[]> {
+      return http.get<AdminSystemSetting[]>(API_ROUTES.admin.settings, {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    updateSetting(body: UpdateAdminSettingBody): Promise<AdminSystemSetting> {
+      return http.patch<AdminSystemSetting>(API_ROUTES.admin.settings, body);
+    },
+
+    listRoles(signal?: AbortSignal): Promise<AdminRoleMatrix> {
+      return http.get<AdminRoleMatrix>(API_ROUTES.admin.settingsRoles, {
         ...(signal ? { signal } : {}),
       });
     },

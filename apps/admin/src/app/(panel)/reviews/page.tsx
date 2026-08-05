@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { ReviewsPanel } from '@/features/admin/reviews-panel';
 
 export const metadata: Metadata = { title: 'Yorumlar' };
 
@@ -16,8 +17,10 @@ export default function ReviewsPage() {
     <ModuleScaffold
       title="Yorumlar"
       description="Değerlendirmeleri denetleyin ve kural dışı içerikleri kaldırın."
-      dataSource="GET /admin/reviews"
+      dataSource="PATCH /admin/reviews/:id"
       capabilities={CAPABILITIES}
-    />
+    >
+      <ReviewsPanel />
+    </ModuleScaffold>
   );
 }
