@@ -10,6 +10,11 @@ export interface SupportTicket extends BaseEntity {
   lastMessageAt?: string | null;
 }
 
+/** Detay ucu bilet gövdesini mesajlarıyla birlikte döner. */
+export interface SupportTicketDetail extends SupportTicket {
+  messages: SupportMessage[];
+}
+
 export interface SupportMessage extends BaseEntity {
   ticketId: string;
   senderId: string;

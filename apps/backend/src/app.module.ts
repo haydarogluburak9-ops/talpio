@@ -28,6 +28,7 @@ import { OrdersModule } from '@modules/orders/orders.module';
 import { PaymentsModule } from '@modules/payments/payments.module';
 import { ProvidersModule } from '@modules/providers/providers.module';
 import { ReviewsModule } from '@modules/reviews/reviews.module';
+import { SupportModule } from '@modules/support/support.module';
 import { UsersModule } from '@modules/users/users.module';
 
 @Module({
@@ -67,6 +68,7 @@ import { UsersModule } from '@modules/users/users.module';
     UsersModule,
     ProvidersModule,
     ReviewsModule,
+    SupportModule,
     AdminModule,
   ],
   providers: [

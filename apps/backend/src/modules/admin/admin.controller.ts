@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import {
   UserRole,
   type AdminCommissionRuleSummary,
+  type AdminComplaintSummary,
   type AdminDashboard,
   type AdminJobSummary,
   type AdminNotificationSummary,
@@ -20,9 +21,12 @@ import {
   type AdminOrderSummary,
   type AdminPaymentSummary,
   type AdminProviderSummary,
+  type AdminSupportTicketDetail,
+  type AdminSupportTicketSummary,
   type AdminTransactionSummary,
   type AdminUserSummary,
   type AuditLogEntry,
+  type SupportMessage,
 } from '@ustapilot/types';
 import type { Request } from 'express';
 
@@ -30,6 +34,14 @@ import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import {
+  ListComplaintsQueryDto,
+  ListSupportTicketsQueryDto,
+  SupportTicketReplyDto,
+  UpdateComplaintDto,
+  UpdateSupportTicketDto,
+} from '@modules/support/dto/support.dto';
+import { SupportService } from '@modules/support/support.service';
 
 import { AdminService, type RequestContext } from './admin.service';
 import { AuditLogService } from './audit-log.service';
@@ -51,10 +63,12 @@ import {
 /**
  * Panelin okuma uçları destek ekibine de açıktır; yazma uçları yalnızca
  * yönetim rollerine. Destek temsilcisinin bir kaydı görmesi gerekir ama
- * bir hesabı engelleyebilmesi gerekmez.
+ * bir hesabı engelleyebilmesi gerekmez. Destek biletleri ve şikâyetler bu
+ * ayrımdan muaftır: yanıtlamak SUPPORT rolünün işinin parçasıdır.
  */
 const READ_ROLES = [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUPPORT] as const;
 const WRITE_ROLES = [UserRole.ADMIN, UserRole.SUPER_ADMIN] as const;
+const SUPPORT_ROLES = [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUPPORT] as const;
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -63,6 +77,7 @@ export class AdminController {
   constructor(
     private readonly admin: AdminService,
     private readonly audit: AuditLogService,
+    private readonly support: SupportService,
   ) {}
 
   @Get('dashboard')
@@ -199,6 +214,68 @@ export class AdminController {
     @Query() query: ListAdminNotificationsQueryDto,
   ): Promise<PaginatedResult<AdminNotificationSummary>> {
     return this.admin.listNotifications(query);
+  }
+
+  @Get('support-tickets')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Destek talepleri listesi' })
+  @ApiOkResponse({ description: 'Sayfalanmış destek talebi listesi' })
+  listSupportTickets(
+    @Query() query: ListSupportTicketsQueryDto,
+  ): Promise<PaginatedResult<AdminSupportTicketSummary>> {
+    return this.support.listAllTickets(query);
+  }
+
+  @Get('support-tickets/:id')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Destek talebi detayı' })
+  @ApiOkResponse({ description: 'Destek talebi ve mesajlar' })
+  getSupportTicket(@Param('id', ParseUUIDPipe) id: string): Promise<AdminSupportTicketDetail> {
+    return this.support.getTicketForStaff(id);
+  }
+
+  @Patch('support-tickets/:id')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Destek talebini atar veya durumunu değiştirir' })
+  @ApiOkResponse({ description: 'Güncellenmiş destek talebi' })
+  updateSupportTicket(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateSupportTicketDto,
+  ): Promise<AdminSupportTicketDetail> {
+    return this.support.updateTicket(id, dto);
+  }
+
+  @Post('support-tickets/:id/messages')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Destek talebine personel yanıtı yazar' })
+  @ApiOkResponse({ description: 'Yazılan mesaj' })
+  replySupportTicket(
+    @CurrentUser() actor: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SupportTicketReplyDto,
+  ): Promise<SupportMessage> {
+    return this.support.addMessage(actor, id, dto);
+  }
+
+  @Get('complaints')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Şikâyet listesi' })
+  @ApiOkResponse({ description: 'Sayfalanmış şikâyet listesi' })
+  listComplaints(
+    @Query() query: ListComplaintsQueryDto,
+  ): Promise<PaginatedResult<AdminComplaintSummary>> {
+    return this.support.listAllComplaints(query);
+  }
+
+  @Patch('complaints/:id')
+  @Roles(...SUPPORT_ROLES)
+  @ApiOperation({ summary: 'Şikâyeti inceler veya karara bağlar' })
+  @ApiOkResponse({ description: 'Güncellenmiş şikâyet' })
+  updateComplaint(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateComplaintDto,
+  ): Promise<AdminComplaintSummary> {
+    return this.support.updateComplaint(id, dto);
   }
 
   @Get('audit-logs')

@@ -1,4 +1,11 @@
-import { JobRequestStatus, OfferStatus, OrderStatus, PaymentStatus } from '@ustapilot/types';
+import {
+  ComplaintStatus,
+  JobRequestStatus,
+  OfferStatus,
+  OrderStatus,
+  PaymentStatus,
+  SupportTicketStatus,
+} from '@ustapilot/types';
 
 /**
  * Durum → renk tonu eşlemesi. Ton adları anlamsaldır; web (Tailwind sınıfı) ve
@@ -52,4 +59,19 @@ export const PAYMENT_STATUS_TONES: Record<PaymentStatus, StatusTone> = {
   [PaymentStatus.FAILED]: 'danger',
   [PaymentStatus.REFUNDED]: 'neutral',
   [PaymentStatus.PARTIALLY_REFUNDED]: 'warning',
+};
+
+export const SUPPORT_TICKET_STATUS_TONES: Record<SupportTicketStatus, StatusTone> = {
+  [SupportTicketStatus.OPEN]: 'info',
+  [SupportTicketStatus.WAITING_CUSTOMER]: 'warning',
+  [SupportTicketStatus.WAITING_SUPPORT]: 'brand',
+  [SupportTicketStatus.RESOLVED]: 'success',
+  [SupportTicketStatus.CLOSED]: 'neutral',
+};
+
+export const COMPLAINT_STATUS_TONES: Record<ComplaintStatus, StatusTone> = {
+  [ComplaintStatus.OPEN]: 'warning',
+  [ComplaintStatus.UNDER_REVIEW]: 'info',
+  [ComplaintStatus.RESOLVED]: 'success',
+  [ComplaintStatus.REJECTED]: 'danger',
 };

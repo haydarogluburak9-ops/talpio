@@ -1,16 +1,21 @@
 import {
+  COMPLAINT_STATUS_TONES,
   JOB_STATUS_TONES,
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
   PAYMENT_STATUS_TONES,
+  SUPPORT_TICKET_STATUS_TONES,
   type StatusTone,
 } from '@ustapilot/config';
 import {
   CommissionType,
+  ComplaintStatus,
+  ComplaintSubjectType,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  SupportTicketStatus,
   TransactionType,
   UserRole,
   UserStatus,
@@ -120,7 +125,37 @@ export const COMMISSION_TYPE_LABELS: Record<CommissionType, string> = {
   [CommissionType.HYBRID]: 'Karma',
 };
 
-export { JOB_STATUS_TONES, OFFER_STATUS_TONES, ORDER_STATUS_TONES, PAYMENT_STATUS_TONES };
+export const SUPPORT_TICKET_STATUS_LABELS: Record<SupportTicketStatus, string> = {
+  [SupportTicketStatus.OPEN]: 'Açık',
+  [SupportTicketStatus.WAITING_CUSTOMER]: 'Müşteri yanıtı bekleniyor',
+  [SupportTicketStatus.WAITING_SUPPORT]: 'Destek yanıtı bekleniyor',
+  [SupportTicketStatus.RESOLVED]: 'Çözüldü',
+  [SupportTicketStatus.CLOSED]: 'Kapatıldı',
+};
+
+export const COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
+  [ComplaintStatus.OPEN]: 'Açık',
+  [ComplaintStatus.UNDER_REVIEW]: 'İncelemede',
+  [ComplaintStatus.RESOLVED]: 'Çözüldü',
+  [ComplaintStatus.REJECTED]: 'Reddedildi',
+};
+
+export const COMPLAINT_SUBJECT_LABELS: Record<ComplaintSubjectType, string> = {
+  [ComplaintSubjectType.USER]: 'Kullanıcı',
+  [ComplaintSubjectType.JOB_REQUEST]: 'İş talebi',
+  [ComplaintSubjectType.OFFER]: 'Teklif',
+  [ComplaintSubjectType.REVIEW]: 'Değerlendirme',
+  [ComplaintSubjectType.MESSAGE]: 'Mesaj',
+};
+
+export {
+  COMPLAINT_STATUS_TONES,
+  JOB_STATUS_TONES,
+  OFFER_STATUS_TONES,
+  ORDER_STATUS_TONES,
+  PAYMENT_STATUS_TONES,
+  SUPPORT_TICKET_STATUS_TONES,
+};
 
 /** Denetim kaydı eylemlerinin okunur karşılıkları. */
 export const AUDIT_ACTION_LABELS: Record<string, string> = {

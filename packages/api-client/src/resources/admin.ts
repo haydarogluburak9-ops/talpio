@@ -1,6 +1,7 @@
 import { API_ROUTES } from '@ustapilot/config';
 import type {
   AdminCommissionRuleSummary,
+  AdminComplaintSummary,
   AdminDashboard,
   AdminJobSummary,
   AdminNotificationSummary,
@@ -8,15 +9,20 @@ import type {
   AdminOrderSummary,
   AdminPaymentSummary,
   AdminProviderSummary,
+  AdminSupportTicketDetail,
+  AdminSupportTicketSummary,
   AdminTransactionSummary,
   AdminUserSummary,
   AuditLogEntry,
+  ComplaintStatus,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
   NotificationChannel,
   NotificationType,
   PaymentStatus,
+  SupportMessage,
+  SupportTicketStatus,
   TransactionType,
   UserRole,
   UserStatus,
@@ -75,6 +81,29 @@ export interface ListAdminNotificationsParams extends AdminListParams {
   channel?: NotificationChannel[];
   userId?: string;
   unread?: boolean;
+}
+
+export interface ListAdminSupportTicketsParams extends AdminListParams {
+  status?: SupportTicketStatus[];
+}
+
+export interface UpdateAdminSupportTicketBody {
+  status?: SupportTicketStatus;
+  assignedToUserId?: string | null;
+}
+
+export interface AdminSupportTicketReplyBody {
+  body: string;
+  attachmentFileIds?: string[];
+}
+
+export interface ListAdminComplaintsParams extends AdminListParams {
+  status?: ComplaintStatus[];
+}
+
+export interface UpdateAdminComplaintBody {
+  status?: ComplaintStatus;
+  resolutionNote?: string;
 }
 
 export interface ListAuditLogsParams extends AdminListParams {
@@ -223,6 +252,49 @@ export function createAdminResource(http: HttpClient) {
         },
         ...(signal ? { signal } : {}),
       });
+    },
+
+    listSupportTickets(
+      params: ListAdminSupportTicketsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminSupportTicketSummary>> {
+      return http.paginated<AdminSupportTicketSummary>(API_ROUTES.admin.supportTickets, {
+        method: 'GET',
+        query: { ...params, status: params.status?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    getSupportTicket(id: string, signal?: AbortSignal): Promise<AdminSupportTicketDetail> {
+      return http.get<AdminSupportTicketDetail>(API_ROUTES.admin.supportTicketById(id), {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    updateSupportTicket(
+      id: string,
+      body: UpdateAdminSupportTicketBody,
+    ): Promise<AdminSupportTicketDetail> {
+      return http.patch<AdminSupportTicketDetail>(API_ROUTES.admin.supportTicketById(id), body);
+    },
+
+    replySupportTicket(id: string, body: AdminSupportTicketReplyBody): Promise<SupportMessage> {
+      return http.post<SupportMessage>(API_ROUTES.admin.supportTicketMessages(id), body);
+    },
+
+    listComplaints(
+      params: ListAdminComplaintsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminComplaintSummary>> {
+      return http.paginated<AdminComplaintSummary>(API_ROUTES.admin.complaints, {
+        method: 'GET',
+        query: { ...params, status: params.status?.join(',') },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    updateComplaint(id: string, body: UpdateAdminComplaintBody): Promise<AdminComplaintSummary> {
+      return http.patch<AdminComplaintSummary>(API_ROUTES.admin.complaintById(id), body);
     },
 
     listAuditLogs(

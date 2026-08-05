@@ -1,9 +1,12 @@
 import { DEFAULT_LOCALE } from '@ustapilot/config';
 import type {
+  ComplaintStatus,
+  ComplaintSubjectType,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  SupportTicketStatus,
   TransactionType,
 } from '@ustapilot/types';
 
@@ -36,4 +39,25 @@ export function transactionTypeLabel(
   locale: string = DEFAULT_LOCALE,
 ): string {
   return messagesFor(locale).transactionType[type] ?? type;
+}
+
+export function supportTicketStatusLabel(
+  status: SupportTicketStatus,
+  locale: string = DEFAULT_LOCALE,
+): string {
+  return messagesFor(locale).supportTicketStatus[status] ?? status;
+}
+
+export function complaintStatusLabel(
+  status: ComplaintStatus,
+  locale: string = DEFAULT_LOCALE,
+): string {
+  return messagesFor(locale).complaintStatus[status] ?? status;
+}
+
+export function complaintSubjectTypeLabel(
+  subjectType: ComplaintSubjectType,
+  locale: string = DEFAULT_LOCALE,
+): string {
+  return messagesFor(locale).complaintSubjectType[subjectType] ?? subjectType;
 }

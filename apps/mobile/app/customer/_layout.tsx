@@ -40,6 +40,10 @@ export default function CustomerLayout() {
       <Stack.Screen name="providers/[id]" options={{ title: t('provider.profileTitle') }} />
       <Stack.Screen name="profile/edit" options={{ title: t('profile.title') }} />
       <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
+      <Stack.Screen name="support/index" options={{ title: t('support.listTitle') }} />
+      <Stack.Screen name="support/new" options={{ title: t('support.createTitle') }} />
+      <Stack.Screen name="support/[id]" options={{ title: t('support.detailTitle') }} />
+      <Stack.Screen name="complaint" options={{ title: t('complaint.createTitle') }} />
     </Stack>
   );
 }

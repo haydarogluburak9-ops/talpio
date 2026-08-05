@@ -22,6 +22,7 @@ export const DEEP_LINK_RESOURCES = [
   'wallet',
   'payments',
   'provider-profile',
+  'support-ticket',
 ] as const;
 
 export type DeepLinkResource = (typeof DEEP_LINK_RESOURCES)[number];
@@ -48,6 +49,7 @@ export const deepLinks = {
   wallet: () => build('wallet'),
   payments: () => build('payments'),
   providerProfile: () => build('provider-profile'),
+  supportTicket: (id: string) => build('support-ticket', id),
 } as const;
 
 /**

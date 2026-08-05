@@ -116,6 +116,7 @@ export const API_ROUTES = {
     tickets: '/support/tickets',
     ticketById: (id: string) => `/support/tickets/${id}`,
     ticketMessages: (id: string) => `/support/tickets/${id}/messages`,
+    ticketClose: (id: string) => `/support/tickets/${id}/close`,
     complaints: '/support/complaints',
   },
   files: {
@@ -141,7 +142,10 @@ export const API_ROUTES = {
     locations: '/admin/locations',
     reviews: '/admin/reviews',
     complaints: '/admin/complaints',
+    complaintById: (id: string) => `/admin/complaints/${id}`,
     supportTickets: '/admin/support-tickets',
+    supportTicketById: (id: string) => `/admin/support-tickets/${id}`,
+    supportTicketMessages: (id: string) => `/admin/support-tickets/${id}/messages`,
     notifications: '/admin/notifications',
     settings: '/admin/settings',
     auditLogs: '/admin/audit-logs',

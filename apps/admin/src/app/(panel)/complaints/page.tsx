@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { ComplaintsPanel } from '@/features/admin/complaints-panel';
 
 export const metadata: Metadata = { title: 'Şikâyetler' };
 
 const CAPABILITIES: ModuleCapability[] = [
-  { label: 'Şikâyet dosyası', detail: 'İlgili iş, taraflar ve kanıt dosyaları tek ekranda.' },
-  { label: 'Taraf ifadeleri', detail: 'Her iki tarafın beyanının kayda alınması.' },
-  { label: 'Karar', detail: 'İade, uyarı veya hesap kısıtlaması.' },
-  { label: 'Tekrar eden şikâyet', detail: 'Aynı taraf hakkındaki geçmiş kayıtların görünmesi.' },
+  { label: 'Şikâyet dosyası', detail: 'İlgili kayıt türü, taraflar ve açıklama.' },
+  { label: 'İnceleme', detail: 'Durumu incelemede olarak işaretleme.' },
+  { label: 'Karar', detail: 'Çözüm veya ret notu ile kapatma.' },
+  { label: 'Geçmiş', detail: 'Raporlayan kullanıcı ve zaman damgası.' },
 ];
 
 export default function ComplaintsPage() {
@@ -18,6 +19,8 @@ export default function ComplaintsPage() {
       description="Müşteri ve usta şikâyetlerini inceleyip karara bağlayın."
       dataSource="GET /admin/complaints"
       capabilities={CAPABILITIES}
-    />
+    >
+      <ComplaintsPanel />
+    </ModuleScaffold>
   );
 }

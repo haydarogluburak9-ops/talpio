@@ -154,6 +154,17 @@ export const ComplaintStatus = {
 
 export type ComplaintStatus = (typeof ComplaintStatus)[keyof typeof ComplaintStatus];
 
+export const ComplaintSubjectType = {
+  USER: 'USER',
+  JOB_REQUEST: 'JOB_REQUEST',
+  OFFER: 'OFFER',
+  REVIEW: 'REVIEW',
+  MESSAGE: 'MESSAGE',
+} as const;
+
+export type ComplaintSubjectType =
+  (typeof ComplaintSubjectType)[keyof typeof ComplaintSubjectType];
+
 export const SupportTicketStatus = {
   OPEN: 'OPEN',
   WAITING_CUSTOMER: 'WAITING_CUSTOMER',

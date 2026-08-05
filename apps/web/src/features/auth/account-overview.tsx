@@ -77,6 +77,12 @@ export function AccountOverview() {
           <Link href="/mesajlar" className={buttonVariants({ variant: 'outline' })}>
             {t('messaging.listTitle')}
           </Link>
+          <Link href="/destek" className={buttonVariants({ variant: 'outline' })}>
+            {t('nav.support')}
+          </Link>
+          <Link href="/sikayet" className={buttonVariants({ variant: 'outline' })}>
+            {t('complaint.createTitle')}
+          </Link>
           <Link href="/profil" className={buttonVariants({ variant: 'outline' })}>
             {t('profile.title')}
           </Link>

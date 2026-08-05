@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { SupportPanel } from '@/features/admin/support-panel';
 
 export const metadata: Metadata = { title: 'Destek talepleri' };
 
 const CAPABILITIES: ModuleCapability[] = [
-  { label: 'Talep kuyruğu', detail: 'Öncelik ve bekleme süresine göre sıralama.' },
-  { label: 'Yazışma', detail: 'Talep içi mesajlaşma ve dosya eki.' },
+  { label: 'Talep kuyruğu', detail: 'Durum ve arama ile süzülmüş destek talepleri.' },
+  { label: 'Yazışma', detail: 'Talep içi mesajlaşma; personel yanıtında bildirim gider.' },
   { label: 'Atama', detail: 'Talebi bir destek personeline atama.' },
-  { label: 'Kapatma', detail: 'Çözüm notu ve memnuniyet anketi.' },
+  { label: 'Kapatma', detail: 'Durum güncelleme ve çözüm.' },
 ];
 
 export default function SupportPage() {
@@ -18,6 +19,8 @@ export default function SupportPage() {
       description="Kullanıcı destek taleplerini yanıtlayın ve sonuçlandırın."
       dataSource="GET /admin/support-tickets"
       capabilities={CAPABILITIES}
-    />
+    >
+      <SupportPanel />
+    </ModuleScaffold>
   );
 }

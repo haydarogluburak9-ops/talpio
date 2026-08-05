@@ -82,8 +82,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Destek',
     items: [
-      { label: 'Destek talepleri', href: '/support', icon: LifeBuoy, planned: true },
-      { label: 'Şikâyetler', href: '/complaints', icon: MessageSquareWarning, planned: true },
+      { label: 'Destek talepleri', href: '/support', icon: LifeBuoy },
+      { label: 'Şikâyetler', href: '/complaints', icon: MessageSquareWarning },
     ],
   },
   {

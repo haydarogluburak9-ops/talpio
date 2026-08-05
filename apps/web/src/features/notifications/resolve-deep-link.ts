@@ -40,6 +40,8 @@ export function resolveWebDeepLink(
       return isProvider ? '/usta/panel' : '/siparislerim';
     case 'provider-profile':
       return '/profil';
+    case 'support-ticket':
+      return target.id ? `/destek/${target.id}` : '/destek';
     default:
       return null;
   }

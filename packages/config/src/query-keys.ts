@@ -71,6 +71,8 @@ export const queryKeys = {
   support: {
     tickets: (params?: Record<string, unknown>) => ['support', 'tickets', params ?? {}] as const,
     ticket: (id: string) => ['support', 'tickets', id] as const,
+    complaints: (params?: Record<string, unknown>) =>
+      ['support', 'complaints', params ?? {}] as const,
   },
   admin: {
     dashboard: () => ['admin', 'dashboard'] as const,
@@ -85,6 +87,11 @@ export const queryKeys = {
       ['admin', 'transactions', params ?? {}] as const,
     commissions: (params?: Record<string, unknown>) =>
       ['admin', 'commissions', params ?? {}] as const,
+    supportTickets: (params?: Record<string, unknown>) =>
+      ['admin', 'support-tickets', params ?? {}] as const,
+    supportTicket: (id: string) => ['admin', 'support-tickets', id] as const,
+    complaints: (params?: Record<string, unknown>) =>
+      ['admin', 'complaints', params ?? {}] as const,
     notifications: (params?: Record<string, unknown>) =>
       ['admin', 'notifications', params ?? {}] as const,
     auditLogs: (params?: Record<string, unknown>) => ['admin', 'audit-logs', params ?? {}] as const,

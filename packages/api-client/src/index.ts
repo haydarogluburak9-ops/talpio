@@ -15,4 +15,5 @@ export * from './resources/files';
 export * from './resources/users';
 export * from './resources/providers';
 export * from './resources/reviews';
+export * from './resources/support';
 export * from './resources/admin';

@@ -13,6 +13,7 @@ import { createOrdersResource } from './resources/orders';
 import { createPaymentsResource } from './resources/payments';
 import { createProvidersResource } from './resources/providers';
 import { createReviewsResource } from './resources/reviews';
+import { createSupportResource } from './resources/support';
 import { createUsersResource } from './resources/users';
 
 /**
@@ -41,6 +42,7 @@ export function createApiClient(options: HttpClientOptions) {
     users: createUsersResource(http),
     providers: createProvidersResource(http),
     reviews: createReviewsResource(http),
+    support: createSupportResource(http),
     admin: createAdminResource(http),
   };
 }

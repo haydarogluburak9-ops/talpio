@@ -31,6 +31,12 @@ export default function CustomerProfileScreen() {
     { icon: 'star-outline' as const, label: t('review.writtenTitle'), href: '/customer/reviews' },
     { icon: 'card-outline' as const, label: t('payment.historyTitle'), href: '/customer/payments' },
     { icon: 'heart-outline' as const, label: t('nav.favorites'), href: '/customer/providers' },
+    { icon: 'help-buoy-outline' as const, label: t('nav.support'), href: '/customer/support' },
+    {
+      icon: 'warning-outline' as const,
+      label: t('complaint.createTitle'),
+      href: '/customer/complaint',
+    },
     { icon: 'settings-outline' as const, label: t('settings.title'), href: '/customer/settings' },
   ];
 

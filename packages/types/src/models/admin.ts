@@ -2,16 +2,19 @@ import type { NotificationChannel, NotificationType } from '../enums/messaging';
 import type { UserRole } from '../enums/roles';
 import type {
   CommissionType,
+  ComplaintStatus,
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
   PaymentStatus,
+  SupportTicketStatus,
   TransactionType,
   UserStatus,
   VerificationStatus,
 } from '../enums/statuses';
 import type { Money } from './common';
 import type { NotificationParams } from './messaging';
+import type { SupportMessage } from './support';
 
 /**
  * Yönetim panelinin özet kartları.
@@ -183,6 +186,45 @@ export interface AdminCommissionRuleSummary {
   isActive: boolean;
   validFrom?: string | null;
   validUntil?: string | null;
+}
+
+/** Destek talebi satırı; kullanıcı ve atanmış personel adlarıyla. */
+export interface AdminSupportTicketSummary {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  status: SupportTicketStatus;
+  assignedToUserId?: string | null;
+  assignedToName?: string | null;
+  orderId?: string | null;
+  lastMessageAt?: string | null;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Destek talebi detayı; mesaj zinciriyle birlikte. */
+export interface AdminSupportTicketDetail extends AdminSupportTicketSummary {
+  messages: SupportMessage[];
+}
+
+/** Şikâyet satırı; raporlayan kullanıcı adı ve çözüm notuyla. */
+export interface AdminComplaintSummary {
+  id: string;
+  reporterId: string;
+  reporterName: string;
+  reporterEmail: string;
+  status: ComplaintStatus;
+  subjectType: 'USER' | 'JOB_REQUEST' | 'OFFER' | 'REVIEW' | 'MESSAGE';
+  subjectId: string;
+  reason: string;
+  description?: string | null;
+  resolutionNote?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**

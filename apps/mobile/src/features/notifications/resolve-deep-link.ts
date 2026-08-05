@@ -48,6 +48,10 @@ export function resolveMobileDeepLink(
       return isProvider
         ? ('/provider/profile/edit' as Href)
         : ('/customer/(tabs)/profile' as Href);
+    case 'support-ticket':
+      return target.id
+        ? (`${root}/support/${target.id}` as Href)
+        : (`${root}/support` as Href);
     default:
       return null;
   }

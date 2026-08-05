@@ -68,6 +68,26 @@ export default function ProviderProfileTabScreen() {
         </View>
       </Card>
 
+      <Card onPress={() => router.push('/provider/support')}>
+        <View style={styles.row}>
+          <Ionicons name="help-buoy-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('nav.support')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
+      <Card onPress={() => router.push('/provider/complaint')}>
+        <View style={styles.row}>
+          <Ionicons name="warning-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('complaint.createTitle')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
       <Card onPress={() => router.push('/provider/settings')}>
         <View style={styles.row}>
           <Ionicons name="settings-outline" size={22} color={colors.brand} />

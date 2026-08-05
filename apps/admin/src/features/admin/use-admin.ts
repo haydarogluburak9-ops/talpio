@@ -2,16 +2,21 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
+  AdminSupportTicketReplyBody,
   ListAdminCommissionsParams,
+  ListAdminComplaintsParams,
   ListAdminJobsParams,
   ListAdminNotificationsParams,
   ListAdminOffersParams,
   ListAdminOrdersParams,
   ListAdminPaymentsParams,
   ListAdminProvidersParams,
+  ListAdminSupportTicketsParams,
   ListAdminTransactionsParams,
   ListAdminUsersParams,
   ListAuditLogsParams,
+  UpdateAdminComplaintBody,
+  UpdateAdminSupportTicketBody,
 } from '@ustapilot/api-client';
 import { queryKeys } from '@ustapilot/config';
 import type { UserStatus, VerificationStatus } from '@ustapilot/types';
@@ -101,6 +106,68 @@ export function useAdminNotifications(params: ListAdminNotificationsParams) {
     queryKey: queryKeys.admin.notifications(keyParams(params)),
     queryFn: ({ signal }) => apiClient.admin.listNotifications(params, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminSupportTickets(params: ListAdminSupportTicketsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.supportTickets(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listSupportTickets(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminSupportTicket(id: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.supportTicket(id),
+    queryFn: ({ signal }) => apiClient.admin.getSupportTicket(id, signal),
+    enabled: id.length > 0,
+  });
+}
+
+export function useUpdateSupportTicket() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { id: string; body: UpdateAdminSupportTicketBody }) =>
+      apiClient.admin.updateSupportTicket(input.id, input.body),
+    onSuccess: (ticket) => {
+      queryClient.setQueryData(queryKeys.admin.supportTicket(ticket.id), ticket);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'support-tickets'] });
+    },
+  });
+}
+
+export function useReplySupportTicket() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { id: string; body: AdminSupportTicketReplyBody }) =>
+      apiClient.admin.replySupportTicket(input.id, input.body),
+    onSuccess: (_message, input) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.supportTicket(input.id) });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'support-tickets'] });
+    },
+  });
+}
+
+export function useAdminComplaints(params: ListAdminComplaintsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.complaints(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listComplaints(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useUpdateComplaint() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { id: string; body: UpdateAdminComplaintBody }) =>
+      apiClient.admin.updateComplaint(input.id, input.body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'complaints'] });
+    },
   });
 }
 

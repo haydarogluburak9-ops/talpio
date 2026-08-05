@@ -302,6 +302,7 @@ npm run smoke:files     # yükleme, sahiplik ve tür kontrolleri
 npm run smoke:profile   # kullanıcı/usta profili, hizmet ve bölge yönetimi
 npm run smoke:admin     # panel özeti, kullanıcı ve usta yönetimi, denetim kaydı
 npm run smoke:notifications # olay → bildirim, okundu, cihaz jetonu, mock outbox
+npm run smoke:support       # destek bileti, personel yanıtı, bildirim, şikâyet çözümü
 ```
 
 Betikler tek tek çalıştırılır: her biri yeni hesaplar açtığı için art arda çalıştırmak kimlik uçlarındaki hız sınırına (`AUTH_THROTTLE_LIMIT`) takılır.
