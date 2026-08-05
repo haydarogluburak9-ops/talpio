@@ -75,6 +75,30 @@ describe('validateEnv', () => {
     ).toThrow(/varsayılan webhook gizli anahtarı/);
   });
 
+  it('production ortamında mock SMS sürücüsünü reddeder', () => {
+    expect(() =>
+      validateEnv({
+        ...baseEnv,
+        NODE_ENV: 'production',
+        PAYMENT_DRIVER: 'iyzico',
+        PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
+      }),
+    ).toThrow(/Mock SMS sürücüsü production/);
+  });
+
+  it('production ortamında mock push ve e-posta sürücülerine izin verir', () => {
+    const env = validateEnv({
+      ...baseEnv,
+      NODE_ENV: 'production',
+      PAYMENT_DRIVER: 'iyzico',
+      PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
+      SMS_DRIVER: 'netgsm',
+    });
+
+    expect(env.PUSH_DRIVER).toBe('mock');
+    expect(env.MAIL_DRIVER).toBe('mock');
+  });
+
   it('development ortamında demo hesaplarına izin verir', () => {
     const env = validateEnv({ ...baseEnv, SEED_DEMO_ACCOUNTS: 'true' });
 

@@ -1,5 +1,6 @@
 import type { ConversationStatus, MessageType } from '../enums/messaging';
 import type { NotificationChannel, NotificationType, DevicePlatform } from '../enums/messaging';
+import type { PaginationMeta } from '../api/envelope';
 import type { BaseEntity, GeoPoint } from './common';
 
 export interface ConversationParticipant {
@@ -46,15 +47,86 @@ export interface Message extends BaseEntity {
   readAt?: string | null;
 }
 
-export interface Notification extends BaseEntity {
+/**
+ * Bildirim değişkenleri.
+ *
+ * Okuma yönünde değerler JSON'dan gelir; hangi türün hangi alanı taşıdığı
+ * derleme anında bilinemez. Bu yüzden okuma tipi gevşektir ve metin tek bir
+ * yerden — `renderNotification` — çözülür. Tip güvenliği bildirimi *üreten*
+ * tarafta `NotificationDispatch` ile sağlanır.
+ */
+export type NotificationParams = Record<string, string | number>;
+
+/**
+ * Tür başına parametre şekli.
+ *
+ * Tutarlar kuruş cinsinden taşınır ve para birimiyle birlikte gelir; metin
+ * istemcide çözüldüğü için biçimlendirme de orada, kullanıcının diliyle yapılır.
+ */
+export interface NotificationParamsMap {
+  JOB_PUBLISHED: { jobTitle: string };
+  JOB_MATCHED: { jobTitle: string; categoryName: string; districtName: string };
+  OFFER_RECEIVED: {
+    jobTitle: string;
+    providerName: string;
+    amountMinor: number;
+    currency: string;
+  };
+  OFFER_ACCEPTED: { jobTitle: string; customerName: string };
+  OFFER_REJECTED: { jobTitle: string };
+  OFFER_EXPIRING: { jobTitle: string; hoursLeft: number };
+  MESSAGE_RECEIVED: { senderName: string; preview: string };
+  APPOINTMENT_REMINDER: { jobTitle: string; scheduledAt: string };
+  PROVIDER_EN_ROUTE: { jobTitle: string; providerName: string };
+  JOB_STARTED: { jobTitle: string; providerName: string };
+  JOB_COMPLETED: { jobTitle: string; providerName: string };
+  REVIEW_REQUESTED: { jobTitle: string; providerName: string };
+  REVIEW_RECEIVED: { customerName: string; rating: number };
+  PAYMENT_RECEIVED: { jobTitle: string; amountMinor: number; currency: string };
+  PAYOUT_SENT: { jobTitle: string; amountMinor: number; currency: string };
+  DOCUMENT_APPROVED: { documentCount: number };
+  DOCUMENT_REJECTED: { reason: string };
+  SUPPORT_REPLY: { ticketSubject: string };
+  /**
+   * Kampanya metni doğası gereği yazarın kaleminden çıkar; katalogdan
+   * çözülemez. Çok dilli kampanya gerektiğinde şablon kimliği taşıyan ayrı bir
+   * model gerekir.
+   */
+  CAMPAIGN: { title: string; message: string };
+}
+
+/**
+ * Bildirim üretme isteği. Ayrık birleşim, yanlış türe yanlış parametre
+ * verilmesini derleme anında yakalar.
+ */
+export type NotificationDispatch = {
+  [T in NotificationType]: { type: T; params: NotificationParamsMap[T] };
+}[NotificationType];
+
+/**
+ * Bildirim kaydı.
+ *
+ * `BaseEntity` genişletilmez: bildirim yazıldıktan sonra yalnızca okundu
+ * damgası alır, güncellenme veya yumuşak silme kavramı yoktur.
+ */
+export interface Notification {
+  id: string;
   userId: string;
   type: NotificationType;
   /** Metin, istemcide `type` ve `params` üzerinden yerelleştirilir. */
-  params: Record<string, string | number>;
+  params: NotificationParams;
   channels: NotificationChannel[];
-  /** Dokunulduğunda gidilecek uygulama içi yol. */
+  /** Dokunulduğunda gidilecek platformdan bağımsız hedef (`ustapilot://…`). */
   deepLink?: string | null;
   readAt?: string | null;
+  /** Uygulama dışı kanallara gönderim denemesinin zamanı. */
+  sentAt?: string | null;
+  createdAt: string;
+}
+
+/** Bildirim listesi, sayfalamanın yanında okunmamış sayacını da taşır. */
+export interface NotificationFeedMeta extends PaginationMeta {
+  unreadCount: number;
 }
 
 export interface DeviceToken extends BaseEntity {

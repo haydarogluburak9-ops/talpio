@@ -90,10 +90,16 @@ function createService(
 ): AdminService {
   const config = { fileBaseUrl: FILE_BASE_URL, defaultCurrency: 'TRY' } as AppConfigService;
 
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
   return new AdminService(
     prisma as unknown as PrismaService,
     config,
     audit as unknown as AuditLogService,
+    notifications as never,
   );
 }
 

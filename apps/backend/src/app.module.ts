@@ -7,6 +7,7 @@ import { ResponseInterceptor } from '@common/interceptors/response.interceptor';
 import { AppConfigService } from '@config/app-config.service';
 import { AppConfigModule } from '@config/config.module';
 import { LoggerModule } from '@infra/logging/logger.module';
+import { NotificationSenderModule } from '@infra/notifications/notification-sender.module';
 import { PaymentProviderModule } from '@infra/payments/payment-provider.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { RedisModule } from '@infra/redis/redis.module';
@@ -21,6 +22,7 @@ import { HealthModule } from '@modules/health/health.module';
 import { JobsModule } from '@modules/jobs/jobs.module';
 import { LocationsModule } from '@modules/locations/locations.module';
 import { MessagesModule } from '@modules/messages/messages.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
 import { OffersModule } from '@modules/offers/offers.module';
 import { OrdersModule } from '@modules/orders/orders.module';
 import { PaymentsModule } from '@modules/payments/payments.module';
@@ -50,6 +52,7 @@ import { UsersModule } from '@modules/users/users.module';
     RedisModule,
     StorageModule,
     PaymentProviderModule,
+    NotificationSenderModule,
     HealthModule,
     AuthModule,
     CatalogModule,
@@ -59,6 +62,7 @@ import { UsersModule } from '@modules/users/users.module';
     OrdersModule,
     PaymentsModule,
     MessagesModule,
+    NotificationsModule,
     FilesModule,
     UsersModule,
     ProvidersModule,

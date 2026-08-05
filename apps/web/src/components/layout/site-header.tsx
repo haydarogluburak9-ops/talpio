@@ -9,6 +9,8 @@ import { useState } from 'react';
 import { t } from '@/lib/i18n';
 import { primaryNav } from '@/lib/navigation';
 
+import { NotificationBell } from '@/features/notifications/notification-bell';
+
 import { HeaderAccount } from './header-account';
 import { ThemeToggle } from './theme-toggle';
 
@@ -49,6 +51,7 @@ export function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
+          <NotificationBell />
 
           <div className="hidden sm:block">
             <HeaderAccount />

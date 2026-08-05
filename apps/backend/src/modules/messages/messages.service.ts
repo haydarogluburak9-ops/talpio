@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { detectContactSharing } from '@ustapilot/business-logic';
+import { deepLinks } from '@ustapilot/config';
 import {
   ConversationStatus,
+  NotificationType,
   OrderStatus,
   UserRole,
   type Conversation,
@@ -15,6 +17,7 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type {
   ListConversationsQueryDto,
@@ -33,12 +36,16 @@ import {
 /** Sohbetin kapandığı sipariş durumları; kapanmış işte yeni mesaj yazılmaz. */
 const CLOSED_ORDER_STATUSES: OrderStatus[] = [OrderStatus.CANCELLED, OrderStatus.REFUNDED];
 
+/** Önizleme uzunluğu; bildirim gövdesini kısa tutar. */
+const PREVIEW_MAX_CHARS = 120;
+
 @Injectable()
 export class MessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly files: FilesService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -231,6 +238,27 @@ export class MessagesService {
       return message;
     });
 
+    const recipients = conversation.participants.filter((item) => item.userId !== user.id);
+    const senderName =
+      conversation.participants.find((item) => item.userId === user.id)?.user.fullName ??
+      'Kullanıcı';
+    const preview = messagePreview(
+      dto.body,
+      dto.attachmentFileIds.length > 0,
+      dto.location !== undefined,
+    );
+
+    if (recipients.length > 0) {
+      await this.notifications.dispatchAll(
+        recipients.map((recipient) => ({
+          userId: recipient.userId,
+          type: NotificationType.MESSAGE_RECEIVED,
+          params: { senderName, preview },
+          deepLink: deepLinks.conversation(conversationId),
+        })),
+      );
+    }
+
     return this.presentMessage(created);
   }
 
@@ -351,4 +379,18 @@ export class MessagesService {
   private isStaff(role: UserRole): boolean {
     return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.SUPPORT;
   }
+}
+
+function messagePreview(
+  body: string | undefined,
+  hasAttachment: boolean,
+  hasLocation: boolean,
+): string {
+  const text = body?.trim();
+  if (text) {
+    return text.length > PREVIEW_MAX_CHARS ? `${text.slice(0, PREVIEW_MAX_CHARS - 1)}…` : text;
+  }
+  if (hasAttachment) return 'Ek gönderdi';
+  if (hasLocation) return 'Konum paylaştı';
+  return 'Yeni mesaj';
 }

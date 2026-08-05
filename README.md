@@ -22,7 +22,8 @@ Tek bir backend ve tek bir veritabanı üç istemciye hizmet eder: responsive we
 | Profil (kullanıcı, usta, hizmet, bölge)  | Uçtan uca çalışıyor — web ve mobil                                                  |
 | Değerlendirme (puanla, cevapla, listele) | Uçtan uca çalışıyor — web ve mobil                                                  |
 | Ödeme (tahsilat, iade, cüzdan, webhook)  | Uçtan uca çalışıyor — mock sağlayıcıyla; gerçek sağlayıcı adaptörü yazılmadı        |
-| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, denetim ve katalog gerçek veriyle; destek ve büyüme modülleri iskelet |
+| Bildirim (in-app, mock push/e-posta/SMS) | Uçtan uca çalışıyor — olay bağlantıları, web/mobil liste, admin izleme; gerçek sağlayıcı adaptörü yazılmadı |
+| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, bildirim, denetim ve katalog gerçek veriyle; destek ve kalan büyüme modülleri iskelet |
 
 Ekranlarda sahte veri gösterilmez. Bir uç henüz bağlı değilse ekran bunu açıkça belirtir; uydurma sayı veya örnek kayıt basılmaz.
 
@@ -300,6 +301,7 @@ npm run smoke:messages  # sohbet açma, mesaj gönderme, okundu işaretleme
 npm run smoke:files     # yükleme, sahiplik ve tür kontrolleri
 npm run smoke:profile   # kullanıcı/usta profili, hizmet ve bölge yönetimi
 npm run smoke:admin     # panel özeti, kullanıcı ve usta yönetimi, denetim kaydı
+npm run smoke:notifications # olay → bildirim, okundu, cihaz jetonu, mock outbox
 ```
 
 Betikler tek tek çalıştırılır: her biri yeni hesaplar açtığı için art arda çalıştırmak kimlik uçlarındaki hız sınırına (`AUTH_THROTTLE_LIMIT`) takılır.

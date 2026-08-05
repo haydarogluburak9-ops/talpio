@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { deepLinks } from '@ustapilot/config';
 import {
   JobRequestStatus,
+  NotificationType,
   OfferStatus,
   OrderStatus,
   UserRole,
@@ -9,6 +11,7 @@ import {
   type AdminCommissionRuleSummary,
   type AdminDashboard,
   type AdminJobSummary,
+  type AdminNotificationSummary,
   type AdminOfferSummary,
   type AdminOrderSummary,
   type AdminPaymentSummary,
@@ -22,10 +25,12 @@ import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import {
   adminCommissionInclude,
   adminJobInclude,
+  adminNotificationInclude,
   adminOfferInclude,
   adminOrderInclude,
   adminPaymentInclude,
@@ -34,6 +39,7 @@ import {
   adminUserInclude,
   toAdminCommissionRule,
   toAdminJob,
+  toAdminNotification,
   toAdminOffer,
   toAdminOrder,
   toAdminPayment,
@@ -45,6 +51,7 @@ import { AuditLogService, type AuditEntryInput } from './audit-log.service';
 import type {
   ListAdminCommissionsQueryDto,
   ListAdminJobsQueryDto,
+  ListAdminNotificationsQueryDto,
   ListAdminOffersQueryDto,
   ListAdminOrdersQueryDto,
   ListAdminPaymentsQueryDto,
@@ -78,6 +85,7 @@ export class AdminService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly audit: AuditLogService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -356,13 +364,20 @@ export class AdminService {
   ): Promise<AdminProviderSummary> {
     const current = await this.prisma.providerProfile.findFirst({
       where: { id, deletedAt: null },
-      select: { id: true, verificationStatus: true },
+      select: {
+        id: true,
+        userId: true,
+        verificationStatus: true,
+        documents: { where: { status: 'PENDING' }, select: { id: true } },
+      },
     });
 
     if (!current) throw AppException.notFound('Usta profili', id);
 
     const approved = dto.verificationStatus === VerificationStatus.VERIFIED;
     const reviewedAt = new Date();
+    const pendingDocumentCount = current.documents.length;
+    const rejectionReason = dto.reason ?? 'Belge kabul edilmedi.';
 
     const [updated] = await this.prisma.$transaction([
       this.prisma.providerProfile.update({
@@ -376,7 +391,7 @@ export class AdminService {
           status: approved ? 'APPROVED' : 'REJECTED',
           reviewedAt,
           reviewedByUserId: actor.id,
-          ...(approved ? {} : { rejectionReason: dto.reason ?? 'Belge kabul edilmedi.' }),
+          ...(approved ? {} : { rejectionReason }),
         },
       }),
     ]);
@@ -394,7 +409,55 @@ export class AdminService {
       }),
     );
 
+    if (approved) {
+      await this.notifications.dispatch({
+        userId: current.userId,
+        type: NotificationType.DOCUMENT_APPROVED,
+        params: { documentCount: Math.max(pendingDocumentCount, 1) },
+        deepLink: deepLinks.providerProfile(),
+      });
+    } else {
+      await this.notifications.dispatch({
+        userId: current.userId,
+        type: NotificationType.DOCUMENT_REJECTED,
+        params: { reason: rejectionReason },
+        deepLink: deepLinks.providerProfile(),
+      });
+    }
+
     return toAdminProvider(updated, this.config.fileBaseUrl);
+  }
+
+  async listNotifications(
+    query: ListAdminNotificationsQueryDto,
+  ): Promise<PaginatedResult<AdminNotificationSummary>> {
+    const where = {
+      ...(query.type?.length ? { type: { in: query.type } } : {}),
+      ...(query.channel?.length ? { channels: { hasSome: query.channel } } : {}),
+      ...(query.userId ? { userId: query.userId } : {}),
+      ...(query.unread ? { readAt: null } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              { user: { fullName: { contains: query.q, mode: 'insensitive' as const } } },
+              { user: { email: { contains: query.q, mode: 'insensitive' as const } } },
+            ],
+          }
+        : {}),
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where,
+        include: adminNotificationInclude,
+        orderBy: query.toOrderBy(['createdAt']),
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.notification.count({ where }),
+    ]);
+
+    return PaginatedResult.of(rows.map(toAdminNotification), total, query.page, query.limit);
   }
 
   async listJobs(query: ListAdminJobsQueryDto): Promise<PaginatedResult<AdminJobSummary>> {

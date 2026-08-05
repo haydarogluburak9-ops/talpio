@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { canReviewOrder } from '@ustapilot/business-logic';
-import { OrderStatus, ReviewStatus, UserRole, type Review } from '@ustapilot/types';
+import { deepLinks } from '@ustapilot/config';
+import {
+  NotificationType,
+  OrderStatus,
+  ReviewStatus,
+  UserRole,
+  type Review,
+} from '@ustapilot/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaymentStatus } from '@/generated/prisma/client';
@@ -10,6 +17,7 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type { CreateReviewDto, ReplyToReviewDto } from './dto/create-review.dto';
 import type {
@@ -29,6 +37,7 @@ export class ReviewsService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly files: FilesService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -49,6 +58,7 @@ export class ReviewsService {
         customerId: true,
         providerProfileId: true,
         status: true,
+        providerProfile: { select: { userId: true } },
         payments: { where: { status: { in: SETTLED_PAYMENTS } }, select: { id: true }, take: 1 },
         review: { select: { id: true } },
       },
@@ -95,7 +105,19 @@ export class ReviewsService {
       return review;
     });
 
-    return this.present(created);
+    const review = await this.present(created);
+
+    await this.notifications.dispatch({
+      userId: order.providerProfile.userId,
+      type: NotificationType.REVIEW_RECEIVED,
+      params: {
+        customerName: review.customer?.displayName ?? 'Müşteri',
+        rating: review.overallRating,
+      },
+      deepLink: deepLinks.reviews(),
+    });
+
+    return review;
   }
 
   /** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, usta aldıklarını görür. */

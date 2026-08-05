@@ -79,6 +79,10 @@ export const envSchema = z
     PUSH_DRIVER: z.enum(['mock', 'firebase']).default('mock'),
     MAIL_DRIVER: z.enum(['mock', 'smtp']).default('mock'),
     SMS_DRIVER: z.enum(['mock', 'netgsm', 'twilio']).default('mock'),
+    MAIL_FROM: z.string().default('UstaPilot <no-reply@ustapilot.com>'),
+    SMS_SENDER: z.string().default('USTAPILOT'),
+    /** Mock sürücülerin bellekte tuttuğu son gönderim sayısı. */
+    NOTIFICATION_OUTBOX_LIMIT: z.coerce.number().int().positive().max(1000).default(200),
     OTP_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
     OTP_TTL_MINUTES: z.coerce.number().int().positive().default(5),
 
@@ -118,6 +122,17 @@ export const envSchema = z
           code: 'custom',
           path: ['PAYMENT_DRIVER'],
           message: 'Mock ödeme sağlayıcısı production ortamında kullanılamaz.',
+        });
+      }
+      // Mock push ve e-posta sürücüleri canlıda yalnızca gönderimi düşürür;
+      // veri bozulmaz, para kaybolmaz. Açılışta uyarı yazılır, süreç durmaz.
+      // SMS ise doğrulama kodu taşıyor: mock sürücü kodu hiç iletmediği için
+      // kullanıcı oturum açamaz, üstelik kodu günlüğe düşürür.
+      if (env.SMS_DRIVER === 'mock') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SMS_DRIVER'],
+          message: 'Mock SMS sürücüsü production ortamında kullanılamaz.',
         });
       }
       if (weakSecret(env.PAYMENT_WEBHOOK_SECRET)) {

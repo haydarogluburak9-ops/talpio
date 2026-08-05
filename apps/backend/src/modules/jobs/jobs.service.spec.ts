@@ -74,7 +74,7 @@ type PrismaMock = {
     create: jest.Mock;
     update: jest.Mock;
   };
-  providerProfile: { findFirst: jest.Mock };
+  providerProfile: { findFirst: jest.Mock; findMany: jest.Mock };
   order: { findFirst: jest.Mock };
   serviceCategory: { findFirst: jest.Mock };
   serviceSubcategory: { findFirst: jest.Mock };
@@ -93,7 +93,11 @@ function createPrismaMock(): PrismaMock {
       create: jest.fn(),
       update: jest.fn(),
     },
-    providerProfile: { findFirst: jest.fn() },
+    providerProfile: {
+      findFirst: jest.fn(),
+      // Eşleşme bildirimi için; varsayılan boş liste sessizce geçer.
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     // İşi üstlenen usta kontrolü sipariş tablosuna bakar; varsayılan olarak usta atanmamıştır.
     order: { findFirst: jest.fn().mockResolvedValue(null) },
     serviceCategory: { findFirst: jest.fn().mockResolvedValue({ id: 'cat-1' }) },
@@ -115,10 +119,16 @@ function createService(prisma: PrismaMock, files: FilesMock = createFilesMock())
     fileBaseUrl: 'http://localhost:9000/ustapilot',
   } as unknown as AppConfigService;
 
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
   return new JobsService(
     prisma as unknown as PrismaService,
     config,
     files as unknown as FilesService,
+    notifications as never,
   );
 }
 

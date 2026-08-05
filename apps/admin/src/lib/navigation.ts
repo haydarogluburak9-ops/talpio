@@ -90,7 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: 'Büyüme',
     items: [
       { label: 'Kampanyalar', href: '/promotions', icon: Tag, planned: true },
-      { label: 'Bildirimler', href: '/notifications', icon: Bell, planned: true },
+      { label: 'Bildirimler', href: '/notifications', icon: Bell },
       { label: 'Raporlar', href: '/reports', icon: TrendingUp, planned: true },
     ],
   },

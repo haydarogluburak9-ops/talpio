@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { canTransitionOrderStatus } from '@ustapilot/business-logic';
-import { OrderStatus, PaymentStatus, UserRole, type Order } from '@ustapilot/types';
+import { deepLinks } from '@ustapilot/config';
+import {
+  NotificationType,
+  OrderStatus,
+  PaymentStatus,
+  UserRole,
+  type Order,
+} from '@ustapilot/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
@@ -8,6 +15,7 @@ import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 import { PaymentsService, type ChargeIntent } from '@modules/payments/payments.service';
 
 import type { CancelOrderDto, CompleteOrderDto, PayOrderDto } from './dto/order-action.dto';
@@ -26,6 +34,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly payments: PaymentsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -137,6 +146,17 @@ export class OrdersService {
       return order;
     });
 
+    await this.notifications.dispatch({
+      userId: updated.providerProfile.userId,
+      type: NotificationType.PAYMENT_RECEIVED,
+      params: {
+        jobTitle: updated.jobRequest.title,
+        amountMinor: updated.totalMinor,
+        currency: updated.currency,
+      },
+      deepLink: deepLinks.order(updated.id),
+    });
+
     return this.present(updated, true);
   }
 
@@ -155,6 +175,16 @@ export class OrdersService {
       await this.syncJob(tx, row, OrderStatus.IN_PROGRESS, user.id, 'Usta işe başladı');
 
       return order;
+    });
+
+    await this.notifications.dispatch({
+      userId: updated.customerId,
+      type: NotificationType.JOB_STARTED,
+      params: {
+        jobTitle: updated.jobRequest.title,
+        providerName: providerDisplayName(updated.providerProfile),
+      },
+      deepLink: deepLinks.order(updated.id),
     });
 
     return this.present(updated, true);
@@ -181,6 +211,16 @@ export class OrdersService {
       );
 
       return order;
+    });
+
+    await this.notifications.dispatch({
+      userId: updated.customerId,
+      type: NotificationType.JOB_COMPLETED,
+      params: {
+        jobTitle: updated.jobRequest.title,
+        providerName: providerDisplayName(updated.providerProfile),
+      },
+      deepLink: deepLinks.order(updated.id),
     });
 
     return this.present(updated, true);
@@ -221,6 +261,28 @@ export class OrdersService {
 
       return order;
     });
+
+    await this.notifications.dispatchAll([
+      {
+        userId: updated.providerProfile.userId,
+        type: NotificationType.PAYOUT_SENT,
+        params: {
+          jobTitle: updated.jobRequest.title,
+          amountMinor: updated.payoutMinor,
+          currency: updated.currency,
+        },
+        deepLink: deepLinks.wallet(),
+      },
+      {
+        userId: updated.customerId,
+        type: NotificationType.REVIEW_REQUESTED,
+        params: {
+          jobTitle: updated.jobRequest.title,
+          providerName: providerDisplayName(updated.providerProfile),
+        },
+        deepLink: deepLinks.order(updated.id),
+      },
+    ]);
 
     return this.present(updated, true);
   }
@@ -384,4 +446,8 @@ export class OrdersService {
       note,
     );
   }
+}
+
+function providerDisplayName(profile: OrderRow['providerProfile']): string {
+  return profile.businessName ?? profile.user.fullName;
 }

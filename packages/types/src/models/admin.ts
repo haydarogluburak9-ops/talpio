@@ -1,3 +1,4 @@
+import type { NotificationChannel, NotificationType } from '../enums/messaging';
 import type { UserRole } from '../enums/roles';
 import type {
   CommissionType,
@@ -10,6 +11,7 @@ import type {
   VerificationStatus,
 } from '../enums/statuses';
 import type { Money } from './common';
+import type { NotificationParams } from './messaging';
 
 /**
  * Yönetim panelinin özet kartları.
@@ -181,6 +183,26 @@ export interface AdminCommissionRuleSummary {
   isActive: boolean;
   validFrom?: string | null;
   validUntil?: string | null;
+}
+
+/**
+ * Yönetim listelerinde gösterilen bildirim satırı.
+ *
+ * Panelde de metin sunucudan gelmez: tür ve parametreler taşınır, satır
+ * başlığı panelin kendi etiket tablosundan çözülür.
+ */
+export interface AdminNotificationSummary {
+  id: string;
+  userId: string;
+  recipientName: string;
+  recipientEmail: string;
+  type: NotificationType;
+  params: NotificationParams;
+  channels: NotificationChannel[];
+  deepLink?: string | null;
+  readAt?: string | null;
+  sentAt?: string | null;
+  createdAt: string;
 }
 
 /**

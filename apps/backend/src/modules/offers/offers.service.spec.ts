@@ -18,6 +18,7 @@ import type { OfferRow } from './offer.mapper';
 import { OffersService } from './offers.service';
 
 const CUSTOMER_ID = 'customer-1';
+const PROVIDER_ID = 'provider-1';
 const PROFILE_ID = 'profile-1';
 const JOB_ID = '0194a1b2-c3d4-7000-8000-000000000001';
 const OFFER_ID = '0194a1b2-c3d4-7000-8000-000000000002';
@@ -80,9 +81,10 @@ function offerWithJob(
 ) {
   return {
     ...offerRow(overrides.offer),
-    providerProfile: { isPremium: false },
+    providerProfile: { isPremium: false, userId: PROVIDER_ID },
     jobRequest: {
       id: JOB_ID,
+      title: 'Test talep',
       customerId: overrides.customerId ?? CUSTOMER_ID,
       status: overrides.jobStatus ?? JobRequestStatus.OFFERS_RECEIVED,
       categoryId: 'cat-1',
@@ -104,7 +106,7 @@ type PrismaMock = {
   providerProfile: { findFirst: jest.Mock };
   jobStatusHistory: { create: jest.Mock };
   commissionRule: { findMany: jest.Mock };
-  order: { create: jest.Mock };
+  order: { create: jest.Mock; findFirst: jest.Mock; findMany: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -121,6 +123,7 @@ function createPrismaMock(): PrismaMock {
     jobRequest: {
       findFirst: jest.fn().mockResolvedValue({
         id: JOB_ID,
+        title: 'Test talep',
         status: JobRequestStatus.PUBLISHED,
         categoryId: 'cat-1',
         districtId: 'district-1',
@@ -140,7 +143,16 @@ function createPrismaMock(): PrismaMock {
     },
     jobStatusHistory: { create: jest.fn().mockResolvedValue({}) },
     commissionRule: { findMany: jest.fn().mockResolvedValue([]) },
-    order: { create: jest.fn().mockResolvedValue({}) },
+    order: {
+      create: jest.fn().mockResolvedValue({}),
+      findFirst: jest.fn().mockResolvedValue({
+        id: 'order-1',
+        jobRequest: { title: 'Test talep' },
+        customer: { fullName: 'Ayşe' },
+        providerProfile: { userId: PROVIDER_ID },
+      }),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     $transaction: jest.fn(),
   };
 
@@ -155,7 +167,12 @@ function createService(prisma: PrismaMock): OffersService {
     fileBaseUrl: 'http://localhost:9000/ustapilot',
   } as unknown as AppConfigService;
 
-  return new OffersService(prisma as unknown as PrismaService, config);
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
+  return new OffersService(prisma as unknown as PrismaService, config, notifications as never);
 }
 
 type JobUpdateData = { status?: JobRequestStatus; offerCount?: { increment: number } };

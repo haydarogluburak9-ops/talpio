@@ -1,12 +1,14 @@
 import type {
   AdminCommissionRuleSummary,
   AdminJobSummary,
+  AdminNotificationSummary,
   AdminOfferSummary,
   AdminOrderSummary,
   AdminPaymentSummary,
   AdminProviderSummary,
   AdminTransactionSummary,
   AdminUserSummary,
+  NotificationParams,
 } from '@ustapilot/types';
 
 import type { Prisma } from '@/generated/prisma/client';
@@ -212,4 +214,38 @@ export function toAdminCommissionRule(row: AdminCommissionRow): AdminCommissionR
     validFrom: row.validFrom?.toISOString() ?? null,
     validUntil: row.validUntil?.toISOString() ?? null,
   };
+}
+
+export const adminNotificationInclude = {
+  user: { select: { id: true, fullName: true, email: true } },
+} satisfies Prisma.NotificationInclude;
+
+export type AdminNotificationRow = Prisma.NotificationGetPayload<{
+  include: typeof adminNotificationInclude;
+}>;
+
+export function toAdminNotification(row: AdminNotificationRow): AdminNotificationSummary {
+  return {
+    id: row.id,
+    userId: row.userId,
+    recipientName: row.user.fullName,
+    recipientEmail: row.user.email,
+    type: row.type,
+    params: toNotificationParams(row.params),
+    channels: row.channels,
+    deepLink: row.deepLink,
+    readAt: row.readAt?.toISOString() ?? null,
+    sentAt: row.sentAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+function toNotificationParams(value: Prisma.JsonValue): NotificationParams {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
+
+  const params: NotificationParams = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item === 'string' || typeof item === 'number') params[key] = item;
+  }
+  return params;
 }

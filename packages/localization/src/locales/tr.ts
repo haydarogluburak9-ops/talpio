@@ -429,7 +429,102 @@ export const tr = {
   notifications: {
     title: 'Bildirimler',
     markAllRead: 'Tümünü okundu işaretle',
+    markRead: 'Okundu işaretle',
     empty: 'Yeni bildiriminiz yok',
+    emptyDescription: 'Teklif, mesaj ve sipariş hareketleri burada görünür.',
+    emptyUnread: 'Okunmamış bildiriminiz yok',
+    filterAll: 'Tümü',
+    filterUnread: 'Okunmamış',
+    unreadCount: '{count} okunmamış',
+    open: 'Bildirime git',
+    loadFailed: 'Bildirimler yüklenemedi.',
+    actionFailed: 'İşlem tamamlanamadı. Lütfen tekrar deneyin.',
+    pushEnable: 'Bildirimlere izin ver',
+    pushHint: 'Teklif ve mesajları kaçırmamak için bildirimlere izin verin.',
+    pushDenied: 'Bildirim izni verilmedi. Cihaz ayarlarından açabilirsiniz.',
+    pushUnavailable: 'Push bildirim yalnızca gerçek cihazda çalışır.',
+  },
+  /**
+   * Bildirim metinleri. Sunucu yalnızca tür ve değişken gönderir; başlık ve
+   * gövde buradan çözülür. Anahtar adları `NotificationType` ile birebirdir.
+   */
+  notification: {
+    JOB_PUBLISHED: {
+      title: 'Talebiniz yayında',
+      body: '“{jobTitle}” talebiniz yayınlandı; bölgenizdeki ustalar görebilir.',
+    },
+    JOB_MATCHED: {
+      title: 'Size uygun yeni bir iş var',
+      body: '{districtName} bölgesinde {categoryName} talebi: “{jobTitle}”.',
+    },
+    OFFER_RECEIVED: {
+      title: 'Yeni teklif aldınız',
+      body: '{providerName}, “{jobTitle}” için {amount} teklif verdi.',
+    },
+    OFFER_ACCEPTED: {
+      title: 'Teklifiniz kabul edildi',
+      body: '{customerName}, “{jobTitle}” işi için teklifinizi kabul etti.',
+    },
+    OFFER_REJECTED: {
+      title: 'Teklifiniz kabul edilmedi',
+      body: '“{jobTitle}” işi için başka bir usta seçildi.',
+    },
+    OFFER_EXPIRING: {
+      title: 'Teklifinizin süresi doluyor',
+      body: '“{jobTitle}” işine verdiğiniz teklif {hoursLeft} saat içinde geçerliliğini yitirecek.',
+    },
+    MESSAGE_RECEIVED: {
+      title: '{senderName} mesaj gönderdi',
+      body: '{preview}',
+    },
+    APPOINTMENT_REMINDER: {
+      title: 'Randevunuz yaklaşıyor',
+      body: '“{jobTitle}” işi için randevu: {scheduledAt}.',
+    },
+    PROVIDER_EN_ROUTE: {
+      title: 'Usta yolda',
+      body: '{providerName}, “{jobTitle}” işi için yola çıktı.',
+    },
+    JOB_STARTED: {
+      title: 'Usta işe başladı',
+      body: '{providerName}, “{jobTitle}” işine başladı.',
+    },
+    JOB_COMPLETED: {
+      title: 'İş tamamlandı',
+      body: '{providerName}, “{jobTitle}” işini tamamladı; onayınız bekleniyor.',
+    },
+    REVIEW_REQUESTED: {
+      title: 'Ustayı değerlendirin',
+      body: '“{jobTitle}” işi için {providerName} hakkındaki görüşünüz diğer müşterilere yol gösterir.',
+    },
+    REVIEW_RECEIVED: {
+      title: 'Yeni değerlendirme aldınız',
+      body: '{customerName} sizi {rating} puanla değerlendirdi.',
+    },
+    PAYMENT_RECEIVED: {
+      title: 'Ödeme alındı',
+      body: '“{jobTitle}” işinin {amount} tutarındaki ödemesi tahsil edildi.',
+    },
+    PAYOUT_SENT: {
+      title: 'Hakedişiniz serbest bırakıldı',
+      body: '“{jobTitle}” işinden {amount} kullanılabilir bakiyenize geçti.',
+    },
+    DOCUMENT_APPROVED: {
+      title: 'Belgeleriniz onaylandı',
+      body: '{documentCount} belgeniz onaylandı; artık teklif verebilirsiniz.',
+    },
+    DOCUMENT_REJECTED: {
+      title: 'Belgeleriniz kabul edilmedi',
+      body: 'Gerekçe: {reason}',
+    },
+    SUPPORT_REPLY: {
+      title: 'Destek talebinize yanıt geldi',
+      body: '“{ticketSubject}” konulu talebiniz yanıtlandı.',
+    },
+    CAMPAIGN: {
+      title: '{title}',
+      body: '{message}',
+    },
   },
   settings: {
     title: 'Ayarlar',

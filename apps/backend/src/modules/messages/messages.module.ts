@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 
 import { FilesModule } from '@modules/files/files.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
 
 import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
 
 @Module({
-  imports: [FilesModule],
+  imports: [FilesModule, NotificationsModule],
   controllers: [MessagesController],
   providers: [MessagesService],
   exports: [MessagesService],

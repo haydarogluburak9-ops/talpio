@@ -80,11 +80,16 @@ export function buildPaginationMeta(total: number, page: number, limit: number):
   };
 }
 
-/** Servis katmanının liste dönüş tipi; interceptor bunu zarfa çevirir. */
-export class PaginatedResult<T> {
+/**
+ * Servis katmanının liste dönüş tipi; interceptor bunu zarfa çevirir.
+ *
+ * `M`, üst veriye alan ekleyen uçlar için ayrılmıştır: bildirim listesi
+ * sayfalamanın yanında okunmamış sayacını da taşır.
+ */
+export class PaginatedResult<T, M extends PaginationMeta = PaginationMeta> {
   constructor(
     readonly items: T[],
-    readonly meta: PaginationMeta,
+    readonly meta: M,
   ) {}
 
   static of<T>(items: T[], total: number, page: number, limit: number): PaginatedResult<T> {

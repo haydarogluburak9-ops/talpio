@@ -57,6 +57,7 @@ function orderRow(overrides: Record<string, unknown> = {}) {
     customerId: CUSTOMER_ID,
     providerProfileId: PROFILE_ID,
     status: OrderStatus.COMPLETED,
+    providerProfile: { userId: 'provider-1' },
     payments: [{ id: 'payment-1' }],
     review: null,
     ...overrides,
@@ -138,10 +139,16 @@ function createFilesMock(): FilesMock {
 function createService(prisma: PrismaMock, files: FilesMock = createFilesMock()): ReviewsService {
   const config = { fileBaseUrl: FILE_BASE_URL } as unknown as AppConfigService;
 
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
   return new ReviewsService(
     prisma as unknown as PrismaService,
     config,
     files as unknown as FilesService,
+    notifications as never,
   );
 }
 

@@ -58,6 +58,16 @@ export default function ProviderProfileTabScreen() {
         </View>
       </Card>
 
+      <Card onPress={() => router.push('/provider/notifications')}>
+        <View style={styles.row}>
+          <Ionicons name="notifications-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('notifications.title')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
       <Card onPress={() => router.push('/provider/settings')}>
         <View style={styles.row}>
           <Ionicons name="settings-outline" size={22} color={colors.brand} />

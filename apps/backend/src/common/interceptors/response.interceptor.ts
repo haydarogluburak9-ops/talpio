@@ -34,7 +34,9 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, ApiSuccessResp
     return next.handle().pipe(
       map((payload): ApiSuccessResponse<unknown> => {
         if (payload instanceof PaginatedResult) {
-          return { success: true, data: payload.items, meta: payload.meta };
+          // `instanceof` jenerikleri siler; zarf tipi bilinçli olarak bilinmeyene daraltılır.
+          const page = payload as PaginatedResult<unknown>;
+          return { success: true, data: page.items, meta: page.meta };
         }
         return { success: true, data: payload ?? null };
       }),

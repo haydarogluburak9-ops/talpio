@@ -97,7 +97,10 @@ export function formatDuration(minutes: number, locale: string = DEFAULT_LOCALE)
   return `${hours} ${labels.hour} ${remaining} ${labels.minute}`;
 }
 
-export function formatRating(rating: number | null | undefined, locale = DEFAULT_LOCALE): string {
+export function formatRating(
+  rating: number | null | undefined,
+  locale: string = DEFAULT_LOCALE,
+): string {
   if (rating == null) return '—';
   return new Intl.NumberFormat(toLocaleTag(locale), {
     minimumFractionDigits: 1,

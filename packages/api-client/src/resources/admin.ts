@@ -3,6 +3,7 @@ import type {
   AdminCommissionRuleSummary,
   AdminDashboard,
   AdminJobSummary,
+  AdminNotificationSummary,
   AdminOfferSummary,
   AdminOrderSummary,
   AdminPaymentSummary,
@@ -13,6 +14,8 @@ import type {
   JobRequestStatus,
   OfferStatus,
   OrderStatus,
+  NotificationChannel,
+  NotificationType,
   PaymentStatus,
   TransactionType,
   UserRole,
@@ -65,6 +68,13 @@ export interface ListAdminTransactionsParams extends AdminListParams {
 
 export interface ListAdminCommissionsParams extends AdminListParams {
   isActive?: boolean;
+}
+
+export interface ListAdminNotificationsParams extends AdminListParams {
+  type?: NotificationType[];
+  channel?: NotificationChannel[];
+  userId?: string;
+  unread?: boolean;
 }
 
 export interface ListAuditLogsParams extends AdminListParams {
@@ -196,6 +206,21 @@ export function createAdminResource(http: HttpClient) {
       return http.paginated<AdminCommissionRuleSummary>(API_ROUTES.admin.commissions, {
         method: 'GET',
         query: { ...params },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listNotifications(
+      params: ListAdminNotificationsParams = {},
+      signal?: AbortSignal,
+    ): Promise<Paginated<AdminNotificationSummary>> {
+      return http.paginated<AdminNotificationSummary>(API_ROUTES.admin.notifications, {
+        method: 'GET',
+        query: {
+          ...params,
+          type: params.type?.join(','),
+          channel: params.channel?.join(','),
+        },
         ...(signal ? { signal } : {}),
       });
     },

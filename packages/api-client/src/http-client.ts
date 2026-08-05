@@ -40,9 +40,16 @@ export interface RequestOptions {
   skipAuthRefresh?: boolean;
 }
 
-export interface Paginated<T> {
+/**
+ * Sayfalı liste sonucu.
+ *
+ * `M` üst veriyi genişleten uçlar için ayrılmıştır: bildirim listesi
+ * sayfalamanın yanında okunmamış sayacını da taşır ve çağıran bunu tip
+ * kaybetmeden okur.
+ */
+export interface Paginated<T, M extends PaginationMeta = PaginationMeta> {
   items: T[];
-  meta: PaginationMeta;
+  meta: M;
 }
 
 /** React Native'in `FormData` için beklediği yerel dosya tanımlayıcısı. */
@@ -161,7 +168,10 @@ export class HttpClient {
     return payload.data;
   }
 
-  async paginated<T>(path: string, options: RequestOptions = {}): Promise<Paginated<T>> {
+  async paginated<T, M extends PaginationMeta = PaginationMeta>(
+    path: string,
+    options: RequestOptions = {},
+  ): Promise<Paginated<T, M>> {
     const response = await this.send(path, options);
     const payload = (await this.parseJson(response)) as
       | ApiSuccessResponse<T[]>
@@ -173,17 +183,18 @@ export class HttpClient {
       throw ApiError.fromBody(payload.error, response.status, payload.requestId);
     }
 
-    return {
-      items: payload.data,
-      meta: payload.meta ?? {
-        page: 1,
-        limit: payload.data.length,
-        total: payload.data.length,
-        totalPages: 1,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
+    const fallback: PaginationMeta = {
+      page: 1,
+      limit: payload.data.length,
+      total: payload.data.length,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
     };
+
+    // Zarf üst verisi çalışma anında gelir; genişletilmiş alanlar yalnızca
+    // çağıranın seçtiği tipte tanımlıdır.
+    return { items: payload.data, meta: (payload.meta ?? fallback) as M };
   }
 
   get<T>(path: string, options: Omit<RequestOptions, 'method' | 'body'> = {}): Promise<T> {

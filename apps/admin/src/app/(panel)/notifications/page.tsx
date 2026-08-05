@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { NotificationsPanel } from '@/features/admin/notifications-panel';
 
 export const metadata: Metadata = { title: 'Bildirimler' };
 
@@ -15,9 +16,11 @@ export default function NotificationsPage() {
   return (
     <ModuleScaffold
       title="Bildirimler"
-      description="Toplu bildirim gönderin ve şablonları yönetin."
+      description="Gönderilen bildirimleri izleyin; metinler istemci tarafında çözülür."
       dataSource="GET /admin/notifications"
       capabilities={CAPABILITIES}
-    />
+    >
+      <NotificationsPanel />
+    </ModuleScaffold>
   );
 }

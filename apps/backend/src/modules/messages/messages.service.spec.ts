@@ -145,10 +145,16 @@ function createService(prisma: PrismaMock, files: FilesMock = createFilesMock())
     fileBaseUrl: 'http://localhost:9000/ustapilot',
   } as unknown as AppConfigService;
 
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
   return new MessagesService(
     prisma as unknown as PrismaService,
     config,
     files as unknown as FilesService,
+    notifications as never,
   );
 }
 

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ListAdminCommissionsParams,
   ListAdminJobsParams,
+  ListAdminNotificationsParams,
   ListAdminOffersParams,
   ListAdminOrdersParams,
   ListAdminPaymentsParams,
@@ -91,6 +92,14 @@ export function useAdminCommissionRules(params: ListAdminCommissionsParams) {
   return useQuery({
     queryKey: queryKeys.admin.commissions(keyParams(params)),
     queryFn: ({ signal }) => apiClient.admin.listCommissionRules(params, signal),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useAdminNotifications(params: ListAdminNotificationsParams) {
+  return useQuery({
+    queryKey: queryKeys.admin.notifications(keyParams(params)),
+    queryFn: ({ signal }) => apiClient.admin.listNotifications(params, signal),
     placeholderData: (previous) => previous,
   });
 }

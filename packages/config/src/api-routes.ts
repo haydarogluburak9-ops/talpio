@@ -93,9 +93,14 @@ export const API_ROUTES = {
   },
   notifications: {
     root: '/notifications',
+    /** Rozetler tüm listeyi çekmesin diye ayrı ve hafif bir uç. */
+    unreadCount: '/notifications/unread-count',
     read: (id: string) => `/notifications/${id}/read`,
     readAll: '/notifications/read-all',
+    /** Kayıt (POST) ve silme (DELETE) aynı yolu kullanır; jeton gövdede taşınır. */
     deviceTokens: '/notifications/device-tokens',
+    /** Yalnızca production dışında açık: mock sürücülerin gönderim tamponu. */
+    mockOutbox: '/notifications/mock-outbox',
   },
   payments: {
     root: '/payments',

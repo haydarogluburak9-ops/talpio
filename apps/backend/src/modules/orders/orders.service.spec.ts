@@ -183,7 +183,17 @@ function createService(prisma: PrismaMock, gateway: ProviderMock): OrdersService
 
   const payments = new PaymentsService(prisma as unknown as PrismaService, config, audit, gateway);
 
-  return new OrdersService(prisma as unknown as PrismaService, config, payments);
+  const notifications = {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+    dispatchAll: jest.fn().mockResolvedValue(undefined),
+  };
+
+  return new OrdersService(
+    prisma as unknown as PrismaService,
+    config,
+    payments,
+    notifications as never,
+  );
 }
 
 /** `skip` ve `toOrderBy` prototip üzerinde olduğundan gerçek DTO örneği kurulur. */

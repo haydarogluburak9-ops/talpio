@@ -109,6 +109,25 @@ export class AppConfigService {
     };
   }
 
+  get notifications(): {
+    pushDriver: Env['PUSH_DRIVER'];
+    mailDriver: Env['MAIL_DRIVER'];
+    smsDriver: Env['SMS_DRIVER'];
+    mailFrom: string;
+    smsSender: string;
+    /** Mock sürücülerin bellek içinde tuttuğu gönderim sayısı. */
+    outboxLimit: number;
+  } {
+    return {
+      pushDriver: this.get('PUSH_DRIVER'),
+      mailDriver: this.get('MAIL_DRIVER'),
+      smsDriver: this.get('SMS_DRIVER'),
+      mailFrom: this.get('MAIL_FROM'),
+      smsSender: this.get('SMS_SENDER'),
+      outboxLimit: this.get('NOTIFICATION_OUTBOX_LIMIT'),
+    };
+  }
+
   /** Herkese açık dosyaların tarayıcıdan erişilebilir kök adresi. */
   get fileBaseUrl(): string {
     return `${this.get('S3_PUBLIC_URL')}/${this.get('S3_BUCKET')}`;

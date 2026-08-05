@@ -6,8 +6,10 @@ import {
   selectCommissionRule,
   type OfferEligibility,
 } from '@ustapilot/business-logic';
+import { deepLinks } from '@ustapilot/config';
 import {
   JobRequestStatus,
+  NotificationType,
   OfferStatus,
   OrderStatus,
   UserRole,
@@ -22,6 +24,7 @@ import type { ErrorCode } from '@common/errors/error-codes';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type { AcceptOfferDto, CreateOfferDto } from './dto/create-offer.dto';
 import type { ListJobOffersQueryDto, ListMyOffersQueryDto } from './dto/list-offers-query.dto';
@@ -72,6 +75,7 @@ export class OffersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -88,6 +92,8 @@ export class OffersService {
       where: { id: dto.jobRequestId, deletedAt: null },
       select: {
         id: true,
+        title: true,
+        customerId: true,
         status: true,
         categoryId: true,
         districtId: true,
@@ -175,7 +181,21 @@ export class OffersService {
       return offer;
     });
 
-    return this.present(created);
+    const offer = this.present(created);
+
+    await this.notifications.dispatch({
+      userId: job.customerId,
+      type: NotificationType.OFFER_RECEIVED,
+      params: {
+        jobTitle: job.title,
+        providerName: offer.provider?.displayName ?? 'Usta',
+        amountMinor: offer.price.amountMinor,
+        currency: offer.price.currency,
+      },
+      deepLink: deepLinks.jobOffers(job.id),
+    });
+
+    return offer;
   }
 
   /** Ustanın kendi verdiği teklifler. */
@@ -347,6 +367,51 @@ export class OffersService {
       return offer;
     });
 
+    const order = await this.prisma.order.findFirst({
+      where: { offerId: id, deletedAt: null },
+      select: {
+        id: true,
+        jobRequest: { select: { title: true } },
+        customer: { select: { fullName: true } },
+        providerProfile: { select: { userId: true } },
+      },
+    });
+
+    if (order) {
+      await this.notifications.dispatch({
+        userId: order.providerProfile.userId,
+        type: NotificationType.OFFER_ACCEPTED,
+        params: {
+          jobTitle: order.jobRequest.title,
+          customerName: order.customer.fullName,
+        },
+        deepLink: deepLinks.order(order.id),
+      });
+    }
+
+    // Kabul sırasında düşen rakipler de reddedilme bildirimi alır.
+    const rivals = await this.prisma.offer.findMany({
+      where: {
+        jobRequestId: row.jobRequestId,
+        id: { not: id },
+        status: OfferStatus.REJECTED,
+        rejectionReason: 'Müşteri başka bir teklifi kabul etti',
+        deletedAt: null,
+      },
+      select: { providerProfile: { select: { userId: true } } },
+    });
+
+    if (rivals.length > 0 && order) {
+      await this.notifications.dispatchAll(
+        rivals.map((rival) => ({
+          userId: rival.providerProfile.userId,
+          type: NotificationType.OFFER_REJECTED,
+          params: { jobTitle: order.jobRequest.title },
+          deepLink: deepLinks.offers(),
+        })),
+      );
+    }
+
     return this.present(updated);
   }
 
@@ -368,6 +433,13 @@ export class OffersService {
         rejectionReason: reason ?? null,
       },
       include: offerInclude,
+    });
+
+    await this.notifications.dispatch({
+      userId: row.providerProfile.userId,
+      type: NotificationType.OFFER_REJECTED,
+      params: { jobTitle: row.jobRequest.title },
+      deepLink: deepLinks.offers(),
     });
 
     return this.present(updated);
@@ -509,9 +581,16 @@ export class OffersService {
     const row = await this.prisma.offer.findFirst({
       where: { id, deletedAt: null },
       include: {
-        providerProfile: { select: { isPremium: true } },
+        providerProfile: { select: { isPremium: true, userId: true } },
         jobRequest: {
-          select: { id: true, customerId: true, status: true, categoryId: true, cityId: true },
+          select: {
+            id: true,
+            title: true,
+            customerId: true,
+            status: true,
+            categoryId: true,
+            cityId: true,
+          },
         },
       },
     });

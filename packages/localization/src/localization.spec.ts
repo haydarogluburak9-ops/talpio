@@ -1,4 +1,7 @@
+import { NotificationType } from '@ustapilot/types';
+
 import { formatDuration, formatMoneyMinor, formatRating, formatRelativeTime } from './format';
+import { renderNotification } from './notifications';
 import { createTranslator, interpolate } from './translator';
 import { en } from './locales/en';
 import { tr } from './locales/tr';
@@ -46,6 +49,41 @@ describe('createTranslator', () => {
 
   it('parametreleri yerleştirir', () => {
     expect(createTranslator('tr').t('job.offerCount', { count: 5 })).toBe('5 teklif');
+  });
+});
+
+describe('renderNotification', () => {
+  it('her bildirim türü iki dilde de metin taşır', () => {
+    for (const type of Object.values(NotificationType)) {
+      for (const locale of ['tr', 'en']) {
+        const rendered = renderNotification(type, {}, locale);
+        // Eksik anahtarda çevirici anahtarın kendisini döndürür; katalog boşluğu
+        // böyle yakalanır.
+        expect(rendered.title).not.toContain('notification.');
+        expect(rendered.body).not.toContain('notification.');
+      }
+    }
+  });
+
+  it('tutarı kullanıcının diliyle biçimlendirir', () => {
+    const rendered = renderNotification(
+      NotificationType.OFFER_RECEIVED,
+      { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta', amountMinor: 180000, currency: 'TRY' },
+      'tr',
+    );
+
+    expect(rendered.body).toContain('1.800,00');
+    expect(rendered.body).toContain('Ali Usta');
+  });
+
+  it('yerleştirilmemiş değişken bırakmaz', () => {
+    const rendered = renderNotification(
+      NotificationType.JOB_MATCHED,
+      { jobTitle: 'Priz arızası', categoryName: 'Elektrik', districtName: 'Şahinbey' },
+      'en',
+    );
+
+    expect(rendered.body).not.toContain('{');
   });
 });
 

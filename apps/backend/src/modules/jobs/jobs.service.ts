@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { canTransitionJobStatus } from '@ustapilot/business-logic';
-import { JOB } from '@ustapilot/config';
-import { JobRequestStatus, UserRole, type JobRequest } from '@ustapilot/types';
+import { deepLinks, JOB } from '@ustapilot/config';
+import { JobRequestStatus, NotificationType, UserRole, type JobRequest } from '@ustapilot/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { AppException } from '@common/errors/app.exception';
@@ -10,6 +10,7 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
+import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type { CreateJobDto } from './dto/create-job.dto';
 import type { AvailableJobsQueryDto, ListJobsQueryDto } from './dto/list-jobs-query.dto';
@@ -29,6 +30,7 @@ export class JobsService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly files: FilesService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(user: AuthenticatedUser, dto: CreateJobDto): Promise<JobRequest> {
@@ -94,6 +96,9 @@ export class JobsService {
 
       return job;
     });
+
+    // Eşleşme, işlem commit edildikten sonra duyurulur; eşleşen yoksa sessizce geçer.
+    if (publish) await this.notifyMatchingProviders(created);
 
     return this.present(created, true);
   }
@@ -239,6 +244,8 @@ export class JobsService {
       return job;
     });
 
+    await this.notifyMatchingProviders(updated);
+
     return this.present(updated, true);
   }
 
@@ -271,6 +278,36 @@ export class JobsService {
 
   private present(row: JobRequestRow, revealAddress: boolean): JobRequest {
     return toJobRequest(row, { revealAddress, fileBaseUrl: this.fileBaseUrl });
+  }
+
+  /**
+   * Kategori ve ilçe hizmet alanında olan ustalara eşleşme bildirimi gönderir.
+   * Alıcı yoksa hiçbir şey yapılmaz.
+   */
+  private async notifyMatchingProviders(job: JobRequestRow): Promise<void> {
+    const providers = await this.prisma.providerProfile.findMany({
+      where: {
+        deletedAt: null,
+        services: { some: { categoryId: job.categoryId } },
+        serviceAreas: { some: { districtId: job.districtId } },
+      },
+      select: { userId: true },
+    });
+
+    if (providers.length === 0) return;
+
+    await this.notifications.dispatchAll(
+      providers.map((provider) => ({
+        userId: provider.userId,
+        type: NotificationType.JOB_MATCHED,
+        params: {
+          jobTitle: job.title,
+          categoryName: job.category.name,
+          districtName: job.district.name,
+        },
+        deepLink: deepLinks.job(job.id),
+      })),
+    );
   }
 
   private get fileBaseUrl(): string {

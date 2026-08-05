@@ -44,6 +44,7 @@
     "smoke:files": "node scripts/smoke-files.mjs",
     "smoke:profile": "node scripts/smoke-profile.mjs",
     "smoke:admin": "node scripts/smoke-admin.mjs",
+    "smoke:notifications": "node scripts/smoke-notifications.mjs",
     "docker:up": "docker compose up -d",
     "docker:up:full": "docker compose --profile full up -d --build",
     "docker:down": "docker compose --profile full down",

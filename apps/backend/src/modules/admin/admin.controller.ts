@@ -15,6 +15,7 @@ import {
   type AdminCommissionRuleSummary,
   type AdminDashboard,
   type AdminJobSummary,
+  type AdminNotificationSummary,
   type AdminOfferSummary,
   type AdminOrderSummary,
   type AdminPaymentSummary,
@@ -35,6 +36,7 @@ import { AuditLogService } from './audit-log.service';
 import {
   ListAdminCommissionsQueryDto,
   ListAdminJobsQueryDto,
+  ListAdminNotificationsQueryDto,
   ListAdminOffersQueryDto,
   ListAdminOrdersQueryDto,
   ListAdminPaymentsQueryDto,
@@ -187,6 +189,16 @@ export class AdminController {
     @Query() query: ListAdminCommissionsQueryDto,
   ): Promise<PaginatedResult<AdminCommissionRuleSummary>> {
     return this.admin.listCommissionRules(query);
+  }
+
+  @Get('notifications')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Bildirim listesi' })
+  @ApiOkResponse({ description: 'Sayfalanmış bildirim listesi' })
+  listNotifications(
+    @Query() query: ListAdminNotificationsQueryDto,
+  ): Promise<PaginatedResult<AdminNotificationSummary>> {
+    return this.admin.listNotifications(query);
   }
 
   @Get('audit-logs')

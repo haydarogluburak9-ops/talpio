@@ -47,6 +47,7 @@ export const queryKeys = {
     thread: (conversationId: string) => ['messages', 'conversations', conversationId] as const,
   },
   notifications: {
+    all: () => ['notifications'] as const,
     list: (params?: Record<string, unknown>) => ['notifications', 'list', params ?? {}] as const,
     unreadCount: () => ['notifications', 'unread-count'] as const,
   },
@@ -84,6 +85,8 @@ export const queryKeys = {
       ['admin', 'transactions', params ?? {}] as const,
     commissions: (params?: Record<string, unknown>) =>
       ['admin', 'commissions', params ?? {}] as const,
+    notifications: (params?: Record<string, unknown>) =>
+      ['admin', 'notifications', params ?? {}] as const,
     auditLogs: (params?: Record<string, unknown>) => ['admin', 'audit-logs', params ?? {}] as const,
     providerDocuments: (params?: Record<string, unknown>) =>
       ['admin', 'provider-documents', params ?? {}] as const,

@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   JobRequestStatus,
+  NotificationChannel,
+  NotificationType,
   OfferStatus,
   OrderStatus,
   PaymentStatus,
@@ -118,6 +120,31 @@ export class ListAdminCommissionsQueryDto extends PaginationQueryDto {
   @Transform(toBoolean)
   @IsBoolean()
   isActive?: boolean;
+}
+
+export class ListAdminNotificationsQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: NotificationType, isArray: true })
+  @IsOptional()
+  @Transform(toArray)
+  @IsEnum(NotificationType, { each: true })
+  type?: NotificationType[];
+
+  @ApiPropertyOptional({ enum: NotificationChannel, isArray: true })
+  @IsOptional()
+  @Transform(toArray)
+  @IsEnum(NotificationChannel, { each: true })
+  channel?: NotificationChannel[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
+  @ApiPropertyOptional({ description: 'Yalnızca okunmamışlar.' })
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  unread?: boolean;
 }
 
 export class ListAuditLogsQueryDto extends PaginationQueryDto {

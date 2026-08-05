@@ -425,7 +425,98 @@ export const en: Messages = {
   notifications: {
     title: 'Notifications',
     markAllRead: 'Mark all as read',
+    markRead: 'Mark as read',
     empty: 'No new notifications',
+    emptyDescription: 'Offers, messages and order updates show up here.',
+    emptyUnread: 'You have no unread notifications',
+    filterAll: 'All',
+    filterUnread: 'Unread',
+    unreadCount: '{count} unread',
+    open: 'Open notification',
+    loadFailed: 'Notifications could not be loaded.',
+    actionFailed: 'We could not complete the request. Please try again.',
+    pushEnable: 'Allow notifications',
+    pushHint: 'Allow notifications so you do not miss offers and messages.',
+    pushDenied: 'Notification permission denied. You can enable it in device settings.',
+    pushUnavailable: 'Push notifications only work on a physical device.',
+  },
+  notification: {
+    JOB_PUBLISHED: {
+      title: 'Your request is live',
+      body: 'Your request “{jobTitle}” is published and visible to pros in your area.',
+    },
+    JOB_MATCHED: {
+      title: 'A new job matches your profile',
+      body: '{categoryName} request in {districtName}: “{jobTitle}”.',
+    },
+    OFFER_RECEIVED: {
+      title: 'You received a new offer',
+      body: '{providerName} offered {amount} for “{jobTitle}”.',
+    },
+    OFFER_ACCEPTED: {
+      title: 'Your offer was accepted',
+      body: '{customerName} accepted your offer for “{jobTitle}”.',
+    },
+    OFFER_REJECTED: {
+      title: 'Your offer was not accepted',
+      body: 'Another pro was selected for “{jobTitle}”.',
+    },
+    OFFER_EXPIRING: {
+      title: 'Your offer is about to expire',
+      body: 'Your offer for “{jobTitle}” expires in {hoursLeft} hours.',
+    },
+    MESSAGE_RECEIVED: {
+      title: '{senderName} sent a message',
+      body: '{preview}',
+    },
+    APPOINTMENT_REMINDER: {
+      title: 'Your appointment is coming up',
+      body: 'Appointment for “{jobTitle}”: {scheduledAt}.',
+    },
+    PROVIDER_EN_ROUTE: {
+      title: 'The pro is on the way',
+      body: '{providerName} is on the way for “{jobTitle}”.',
+    },
+    JOB_STARTED: {
+      title: 'The pro started working',
+      body: '{providerName} started working on “{jobTitle}”.',
+    },
+    JOB_COMPLETED: {
+      title: 'The job is finished',
+      body: '{providerName} finished “{jobTitle}” and is waiting for your approval.',
+    },
+    REVIEW_REQUESTED: {
+      title: 'Review your pro',
+      body: 'Your opinion about {providerName} for “{jobTitle}” helps other customers.',
+    },
+    REVIEW_RECEIVED: {
+      title: 'You received a new review',
+      body: '{customerName} rated you {rating}.',
+    },
+    PAYMENT_RECEIVED: {
+      title: 'Payment received',
+      body: 'The {amount} payment for “{jobTitle}” has been captured.',
+    },
+    PAYOUT_SENT: {
+      title: 'Your payout was released',
+      body: '{amount} from “{jobTitle}” moved to your available balance.',
+    },
+    DOCUMENT_APPROVED: {
+      title: 'Your documents were approved',
+      body: '{documentCount} of your documents were approved; you can submit offers now.',
+    },
+    DOCUMENT_REJECTED: {
+      title: 'Your documents were not accepted',
+      body: 'Reason: {reason}',
+    },
+    SUPPORT_REPLY: {
+      title: 'Your support request has a reply',
+      body: 'Your request “{ticketSubject}” has been answered.',
+    },
+    CAMPAIGN: {
+      title: '{title}',
+      body: '{message}',
+    },
   },
   settings: {
     title: 'Settings',
