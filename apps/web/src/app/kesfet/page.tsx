@@ -3,12 +3,14 @@ import type { Metadata } from 'next';
 import { DiscoverFeed } from '@/features/social/discover-feed';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('social.discoverTitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('social.discoverTitle');
+}
 
-export default function DiscoverPage() {
+export default async function DiscoverPage() {
+  await applyRequestLocale();
   return (
     <SocialShell>
       <div className="social-panel mb-3 p-5 sm:p-6">

@@ -14,8 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { resolveWebDeepLink } from './resolve-deep-link';
 import { useMarkAllRead, useMarkRead, useNotifications } from './use-notifications';
@@ -122,7 +121,7 @@ export function NotificationList() {
 function NotificationRow({ notification }: { notification: Notification }) {
   const router = useRouter();
   const markRead = useMarkRead();
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const rendered = renderNotification(notification.type, notification.params, locale);
   const href = resolveWebDeepLink(notification.deepLink);
   const unread = !notification.readAt;

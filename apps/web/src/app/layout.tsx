@@ -12,6 +12,9 @@ import { applyRequestLocale } from '@/lib/server-locale';
 
 import './globals.css';
 
+/** Locale çerezine göre SSR; statik EN önbelleğini engeller. */
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({
   variable: '--font-sans-body',
   subsets: ['latin', 'latin-ext'],

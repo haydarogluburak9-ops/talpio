@@ -4,13 +4,14 @@ import Link from 'next/link';
 
 import { OrderDetail } from '@/features/orders/order-detail';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('order.detailTitle'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('order.detailTitle', { robots: { index: false, follow: false } });
+}
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  await applyRequestLocale();
   const { id } = await params;
 
   return (

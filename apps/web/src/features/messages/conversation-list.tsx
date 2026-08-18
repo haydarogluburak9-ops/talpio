@@ -6,8 +6,7 @@ import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { publicEnv } from '@/lib/env';
-import { localeTag, t } from '@/lib/i18n';
+import { localeTag, t, getLocale } from '@/lib/i18n';
 
 import { useConversations } from './use-messages';
 
@@ -61,7 +60,7 @@ function ConversationRow({
   currentUserId: string;
   active: boolean;
 }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const other = conversation.participants.find((item) => item.userId !== currentUserId);
   const preview = conversation.lastMessage;
   const hasUnread = conversation.unreadCount > 0;

@@ -17,9 +17,8 @@ import {
 } from '@talpio/ui';
 import { useState } from 'react';
 
-import { publicEnv } from '@/lib/env';
 import { OfferList } from '@/features/offers/offer-list';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { useCancelJob, useJob } from './use-jobs';
 
@@ -56,7 +55,7 @@ export function JobDetail({ jobId }: { jobId: string }) {
 }
 
 function JobDetailView({ job }: { job: JobRequest }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const cancelJob = useCancelJob(job.id);
   const [confirmingCancel, setConfirmingCancel] = useState(false);
 

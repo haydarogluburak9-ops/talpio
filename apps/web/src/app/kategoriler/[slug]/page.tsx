@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale } from '@/lib/server-locale';
 
 import { CategoryDetail } from './category-detail';
 
@@ -11,6 +12,7 @@ export default async function CategoryDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await applyRequestLocale();
   const { slug } = await params;
 
   return (

@@ -4,12 +4,14 @@ import { Suspense } from 'react';
 import { FeedList } from '@/features/social/feed-list';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('social.feedTitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('social.feedTitle');
+}
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  await applyRequestLocale();
   return (
     <SocialShell>
       <div className="mb-3 px-0.5 lg:hidden">

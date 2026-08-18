@@ -6,11 +6,10 @@ import type { JobRequest } from '@talpio/types';
 import { Badge, Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 export function JobCard({ job }: { job: JobRequest }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
 
   return (
     <Link href={`/taleplerim/${job.id}`} className="block rounded-[--radius-card]">

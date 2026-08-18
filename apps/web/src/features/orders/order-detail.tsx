@@ -21,8 +21,7 @@ import { useSession } from '@/features/auth/use-session';
 import { useOpenConversation } from '@/features/messages/use-messages';
 import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import {
   useApproveOrder,
@@ -66,7 +65,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 }
 
 function OrderDetailView({ order }: { order: Order }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const session = useSession();
   const userId = session.data?.id;
   const providerProfileId = session.data?.providerProfileId;

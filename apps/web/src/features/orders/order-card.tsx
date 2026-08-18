@@ -6,11 +6,10 @@ import type { Order } from '@talpio/types';
 import { Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 export function OrderCard({ order }: { order: Order }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const address = order.job?.address;
 
   return (

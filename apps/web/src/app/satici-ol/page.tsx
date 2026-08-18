@@ -5,11 +5,11 @@ import type { Metadata } from 'next';
 import { SellerHeroVisual } from '@/components/seller/seller-hero-visual';
 import { BecomeProviderCta } from '@/features/auth/become-provider-cta';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.becomeProvider'),
-  description: t('becomeProvider.subtitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.becomeProvider', { descriptionKey: 'becomeProvider.subtitle' });
+}
 
 const benefits = [
   {
@@ -34,7 +34,8 @@ const benefits = [
   },
 ];
 
-export default function BecomeProviderPage() {
+export default async function BecomeProviderPage() {
+  await applyRequestLocale();
   return (
     <>
       <section className="relative overflow-hidden bg-brand-900 text-white">

@@ -3,17 +3,18 @@ import type { Metadata } from 'next';
 import { CategoryGrid } from '@/features/catalog/category-grid';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.categories'),
-  description: t('home.categoriesHint'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.categories', { descriptionKey: 'home.categoriesHint' });
+}
 
 export default async function CategoriesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  await applyRequestLocale();
   const { q } = await searchParams;
 
   return (

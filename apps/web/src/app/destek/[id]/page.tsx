@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 
 import { TicketDetailBody } from '@/features/support/support-page-body';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('support.detailTitle'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('support.detailTitle', { robots: { index: false, follow: false } });
+}
 
 export default async function SupportTicketPage({
   params,

@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { AccountOverview } from '@/features/auth/account-overview';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.profile'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.profile', { robots: { index: false, follow: false } });
+}
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  await applyRequestLocale();
   return (
     <SocialShell showRail={false}>
       <AccountOverview />

@@ -14,8 +14,7 @@ import {
 } from '@talpio/ui';
 import Link from 'next/link';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { useSupportTickets } from './use-support';
 
@@ -61,7 +60,7 @@ export function TicketList() {
 }
 
 function TicketRow({ ticket }: { ticket: SupportTicket }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
 
   return (
     <Link href={`/destek/${ticket.id}`} className="block rounded-[--radius-card]">

@@ -7,15 +7,12 @@ import { Badge, Button, Card, CardContent, StatusPill } from '@talpio/ui';
 import { useState } from 'react';
 
 import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 import { useNow } from '@/lib/use-now';
 
-const PRICE_TYPE_LABELS: Record<OfferPriceType, string> = {
-  [OfferPriceType.FIXED]: 'Sabit fiyat',
-  [OfferPriceType.STARTING_FROM]: 'Başlangıç fiyatı',
-  [OfferPriceType.AFTER_INSPECTION]: 'Keşif sonrası netleşir',
-  [OfferPriceType.HOURLY]: 'Saatlik',
-};
+function priceTypeLabel(type: OfferPriceType): string {
+  return t(`offerPriceType.${type}`);
+}
 
 export interface OfferCardProps {
   offer: Offer;
@@ -35,7 +32,7 @@ export function OfferCard({
   isDeciding,
   badges = [],
 }: OfferCardProps) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const [confirmingAccept, setConfirmingAccept] = useState(false);
 
   const now = useNow();
@@ -48,12 +45,15 @@ export function OfferCard({
       <CardContent className="flex flex-col gap-4 pt-5 sm:pt-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-medium text-foreground">{provider?.displayName ?? 'Satıcı'}</p>
+            <p className="font-medium text-foreground">{provider?.displayName ?? t('offer.sellerFallback')}</p>
             <p className="text-sm text-foreground-muted">
               {provider?.averageRating != null
-                ? `${provider.averageRating.toFixed(1)} puan · ${provider.reviewCount} değerlendirme`
-                : 'Henüz değerlendirilmemiş'}
-              {provider ? ` · ${provider.completedJobCount} tamamlanan iş` : ''}
+                ? t('offer.ratingLine', {
+                    rating: provider.averageRating.toFixed(1),
+                    count: provider.reviewCount,
+                  })
+                : t('offer.noRating')}
+              {provider ? ` · ${provider.completedJobCount} ${t('offer.completedJobs')}` : ''}
             </p>
           </div>
           <StatusPill
@@ -64,7 +64,7 @@ export function OfferCard({
 
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <p className="text-xl font-semibold text-foreground">{formatMoney(offer.price, locale)}</p>
-          <span className="text-sm text-foreground-muted">{PRICE_TYPE_LABELS[offer.priceType]}</span>
+          <span className="text-sm text-foreground-muted">{priceTypeLabel(offer.priceType)}</span>
         </div>
 
         {offer.note ? (
@@ -72,16 +72,16 @@ export function OfferCard({
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
-          {provider?.isVerified ? <Badge tone="success">Doğrulanmış</Badge> : null}
+          {provider?.isVerified ? <Badge tone="success">{t('offer.verifiedBadge')}</Badge> : null}
           {publicEnv.featurePremium && provider?.isPremium ? (
-            <Badge tone="accent">Öncelikli satıcı</Badge>
+            <Badge tone="accent">{t('offer.premiumBadge')}</Badge>
           ) : null}
           {offer.materialsIncluded ? <Badge tone="info">{t('job.materialsIncluded')}</Badge> : null}
           {offer.estimatedDurationMinutes ? (
             <Badge tone="neutral">{formatDuration(offer.estimatedDurationMinutes)}</Badge>
           ) : null}
           {offer.availableFrom ? (
-            <Badge tone="neutral">En erken {formatDate(offer.availableFrom, locale)}</Badge>
+            <Badge tone="neutral">{t('offer.earliestDate', { date: formatDate(offer.availableFrom, locale) })}</Badge>
           ) : null}
           {badges.map((badge) => (
             <Badge key={badge} tone="accent">
@@ -93,20 +93,17 @@ export function OfferCard({
 
         <p className="text-xs text-foreground-muted">
           {isExpired
-            ? 'Bu teklifin geçerlilik süresi doldu.'
-            : `Geçerlilik: ${formatDate(offer.validUntil, locale)}`}
+            ? t('offer.expiredNote')
+            : t('offer.validityLine', { date: formatDate(offer.validUntil, locale) })}
         </p>
 
         {canDecide ? (
           <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
             {confirmingAccept ? (
               <>
-                <p className="text-sm text-foreground">
-                  Bu teklifi kabul ederseniz diğer teklifler kapanır ve açık adresiniz bu satıcıyla
-                  paylaşılır.
-                </p>
+                <p className="text-sm text-foreground">{t('offer.acceptConfirm')}</p>
                 <Button size="sm" isLoading={isDeciding} onClick={() => onAccept(offer.id)}>
-                  Evet, kabul et
+                  {t('offer.acceptConfirmAction')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setConfirmingAccept(false)}>
                   {t('common.cancel')}

@@ -1,9 +1,10 @@
 import 'server-only';
 
 import { LOCALE_COOKIE, type SupportedLocale } from '@talpio/config';
+import type { Metadata } from 'next';
 import { cookies, headers } from 'next/headers';
 
-import { hydrateLocale } from '@/lib/i18n';
+import { hydrateLocale, t } from '@/lib/i18n';
 import { localeFromAcceptLanguage, resolveLocale } from '@/lib/locale';
 
 export async function getRequestLocale(): Promise<SupportedLocale> {
@@ -17,4 +18,22 @@ export async function applyRequestLocale(): Promise<SupportedLocale> {
   const locale = await getRequestLocale();
   hydrateLocale(locale);
   return locale;
+}
+
+type PageMetadataOptions = {
+  descriptionKey?: string;
+  robots?: Metadata['robots'];
+};
+
+/** Sayfa metadata'sı — locale uygulandıktan sonra `t()` ile üretir. */
+export async function generatePageMetadata(
+  titleKey: string,
+  options?: PageMetadataOptions,
+): Promise<Metadata> {
+  await applyRequestLocale();
+  return {
+    title: t(titleKey),
+    ...(options?.descriptionKey ? { description: t(options.descriptionKey) } : {}),
+    ...(options?.robots !== undefined ? { robots: options.robots } : {}),
+  };
 }

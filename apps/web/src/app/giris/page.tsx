@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { AuthShell } from '@/features/auth/auth-shell';
 import { LoginForm } from '@/features/auth/login-form';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.login'),
-  description: t('auth.loginTitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.login', { descriptionKey: 'auth.loginTitle' });
+}
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  await applyRequestLocale();
   return (
     <AuthShell
       title={t('auth.loginPageTitle')}

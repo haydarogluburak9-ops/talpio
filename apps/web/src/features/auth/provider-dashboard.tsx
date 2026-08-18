@@ -23,7 +23,7 @@ import { useProviderWallet } from '@/features/payments/use-payments';
 import { ProviderWallet } from '@/features/payments/provider-wallet';
 import { ReceivedReviews } from '@/features/reviews/received-reviews';
 import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { useLogout, useSession } from './use-session';
 
@@ -125,7 +125,7 @@ export function ProviderDashboard() {
 
 /** Panel ölçümleri gerçek uçlardan gelir; bloke hakediş cüzdan özetinden okunur. */
 function Metrics() {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const activeOrders = useMyOrders({ status: ACTIVE_ORDER_STATUSES, limit: 1 });
   const pendingOffers = useMyOffers({ status: [OfferStatus.SUBMITTED], limit: 1 });
   const completedOrders = useMyOrders({ status: [OrderStatus.COMPLETED], limit: 100 });

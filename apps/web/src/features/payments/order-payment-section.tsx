@@ -5,8 +5,7 @@ import { formatDateTime, formatMoney, paymentStatusLabel } from '@talpio/localiz
 import { OrderStatus, PaymentStatus, type Order } from '@talpio/types';
 import { Card, CardContent, CardHeader, CardTitle, ListSkeleton, StatusPill } from '@talpio/ui';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { usePaymentForOrder } from './use-payments';
 
@@ -17,7 +16,7 @@ import { usePaymentForOrder } from './use-payments';
  * sorgu boş döner ve bölüm yalnızca bilgilendirme yazar.
  */
 export function OrderPaymentSection({ order }: { order: Order }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const attempted = order.status !== OrderStatus.PENDING_PAYMENT;
   const payment = usePaymentForOrder(order.id, attempted);
 

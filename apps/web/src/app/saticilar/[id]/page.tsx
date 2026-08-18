@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 
 import { ProviderProfileBody } from '@/features/reviews/provider-profile-body';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('provider.profileTitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('provider.profileTitle');
+}
 
 export default async function ProviderProfilePage({
   params,

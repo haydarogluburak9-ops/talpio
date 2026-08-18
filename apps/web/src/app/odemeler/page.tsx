@@ -4,13 +4,14 @@ import { PaymentHistory } from '@/features/payments/payment-history';
 import { SocialShell } from '@/features/social/social-shell';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('payments.pageTitle'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('payments.pageTitle', { robots: { index: false, follow: false } });
+}
 
-export default function PaymentsPage() {
+export default async function PaymentsPage() {
+  await applyRequestLocale();
   if (!publicEnv.featurePayments) {
     return (
       <SocialShell showRail={false}>

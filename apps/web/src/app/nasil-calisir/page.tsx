@@ -3,11 +3,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.howItWorks'),
-  description: t('home.heroSubtitle'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.howItWorks', { descriptionKey: 'home.heroSubtitle' });
+}
 
 const steps = [
   { titleKey: 'home.stepRequestTitle', bodyKey: 'home.stepRequestBody' },
@@ -16,7 +16,8 @@ const steps = [
   { titleKey: 'home.stepPayTitle', bodyKey: 'home.stepPayBody' },
 ] as const;
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  await applyRequestLocale();
   return (
     <>
       <section className="relative overflow-hidden bg-brand-900 text-white">

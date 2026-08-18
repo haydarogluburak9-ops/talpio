@@ -8,8 +8,7 @@ import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { useShareRequestToFeed } from '@/features/social/use-social';
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import {
   useAcceptRequestOffer,
@@ -114,7 +113,7 @@ export function RequestDetail({ id }: { id: string }) {
                           {formatMoneyMinor(
                             offer.amountMinor,
                             offer.currency,
-                            publicEnv.defaultLocale,
+                            getLocale(),
                           )}
                         </td>
                         <td className="py-3 pr-3 text-foreground-muted">
@@ -169,7 +168,7 @@ export function RequestDetail({ id }: { id: string }) {
                           {formatMoneyMinor(
                             offer.amountMinor,
                             offer.currency,
-                            publicEnv.defaultLocale,
+                            getLocale(),
                           )}
                         </p>
                         <p className="text-sm text-foreground-muted">

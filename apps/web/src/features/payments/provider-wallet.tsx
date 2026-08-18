@@ -11,14 +11,13 @@ import {
   ListSkeleton,
 } from '@talpio/ui';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { useMyTransactions, useProviderWallet } from './use-payments';
 
 /** Satıcının cüzdanı: kullanılabilir bakiye, bloke hakediş ve son hareketler. */
 export function ProviderWallet() {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const wallet = useProviderWallet();
   const transactions = useMyTransactions({ limit: 10 });
 
@@ -99,7 +98,7 @@ function Amount({ label, value, hint }: { label: string; value: string | null; h
 }
 
 function TransactionRow({ transaction }: { transaction: Transaction }) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
   const outgoing = transaction.amount.amountMinor < 0;
 
   return (

@@ -5,15 +5,16 @@ import { CommerceRequestForm } from '@/features/requests/commerce-request-form';
 import { OilRequestForm } from '@/features/requests/oil-request-form';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('commerce.createTitle'),
-  description: t('commerce.createDescription'),
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('commerce.createTitle', { descriptionKey: 'commerce.createDescription' });
+}
 
 type SearchParams = Promise<{ tip?: string; magaza?: string }>;
 
 export default async function TedarikPage({ searchParams }: { searchParams: SearchParams }) {
+  await applyRequestLocale();
   const params = await searchParams;
   const oilMode = params.tip === 'yag' || params.tip === 'oil';
   const storeUsername = params.magaza?.trim() || undefined;

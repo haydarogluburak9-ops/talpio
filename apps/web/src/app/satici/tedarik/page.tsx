@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { MatchedRequestsPanel } from '@/features/requests/matched-requests-panel';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('commerce.matchedTitle'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('commerce.matchedTitle', { robots: { index: false, follow: false } });
+}
 
-export default function ProviderSupplyPage() {
+export default async function ProviderSupplyPage() {
+  await applyRequestLocale();
   return (
     <SocialShell showRail={false}>
       <div className="social-panel mb-4 p-5 sm:p-6">

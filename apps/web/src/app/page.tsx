@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { HeroVisual } from '@/components/home/hero-visual';
 import { HomeFeedRedirect } from '@/features/social/home-feed-redirect';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale } from '@/lib/server-locale';
 
 /** Ürün yetenekleri — üretim istatistiği değildir. */
 const stats = [
@@ -86,7 +87,8 @@ const partnerPlaceholders = [
 
 const proofAvatars = ['B', 'E', 'A', 'M', 'S'] as const;
 
-export default function HomePage() {
+export default async function HomePage() {
+  await applyRequestLocale();
   return (
     <>
       <HomeFeedRedirect />

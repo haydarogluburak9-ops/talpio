@@ -3,13 +3,14 @@ import type { Metadata } from 'next';
 import { NotificationList } from '@/features/notifications/notification-list';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
-export const metadata: Metadata = {
-  title: t('nav.notifications'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return generatePageMetadata('nav.notifications', { robots: { index: false, follow: false } });
+}
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  await applyRequestLocale();
   return (
     <SocialShell showRail={false}>
       <div className="social-panel mb-4 p-5 sm:p-6">

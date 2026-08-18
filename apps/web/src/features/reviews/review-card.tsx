@@ -7,8 +7,7 @@ import type { Review } from '@talpio/types';
 import { Button, Card, CardContent, Textarea } from '@talpio/ui';
 import { useState } from 'react';
 
-import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { t, getLocale } from '@/lib/i18n';
 
 import { Stars } from './star-rating';
 import { useReplyToReview } from './use-reviews';
@@ -29,7 +28,7 @@ export interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, replyable = false }: ReviewCardProps) {
-  const locale = publicEnv.defaultLocale;
+  const locale = getLocale();
 
   return (
     <Card>

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { HashtagFeed } from '@/features/social/hashtag-feed';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
+import { applyRequestLocale } from '@/lib/server-locale';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -13,6 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function HashtagPage({ params }: Props) {
+  await applyRequestLocale();
   const { slug } = await params;
   const tag = decodeURIComponent(slug).replace(/^#/, '');
 
