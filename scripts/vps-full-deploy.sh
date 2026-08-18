@@ -77,24 +77,28 @@ else
   log ".env zaten var — dokunulmadı"
 fi
 
-log "Docker image build + stack başlatılıyor (15-30 dk sürebilir)"
-docker compose -f docker-compose.prod.yml up -d --build
+log "Docker image build (15-30 dk sürebilir)"
+docker compose --env-file .env -f docker-compose.prod.yml build
 
-log "Veritabanı migrate"
-docker compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy
+log "Veritabanı migrate (backend başlamadan önce)"
+docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend npx prisma migrate deploy
+
+log "Stack başlatılıyor"
+docker compose --env-file .env -f docker-compose.prod.yml up -d
 
 log "Seed"
-docker compose -f docker-compose.prod.yml exec -T backend npm run db:seed
+docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend sh -c \
+  'cd /app/apps/backend && npx prisma generate && npx --yes tsx prisma/seed/index.ts'
 
 log "Sağlık kontrolü"
-sleep 5
+sleep 10
 if curl -fsS "https://api.talpio.app/health/ready" >/dev/null 2>&1; then
   echo "OK: https://api.talpio.app/health/ready"
   curl -sS "https://api.talpio.app/health/ready" || true
 else
   echo "Uyarı: HTTPS henüz hazır olmayabilir; container logları:"
-  docker compose -f docker-compose.prod.yml ps
-  docker compose -f docker-compose.prod.yml logs --tail=30 caddy backend || true
+  docker compose --env-file .env -f docker-compose.prod.yml ps
+  docker compose --env-file .env -f docker-compose.prod.yml logs --tail=30 caddy backend || true
 fi
 
 log "Bitti — https://talpio.app | https://admin.talpio.app"
