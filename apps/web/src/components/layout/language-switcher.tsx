@@ -3,6 +3,7 @@
 import { LOCALE_META, SUPPORTED_LOCALES, type SupportedLocale } from '@talpio/config';
 import { cn } from '@talpio/ui';
 import { Globe } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';
@@ -17,6 +18,7 @@ export function LanguageSwitcher({
   const [locale, setLocaleState] = useState<SupportedLocale>(getLocale);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => subscribeLocale(() => setLocaleState(getLocale())), []);
 
@@ -34,6 +36,7 @@ export function LanguageSwitcher({
     apiClient.setLocale(next);
     setLocaleState(next);
     setOpen(false);
+    router.refresh();
   }
 
   return (

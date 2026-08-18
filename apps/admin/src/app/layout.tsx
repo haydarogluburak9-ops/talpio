@@ -1,12 +1,11 @@
-import { LOCALE_COOKIE, LOCALE_META } from '@talpio/config';
+import { LOCALE_META } from '@talpio/config';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies, headers } from 'next/headers';
 
 import { Providers } from '@/components/providers';
 import { ThemeScript } from '@/components/theme-script';
 import { t } from '@/lib/i18n';
-import { localeFromAcceptLanguage, resolveLocale } from '@/lib/locale';
+import { applyRequestLocale } from '@/lib/server-locale';
 
 import './globals.css';
 
@@ -16,21 +15,20 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: t('admin.panel'),
-    template: '%s · Talpio',
-  },
-  description: t('admin.brandSubtitle'),
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  await applyRequestLocale();
+  return {
+    title: {
+      default: t('admin.panel'),
+      template: '%s · Talpio',
+    },
+    description: t('admin.brandSubtitle'),
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const jar = await cookies();
-  const accept = (await headers()).get('accept-language');
-  const initialLocale = resolveLocale(
-    jar.get(LOCALE_COOKIE)?.value ?? localeFromAcceptLanguage(accept),
-  );
+  const initialLocale = await applyRequestLocale();
 
   return (
     <html

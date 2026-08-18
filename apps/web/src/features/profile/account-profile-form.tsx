@@ -21,6 +21,7 @@ import {
   type UpdateUserProfilePayload,
 } from '@talpio/validation';
 import { Controller, useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/lib/api';
 import { hydrateLocale, t } from '@/lib/i18n';
@@ -31,6 +32,7 @@ import { useUpdateUserProfile } from './use-profile';
 
 export function AccountProfileForm({ user }: { user: CurrentUser }) {
   const update = useUpdateUserProfile();
+  const router = useRouter();
 
   const {
     register,
@@ -122,6 +124,7 @@ export function AccountProfileForm({ user }: { user: CurrentUser }) {
                         hydrateLocale(next);
                         persistLocale(next);
                         apiClient.setLocale(next);
+                        router.refresh();
                       }
                     },
                   })}

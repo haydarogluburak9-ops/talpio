@@ -1,7 +1,6 @@
-import { LOCALE_COOKIE, LOCALE_META } from '@talpio/config';
+import { LOCALE_META } from '@talpio/config';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies, headers } from 'next/headers';
 
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
@@ -9,7 +8,7 @@ import { Providers } from '@/components/providers';
 import { ThemeScript } from '@/components/theme-script';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
-import { localeFromAcceptLanguage, resolveLocale } from '@/lib/locale';
+import { applyRequestLocale } from '@/lib/server-locale';
 
 import './globals.css';
 
@@ -19,20 +18,27 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(publicEnv.siteUrl),
-  title: {
-    default: `${t('common.appName')} — ${t('common.tagline')}`,
-    template: `%s · ${t('common.appName')}`,
-  },
-  description: t('home.heroSubtitle'),
-  openGraph: {
-    type: 'website',
-    siteName: t('common.appName'),
-    locale: 'en_US',
-    alternateLocale: ['tr_TR', 'de_DE', 'es_ES', 'fr_FR', 'ar'],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await applyRequestLocale();
+  const ogLocale = LOCALE_META[locale].tag.replace('-', '_');
+
+  return {
+    metadataBase: new URL(publicEnv.siteUrl),
+    title: {
+      default: `${t('common.appName')} — ${t('common.tagline')}`,
+      template: `%s · ${t('common.appName')}`,
+    },
+    description: t('home.heroSubtitle'),
+    openGraph: {
+      type: 'website',
+      siteName: t('common.appName'),
+      locale: ogLocale,
+      alternateLocale: SUPPORTED_OG_LOCALES.filter((item) => item !== ogLocale),
+    },
+  };
+}
+
+const SUPPORTED_OG_LOCALES = ['en_US', 'tr_TR', 'de_DE', 'es_ES', 'fr_FR', 'ar'] as const;
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -47,11 +53,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const jar = await cookies();
-  const accept = (await headers()).get('accept-language');
-  const initialLocale = resolveLocale(
-    jar.get(LOCALE_COOKIE)?.value ?? localeFromAcceptLanguage(accept),
-  );
+  const initialLocale = await applyRequestLocale();
 
   return (
     <html
