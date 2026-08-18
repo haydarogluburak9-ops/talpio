@@ -1,11 +1,19 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { SupportedLocale } from '@talpio/config';
 import { useState, type ReactNode } from 'react';
 
+import { I18nProvider } from '@/components/i18n-provider';
 import { ApiError } from '@/lib/api-client';
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  initialLocale: SupportedLocale;
+}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -14,7 +22,6 @@ export function Providers({ children }: { children: ReactNode }) {
             staleTime: 30_000,
             refetchOnWindowFocus: false,
             retry: (failureCount, error) => {
-              // Yetki ve doğrulama hatalarında yeniden denemek anlamsızdır.
               if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
                 return false;
               }
@@ -25,5 +32,9 @@ export function Providers({ children }: { children: ReactNode }) {
       }),
   );
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <I18nProvider initialLocale={initialLocale}>{children}</I18nProvider>
+    </QueryClientProvider>
+  );
 }

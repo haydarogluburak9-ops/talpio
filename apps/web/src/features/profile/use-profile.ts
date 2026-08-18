@@ -5,8 +5,8 @@ import type {
   ProviderServiceInput,
   UpdateProviderProfileBody,
   UpdateUserProfileBody,
-} from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
+} from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
 
 import { apiClient } from '@/lib/api';
 

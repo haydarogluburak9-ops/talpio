@@ -1,0 +1,310 @@
+import type { Prisma } from '@/generated/prisma/client';
+import type {
+  DealMetadata,
+  FeedItem,
+  FileAsset,
+  SocialPost,
+  SocialPostComment,
+  SocialPostPromo,
+  SocialProfile,
+} from '@talpio/types';
+
+export const socialProfileSelect = {
+  id: true,
+  kind: true,
+  userId: true,
+  businessId: true,
+  username: true,
+  displayName: true,
+  bio: true,
+  avatarFileId: true,
+  coverFileId: true,
+  locationCityId: true,
+  locationText: true,
+  followerCount: true,
+  followingCount: true,
+  postCount: true,
+  isVerifiedDisplay: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  avatar: { select: { id: true, storageKey: true, mimeType: true, sizeBytes: true, originalName: true, isPublic: true, createdAt: true } },
+  cover: { select: { id: true, storageKey: true, mimeType: true, sizeBytes: true, originalName: true, isPublic: true, createdAt: true } },
+} satisfies Prisma.SocialProfileSelect;
+
+export type SocialProfileRow = Prisma.SocialProfileGetPayload<{ select: typeof socialProfileSelect }>;
+
+export const dealMetadataSelect = {
+  id: true,
+  productName: true,
+  title: true,
+  listPriceMinor: true,
+  dealPriceMinor: true,
+  discountPercent: true,
+  currency: true,
+  unit: true,
+  minQuantity: true,
+  stockQuantity: true,
+  startsAt: true,
+  endsAt: true,
+  vatIncluded: true,
+  shippingIncluded: true,
+  locationText: true,
+  categoryId: true,
+  subcategoryId: true,
+  brand: true,
+  maxQuantity: true,
+  deliveryRegions: true,
+} satisfies Prisma.DealMetadataSelect;
+
+export const postInclude = {
+  author: { select: socialProfileSelect },
+  dealMetadata: { select: dealMetadataSelect },
+  hashtags: { include: { hashtag: { select: { slug: true, display: true } } } },
+  mentions: { include: { profile: { select: { username: true, displayName: true } } } },
+  originalPost: {
+    include: {
+      author: { select: socialProfileSelect },
+      dealMetadata: { select: dealMetadataSelect },
+      media: {
+        orderBy: { sortOrder: 'asc' as const },
+        include: {
+          file: {
+            select: {
+              id: true,
+              storageKey: true,
+              mimeType: true,
+              sizeBytes: true,
+              originalName: true,
+              isPublic: true,
+              createdAt: true,
+              metadata: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  media: {
+    orderBy: { sortOrder: 'asc' as const },
+    include: {
+      file: {
+        select: {
+          id: true,
+          storageKey: true,
+          mimeType: true,
+          sizeBytes: true,
+          originalName: true,
+          isPublic: true,
+          createdAt: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.PostInclude;
+
+export type PostRow = Prisma.PostGetPayload<{ include: typeof postInclude }>;
+
+export const commentInclude = {
+  author: { select: socialProfileSelect },
+} satisfies Prisma.PostCommentInclude;
+
+export type CommentRow = Prisma.PostCommentGetPayload<{ include: typeof commentInclude }>;
+
+export const feedItemInclude = {
+  post: { include: postInclude },
+} satisfies Prisma.FeedItemInclude;
+
+export type FeedItemRow = Prisma.FeedItemGetPayload<{ include: typeof feedItemInclude }>;
+
+export function resolveAssetUrl(fileBaseUrl: string, storageKey: string): string {
+  if (/^https?:\/\//i.test(storageKey)) return storageKey;
+  return `${fileBaseUrl}/${storageKey}`;
+}
+
+export function toFileAsset(
+  file: {
+    id: string;
+    storageKey: string;
+    mimeType: string;
+    sizeBytes: number;
+    originalName: string | null;
+    isPublic: boolean;
+    createdAt: Date;
+    metadata?: unknown;
+  },
+  fileBaseUrl: string,
+): FileAsset {
+  const meta = file.metadata as { thumbStorageKey?: string } | null | undefined;
+  const thumbnailUrl = meta?.thumbStorageKey
+    ? resolveAssetUrl(fileBaseUrl, meta.thumbStorageKey)
+    : null;
+  return {
+    id: file.id,
+    url: resolveAssetUrl(fileBaseUrl, file.storageKey),
+    thumbnailUrl,
+    mimeType: file.mimeType,
+    sizeBytes: file.sizeBytes,
+    originalName: file.originalName,
+    isPublic: file.isPublic,
+    createdAt: file.createdAt.toISOString(),
+  };
+}
+
+export function toSocialProfile(
+  row: SocialProfileRow,
+  fileBaseUrl: string,
+  extras: { isFollowing?: boolean; business?: SocialProfile['business'] } = {},
+): SocialProfile {
+  return {
+    id: row.id,
+    kind: row.kind,
+    userId: row.userId,
+    businessId: row.businessId,
+    username: row.username,
+    displayName: row.displayName,
+    bio: row.bio,
+    avatarUrl: row.avatar ? resolveAssetUrl(fileBaseUrl, row.avatar.storageKey) : null,
+    coverUrl: row.cover ? resolveAssetUrl(fileBaseUrl, row.cover.storageKey) : null,
+    locationCityId: row.locationCityId,
+    locationText: row.locationText,
+    followerCount: row.followerCount,
+    followingCount: row.followingCount,
+    postCount: row.postCount,
+    isVerifiedDisplay: row.isVerifiedDisplay,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    deletedAt: row.deletedAt?.toISOString() ?? null,
+    ...(extras.isFollowing !== undefined ? { isFollowing: extras.isFollowing } : {}),
+    ...(extras.business !== undefined ? { business: extras.business } : {}),
+  };
+}
+
+function toDealMetadata(
+  row: NonNullable<PostRow['dealMetadata']>,
+): DealMetadata {
+  return {
+    productName: row.productName,
+    title: row.title,
+    listPriceMinor: row.listPriceMinor,
+    dealPriceMinor: row.dealPriceMinor,
+    discountPercent: row.discountPercent,
+    currency: row.currency,
+    unit: row.unit,
+    minQuantity: row.minQuantity,
+    stockQuantity: row.stockQuantity,
+    startsAt: row.startsAt?.toISOString() ?? null,
+    endsAt: row.endsAt?.toISOString() ?? null,
+    vatIncluded: row.vatIncluded,
+    shippingIncluded: row.shippingIncluded,
+    locationText: row.locationText,
+    categoryId: row.categoryId,
+    subcategoryId: row.subcategoryId,
+    brand: row.brand,
+    maxQuantity: row.maxQuantity,
+    deliveryRegions: Array.isArray(row.deliveryRegions)
+      ? (row.deliveryRegions as string[])
+      : [],
+  };
+}
+
+function toPromoFromRow(row: PostRow): SocialPostPromo | null {
+  const deal = row.dealMetadata;
+  const hasLegacy =
+    row.promoLabel != null ||
+    row.promoPriceMinor != null ||
+    row.originalPriceMinor != null;
+
+  if (!deal && !hasLegacy) return null;
+
+  return {
+    label: deal?.title ?? deal?.productName ?? row.promoLabel,
+    originalPriceMinor: deal?.listPriceMinor ?? row.originalPriceMinor,
+    promoPriceMinor: deal?.dealPriceMinor ?? row.promoPriceMinor,
+    currency: deal?.currency ?? row.promoCurrency ?? 'TRY',
+    validUntil: (deal?.endsAt ?? row.promoValidUntil)?.toISOString() ?? null,
+  };
+}
+
+export function toSocialPost(
+  row: PostRow,
+  fileBaseUrl: string,
+  extras: { likedByMe?: boolean; savedByMe?: boolean; sharedByMe?: boolean } = {},
+): SocialPost {
+  const original = row.originalPost
+    ? toSocialPost(
+        {
+          ...row.originalPost,
+          originalPost: null,
+          hashtags: [],
+          mentions: [],
+        } as PostRow,
+        fileBaseUrl,
+      )
+    : null;
+
+  return {
+    id: row.id,
+    authorProfileId: row.authorProfileId,
+    type: row.type,
+    body: row.body,
+    visibility: row.visibility,
+    likeCount: row.likeCount,
+    commentCount: row.commentCount,
+    saveCount: row.saveCount,
+    viewCount: row.viewCount,
+    uniqueViewCount: row.uniqueViewCount,
+    shareCount: row.shareCount,
+    repostCount: row.repostCount,
+    originalPostId: row.originalPostId,
+    originalPost: original,
+    hashtags: (row.hashtags ?? []).map((item) => item.hashtag.slug),
+    mentions: (row.mentions ?? []).map((item) => ({
+      username: item.profile.username,
+      displayName: item.profile.displayName,
+    })),
+    commerceRequestId: row.commerceRequestId,
+    promo: toPromoFromRow(row),
+    deal: row.dealMetadata ? toDealMetadata(row.dealMetadata) : null,
+    media: (row.media ?? []).map((m) => toFileAsset(m.file, fileBaseUrl)),
+    author: row.author ? toSocialProfile(row.author, fileBaseUrl) : null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    deletedAt: row.deletedAt?.toISOString() ?? null,
+    ...(extras.likedByMe !== undefined ? { likedByMe: extras.likedByMe } : {}),
+    ...(extras.savedByMe !== undefined ? { savedByMe: extras.savedByMe } : {}),
+    ...(extras.sharedByMe !== undefined ? { sharedByMe: extras.sharedByMe } : {}),
+  };
+}
+
+export function toSocialComment(row: CommentRow, fileBaseUrl: string): SocialPostComment {
+  return {
+    id: row.id,
+    postId: row.postId,
+    authorProfileId: row.authorProfileId,
+    parentId: row.parentId,
+    body: row.body,
+    likeCount: row.likeCount,
+    author: row.author ? toSocialProfile(row.author, fileBaseUrl) : null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.createdAt.toISOString(),
+    deletedAt: row.deletedAt?.toISOString() ?? null,
+  };
+}
+
+export function toFeedItem(
+  row: FeedItemRow,
+  fileBaseUrl: string,
+  extras: { likedByMe?: boolean; savedByMe?: boolean; sharedByMe?: boolean; score?: number } = {},
+): FeedItem {
+  return {
+    id: row.id,
+    kind: row.kind,
+    postId: row.postId,
+    commerceRequestId: row.commerceRequestId,
+    authorProfileId: row.authorProfileId,
+    score: extras.score ?? row.score,
+    createdAt: row.createdAt.toISOString(),
+    post: row.post && !row.post.deletedAt ? toSocialPost(row.post, fileBaseUrl, extras) : null,
+  };
+}

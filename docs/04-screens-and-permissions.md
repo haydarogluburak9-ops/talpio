@@ -1,4 +1,4 @@
-# UstaPilot — Ekranlar ve Yetki Matrisi
+# Talpio — Ekranlar ve Yetki Matrisi
 
 ## 1. Mobil Ekran Listesi (Flutter)
 
@@ -13,7 +13,7 @@ Tek uygulama, iki rol. Rol seçimi sonrası yönlendirme `GoRouter` redirect ile
 | Dil seçimi          | `/language`                 | TR / EN                        |
 | Giriş               | `/auth/login`               | E-posta veya telefon           |
 | Kayıt               | `/auth/register`            | Rol seçimiyle                  |
-| Rol seçimi          | `/auth/role`                | Müşteri / Usta                 |
+| Rol seçimi          | `/auth/role`                | Müşteri / Satıcı                 |
 | Telefon doğrulama   | `/auth/verify-phone`        | 6 haneli OTP                   |
 | Şifremi unuttum     | `/auth/forgot-password`     |                                |
 | Şifre sıfırlama     | `/auth/reset-password`      |                                |
@@ -43,7 +43,7 @@ Tek uygulama, iki rol. Rol seçimi sonrası yönlendirme `GoRouter` redirect ile
 | Talep detayı               | `/customer/requests/:id`                |
 | Teklif listesi             | `/customer/requests/:id/offers`         |
 | Teklif karşılaştırma       | `/customer/requests/:id/offers/compare` |
-| Usta profili               | `/masters/:id`                          |
+| Satıcı profili               | `/masters/:id`                          |
 | Randevu                    | `/customer/requests/:id/appointment`    |
 | Ödeme                      | `/customer/requests/:id/payment`        |
 | İş tamamlama onayı         | `/customer/requests/:id/approve`        |
@@ -53,7 +53,7 @@ Tek uygulama, iki rol. Rol seçimi sonrası yönlendirme `GoRouter` redirect ile
 
 Alt navigasyon: **Ana Sayfa · Taleplerim · Mesajlar · Favoriler · Profil**
 
-### 1.3 Usta
+### 1.3 Satıcı
 
 | Ekran                | Rota                             |
 | -------------------- | -------------------------------- |
@@ -80,15 +80,15 @@ Alt navigasyon: **Ana Sayfa · İşler · Teklifler · Mesajlar · Profil**
 ### 1.4 Müşteri ana sayfa bölümleri
 
 1. Üst bant: kullanıcı adı, seçili konum, bildirim ikonu
-2. Başlık: "Bugün hangi ustaya ihtiyacınız var?"
+2. Başlık: "Bugün hangi satıcıya ihtiyacınız var?"
 3. Büyük arama alanı
 4. Popüler kategoriler (yatay kaydırma)
-5. Acil usta çağır (vurgulu aksiyon kartı)
+5. Acil satıcı çağır (vurgulu aksiyon kartı)
 6. Yakınındaki doğrulanmış ustalar
 7. Devam eden işler
 8. Son talepler
 9. Kampanya kartı
-10. UstaPilot nasıl çalışır? (3 adım)
+10. Talpio nasıl çalışır? (3 adım)
 11. Güvenli hizmet avantajları
 
 ## 2. Admin Panel Ekranları (Next.js)
@@ -98,7 +98,7 @@ Alt navigasyon: **Ana Sayfa · İşler · Teklifler · Mesajlar · Profil**
 | Dashboard          | `/dashboard`      | KPI kartları + grafikler       |
 | Kullanıcılar       | `/users`          | Liste, detay, durum değiştirme |
 | Ustalar            | `/masters`        | Liste, profil, performans      |
-| Usta doğrulamaları | `/verifications`  | Belge inceleme kuyruğu         |
+| Satıcı doğrulamaları | `/verifications`  | Belge inceleme kuyruğu         |
 | İş talepleri       | `/job-requests`   | Liste, detay, durum geçmişi    |
 | Teklifler          | `/offers`         | Liste, filtreler               |
 | Kategoriler        | `/categories`     | Ağaç düzenleme, çeviri         |
@@ -119,7 +119,7 @@ Alt navigasyon: **Ana Sayfa · İşler · Teklifler · Mesajlar · Profil**
 
 ### Dashboard metrikleri
 
-Toplam kullanıcı · Aktif müşteri · Aktif usta · Doğrulama bekleyen usta · Açık iş talebi ·
+Toplam kullanıcı · Aktif müşteri · Aktif satıcı · Doğrulama bekleyen satıcı · Açık iş talebi ·
 Tamamlanan iş · Toplam işlem hacmi · Platform komisyonu · İptal oranı · Şikâyet oranı ·
 En popüler kategoriler · Şehirlere göre kullanım · Günlük ve aylık büyüme
 
@@ -127,21 +127,21 @@ En popüler kategoriler · Şehirlere göre kullanım · Günlük ve aylık büy
 
 `✓` tam erişim · `S` yalnızca kendi kaydı · `K` kısıtlı/maskeli görünüm · `—` erişim yok
 
-| Yetenek                           |    Müşteri    |     Usta      |       Destek       |    Admin    |
+| Yetenek                           |    Müşteri    |     Satıcı      |       Destek       |    Admin    |
 | --------------------------------- | :-----------: | :-----------: | :----------------: | :---------: |
 | Kendi profilini görüntüle/düzenle |       ✓       |       ✓       |         ✓          |      ✓      |
-| Usta profili oluştur              |       —       |       ✓       |         —          |      —      |
-| Usta belgesi yükle                |       —       |       S       |         —          |      —      |
-| Usta belgesini görüntüle          |       —       |       S       |         K          |      ✓      |
+| Satıcı profili oluştur              |       —       |       ✓       |         —          |      —      |
+| Satıcı belgesi yükle                |       —       |       S       |         —          |      —      |
+| Satıcı belgesini görüntüle          |       —       |       S       |         K          |      ✓      |
 | Belge onayla/reddet               |       —       |       —       |         —          |      ✓      |
 | İş talebi oluştur                 |       ✓       |       —       |         —          |      —      |
 | Kendi taleplerini gör             |       S       |       —       |         K          |      ✓      |
 | Uygun iş havuzunu gör             |       —       |       K       |         —          |      ✓      |
-| Talebin tam adresini gör          |       S       | Seçilen usta  |         K          |      ✓      |
+| Talebin tam adresini gör          |       S       | Seçilen satıcı  |         K          |      ✓      |
 | Teklif ver                        |       —       |       ✓       |         —          |      —      |
 | Bir işin tüm tekliflerini gör     |       S       | Kendi teklifi |         K          |      ✓      |
 | Teklif kabul et                   |       S       |       —       |         —          |      —      |
-| İş durumu güncelle                |  Onay adımı   | Seçilen usta  |         —          |      ✓      |
+| İş durumu güncelle                |  Onay adımı   | Seçilen satıcı  |         —          |      ✓      |
 | Mesaj gönder                      |   Katılımcı   |   Katılımcı   |         —          |      —      |
 | Mesajları oku                     |   Katılımcı   |   Katılımcı   | Şikâyet kapsamında |      ✓      |
 | Değerlendirme yaz                 | Tamamlanan iş |       —       |         —          |      —      |
@@ -169,9 +169,9 @@ Rol kontrolü tek başına yeterli değildir; her kaynak erişiminde ek olarak:
 
 1. **Sahiplik:** `resource.ownerId === user.id` (talep, adres, teklif, ödeme).
 2. **Katılımcılık:** sohbet ve mesajlarda `ConversationParticipant` kaydı aranır.
-3. **Aşama:** tam adres yalnızca `MASTER_SELECTED` ve sonrası, yalnızca seçilen ustaya.
-4. **Teklif gizliliği:** usta yalnızca kendi teklifini görür; rakip teklif tutarlarını göremez.
-5. **Doğrulama şartı:** `VERIFIED` olmayan usta teklif veremez, iş kabul edemez.
+3. **Aşama:** tam adres yalnızca `MASTER_SELECTED` ve sonrası, yalnızca seçilen satıcıya.
+4. **Teklif gizliliği:** satıcı yalnızca kendi teklifini görür; rakip teklif tutarlarını göremez.
+5. **Doğrulama şartı:** `VERIFIED` olmayan satıcı teklif veremez, iş kabul edemez.
 6. **Destek sınırı:** destek yetkilisi finansal kayıtlarda yalnızca maskeli özet görür,
    kart/IBAN verisine hiçbir rolde erişilemez.
 

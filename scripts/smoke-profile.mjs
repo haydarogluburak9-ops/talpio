@@ -1,7 +1,7 @@
 /**
  * Profil akışının uçtan uca duman testi.
  *
- * Kullanıcı profili güncelleme, profil görseli, usta profili ile hizmet ve
+ * Kullanıcı profili güncelleme, profil görseli, satıcı profili ile hizmet ve
  * bölge yönetimini doğrular. Çalışan bir API, MinIO ve tohumlanmış veritabanı
  * gerektirir.
  */
@@ -51,7 +51,7 @@ async function upload(token, { bytes, mimeType, filename, purpose }) {
 async function register(role, label) {
   const result = await call('POST', '/auth/register', {
     body: {
-      email: `profile-${label}+${Date.now()}@ustapilot.test`,
+      email: `profile-${label}+${Date.now()}@talpio.test`,
       password: 'Guclu1Parola',
       fullName: 'Profil Duman Testi',
       role,
@@ -140,14 +140,14 @@ const removedAvatar = await call('PATCH', '/users/me', {
 });
 check('görsel kaldırılır', removedAvatar.json?.data?.avatarUrl === null, `status=${removedAvatar.status}`);
 
-console.log('\nUsta profili:');
+console.log('\nSatıcı profili:');
 const providerMe = await call('GET', '/providers/me', { token: providerToken });
 const providerProfileId = providerMe.json?.data?.id;
-check('usta kendi profilini okur', providerMe.status === 200, `status=${providerMe.status}`);
-check('yeni usta doğrulanmamış', providerMe.json?.data?.isVerified === false);
+check('satıcı kendi profilini okur', providerMe.status === 200, `status=${providerMe.status}`);
+check('yeni satıcı doğrulanmamış', providerMe.json?.data?.isVerified === false);
 
 const customerOnProvider = await call('GET', '/providers/me', { token: customerToken });
-check('müşteri usta profiline erişemez', customerOnProvider.status === 403, `status=${customerOnProvider.status}`);
+check('müşteri satıcı profiline erişemez', customerOnProvider.status === 403, `status=${customerOnProvider.status}`);
 
 const updatedProvider = await call('PATCH', '/providers/me', {
   token: providerToken,
@@ -244,7 +244,7 @@ check('bilinmeyen ilçe reddedilir', unknownDistrict.status === 404, `status=${u
 
 console.log('\nHerkese açık kart:');
 const publicCard = await call('GET', `/providers/${providerProfileId}`, { token: customerToken });
-check('müşteri usta kartını görür', publicCard.status === 200, `status=${publicCard.status}`);
+check('müşteri satıcı kartını görür', publicCard.status === 200, `status=${publicCard.status}`);
 check('kartta işletme adı görünür', publicCard.json?.data?.displayName === 'Yılmaz Tesisat');
 check('kartta hakkında metni yok', publicCard.json?.data?.about === undefined);
 

@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateReviewBody, ListReviewsParams } from '@ustapilot/api-client';
-import { PAGINATION, queryKeys } from '@ustapilot/config';
-import type { ProviderSummary, Review } from '@ustapilot/types';
+import type { CreateReviewBody, ListReviewsParams } from '@talpio/api-client';
+import { PAGINATION, queryKeys } from '@talpio/config';
+import type { ProviderSummary, Review } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
-/** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, usta aldıklarını görür. */
+/** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, satıcı aldıklarını görür. */
 export function useMyReviewsInfinite(params: Omit<ListReviewsParams, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: queryKeys.reviews.mine(params as Record<string, unknown>),
@@ -21,7 +21,7 @@ export function useMyReviewsInfinite(params: Omit<ListReviewsParams, 'page'> = {
   });
 }
 
-/** Ustanın herkese açık yorumları; oturum gerektirmez. */
+/** Satıcının herkese açık yorumları; oturum gerektirmez. */
 export function useProviderReviewsInfinite(providerId: string) {
   return useInfiniteQuery({
     queryKey: queryKeys.reviews.forProvider(providerId),
@@ -60,7 +60,7 @@ export function useReviewForOrder(orderId: string, enabled: boolean) {
 }
 
 /**
- * Yorum ustanın ortalama puanını da değiştirir; bu yüzden başarıdan sonra usta
+ * Yorum satıcının ortalama puanını da değiştirir; bu yüzden başarıdan sonra satıcı
  * kartını taşıyan sorgular da geçersizlenir.
  */
 export function useCreateReview() {

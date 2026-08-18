@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-import type { ListPaymentsParams, ListTransactionsParams } from '@ustapilot/api-client';
-import { PAGINATION, queryKeys } from '@ustapilot/config';
-import type { Payment, Transaction } from '@ustapilot/types';
+import type { ListPaymentsParams, ListTransactionsParams } from '@talpio/api-client';
+import { PAGINATION, queryKeys } from '@talpio/config';
+import type { Payment, Transaction } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
-/** Oturumdaki tarafın ödemeleri: müşteri yaptıklarını, usta aldıklarını görür. */
+/** Oturumdaki tarafın ödemeleri: müşteri yaptıklarını, satıcı aldıklarını görür. */
 export function useMyPaymentsInfinite(params: Omit<ListPaymentsParams, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: queryKeys.payments.list(params as Record<string, unknown>),

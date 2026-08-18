@@ -1,4 +1,4 @@
-import { UserRole, VerificationStatus } from '@ustapilot/types';
+import { UserRole, VerificationStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
@@ -8,7 +8,7 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { ProvidersService } from './providers.service';
 
 const PROFILE_ID = 'provider-1';
-const FILE_BASE_URL = 'http://localhost:9000/ustapilot';
+const FILE_BASE_URL = 'http://localhost:9000/talpio';
 const CATEGORY_A = '0194a1b2-c3d4-7000-8000-00000000000a';
 const CATEGORY_B = '0194a1b2-c3d4-7000-8000-00000000000b';
 const SUBCATEGORY_A = '0194a1b2-c3d4-7000-8000-0000000000aa';

@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 
-export const RAW_RESPONSE_KEY = 'ustapilot:raw-response';
+export const RAW_RESPONSE_KEY = 'talpio:raw-response';
 
 /**
  * Yanıtın standart zarfa sarılmasını engeller.

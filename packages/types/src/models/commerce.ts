@@ -71,7 +71,7 @@ export interface ProviderWallet extends BaseEntity {
 }
 
 /**
- * Usta ekranlarında gösterilen cüzdan özeti.
+ * Satıcı ekranlarında gösterilen cüzdan özeti.
  *
  * Cüzdan kaydı ilk ödemeyle açıldığı için henüz iş almamış ustada satır yoktur;
  * özet bu durumda sıfır tutarlarla döner, böylece ekran boş kalmaz.

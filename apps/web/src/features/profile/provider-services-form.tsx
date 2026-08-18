@@ -1,6 +1,6 @@
 'use client';
 
-import type { ProviderService } from '@ustapilot/types';
+import type { ProviderService } from '@talpio/types';
 import {
   Button,
   Card,
@@ -9,7 +9,7 @@ import {
   CardTitle,
   Input,
   ListSkeleton,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useState } from 'react';
 
 import { useCategories } from '@/features/catalog/use-categories';

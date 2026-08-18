@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { REVIEW, UPLOAD } from '@ustapilot/config';
+import { REVIEW, UPLOAD } from '@talpio/config';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -60,7 +60,7 @@ export class ReviewRatingsDto {
 /**
  * Değerlendirme gövdesi.
  *
- * Kurallar `@ustapilot/validation` içindeki `createReviewSchema` ile aynıdır;
+ * Kurallar `@talpio/validation` içindeki `createReviewSchema` ile aynıdır;
  * istemciler formu o Zod şemasıyla doğrular, backend aynı sınırları burada
  * yeniden uygular çünkü istemci doğrulaması güvenlik sınırı sayılmaz.
  */

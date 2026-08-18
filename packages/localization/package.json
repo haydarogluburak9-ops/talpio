@@ -1,5 +1,5 @@
 {
-  "name": "@ustapilot/localization",
+  "name": "@talpio/localization",
   "version": "0.1.0",
   "private": true,
   "description": "Web ve admin için ortak çeviri katalogları ve biçimlendiriciler",
@@ -8,11 +8,13 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "src"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
@@ -21,8 +23,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@ustapilot/config": "0.1.0",
-    "@ustapilot/types": "0.1.0"
+    "@talpio/config": "0.1.0",
+    "@talpio/types": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

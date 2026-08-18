@@ -1,4 +1,4 @@
-import type { StatusTone } from '@ustapilot/config';
+import type { StatusTone } from '@talpio/config';
 
 import { Badge } from './badge';
 
@@ -7,7 +7,7 @@ export {
   OFFER_STATUS_TONES,
   ORDER_STATUS_TONES,
   type StatusTone,
-} from '@ustapilot/config';
+} from '@talpio/config';
 
 export interface StatusPillProps {
   label: string;

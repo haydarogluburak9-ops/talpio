@@ -70,12 +70,12 @@ export interface AdminUserSummary {
   emailVerifiedAt?: string | null;
   phoneVerifiedAt?: string | null;
   lastActiveAt?: string | null;
-  /** Usta hesaplarında doğrulama durumu; diğer rollerde `null`. */
+  /** Satıcı hesaplarında doğrulama durumu; diğer rollerde `null`. */
   verificationStatus?: VerificationStatus | null;
   createdAt: string;
 }
 
-/** Yönetim listelerinde gösterilen usta satırı. */
+/** Yönetim listelerinde gösterilen satıcı satırı. */
 export interface AdminProviderSummary {
   id: string;
   userId: string;
@@ -165,7 +165,7 @@ export interface AdminTransactionSummary {
   description?: string | null;
   orderId?: string | null;
   paymentId?: string | null;
-  /** Cüzdan hareketlerinde ustanın adı; ödeme hareketlerinde `null`. */
+  /** Cüzdan hareketlerinde satıcının adı; ödeme hareketlerinde `null`. */
   walletOwnerName?: string | null;
   createdAt: string;
 }

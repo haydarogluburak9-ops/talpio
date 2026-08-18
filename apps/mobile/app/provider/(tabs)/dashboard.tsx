@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { formatMoney } from '@ustapilot/localization';
-import { OfferStatus, OrderStatus } from '@ustapilot/types';
+import { formatMoney } from '@talpio/localization';
+import { OfferStatus, OrderStatus } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -15,7 +15,7 @@ import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
 
-/** Ustanın "devam eden iş" saydığı sipariş durumları. */
+/** Satıcının "devam eden iş" saydığı sipariş durumları. */
 const ACTIVE_ORDER_STATUSES = [
   OrderStatus.PENDING_PAYMENT,
   OrderStatus.PAID,
@@ -24,7 +24,7 @@ const ACTIVE_ORDER_STATUSES = [
 ];
 
 /**
- * Usta paneli özeti. Ölçümler sipariş ve teklif uçlarından gelir; veri
+ * Satıcı paneli özeti. Ölçümler sipariş ve teklif uçlarından gelir; veri
  * dönmediğinde sayı uydurulmaz, tire gösterilir.
  */
 export default function ProviderDashboardScreen() {

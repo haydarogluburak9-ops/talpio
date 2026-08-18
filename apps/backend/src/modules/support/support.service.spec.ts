@@ -4,7 +4,7 @@ import {
   NotificationType,
   SupportTicketStatus,
   UserRole,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';

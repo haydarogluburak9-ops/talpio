@@ -1,10 +1,11 @@
 'use client';
 
-import { formatMoney, formatNumber } from '@ustapilot/localization';
+import { formatMoney, formatNumber } from '@talpio/localization';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getLocale, t } from '@/lib/i18n';
 
 import { useAdminDashboard } from './use-admin';
 
@@ -15,17 +16,18 @@ interface MetricGroup {
 
 export function DashboardCards() {
   const dashboard = useAdminDashboard();
+  const locale = getLocale();
 
   if (dashboard.isPending) {
-    return <SummaryFrame>Özet yükleniyor…</SummaryFrame>;
+    return <SummaryFrame>{t('admin.summaryLoading')}</SummaryFrame>;
   }
 
   if (dashboard.isError) {
     return (
       <SummaryFrame tone="danger">
-        <p>Özet alınamadı. API sunucusunun çalıştığını doğrulayın.</p>
+        <p>{t('admin.summaryError')}</p>
         <Button variant="outline" size="sm" onClick={() => void dashboard.refetch()}>
-          Tekrar dene
+          {t('admin.retry')}
         </Button>
       </SummaryFrame>
     );
@@ -35,59 +37,62 @@ export function DashboardCards() {
 
   const groups: MetricGroup[] = [
     {
-      title: 'Kullanıcılar',
+      title: t('admin.users'),
       metrics: [
-        { label: 'Toplam', value: formatNumber(data.users.total) },
-        { label: 'Müşteri', value: formatNumber(data.users.customers) },
-        { label: 'Usta', value: formatNumber(data.users.providers) },
-        { label: 'Bu hafta katılan', value: formatNumber(data.users.newThisWeek) },
+        { label: t('admin.metricTotal'), value: formatNumber(data.users.total, locale) },
+        { label: t('admin.metricCustomer'), value: formatNumber(data.users.customers, locale) },
+        { label: t('admin.metricSeller'), value: formatNumber(data.users.providers, locale) },
+        { label: t('admin.metricNewThisWeek'), value: formatNumber(data.users.newThisWeek, locale) },
       ],
     },
     {
-      title: 'Usta doğrulama',
+      title: t('admin.sellerVerification'),
       metrics: [
-        { label: 'Doğrulanmış', value: formatNumber(data.providers.verified) },
+        { label: t('admin.metricVerified'), value: formatNumber(data.providers.verified, locale) },
         {
-          label: 'İnceleme bekleyen',
-          value: formatNumber(data.providers.pendingVerification),
-          hint: 'Usta doğrulamaları ekranından karara bağlanır.',
+          label: t('admin.metricPendingReview'),
+          value: formatNumber(data.providers.pendingVerification, locale),
+          hint: t('admin.metricPendingHint'),
         },
       ],
     },
     {
-      title: 'İş talepleri',
+      title: t('admin.jobRequests'),
       metrics: [
-        { label: 'Toplam', value: formatNumber(data.jobs.total) },
-        { label: 'Açık', value: formatNumber(data.jobs.open) },
-        { label: 'Tamamlanan', value: formatNumber(data.jobs.completed) },
-        { label: 'İptal', value: formatNumber(data.jobs.cancelled) },
+        { label: t('admin.metricTotal'), value: formatNumber(data.jobs.total, locale) },
+        { label: t('admin.metricOpen'), value: formatNumber(data.jobs.open, locale) },
+        { label: t('admin.metricCompleted'), value: formatNumber(data.jobs.completed, locale) },
+        { label: t('admin.metricCancelled'), value: formatNumber(data.jobs.cancelled, locale) },
       ],
     },
     {
-      title: 'Teklifler',
+      title: t('admin.offers'),
       metrics: [
-        { label: 'Toplam', value: formatNumber(data.offers.total) },
-        { label: 'Bekleyen', value: formatNumber(data.offers.pending) },
-        { label: 'Kabul edilen', value: formatNumber(data.offers.accepted) },
+        { label: t('admin.metricTotal'), value: formatNumber(data.offers.total, locale) },
+        { label: t('admin.metricPending'), value: formatNumber(data.offers.pending, locale) },
+        { label: t('admin.metricAccepted'), value: formatNumber(data.offers.accepted, locale) },
       ],
     },
     {
-      title: 'Siparişler',
+      title: t('admin.orders'),
       metrics: [
-        { label: 'Toplam', value: formatNumber(data.orders.total) },
-        { label: 'Devam eden', value: formatNumber(data.orders.active) },
-        { label: 'Tamamlanan', value: formatNumber(data.orders.completed) },
+        { label: t('admin.metricTotal'), value: formatNumber(data.orders.total, locale) },
+        { label: t('admin.metricActive'), value: formatNumber(data.orders.active, locale) },
+        { label: t('admin.metricCompleted'), value: formatNumber(data.orders.completed, locale) },
       ],
     },
     {
-      title: 'Finans',
+      title: t('admin.groupFinance'),
       metrics: [
         {
-          label: 'Tamamlanan hacim',
-          value: formatMoney(data.orders.completedVolume),
-          hint: 'Yalnızca tamamlanmış siparişler.',
+          label: t('admin.metricCompletedVolume'),
+          value: formatMoney(data.orders.completedVolume, locale),
+          hint: t('admin.metricCompletedVolumeHint'),
         },
-        { label: 'Platform komisyonu', value: formatMoney(data.orders.commissionEarned) },
+        {
+          label: t('admin.metricCommission'),
+          value: formatMoney(data.orders.commissionEarned, locale),
+        },
       ],
     },
   ];
@@ -128,8 +133,8 @@ function SummaryFrame({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Platform özeti</CardTitle>
-        <CardDescription>Kullanıcı, iş, teklif ve sipariş sayımları.</CardDescription>
+        <CardTitle>{t('admin.summaryTitle')}</CardTitle>
+        <CardDescription>{t('admin.summaryHint')}</CardDescription>
       </CardHeader>
       <CardContent
         {...(tone === 'danger' ? { role: 'alert' } : {})}

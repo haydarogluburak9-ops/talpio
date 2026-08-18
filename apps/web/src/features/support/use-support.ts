@@ -7,9 +7,9 @@ import type {
   ListComplaintsParams,
   ListSupportTicketsParams,
   SupportTicketReplyBody,
-} from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { SupportTicketDetail } from '@ustapilot/types';
+} from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { SupportTicketDetail } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

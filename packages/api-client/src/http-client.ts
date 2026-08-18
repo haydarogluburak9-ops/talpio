@@ -1,11 +1,11 @@
-import { API_ROUTES } from '@ustapilot/config';
+import { API_ROUTES } from '@talpio/config';
 import type {
   ApiErrorResponse,
   ApiSuccessResponse,
   AuthSession,
   AuthTokens,
   PaginationMeta,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { ApiError } from './errors';
 import { createCookieTokenStore } from './token-store';

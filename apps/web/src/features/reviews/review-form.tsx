@@ -1,11 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ApiError } from '@ustapilot/api-client';
-import { UPLOAD } from '@ustapilot/config';
-import { FilePurpose } from '@ustapilot/types';
-import { Button, Field, Textarea } from '@ustapilot/ui';
-import { createReviewSchema, type CreateReviewInput } from '@ustapilot/validation';
+import { ApiError } from '@talpio/api-client';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose } from '@talpio/types';
+import { Button, Field, Textarea } from '@talpio/ui';
+import { createReviewSchema, type CreateReviewInput } from '@talpio/validation';
 import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 

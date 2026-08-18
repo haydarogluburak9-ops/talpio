@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { UPLOAD } from '@ustapilot/config';
-import { FilePurpose, type FileAsset } from '@ustapilot/types';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose, type FileAsset } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

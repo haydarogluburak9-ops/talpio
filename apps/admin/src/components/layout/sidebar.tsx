@@ -1,9 +1,10 @@
 'use client';
 
-import { BrandMark, Wordmark } from '@ustapilot/ui';
+import { BrandMark } from '@talpio/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { t } from '@/lib/i18n';
 import { NAV_GROUPS } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 
@@ -13,18 +14,15 @@ export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:flex lg:flex-col">
       <div className="flex h-16 items-center gap-3 border-b border-border px-6">
-        <BrandMark className="size-9" />
-        <div className="leading-tight">
-          <Wordmark className="block text-sm" />
-          <p className="text-xs text-foreground-muted">Yönetim Paneli</p>
-        </div>
+        <BrandMark className="size-11" />
+        <p className="text-xs text-foreground-muted">{t('admin.brandSubtitle')}</p>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {NAV_GROUPS.map((group) => (
-          <div key={group.title} className="mb-5">
+          <div key={group.titleKey} className="mb-5">
             <p className="px-3 pb-2 text-[0.6875rem] font-semibold uppercase tracking-wider text-foreground-muted">
-              {group.title}
+              {t(group.titleKey)}
             </p>
             <ul className="space-y-0.5">
               {group.items.map((item) => {
@@ -44,13 +42,13 @@ export function Sidebar() {
                       )}
                     >
                       <Icon className="size-4 shrink-0" aria-hidden />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{t(item.labelKey)}</span>
                       {item.planned && (
                         <span
-                          title="Ekran hazır, veri bağlantısı bekliyor"
+                          title={t('admin.skeleton')}
                           className="ml-auto rounded-full bg-surface-muted px-1.5 py-0.5 text-[0.625rem] uppercase text-foreground-muted"
                         >
-                          iskelet
+                          {t('admin.skeleton')}
                         </span>
                       )}
                     </Link>

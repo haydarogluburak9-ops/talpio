@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { City, Country, District, ServiceCategory } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { City, Country, District, ServiceCategory } from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 

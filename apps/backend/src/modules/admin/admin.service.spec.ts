@@ -1,4 +1,4 @@
-import { UserRole, UserStatus, VerificationStatus } from '@ustapilot/types';
+import { UserRole, UserStatus, VerificationStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
@@ -9,7 +9,7 @@ import { AdminService } from './admin.service';
 import type { AuditLogService } from './audit-log.service';
 import { ListAdminUsersQueryDto } from './dto/admin-query.dto';
 
-const FILE_BASE_URL = 'http://localhost:9000/ustapilot';
+const FILE_BASE_URL = 'http://localhost:9000/talpio';
 const TARGET_ID = 'user-2';
 
 const admin: AuthenticatedUser = { id: 'admin-1', role: UserRole.ADMIN, sessionId: 's1' };
@@ -18,7 +18,7 @@ const superAdmin: AuthenticatedUser = { id: 'root-1', role: UserRole.SUPER_ADMIN
 function userRow(overrides: Record<string, unknown> = {}) {
   return {
     id: TARGET_ID,
-    email: 'musteri@ustapilot.com',
+    email: 'musteri@talpio.com',
     phone: '+905321234567',
     fullName: 'Ayşe Yılmaz',
     role: UserRole.CUSTOMER,
@@ -44,7 +44,7 @@ function providerRow(overrides: Record<string, unknown> = {}) {
     reviewCount: 0,
     completedJobCount: 4,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
-    user: { id: 'user-3', email: 'usta@ustapilot.com', fullName: 'Mehmet Yılmaz', avatar: null },
+    user: { id: 'user-3', email: 'satici@talpio.com', fullName: 'Mehmet Yılmaz', avatar: null },
     _count: { services: 2, serviceAreas: 5 },
     documents: [],
     ...overrides,
@@ -132,7 +132,7 @@ describe('AdminService', () => {
       expect(where.OR).toHaveLength(3);
     });
 
-    it('usta satırında doğrulama durumunu gösterir', async () => {
+    it('satıcı satırında doğrulama durumunu gösterir', async () => {
       const prisma = createPrismaMock();
       prisma.user.findMany.mockResolvedValue([
         userRow({
@@ -247,7 +247,7 @@ describe('AdminService', () => {
     });
   });
 
-  describe('usta doğrulama', () => {
+  describe('satıcı doğrulama', () => {
     it('onaylayınca bekleyen belgeleri de onaylar', async () => {
       const prisma = createPrismaMock();
 
@@ -292,6 +292,68 @@ describe('AdminService', () => {
         ),
       ).rejects.toThrow(AppException);
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('içerik bildirimi', () => {
+    it('gönderiyi kaldırır ve bildirimi çözer', async () => {
+      const reportRow = {
+        id: 'rep-1',
+        reporterUserId: 'user-1',
+        targetType: 'POST',
+        targetId: 'post-1',
+        reason: 'spam',
+        status: 'OPEN',
+        actionNote: null,
+        reviewedAt: null,
+        createdAt: new Date('2026-08-15T10:00:00.000Z'),
+        reporter: { fullName: 'Ayşe' },
+      };
+      const prisma = {
+        ...createPrismaMock(),
+        contentReport: {
+          findUnique: jest.fn().mockResolvedValue(reportRow),
+          update: jest.fn().mockResolvedValue({ ...reportRow, status: 'RESOLVED' }),
+        },
+        post: {
+          findFirst: jest.fn().mockResolvedValue({
+            id: 'post-1',
+            deletedAt: null,
+            authorProfileId: 'profile-1',
+            author: { userId: 'user-9', business: null },
+          }),
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'post-1',
+              body: 'uygunsuz',
+              deletedAt: new Date(),
+              author: { userId: 'user-9', username: 'x', displayName: 'X', business: null },
+              media: [],
+            },
+          ]),
+          update: jest.fn().mockResolvedValue({}),
+        },
+        postComment: { findMany: jest.fn().mockResolvedValue([]) },
+        socialProfile: { update: jest.fn().mockResolvedValue({}), findMany: jest.fn().mockResolvedValue([]) },
+        feedItem: { deleteMany: jest.fn().mockResolvedValue({ count: 1 }) },
+      };
+      prisma.$transaction = jest.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma));
+
+      const result = await createService(prisma).updateContentReport(
+        admin,
+        'rep-1',
+        { status: 'RESOLVED', action: 'REMOVE_CONTENT', actionNote: 'kural ihlali' },
+        {},
+      );
+
+      expect(prisma.post.update).toHaveBeenCalled();
+      expect(prisma.feedItem.deleteMany).toHaveBeenCalled();
+      expect(prisma.contentReport.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'RESOLVED' }),
+        }),
+      );
+      expect(result.status).toBe('RESOLVED');
     });
   });
 });

@@ -1,12 +1,13 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@ustapilot/config';
-import type { ProviderSummary } from '@ustapilot/types';
-import { Badge, Card, CardContent, ErrorState, LoadingState } from '@ustapilot/ui';
+import { queryKeys } from '@talpio/config';
+import type { ProviderSummary } from '@talpio/types';
+import { Badge, Card, CardContent, ErrorState, LoadingState } from '@talpio/ui';
 
 import { apiClient } from '@/lib/api';
-import { t } from '@/lib/i18n';
+import { publicEnv } from '@/lib/env';
+import { localeTag, t } from '@/lib/i18n';
 
 import { ProviderReviews } from './provider-reviews';
 
@@ -19,7 +20,7 @@ function useProvider(id: string) {
 }
 
 /**
- * Ustanın herkese açık profili.
+ * Satıcının herkese açık profili.
  *
  * Kart ve yorumlar giriş yapmamış ziyaretçiye de açıktır; bu yüzden sayfa
  * oturum durumuna hiç bakmaz.
@@ -31,7 +32,7 @@ export function ProviderProfileBody({ providerId }: { providerId: string }) {
     return (
       <ErrorState
         title={t('status.errorTitle')}
-        description="Usta profili yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+        description="Satıcı profili yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
         action={{ label: t('common.retry'), onClick: () => void provider.refetch() }}
       />
     );
@@ -57,12 +58,14 @@ function ProviderCard({ provider }: { provider: ProviderSummary }) {
             <p className="text-sm text-foreground-muted">
               {provider.averageRating == null
                 ? t('review.noRating')
-                : `${provider.averageRating.toFixed(1)} ${t('provider.rating').toLocaleLowerCase('tr-TR')} · ${t('review.ratingCount', { count: provider.reviewCount })}`}
+                : `${provider.averageRating.toFixed(1)} ${t('provider.rating').toLocaleLowerCase(localeTag())} · ${t('review.ratingCount', { count: provider.reviewCount })}`}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {provider.isVerified ? <Badge tone="success">{t('provider.verified')}</Badge> : null}
-            {provider.isPremium ? <Badge tone="accent">Öncelikli usta</Badge> : null}
+            {publicEnv.featurePremium && provider.isPremium ? (
+              <Badge tone="accent">Öncelikli satıcı</Badge>
+            ) : null}
           </div>
         </div>
 

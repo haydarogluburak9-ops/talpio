@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UserRole, type Review } from '@ustapilot/types';
+import { MARKETPLACE_ROLES, type Review } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -18,7 +18,7 @@ export class ReviewsController {
   constructor(private readonly reviews: ReviewsService) {}
 
   @Post()
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Tamamlanmış bir iş için değerlendirme oluşturur' })
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateReviewDto): Promise<Review> {
     return this.reviews.create(user, dto);
@@ -44,8 +44,8 @@ export class ReviewsController {
   }
 
   @Post(':id/reply')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Usta aldığı değerlendirmeye cevap yazar' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcı aldığı değerlendirmeye cevap yazar' })
   reply(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

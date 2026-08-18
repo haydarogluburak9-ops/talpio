@@ -37,6 +37,36 @@ export default function ProviderProfileTabScreen() {
         </Card>
       )}
 
+      <Card onPress={() => router.push('/provider/(tabs)/dashboard')}>
+        <View style={styles.row}>
+          <Ionicons name="grid-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('nav.dashboard')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
+      <Card onPress={() => router.push('/provider/(tabs)/active')}>
+        <View style={styles.row}>
+          <Ionicons name="hammer-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('nav.activeJobs')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
+      <Card onPress={() => router.push('/provider/wallet')}>
+        <View style={styles.row}>
+          <Ionicons name="wallet-outline" size={22} color={colors.brand} />
+          <Text variant="bodyStrong" style={styles.rowLabel}>
+            {t('nav.earnings')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.foregroundMuted} />
+        </View>
+      </Card>
+
       <Card onPress={() => router.push('/provider/profile/edit')}>
         <View style={styles.row}>
           <Ionicons name="person-circle-outline" size={22} color={colors.brand} />
@@ -47,7 +77,7 @@ export default function ProviderProfileTabScreen() {
         </View>
       </Card>
 
-      {/* Ustanın alt sekmelerinde mesaj yok; yazışmalara profil üzerinden girilir. */}
+      {/* Satıcının alt sekmelerinde mesaj yok; yazışmalara profil üzerinden girilir. */}
       <Card onPress={() => router.push('/provider/messages')}>
         <View style={styles.row}>
           <Ionicons name="chatbubbles-outline" size={22} color={colors.brand} />

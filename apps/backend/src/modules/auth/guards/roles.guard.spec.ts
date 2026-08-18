@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import type { ExecutionContext } from '@nestjs/common';
-import { UserRole } from '@ustapilot/types';
+import { UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 

@@ -23,6 +23,7 @@ export function Card({ onPress, padded = true, style, children, ...rest }: CardP
         onPress={onPress}
         style={({ pressed }) => [
           styles.card,
+          styles.touch,
           base,
           padded && styles.padded,
           pressed && styles.pressed,
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
   },
-  padded: { padding: spacing.lg, gap: spacing.sm },
+  touch: { minHeight: 44 },
+  padded: { padding: spacing.lg, gap: spacing.sm, minHeight: 44 },
   pressed: { opacity: 0.9 },
 });

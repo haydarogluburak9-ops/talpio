@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { formatDateTime, formatMoney } from '@ustapilot/localization';
-import { PaymentStatus, type Payment } from '@ustapilot/types';
+import { formatDateTime, formatMoney } from '@talpio/localization';
+import { PaymentStatus, type Payment } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { PaymentStatusPill } from '@/components/status-pill';

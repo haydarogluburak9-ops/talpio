@@ -6,7 +6,7 @@ import type {
   Order,
   OrderJobSummary,
   ProviderSummary,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 /**
  * Sipariş sorgularında daima çekilen ilişkiler. Liste ve detay uçları aynı
@@ -51,8 +51,8 @@ export type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 /**
  * Siparişi API gövdesine çevirir.
  *
- * Açık adres yalnızca müşteri ile işi üstlenen ustaya gösterilir; sipariş
- * aşamasında usta zaten seçilmiştir, dolayısıyla `revealAddress` çağıran
+ * Açık adres yalnızca müşteri ile işi üstlenen satıcıya gösterilir; sipariş
+ * aşamasında satıcı zaten seçilmiştir, dolayısıyla `revealAddress` çağıran
  * tarafın kimliğine göre belirlenir.
  */
 export function toOrder(
@@ -63,13 +63,14 @@ export function toOrder(
     id: row.id,
     jobRequestId: row.jobRequestId,
     offerId: row.offerId,
+    source: row.source,
     customerId: row.customerId,
     providerProfileId: row.providerProfileId,
     status: row.status,
     total: { amountMinor: row.totalMinor, currency: row.currency },
     commission: { amountMinor: row.commissionMinor, currency: row.currency },
     providerPayout: { amountMinor: row.payoutMinor, currency: row.currency },
-    job: toJobSummary(row, options.revealAddress),
+    job: row.jobRequest ? toJobSummary(row, options.revealAddress) : undefined,
     provider: toProviderSummary(row.providerProfile, options.fileBaseUrl),
     customer: toCustomerSummary(row.customer, options.fileBaseUrl),
     scheduledAt: row.scheduledAt?.toISOString() ?? null,
@@ -84,7 +85,7 @@ export function toOrder(
 }
 
 function toJobSummary(row: OrderRow, reveal: boolean): OrderJobSummary {
-  const job = row.jobRequest;
+  const job = row.jobRequest!;
 
   const address: MaskedAddress = {
     cityName: job.city.name,

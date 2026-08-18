@@ -1,16 +1,9 @@
-# ustapilot
+# ARŞİV — Flutter istemcisi kullanılmıyor
 
-UstaPilot - Dogru usta. Dogru fiyat. Guvenli hizmet.
+**Aktif mobil uygulama:** `apps/mobile` (Expo / React Native, SDK 57).
 
-## Getting Started
+Bu klasör (`apps/mobile-flutter`) Talpio ürününün parçası değildir. CI, Turborepo
+ve `npm run dev` bu uygulamayı derlemez. Kod, erken UstaPilot iskeletinden kalır;
+referans veya silinmek üzere saklanır.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Yeni özellik buraya eklenmez.

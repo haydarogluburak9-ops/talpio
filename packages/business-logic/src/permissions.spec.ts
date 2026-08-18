@@ -1,4 +1,4 @@
-import { JobRequestStatus, OrderStatus, Permission, UserRole } from '@ustapilot/types';
+import { JobRequestStatus, OrderStatus, Permission, UserRole } from '@talpio/types';
 
 import {
   canAccessConversation,
@@ -28,11 +28,16 @@ describe('rol izin matrisi', () => {
     expect(hasPermission(UserRole.CUSTOMER, Permission.JOB_CREATE)).toBe(true);
   });
 
-  it('müşteri teklif veremez', () => {
-    expect(hasPermission(UserRole.CUSTOMER, Permission.OFFER_CREATE)).toBe(false);
+  it('müşteri de teklif verebilir', () => {
+    expect(hasPermission(UserRole.CUSTOMER, Permission.OFFER_CREATE)).toBe(true);
   });
 
-  it('usta başkasının işlerini listeleyemez', () => {
+  it('satıcı da talep oluşturabilir', () => {
+    expect(hasPermission(UserRole.PROVIDER, Permission.JOB_CREATE)).toBe(true);
+    expect(hasPermission(UserRole.PROVIDER, Permission.REQUEST_CREATE)).toBe(true);
+  });
+
+  it('satıcı başkasının işlerini listeleyemez', () => {
     expect(hasPermission(UserRole.PROVIDER, Permission.JOB_READ_ANY)).toBe(false);
   });
 
@@ -59,11 +64,11 @@ describe('canViewJob', () => {
     expect(canViewJob(customer, job)).toBe(true);
   });
 
-  it('usta yayındaki işi havuzda görür', () => {
+  it('satıcı yayındaki işi havuzda görür', () => {
     expect(canViewJob(provider, job)).toBe(true);
   });
 
-  it('usta seçildikten sonra havuzdaki diğer ustalar işi göremez', () => {
+  it('satıcı seçildikten sonra havuzdaki diğer ustalar işi göremez', () => {
     expect(
       canViewJob(otherProvider, {
         ...job,
@@ -73,7 +78,7 @@ describe('canViewJob', () => {
     ).toBe(false);
   });
 
-  it('teklif vermiş usta iş kapandıktan sonra da görebilir', () => {
+  it('teklif vermiş satıcı iş kapandıktan sonra da görebilir', () => {
     expect(
       canViewJob(provider, {
         ...job,
@@ -97,11 +102,11 @@ describe('canViewFullAddress', () => {
     offeredProviderProfileIds: ['provider-1'],
   };
 
-  it('havuzdaki usta açık adresi göremez', () => {
+  it('havuzdaki satıcı açık adresi göremez', () => {
     expect(canViewFullAddress(provider, job)).toBe(false);
   });
 
-  it('teklifi kabul edilen usta açık adresi görür', () => {
+  it('teklifi kabul edilen satıcı açık adresi görür', () => {
     expect(
       canViewFullAddress(provider, { ...job, selectedProviderProfileId: 'provider-1' }),
     ).toBe(true);
@@ -124,25 +129,25 @@ describe('canSubmitOffer', () => {
     hasExistingOffer: false,
   };
 
-  it('uygun usta teklif verebilir', () => {
+  it('uygun satıcı teklif verebilir', () => {
     expect(canSubmitOffer(base).allowed).toBe(true);
   });
 
-  it('doğrulanmamış usta teklif veremez', () => {
+  it('doğrulanmamış satıcı teklif veremez', () => {
     expect(canSubmitOffer({ ...base, providerIsVerified: false })).toEqual({
       allowed: false,
       reason: 'NOT_VERIFIED',
     });
   });
 
-  it('hizmet bölgesi dışındaki usta teklif veremez', () => {
+  it('hizmet bölgesi dışındaki satıcı teklif veremez', () => {
     expect(canSubmitOffer({ ...base, providerDistrictIds: ['district-9'] })).toEqual({
       allowed: false,
       reason: 'OUT_OF_SERVICE_AREA',
     });
   });
 
-  it('farklı kategorideki usta teklif veremez', () => {
+  it('farklı kategorideki satıcı teklif veremez', () => {
     expect(canSubmitOffer({ ...base, providerCategoryIds: ['cat-9'] })).toEqual({
       allowed: false,
       reason: 'CATEGORY_MISMATCH',

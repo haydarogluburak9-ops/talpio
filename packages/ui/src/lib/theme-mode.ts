@@ -1,4 +1,4 @@
-export const THEME_STORAGE_KEY = 'ustapilot-theme';
+export const THEME_STORAGE_KEY = 'talpio-theme';
 
 /**
  * Hidrasyondan önce <head> içinde çalışan betik. Tema sınıfını ilk boyamadan

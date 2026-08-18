@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { canTransitionJobStatus } from '@ustapilot/business-logic';
-import { deepLinks, JOB } from '@ustapilot/config';
-import { JobRequestStatus, NotificationType, UserRole, type JobRequest } from '@ustapilot/types';
+import { Injectable, Optional } from '@nestjs/common';
+import { canTransitionJobStatus } from '@talpio/business-logic';
+import { deepLinks, JOB } from '@talpio/config';
+import { JobRequestStatus, NotificationType, UserRole, type JobRequest } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { AppException } from '@common/errors/app.exception';
@@ -10,13 +10,14 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
+import { FraudService } from '@modules/fraud/fraud.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type { CreateJobDto } from './dto/create-job.dto';
 import type { AvailableJobsQueryDto, ListJobsQueryDto } from './dto/list-jobs-query.dto';
 import { jobRequestInclude, toJobRequest, type JobRequestRow } from './job.mapper';
 
-/** Ustaların havuzda görebileceği durumlar. Diğerleri artık teklife kapalıdır. */
+/** Satıcıların havuzda görebileceği durumlar. Diğerleri artık teklife kapalıdır. */
 const OPEN_TO_PROVIDERS: JobRequestStatus[] = [
   JobRequestStatus.PUBLISHED,
   JobRequestStatus.OFFERS_RECEIVED,
@@ -31,6 +32,7 @@ export class JobsService {
     private readonly config: AppConfigService,
     private readonly files: FilesService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly fraud?: FraudService,
   ) {}
 
   async create(user: AuthenticatedUser, dto: CreateJobDto): Promise<JobRequest> {
@@ -99,6 +101,7 @@ export class JobsService {
 
     // Eşleşme, işlem commit edildikten sonra duyurulur; eşleşen yoksa sessizce geçer.
     if (publish) await this.notifyMatchingProviders(created);
+    this.fraud?.observeRequests(user.id, created.id);
 
     return this.present(created, true);
   }
@@ -135,7 +138,7 @@ export class JobsService {
   }
 
   /**
-   * Ustaya açık iş havuzu. Varsayılan olarak ustanın verdiği hizmetler ve
+   * Satıcıya açık iş havuzu. Varsayılan olarak satıcının verdiği hizmetler ve
    * hizmet bölgeleriyle sınırlanır; kendi teklifini verdiği işler listeden düşer.
    */
   async listAvailable(
@@ -201,19 +204,14 @@ export class JobsService {
       return this.present(row, true);
     }
 
-    if (user.role === UserRole.PROVIDER) {
-      // İşi üstlenen usta talebi havuzdan çıktıktan sonra da görmeli ve açık
-      // adrese erişmelidir; iş bu adreste yapılacaktır.
-      if (await this.isAssignedProvider(user.id, id)) return this.present(row, true);
+    // Alıcı/satıcı ayrımı yok: herkes havuzdaki açık işi görebilir.
+    // İşi üstlenen taraf talebi kapandıktan sonra da açık adrese erişir.
+    if (await this.isAssignedProvider(user.id, id)) return this.present(row, true);
 
-      if (!OPEN_TO_PROVIDERS.includes(row.status)) {
-        throw AppException.forbiddenResource('İş talebi', { jobId: id });
-      }
-      // Havuzdaki ustalara açık adres gösterilmez.
-      return this.present(row, false);
+    if (!OPEN_TO_PROVIDERS.includes(row.status)) {
+      throw AppException.forbiddenResource('İş talebi', { jobId: id });
     }
-
-    throw AppException.forbiddenResource('İş talebi', { jobId: id });
+    return this.present(row, false);
   }
 
   async publish(user: AuthenticatedUser, id: string): Promise<JobRequest> {
@@ -341,7 +339,7 @@ export class JobsService {
     return row;
   }
 
-  /** Ustanın bu işte kabul edilmiş teklifi var mı? */
+  /** Satıcının bu işte kabul edilmiş teklifi var mı? */
   private async isAssignedProvider(userId: string, jobId: string): Promise<boolean> {
     const order = await this.prisma.order.findFirst({
       where: { jobRequestId: jobId, deletedAt: null, providerProfile: { userId } },
@@ -363,7 +361,7 @@ export class JobsService {
 
     if (!profile) {
       throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
-        message: 'Bu işlem için usta profiliniz olmalıdır.',
+        message: 'Bu işlem için satıcı profiliniz olmalıdır.',
       });
     }
 

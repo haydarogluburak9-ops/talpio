@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { formatDate, formatMoney, formatRelativeTime } from '@ustapilot/localization';
-import { OfferStatus, type Offer } from '@ustapilot/types';
+import { formatDate, formatMoney, formatRelativeTime } from '@talpio/localization';
+import { OfferStatus, type Offer } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Card } from '@/components/card';
@@ -14,7 +14,7 @@ import { spacing } from '@/theme/tokens';
 export interface OfferCardProps {
   offer: Offer;
   onPress?: () => void;
-  /** Müşteri ustayı, usta ise hangi işe verdiğini görmek ister. */
+  /** Müşteri ustayı, satıcı ise hangi işe verdiğini görmek ister. */
   variant?: 'customer' | 'provider';
 }
 

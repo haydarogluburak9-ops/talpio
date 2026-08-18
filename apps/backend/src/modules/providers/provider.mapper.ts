@@ -3,12 +3,12 @@ import type {
   ProviderProfile,
   ProviderService,
   ProviderSummary,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { VerificationStatus } from '@/generated/prisma/client';
 
-/** Usta profili sorgularında daima çekilen ilişkiler. */
+/** Satıcı profili sorgularında daima çekilen ilişkiler. */
 export const providerInclude = {
   user: { select: { fullName: true, avatar: { select: { storageKey: true } } } },
   services: {

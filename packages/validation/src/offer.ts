@@ -1,5 +1,5 @@
-import { OFFER } from '@ustapilot/config';
-import { OfferPriceType } from '@ustapilot/types';
+import { OFFER } from '@talpio/config';
+import { OfferPriceType } from '@talpio/types';
 import { z } from 'zod';
 
 import { isoDateSchema, minorAmountSchema, uuidSchema } from './primitives';

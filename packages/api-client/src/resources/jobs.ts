@@ -1,6 +1,6 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { JobRequest, JobRequestStatus } from '@ustapilot/types';
-import type { CreateJobRequestPayload } from '@ustapilot/validation';
+import { API_ROUTES } from '@talpio/config';
+import type { JobRequest, JobRequestStatus } from '@talpio/types';
+import type { CreateJobRequestPayload } from '@talpio/validation';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -18,7 +18,7 @@ export interface AvailableJobsParams {
   categoryId?: string;
   districtId?: string;
   isUrgent?: boolean;
-  /** Kapatılırsa ustanın hizmet kategorileri ve bölgeleri dışındaki işler de gelir. */
+  /** Kapatılırsa satıcının hizmet kategorileri ve bölgeleri dışındaki işler de gelir. */
   matchMyServices?: boolean;
 }
 

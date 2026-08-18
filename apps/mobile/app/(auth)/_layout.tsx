@@ -19,6 +19,7 @@ export default function AuthLayout() {
       <Stack.Screen name="welcome" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ title: t('nav.login') }} />
       <Stack.Screen name="register" options={{ title: t('nav.register') }} />
+      <Stack.Screen name="forgot-password" options={{ title: t('auth.forgotPassword') }} />
       <Stack.Screen name="role" options={{ title: t('roleSelect.title') }} />
     </Stack>
   );

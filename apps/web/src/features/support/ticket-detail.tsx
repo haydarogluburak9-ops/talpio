@@ -1,8 +1,8 @@
 'use client';
 
-import { SUPPORT_TICKET_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime, supportTicketStatusLabel } from '@ustapilot/localization';
-import { SupportTicketStatus, type SupportMessage } from '@ustapilot/types';
+import { SUPPORT_TICKET_STATUS_TONES } from '@talpio/config';
+import { formatDateTime, supportTicketStatusLabel } from '@talpio/localization';
+import { SupportTicketStatus, type SupportMessage } from '@talpio/types';
 import {
   Button,
   ErrorState,
@@ -10,7 +10,7 @@ import {
   LoadingState,
   StatusPill,
   Textarea,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 

@@ -4,6 +4,7 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
+import { env } from '@/lib/env';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
@@ -13,8 +14,18 @@ import { flattenPaymentPages, useMyPaymentsInfinite } from './use-payments';
 /** Müşterinin ödeme geçmişi; her kart siparişin makbuzuna açılır. */
 export function PaymentHistoryScreen({ variant }: { variant: 'customer' | 'provider' }) {
   const { t } = useI18n();
-
   const payments = useMyPaymentsInfinite();
+
+  if (!env.featurePayments) {
+    return (
+      <Screen>
+        <Text variant="title">{t('payments.pageTitle')}</Text>
+        <Text variant="body" tone="muted">
+          {t('payments.featureOff')}
+        </Text>
+      </Screen>
+    );
+  }
   const items = flattenPaymentPages(payments.data?.pages);
 
   if (payments.isError) {

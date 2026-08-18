@@ -6,7 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Conversation, Message } from '@ustapilot/types';
+import type { Conversation, Message } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';

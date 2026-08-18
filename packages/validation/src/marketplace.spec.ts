@@ -1,4 +1,4 @@
-import { JobTimeSlot, OfferPriceType } from '@ustapilot/types';
+import { JobTimeSlot, OfferPriceType } from '@talpio/types';
 
 import { createJobRequestSchema, jobWizardStepSchemas } from './job';
 import { createOfferSchema } from './offer';

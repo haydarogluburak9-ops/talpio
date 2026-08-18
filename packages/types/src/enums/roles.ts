@@ -14,6 +14,13 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const ALL_USER_ROLES = Object.values(UserRole);
 
+/** Talep açabilen ve teklif verebilen hesaplar. Personel hariç herkes her iki tarafı da kullanır. */
+export const MARKETPLACE_ROLES: readonly UserRole[] = [UserRole.CUSTOMER, UserRole.PROVIDER];
+
+export function isMarketplaceRole(role: UserRole): boolean {
+  return MARKETPLACE_ROLES.includes(role);
+}
+
 /** Yönetim arayüzüne erişebilen roller. */
 export const STAFF_ROLES: readonly UserRole[] = [
   UserRole.SUPPORT,
@@ -72,6 +79,30 @@ export const Permission = {
   SETTINGS_MANAGE: 'settings:manage',
   ROLE_MANAGE: 'role:manage',
   AUDIT_LOG_READ: 'audit-log:read',
+
+  /** Commerce Request (B2B / talep odaklı) izinleri */
+  REQUEST_CREATE: 'request.create',
+  REQUEST_READ_OWN: 'request.read.own',
+  REQUEST_READ_MATCHED: 'request.read.matched',
+  REQUEST_UPDATE_OWN: 'request.update.own',
+  REQUEST_CANCEL_OWN: 'request.cancel.own',
+  REQUEST_OFFER_CREATE: 'request.offer.create',
+  REQUEST_OFFER_READ_OWN: 'request.offer.read.own',
+  REQUEST_OFFER_UPDATE_OWN: 'request.offer.update.own',
+  REQUEST_OFFER_ACCEPT: 'request.offer.accept',
+  SUPPLIER_PROFILE_MANAGE: 'supplier.profile.manage',
+  CAMPAIGN_CREATE: 'campaign.create',
+  CAMPAIGN_READ_TARGETED: 'campaign.read.targeted',
+  CRM_CUSTOMER_MANAGE: 'crm.customer.manage',
+  WORKORDER_MANAGE: 'workorder.manage',
+  ADMIN_REQUEST_MODERATE: 'admin.request.moderate',
+
+  /** Ücretsiz sosyal katman */
+  SOCIAL_PROFILE_MANAGE: 'social.profile.manage',
+  SOCIAL_POST_CREATE: 'social.post.create',
+  SOCIAL_INTERACT: 'social.interact',
+  SOCIAL_REPORT: 'social.report',
+  ADMIN_SOCIAL_MODERATE: 'admin.social.moderate',
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];

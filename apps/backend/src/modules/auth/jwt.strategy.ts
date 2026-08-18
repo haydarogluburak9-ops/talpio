@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Request } from 'express';
-import type { UserRole } from '@ustapilot/types';
+import type { UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
+import { RbacService } from '@modules/rbac/rbac.service';
 
 import type { AccessTokenPayload } from './token.service';
 
-const ACCESS_COOKIE = 'up_access';
+const ACCESS_COOKIE = 'talpio_access';
 
 function accessTokenFromCookie(request: Request): string | null {
   const cookies: unknown = (request as { cookies?: unknown }).cookies;
@@ -25,6 +26,10 @@ export interface AuthenticatedUser {
   id: string;
   role: UserRole;
   sessionId: string;
+  /** PermissionsGuard / RbacService tarafından doldurulabilir. */
+  permissionCodes?: readonly string[];
+  platformRoleCodes?: readonly string[];
+  businessIds?: readonly string[];
 }
 
 @Injectable()
@@ -32,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     config: AppConfigService,
     private readonly prisma: PrismaService,
+    private readonly rbac: RbacService,
   ) {
     super({
       // Mobil `Authorization` başlığı gönderir; tarayıcı jetona hiç dokunmadığı
@@ -66,10 +72,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new AppException('ACCOUNT_SUSPENDED', { message: 'Hesabınız askıya alınmış.' });
     }
 
+    const effective = await this.rbac.getEffectivePermissions(session.user.id);
+
     return {
       id: session.user.id,
       role: session.user.role,
       sessionId: session.id,
+      permissionCodes: [...effective.permissionCodes],
+      platformRoleCodes: [...effective.platformRoleCodes],
+      businessIds: [...effective.businessIds],
     };
   }
 }

@@ -46,7 +46,7 @@ function abort(message, payload) {
 async function createOrderScenario(providerToken, sample, city, district) {
   const customer = await call('POST', '/auth/register', {
     body: {
-      email: `orders+${Date.now()}${Math.random().toString(36).slice(2, 6)}@ustapilot.test`,
+      email: `orders+${Date.now()}${Math.random().toString(36).slice(2, 6)}@talpio.test`,
       password: 'Guclu1Parola',
       fullName: 'Sipariş Duman Testi',
       role: 'CUSTOMER',
@@ -104,20 +104,20 @@ async function createOrderScenario(providerToken, sample, city, district) {
 
 console.log(`Sipariş duman testi — ${BASE}\n`);
 
-console.log('Hazırlık: usta girişi ve hizmet kapsamı');
+console.log('Hazırlık: satıcı girişi ve hizmet kapsamı');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-if (!providerToken) abort('Usta girişi yapılamadı; sipariş akışı doğrulanamıyor.');
+if (!providerToken) abort('Satıcı girişi yapılamadı; sipariş akışı doğrulanamıyor.');
 
 const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
   token: providerToken,
 });
 const sample = pool.json?.data?.[0];
-check('ustanın kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
-if (!sample) abort('Ustanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+check('satıcının kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
+if (!sample) abort('Satıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
 
 const cities = await call('GET', '/locations/cities');
 const city = cities.json?.data?.find((item) => item.name === sample.address.cityName);
@@ -137,19 +137,19 @@ check(
   `${main.order?.commission?.amountMinor} + ${main.order?.providerPayout?.amountMinor}`,
 );
 check('iş özeti taşınır', main.order?.job?.title === 'Sipariş akışı için açılan talep');
-check('usta özeti taşınır', typeof main.order?.provider?.displayName === 'string');
+check('satıcı özeti taşınır', typeof main.order?.provider?.displayName === 'string');
 
 console.log('\nListeleme ve yetki:');
 const providerOrders = await call('GET', '/orders', { token: providerToken });
 check(
-  'usta üstlendiği siparişi görür',
+  'satıcı üstlendiği siparişi görür',
   providerOrders.json?.data?.some((item) => item.id === main.order.id),
   `status=${providerOrders.status}`,
 );
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `stranger+${Date.now()}@ustapilot.test`,
+    email: `stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Müşteri',
     role: 'CUSTOMER',
@@ -169,12 +169,12 @@ check('ilgisiz müşterinin listesi boş', strangerOrders.json?.data?.length ===
 
 const providerJobView = await call('GET', `/jobs/${main.job.id}`, { token: providerToken });
 check(
-  'üstlenen usta talebi görmeye devam eder',
+  'üstlenen satıcı talebi görmeye devam eder',
   providerJobView.status === 200,
   `status=${providerJobView.status}`,
 );
 check(
-  'üstlenen ustaya açık adres gösterilir',
+  'üstlenen satıcıya açık adres gösterilir',
   providerJobView.json?.data?.address?.addressLine === 'Test Sokak No: 7',
   JSON.stringify(providerJobView.json?.data?.address),
 );
@@ -188,7 +188,7 @@ check(
 );
 
 const providerPay = await call('POST', `/orders/${main.order.id}/pay`, { token: providerToken });
-check('usta ödeme yapamaz', providerPay.status === 403, `status=${providerPay.status}`);
+check('satıcı ödeme yapamaz', providerPay.status === 403, `status=${providerPay.status}`);
 
 console.log('\nÖdeme:');
 const paid = await call('POST', `/orders/${main.order.id}/pay`, {
@@ -252,7 +252,7 @@ console.log('\nOnay:');
 const providerApprove = await call('POST', `/orders/${main.order.id}/approve`, {
   token: providerToken,
 });
-check('usta kendi işini onaylayamaz', providerApprove.status === 403, `status=${providerApprove.status}`);
+check('satıcı kendi işini onaylayamaz', providerApprove.status === 403, `status=${providerApprove.status}`);
 
 const approved = await call('POST', `/orders/${main.order.id}/approve`, { token: main.token });
 check('onay 201 döner', approved.status === 201, `status=${approved.status}`);

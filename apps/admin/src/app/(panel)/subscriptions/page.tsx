@@ -1,38 +1,80 @@
-import type { Metadata } from 'next';
+'use client';
 
-import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@talpio/config';
+
+import { Topbar } from '@/components/layout/topbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-export const metadata: Metadata = { title: 'Abonelikler' };
-
-const CAPABILITIES: ModuleCapability[] = [
-  { label: 'Paket tanımı', detail: 'Paket adı, süresi ve sağladığı ayrıcalıklar.' },
-  { label: 'Abone listesi', detail: 'Aktif, süresi dolmuş ve iptal edilmiş abonelikler.' },
-  { label: 'Yenileme', detail: 'Otomatik yenileme durumu ve başarısız tahsilatlar.' },
-  { label: 'Kullanım', detail: 'Paket ayrıcalıklarının ne kadar kullanıldığı.' },
-];
+import { apiClient } from '@/lib/api-client';
 
 export default function SubscriptionsPage() {
+  const query = useQuery({
+    queryKey: queryKeys.admin.subscriptions(),
+    queryFn: ({ signal }) => apiClient.admin.listSubscriptions(signal),
+  });
+
+  const data = query.data as {
+    plans?: Array<{ code: string; name: string; monthlyCredits: number }>;
+    subscriptions?: Array<{
+      id: string;
+      status: string;
+      plan?: { name?: string; code?: string };
+      currentPeriodEnd?: string;
+    }>;
+    wallets?: Array<{ id: string; balanceCredits: number; userId?: string | null }>;
+  } | undefined;
+
   return (
-    <ModuleScaffold
-      title="Abonelikler"
-      description="Usta abonelik paketlerini ve yenilemeleri yönetin."
-      dataSource="GET /admin/subscriptions"
-      capabilities={CAPABILITIES}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Veri modeli yok</CardTitle>
-          <CardDescription>
-            Bu modül için veri modeli henüz tanımlı değil. Abonelik listesi veya sahte kayıt
-            gösterilmez.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-foreground-muted">
-          Prisma şemasında Subscription modeli ve ilgili API uçları eklenene kadar bu ekran iskelet
-          olarak kalır.
-        </CardContent>
-      </Card>
-    </ModuleScaffold>
+    <>
+      <Topbar titleKey="admin.subscriptions" descriptionKey="admin.subscriptionsHint" />
+      <div className="grid gap-4 p-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Planlar</CardTitle>
+            <CardDescription>GET /admin/subscriptions</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {(data?.plans ?? []).map((plan) => (
+              <p key={plan.code}>
+                {plan.name} — {plan.monthlyCredits} kredi/ay
+              </p>
+            ))}
+            {query.isSuccess && (data?.plans?.length ?? 0) === 0 ? (
+              <p className="text-foreground-muted">Plan kaydı yok.</p>
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Abonelikler</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {(data?.subscriptions ?? []).map((row) => (
+              <p key={row.id}>
+                {row.plan?.name ?? row.plan?.code} — {row.status}
+              </p>
+            ))}
+            {query.isSuccess && (data?.subscriptions?.length ?? 0) === 0 ? (
+              <p className="text-foreground-muted">Abonelik kaydı yok.</p>
+            ) : null}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>AI kredi cüzdanları</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {(data?.wallets ?? []).map((row) => (
+              <p key={row.id}>
+                {row.userId ?? '—'} — {row.balanceCredits} kredi
+              </p>
+            ))}
+            {query.isSuccess && (data?.wallets?.length ?? 0) === 0 ? (
+              <p className="text-foreground-muted">Cüzdan kaydı yok.</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

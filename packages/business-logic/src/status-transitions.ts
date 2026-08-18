@@ -1,4 +1,4 @@
-import { JobRequestStatus, OfferStatus, OrderStatus } from '@ustapilot/types';
+import { JobRequestStatus, OfferStatus, OrderStatus } from '@talpio/types';
 
 /**
  * İzin verilen iş durumu geçişleri. Bu tablo tek kaynaktır: backend geçişi

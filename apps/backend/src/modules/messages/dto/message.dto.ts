@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MESSAGE } from '@ustapilot/config';
-import { MessageType } from '@ustapilot/types';
+import { MESSAGE } from '@talpio/config';
+import { MessageType } from '@talpio/types';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -36,7 +36,7 @@ export class GeoPointDto {
 /**
  * Mesaj gövdesi.
  *
- * Kurallar `@ustapilot/validation` içindeki `sendMessageSchema` ile aynıdır;
+ * Kurallar `@talpio/validation` içindeki `sendMessageSchema` ile aynıdır;
  * istemci formu o şemayla doğrular, backend aynı sınırları burada yeniden
  * uygular çünkü istemci doğrulaması güvenlik sınırı sayılmaz.
  */

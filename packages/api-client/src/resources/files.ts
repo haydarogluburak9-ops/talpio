@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { FileAsset, FilePurpose } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { FileAsset, FilePurpose } from '@talpio/types';
 
 import type { HttpClient, UploadFile } from '../http-client';
 

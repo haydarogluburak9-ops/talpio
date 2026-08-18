@@ -1,10 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SUPPORTED_LOCALES } from '@talpio/config';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsIn, IsOptional, IsString, Length, Matches, MinLength } from 'class-validator';
-import { UserRole } from '@ustapilot/types';
-
-/** Kayıt sırasında seçilebilen roller. Personel rolleri yalnızca admin atar. */
-const SELF_SERVICE_ROLES = [UserRole.CUSTOMER, UserRole.PROVIDER] as const;
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export function normalizeEmail({ value }: { value: unknown }): unknown {
   return typeof value === 'string' ? value.trim().toLowerCase() : value;
@@ -15,7 +25,7 @@ export function trimText({ value }: { value: unknown }): unknown {
 }
 
 export class RegisterDto {
-  @ApiProperty({ example: 'musteri@ustapilot.com' })
+  @ApiProperty({ example: 'kullanici@talpio.com' })
   @IsEmail({}, { message: 'Geçerli bir e-posta adresi girin.' })
   @Transform(normalizeEmail)
   email!: string;
@@ -34,17 +44,33 @@ export class RegisterDto {
   @Transform(trimText)
   fullName!: string;
 
-  @ApiProperty({ enum: SELF_SERVICE_ROLES, example: UserRole.CUSTOMER })
-  @IsIn(SELF_SERVICE_ROLES, { message: 'Geçersiz rol seçimi.' })
-  role!: (typeof SELF_SERVICE_ROLES)[number];
+  @ApiProperty({ example: 'ayse.yilmaz', description: 'Profil kullanıcı adı (@handle)' })
+  @IsString()
+  @Length(3, 32)
+  @Matches(/^[a-z0-9._]+$/, { message: 'Kullanıcı adı yalnızca küçük harf, rakam, nokta ve alt çizgi içerebilir.' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
+  username!: string;
 
   @ApiPropertyOptional({ example: '+905321234567', description: 'E.164 biçiminde' })
   @IsOptional()
   @Matches(/^\+[1-9]\d{7,14}$/, { message: 'Telefon numarası +905321234567 biçiminde olmalıdır.' })
   phone?: string;
 
-  @ApiPropertyOptional({ example: 'tr' })
+  @ApiPropertyOptional({ example: 'en' })
   @IsOptional()
-  @IsIn(['tr', 'en'])
+  @IsIn([...SUPPORTED_LOCALES])
   locale?: string;
+
+  @ApiPropertyOptional({ type: [String], minItems: 3, maxItems: 12, description: 'İlgi alanı kategori kimlikleri' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(3, { message: 'En az 3 ilgi alanı seçin.' })
+  @ArrayMaxSize(12)
+  @IsUUID('all', { each: true })
+  interestCategoryIds?: string[];
+
+  @ApiPropertyOptional({ description: 'Ticari e-posta / SMS ileti onayı' })
+  @IsOptional()
+  @IsBoolean()
+  acceptedMarketing?: boolean;
 }

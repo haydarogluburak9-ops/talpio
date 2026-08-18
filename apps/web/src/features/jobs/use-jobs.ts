@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CreateJobBody, ListJobsParams } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { JobRequest } from '@ustapilot/types';
+import type { CreateJobBody, ListJobsParams } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { JobRequest } from '@talpio/types';
 import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/lib/api';

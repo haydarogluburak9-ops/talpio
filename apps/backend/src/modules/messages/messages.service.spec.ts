@@ -1,4 +1,4 @@
-import { ConversationStatus, MessageType, OrderStatus, UserRole } from '@ustapilot/types';
+import { ConversationStatus, MessageType, OrderStatus, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -30,6 +30,8 @@ function conversationRow(overrides: Partial<ConversationRow> = {}): Conversation
 
   return {
     id: CONVERSATION_ID,
+    title: null,
+    isGroup: false,
     jobRequestId: 'job-1',
     orderId: ORDER_ID,
     status: ConversationStatus.ACTIVE,
@@ -102,6 +104,7 @@ type PrismaMock = {
     groupBy: jest.Mock;
   };
   order: { findFirst: jest.Mock; findUnique: jest.Mock };
+  user: { findFirst: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -132,6 +135,7 @@ function createPrismaMock(): PrismaMock {
       }),
       findUnique: jest.fn().mockResolvedValue({ status: OrderStatus.IN_PROGRESS }),
     },
+    user: { findFirst: jest.fn().mockResolvedValue({ id: PROVIDER_USER_ID }) },
     $transaction: jest.fn(),
   };
 
@@ -142,7 +146,7 @@ function createPrismaMock(): PrismaMock {
 
 function createService(prisma: PrismaMock, files: FilesMock = createFilesMock()): MessagesService {
   const config = {
-    fileBaseUrl: 'http://localhost:9000/ustapilot',
+    fileBaseUrl: 'http://localhost:9000/talpio',
   } as unknown as AppConfigService;
 
   const notifications = {
@@ -238,6 +242,31 @@ describe('MessagesService', () => {
       await expect(codeOfRejection(() => service.openForOrder(customer, ORDER_ID))).resolves.toBe(
         'NOT_FOUND',
       );
+    });
+  });
+
+  describe('doğrudan sohbet', () => {
+    it('kendine mesajı reddeder', async () => {
+      await expect(codeOfRejection(() => service.openDirect(customer, CUSTOMER_ID))).resolves.toBe(
+        'VALIDATION_ERROR',
+      );
+    });
+
+    it('siparişsiz 1:1 sohbet açar', async () => {
+      prisma.conversation.findFirst.mockResolvedValue(null);
+      prisma.conversation.create.mockResolvedValue(
+        conversationRow({ orderId: null, jobRequestId: null }),
+      );
+
+      await service.openDirect(customer, PROVIDER_USER_ID);
+
+      const { data } = firstCallArg<{
+        data: { participants: { create: { userId: string }[] } };
+      }>(prisma.conversation.create);
+      expect(data.participants.create.map((item) => item.userId)).toEqual([
+        CUSTOMER_ID,
+        PROVIDER_USER_ID,
+      ]);
     });
   });
 

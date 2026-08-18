@@ -8,9 +8,10 @@ import {
   type ReactNode,
 } from 'react';
 
-import type { AuthTokens, CurrentUser, UserRole } from '@ustapilot/types';
+import type { AuthTokens, CurrentUser, UserRole } from '@talpio/types';
 
 import { tokenStore } from '@/lib/api';
+import { useRealtimeSync } from '@/lib/use-realtime-sync';
 
 type SessionStatus = 'loading' | 'authenticated' | 'anonymous';
 
@@ -65,7 +66,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [status, user, signIn, signOut],
   );
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionContext.Provider value={value}>
+      <MobileRealtimeBridge status={status} />
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+function MobileRealtimeBridge({ status }: { status: SessionStatus }) {
+  useRealtimeSync({ enabled: status === 'authenticated' });
+  return null;
 }
 
 export function useSession(): SessionValue {

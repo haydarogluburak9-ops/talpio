@@ -1,7 +1,7 @@
 'use client';
 
-import { ComplaintSubjectType } from '@ustapilot/types';
-import { LoadingState } from '@ustapilot/ui';
+import { ComplaintSubjectType } from '@talpio/types';
+import { LoadingState } from '@talpio/ui';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 

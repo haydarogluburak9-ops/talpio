@@ -1,8 +1,8 @@
 'use client';
 
-import { formatDateTime, formatMoney } from '@ustapilot/localization';
-import { StatusPill } from '@ustapilot/ui';
-import { OfferStatus, type AdminOfferSummary } from '@ustapilot/types';
+import { formatDateTime, formatMoney } from '@talpio/localization';
+import { StatusPill } from '@talpio/ui';
+import { OfferStatus, type AdminOfferSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +96,7 @@ export function OffersPanel() {
       <CardHeader>
         <CardTitle>Teklifler</CardTitle>
         <CardDescription>
-          Ustaların taleplere verdiği teklifler; tutar ve geçerlilik süresiyle.
+          Satıcıların taleplere verdiği teklifler; tutar ve geçerlilik süresiyle.
         </CardDescription>
 
         <div className="pt-2">

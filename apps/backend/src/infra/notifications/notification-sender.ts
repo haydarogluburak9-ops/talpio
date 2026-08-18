@@ -1,4 +1,4 @@
-import type { NotificationParams, NotificationType } from '@ustapilot/types';
+import type { NotificationParams, NotificationType } from '@talpio/types';
 
 /** Nest DI belirteçleri; etkin sürücüler ortam değişkeninden seçilir. */
 export const PUSH_SENDER = Symbol('PUSH_SENDER');

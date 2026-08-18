@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FilePurpose } from '@ustapilot/types';
+import { FilePurpose } from '@talpio/types';
 import { IsEnum } from 'class-validator';
 
 /**

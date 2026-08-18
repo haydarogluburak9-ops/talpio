@@ -61,7 +61,7 @@ console.log(`Dosya duman testi — ${BASE}\n`);
 
 const registered = await call('POST', '/auth/register', {
   body: {
-    email: `files+${Date.now()}@ustapilot.test`,
+    email: `files+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Dosya Duman Testi',
     role: 'CUSTOMER',
@@ -72,7 +72,7 @@ if (!token) abort('Müşteri kaydı yapılamadı.', registered.json);
 
 const otherRegistered = await call('POST', '/auth/register', {
   body: {
-    email: `files-other+${Date.now()}@ustapilot.test`,
+    email: `files-other+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Başka Kullanıcı',
     role: 'CUSTOMER',

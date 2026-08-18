@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
-import type { CurrentUser, ProviderProfile } from '@ustapilot/types';
-import { UserRole } from '@ustapilot/types';
+import { ApiError } from '@talpio/api-client';
+import type { CurrentUser, ProviderProfile } from '@talpio/types';
+import { isMarketplaceRole } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -57,7 +57,7 @@ export function ProfileScreen() {
   return (
     <Screen onRefresh={() => void user.refetch()} refreshing={user.isRefetching}>
       <AccountSection user={user.data} />
-      {user.data.role === UserRole.PROVIDER ? <ProviderSections /> : null}
+      {isMarketplaceRole(user.data.role) ? <ProviderSections /> : null}
     </Screen>
   );
 }
@@ -135,7 +135,7 @@ function AccountSection({ user }: { user: CurrentUser }) {
   );
 }
 
-/** Usta bölümleri ayrı bileşende: müşteri hesabında bu sorgular hiç açılmaz. */
+/** Satıcı bölümleri ayrı bileşende: müşteri hesabında bu sorgular hiç açılmaz. */
 function ProviderSections() {
   const { t } = useI18n();
   const profile = useProviderProfile();
@@ -254,7 +254,7 @@ function ProviderSection({ profile }: { profile: ProviderProfile }) {
 }
 
 function ServicesSection({ selection }: { selection: Map<string, string> }) {
-  const { t } = useI18n();
+  const { t, categoryLabel } = useI18n();
   const categories = useCategories();
   const replace = useReplaceMyServices();
 
@@ -289,7 +289,7 @@ function ServicesSection({ selection }: { selection: Map<string, string> }) {
         label={t('profile.selectCategory')}
         options={(categories.data ?? []).map((category) => ({
           id: category.id,
-          name: category.name,
+          name: categoryLabel(category.slug, category.name),
         }))}
         selectedIds={new Set(selected.keys())}
         onToggle={(option) => toggle(option.id)}
@@ -406,7 +406,7 @@ function AreasSection({ areas }: { areas: { id: string; name: string }[] }) {
   );
 }
 
-/** Tamamlanan iş, puan ve yorum sayısı işlerden türetilir; usta bunları düzenleyemez. */
+/** Tamamlanan iş, puan ve yorum sayısı işlerden türetilir; satıcı bunları düzenleyemez. */
 function ProviderStats({ profile }: { profile: ProviderProfile }) {
   const { t } = useI18n();
   const colors = useColors();

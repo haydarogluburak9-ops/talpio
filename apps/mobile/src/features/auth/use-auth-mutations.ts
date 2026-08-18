@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { ApiError, type LoginPayload, type RegisterPayload } from '@ustapilot/api-client';
-import type { AuthSession } from '@ustapilot/types';
+import { ApiError, type LoginPayload, type RegisterPayload } from '@talpio/api-client';
+import type { AuthSession } from '@talpio/types';
 
 import { useSession } from '@/features/auth/session-provider';
 import { apiClient } from '@/lib/api';

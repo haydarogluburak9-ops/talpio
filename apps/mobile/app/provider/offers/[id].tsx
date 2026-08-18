@@ -2,8 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { formatDate, formatMoney } from '@ustapilot/localization';
-import { OfferStatus } from '@ustapilot/types';
+import { formatDate, formatMoney } from '@talpio/localization';
+import { OfferStatus } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -17,7 +17,7 @@ import { useOffer, useWithdrawOffer } from '@/features/offers/use-offers';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
-/** Ustanın kendi teklifinin detayı. Yalnızca bekleyen teklif geri çekilebilir. */
+/** Satıcının kendi teklifinin detayı. Yalnızca bekleyen teklif geri çekilebilir. */
 export default function ProviderOfferDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const { t, locale } = useI18n();

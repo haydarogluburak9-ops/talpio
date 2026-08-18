@@ -6,11 +6,40 @@ export const PAGINATION = {
 
 export const UPLOAD = {
   maxImageSizeBytes: 10 * 1024 * 1024,
+  maxVideoSizeBytes: 50 * 1024 * 1024,
+  maxAudioSizeBytes: 10 * 1024 * 1024,
   maxDocumentSizeBytes: 10 * 1024 * 1024,
   maxJobAttachments: 10,
   maxReviewPhotos: 5,
+  maxPostMedia: 6,
   allowedImageMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'] as const,
+  allowedVideoMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime'] as const,
+  allowedAudioMimeTypes: [
+    'audio/webm',
+    'audio/ogg',
+    'audio/mpeg',
+    'audio/mp4',
+    'audio/wav',
+    'audio/x-wav',
+    'audio/aac',
+  ] as const,
   allowedDocumentMimeTypes: ['application/pdf', 'image/jpeg', 'image/png'] as const,
+  allowedPostMediaMimeTypes: [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/heic',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+  ] as const,
+} as const;
+
+export const SOCIAL = {
+  maxBioLength: 500,
+  maxPostBodyLength: 4000,
+  maxCommentLength: 2000,
+  feedDefaultLimit: 20,
 } as const;
 
 export const JOB = {

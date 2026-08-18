@@ -2,11 +2,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { FilePurpose } from '@ustapilot/types';
+import { toLocaleTag } from '@talpio/localization';
+import { FilePurpose } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Text } from '@/components/text';
 import { usePhotoUpload } from '@/features/files/use-upload';
+
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -33,7 +35,7 @@ export function AvatarPicker({
   onRemoved,
   disabled = false,
 }: AvatarPickerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const colors = useColors();
   const upload = usePhotoUpload(FilePurpose.AVATAR);
   const [isRemoved, setRemoved] = useState(false);
@@ -79,7 +81,7 @@ export function AvatarPicker({
         ) : (
           <View style={[styles.avatar, styles.placeholder, { backgroundColor: colors.brand }]}>
             <Text variant="title" style={{ color: colors.onBrand }}>
-              {initials(displayName)}
+              {initials(displayName, locale)}
             </Text>
           </View>
         )}
@@ -126,12 +128,12 @@ export function AvatarPicker({
 }
 
 /** Avatar görseli yoksa ad-soyad baş harfleri gösterilir. */
-function initials(fullName: string): string {
+function initials(fullName: string, locale: string): string {
   return fullName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part.charAt(0).toLocaleUpperCase('tr-TR'))
+    .map((part) => part.charAt(0).toLocaleUpperCase(toLocaleTag(locale)))
     .join('');
 }
 

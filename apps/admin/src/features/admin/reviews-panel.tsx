@@ -1,9 +1,9 @@
 'use client';
 
-import { REVIEW_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime } from '@ustapilot/localization';
-import { StatusPill } from '@ustapilot/ui';
-import { ReviewStatus, type AdminReviewSummary } from '@ustapilot/types';
+import { REVIEW_STATUS_TONES } from '@talpio/config';
+import { formatDateTime } from '@talpio/localization';
+import { StatusPill } from '@talpio/ui';
+import { ReviewStatus, type AdminReviewSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -163,7 +163,7 @@ export function ReviewsPanel() {
             <SearchField
               key={filterVersion}
               onChange={(value) => applyFilter(() => setQ(value))}
-              placeholder="Yorum, müşteri, usta veya talep"
+              placeholder="Yorum, müşteri, satıcı veya talep"
             />
             <FilterSelect
               label="Durum"

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { OrderStatus } from '@ustapilot/types';
+import { OrderStatus } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';

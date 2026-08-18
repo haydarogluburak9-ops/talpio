@@ -14,6 +14,7 @@ export const API_ROUTES = {
     logoutAll: '/auth/logout-all',
     me: '/auth/me',
     verifyEmail: '/auth/verify-email',
+    requestEmailVerification: '/auth/verify-email/request',
     requestPhoneCode: '/auth/phone/request-code',
     verifyPhone: '/auth/phone/verify',
     forgotPassword: '/auth/forgot-password',
@@ -56,7 +57,7 @@ export const API_ROUTES = {
     status: (id: string) => `/jobs/${id}/status`,
     attachments: (id: string) => `/jobs/${id}/attachments`,
     offers: (id: string) => `/jobs/${id}/offers`,
-    /** Ustaya açık iş havuzu. */
+    /** Satıcıya açık iş havuzu. */
     available: '/jobs/available',
   },
   offers: {
@@ -67,14 +68,51 @@ export const API_ROUTES = {
     withdraw: (id: string) => `/offers/${id}/withdraw`,
     mine: '/offers/mine',
   },
+  requests: {
+    root: '/requests',
+    mine: '/requests/mine',
+    matched: '/requests/matched',
+    byId: (id: string) => `/requests/${id}`,
+    publish: (id: string) => `/requests/${id}/publish`,
+    offers: (id: string) => `/requests/${id}/offers`,
+  },
+  requestOffers: {
+    accept: (id: string) => `/request-offers/${id}/accept`,
+  },
+  businesses: {
+    supplier: '/businesses/supplier',
+    mine: '/businesses/mine',
+    localeSettings: (id: string) => `/businesses/${id}/locale-settings`,
+    crmCustomers: (id: string) => `/businesses/${id}/crm/customers`,
+    crmCustomer: (id: string, customerId: string) =>
+      `/businesses/${id}/crm/customers/${customerId}`,
+    crmNotes: (id: string, customerId: string) =>
+      `/businesses/${id}/crm/customers/${customerId}/notes`,
+    crmFollowUps: (id: string, customerId: string) =>
+      `/businesses/${id}/crm/customers/${customerId}/follow-ups`,
+    crmFollowUpComplete: (id: string, customerId: string, followUpId: string) =>
+      `/businesses/${id}/crm/customers/${customerId}/follow-ups/${followUpId}/complete`,
+    crmAnalytics: (id: string) => `/businesses/${id}/crm/analytics`,
+    workOrders: (id: string) => `/businesses/${id}/work-orders`,
+    workOrderBoard: (id: string) => `/businesses/${id}/work-orders/board`,
+    workOrderStage: (id: string, workOrderId: string) =>
+      `/businesses/${id}/work-orders/${workOrderId}/stage`,
+    workOrderAssign: (id: string, workOrderId: string) =>
+      `/businesses/${id}/work-orders/${workOrderId}/assign`,
+    tasks: (id: string) => `/businesses/${id}/tasks`,
+    taskStatus: (id: string, taskId: string) => `/businesses/${id}/tasks/${taskId}/status`,
+    dashboard: (id: string) => `/businesses/${id}/dashboard`,
+    trustScore: (id: string) => `/businesses/${id}/trust-score`,
+    campaigns: (id: string) => `/businesses/${id}/campaigns`,
+  },
   orders: {
     root: '/orders',
     byId: (id: string) => `/orders/${id}`,
     /** Müşteri ödemeyi tamamlar; iş takvime alınır. */
     pay: (id: string) => `/orders/${id}/pay`,
-    /** Usta işe başladığını bildirir. */
+    /** Satıcı işe başladığını bildirir. */
     start: (id: string) => `/orders/${id}/start`,
-    /** Usta işi bitirir; müşteri onayı beklenir. */
+    /** Satıcı işi bitirir; müşteri onayı beklenir. */
     complete: (id: string) => `/orders/${id}/complete`,
     approve: (id: string) => `/orders/${id}/approve`,
     cancel: (id: string) => `/orders/${id}/cancel`,
@@ -90,6 +128,45 @@ export const API_ROUTES = {
     root: '/reviews',
     byId: (id: string) => `/reviews/${id}`,
     reply: (id: string) => `/reviews/${id}/reply`,
+  },
+  realtime: {
+    stream: '/realtime/stream',
+  },
+  social: {
+    me: '/social/profiles/me',
+    usernameAvailability: (username: string) =>
+      `/social/profiles/availability/${encodeURIComponent(username)}`,
+    profileByUsername: (username: string) => `/social/profiles/${username}`,
+    follow: (username: string) => `/social/profiles/${username}/follow`,
+    message: (username: string) => `/social/profiles/${username}/message`,
+    followers: (username: string) => `/social/profiles/${username}/followers`,
+    following: (username: string) => `/social/profiles/${username}/following`,
+    postsByUsername: (username: string) => `/social/profiles/${username}/posts`,
+    posts: '/social/posts',
+    postById: (id: string) => `/social/posts/${id}`,
+    createRequestFromPost: (id: string) => `/social/posts/${id}/create-request`,
+    shareRequest: (requestId: string) => `/social/requests/${requestId}/share`,
+    like: (id: string) => `/social/posts/${id}/like`,
+    comments: (id: string) => `/social/posts/${id}/comments`,
+    save: (id: string) => `/social/posts/${id}/save`,
+    share: (id: string) => `/social/posts/${id}/share`,
+    view: (id: string) => `/social/posts/${id}/view`,
+    hide: (id: string) => `/social/posts/${id}/hide`,
+    feed: '/social/feed',
+    discover: '/social/discover',
+    trending: '/social/trending',
+    hashtagPosts: (slug: string) => `/social/hashtags/${encodeURIComponent(slug)}/posts`,
+    categoryFollows: '/social/categories/following',
+    categoryFollow: (categoryId: string) => `/social/categories/${categoryId}/follow`,
+    interests: '/social/interests',
+    analyticsMe: '/social/analytics/me',
+    analyticsBusiness: (businessId: string) => `/social/analytics/business/${businessId}`,
+    reports: '/social/reports',
+    block: (userId: string) => `/social/blocks/${userId}`,
+    /** Story / reel omurgası (iskelet) */
+    saved: '/social/saved',
+    stories: '/social/stories',
+    groupConversations: '/social/group-conversations',
   },
   notifications: {
     root: '/notifications',
@@ -108,7 +185,7 @@ export const API_ROUTES = {
     checkout: '/payments/checkout',
     webhook: '/payments/webhook',
     transactions: '/payments/transactions',
-    /** Ustanın cüzdan özeti: kullanılabilir bakiye ve bloke hakediş. */
+    /** Satıcının cüzdan özeti: kullanılabilir bakiye ve bloke hakediş. */
     wallet: '/payments/wallet',
     refund: (id: string) => `/payments/${id}/refund`,
   },
@@ -122,6 +199,24 @@ export const API_ROUTES = {
   files: {
     upload: '/files/upload',
     byId: (id: string) => `/files/${id}`,
+  },
+  agent: {
+    threads: '/agent/threads',
+    threadById: (id: string) => `/agent/threads/${id}`,
+    messages: (id: string) => `/agent/threads/${id}/messages`,
+    pendingActions: '/agent/actions/pending',
+    approveAction: (id: string) => `/agent/actions/${id}/approve`,
+    rejectAction: (id: string) => `/agent/actions/${id}/reject`,
+    draftRequest: '/agent/drafts/request',
+    draftOffer: '/agent/drafts/offer',
+    draftSocial: '/agent/drafts/social',
+    salesCoach: '/agent/sales-coach',
+  },
+  billing: {
+    credits: '/billing/credits',
+    transactions: '/billing/credits/transactions',
+    usage: '/billing/usage',
+    plans: '/billing/plans',
   },
   admin: {
     dashboard: '/admin/dashboard',
@@ -139,6 +234,7 @@ export const API_ROUTES = {
     transactions: '/admin/transactions',
     commissions: '/admin/commissions',
     categories: '/admin/categories',
+    categoryById: (id: string) => `/admin/categories/${id}`,
     locations: '/admin/locations',
     reviews: '/admin/reviews',
     reviewById: (id: string) => `/admin/reviews/${id}`,
@@ -151,9 +247,23 @@ export const API_ROUTES = {
     settings: '/admin/settings',
     settingsRoles: '/admin/settings/roles',
     auditLogs: '/admin/audit-logs',
+    subscriptions: '/admin/subscriptions',
+    aiUsage: '/admin/ai-usage',
+    campaigns: '/admin/campaigns',
+    moderationReports: '/admin/moderation/reports',
+    moderationReportById: (id: string) => `/admin/moderation/reports/${id}`,
+    commerceRequests: '/admin/commerce-requests',
+    fraudFlags: '/admin/fraud-flags',
+    fraudFlagById: (id: string) => `/admin/fraud-flags/${id}`,
+    backupStatus: '/admin/backup-status',
+    backupVerify: '/admin/backup-status/verify',
+    queueDeadLetters: '/admin/queues/dead-letters',
   },
   health: {
     live: '/health',
     ready: '/health/ready',
+    metrics: '/health/metrics',
+    status: '/health/status',
+    queues: '/health/queues',
   },
 } as const;

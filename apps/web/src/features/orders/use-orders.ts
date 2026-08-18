@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ListOrdersParams } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { Order } from '@ustapilot/types';
+import type { ListOrdersParams } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { Order } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

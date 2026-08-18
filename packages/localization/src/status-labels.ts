@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE } from '@ustapilot/config';
+import { DEFAULT_LOCALE } from '@talpio/config';
 import type {
   ComplaintStatus,
   ComplaintSubjectType,
@@ -8,7 +8,7 @@ import type {
   PaymentStatus,
   SupportTicketStatus,
   TransactionType,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { messagesFor } from './translator';
 

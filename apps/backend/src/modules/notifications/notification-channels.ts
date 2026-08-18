@@ -1,4 +1,4 @@
-import { NotificationChannel, NotificationType } from '@ustapilot/types';
+import { NotificationChannel, NotificationType } from '@talpio/types';
 
 /**
  * Tür başına varsayılan kanal eşlemesi.
@@ -65,6 +65,26 @@ const CHANNELS: Record<NotificationType, NotificationChannel[]> = {
     NotificationChannel.EMAIL,
   ],
   [NotificationType.CAMPAIGN]: [NotificationChannel.IN_APP],
+  [NotificationType.REQUEST_MATCHED]: [
+    NotificationChannel.IN_APP,
+    NotificationChannel.PUSH,
+    NotificationChannel.EMAIL,
+  ],
+  [NotificationType.REQUEST_OFFER_RECEIVED]: [
+    NotificationChannel.IN_APP,
+    NotificationChannel.PUSH,
+    NotificationChannel.EMAIL,
+  ],
+  [NotificationType.REQUEST_OFFER_ACCEPTED]: [
+    NotificationChannel.IN_APP,
+    NotificationChannel.PUSH,
+    NotificationChannel.EMAIL,
+  ],
+  [NotificationType.SOCIAL_FOLLOW]: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
+  [NotificationType.SOCIAL_LIKE]: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
+  [NotificationType.SOCIAL_COMMENT]: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
+  [NotificationType.SOCIAL_MENTION]: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
+  [NotificationType.SOCIAL_SHARE]: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
 };
 
 /** IN_APP kaydı her zaman yazılır; listede olmasa bile eklenir. */

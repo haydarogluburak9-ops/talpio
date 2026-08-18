@@ -12,7 +12,6 @@ concurrency:
 
 env:
   NODE_VERSION: "20.11"
-  FLUTTER_VERSION: "3.35.0"
 
 jobs:
   node:
@@ -23,12 +22,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ustapilot
-          POSTGRES_PASSWORD: ustapilot_ci_password
-          POSTGRES_DB: ustapilot_test
+          POSTGRES_USER: talpio
+          POSTGRES_PASSWORD: talpio_ci_password
+          POSTGRES_DB: talpio_test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U ustapilot -d ustapilot_test"
+          --health-cmd "pg_isready -U talpio -d talpio_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -44,12 +43,14 @@ jobs:
 
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://ustapilot:ustapilot_ci_password@localhost:5432/ustapilot_test?schema=public
+      DATABASE_URL: postgresql://talpio:talpio_ci_password@localhost:5432/talpio_test?schema=public
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       JWT_ACCESS_SECRET: ci_access_secret_that_is_long_enough_32
       JWT_REFRESH_SECRET: ci_refresh_secret_that_is_long_enough_32
       NEXT_PUBLIC_API_URL: http://localhost:3000/api/v1
+      SEED_DEMO_ACCOUNTS: "true"
+      DEMO_PASSWORD: Demo1234!
 
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +64,7 @@ jobs:
         run: npm ci
 
       - name: Prisma istemcisini üret
-        run: npm run db:generate --workspace @ustapilot/backend
+        run: npm run db:generate --workspace @talpio/backend
 
       - name: Biçim kontrolü
         run: npm run format:check
@@ -75,10 +76,10 @@ jobs:
         run: npm run typecheck
 
       - name: Migration'ları uygula
-        run: npm run db:migrate:deploy --workspace @ustapilot/backend
+        run: npm run db:migrate:deploy --workspace @talpio/backend
 
       - name: Seed
-        run: npm run db:seed --workspace @ustapilot/backend
+        run: npm run db:seed --workspace @talpio/backend
 
       - name: Testler
         run: npm run test
@@ -86,36 +87,28 @@ jobs:
       - name: Derleme
         run: npm run build
 
-  flutter:
-    name: Mobil
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/mobile
+      - name: API'yi arka planda başlat
+        run: |
+          node apps/backend/dist/main.js &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3000/health >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo "API ayağa kalkmadı" >&2
+          exit 1
 
+      - name: Playwright E2E
+        run: npm run e2e
+        env:
+          E2E_API_ORIGIN: http://127.0.0.1:3000
+
+  flutter-archive:
+    name: Flutter arşiv
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
-
-      - name: Bağımlılıkları kur
-        run: flutter pub get
-
-      - name: Yerelleştirme dosyalarını üret
-        run: flutter gen-l10n
-
-      - name: Biçim kontrolü
-        run: dart format --output=none --set-exit-if-changed lib test
-
-      - name: Statik analiz
-        run: flutter analyze
-
-      - name: Testler
-        run: flutter test
+      - name: Arşiv README doğrula
+        run: grep -q "ARŞİV" apps/mobile-flutter/README.md
 
   docker:
     name: Docker imajları

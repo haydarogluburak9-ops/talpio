@@ -4,20 +4,20 @@ import {
   ORDER_STATUS_TONES,
   PAYMENT_STATUS_TONES,
   type SupportedLocale,
-} from '@ustapilot/config';
+} from '@talpio/config';
 import {
   jobStatusLabel,
   offerStatusLabel,
   orderStatusLabel,
   paymentStatusLabel,
-} from '@ustapilot/localization';
-import type { JobRequestStatus, OfferStatus, OrderStatus, PaymentStatus } from '@ustapilot/types';
+} from '@talpio/localization';
+import type { JobRequestStatus, OfferStatus, OrderStatus, PaymentStatus } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 
 /**
- * Durum rozeti. Renk tonu `@ustapilot/config`, metin ise
- * `@ustapilot/localization` üzerinden gelir; web ile birebir aynı kaynak.
+ * Durum rozeti. Renk tonu `@talpio/config`, metin ise
+ * `@talpio/localization` üzerinden gelir; web ile birebir aynı kaynak.
  */
 export function JobStatusPill({
   status,

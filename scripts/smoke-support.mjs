@@ -56,7 +56,7 @@ console.log(`Destek duman testi — ${BASE}\n`);
 console.log('Hazırlık: müşteri ve personel girişi');
 const customer = await call('POST', '/auth/register', {
   body: {
-    email: `support+${Date.now()}${Math.random().toString(36).slice(2, 6)}@ustapilot.test`,
+    email: `support+${Date.now()}${Math.random().toString(36).slice(2, 6)}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Destek Duman Testi',
     role: 'CUSTOMER',
@@ -67,8 +67,8 @@ const customerId = customer.json?.data?.user?.id;
 if (!customerToken || !customerId) abort('Müşteri kaydı yapılamadı.', customer.json);
 check('müşteri kaydı', Boolean(customerToken));
 
-const staffToken = await login('destek@ustapilot.com', 'Destek personeli');
-const adminToken = await login('admin@ustapilot.com', 'Admin');
+const staffToken = await login('destek@talpio.com', 'Destek personeli');
+const adminToken = await login('admin@talpio.com', 'Admin');
 check('personel girişi', Boolean(staffToken));
 check('admin girişi', Boolean(adminToken));
 
@@ -77,7 +77,7 @@ const created = await call('POST', '/support/tickets', {
   token: customerToken,
   body: {
     subject: 'Ödeme bloke kaldı',
-    body: 'Sipariş ödemem onaylandı görünüyor ama usta tarafında bloke görünüyor.',
+    body: 'Sipariş ödemem onaylandı görünüyor ama satıcı tarafında bloke görünüyor.',
     attachmentFileIds: [],
   },
 });
@@ -135,7 +135,7 @@ check('kullanıcı bileti kapatır', closed.json?.data?.status === 'CLOSED', clo
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `support-stranger+${Date.now()}@ustapilot.test`,
+    email: `support-stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Kullanıcı',
     role: 'CUSTOMER',

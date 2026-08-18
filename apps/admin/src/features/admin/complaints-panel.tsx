@@ -1,9 +1,9 @@
 'use client';
 
-import { COMPLAINT_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime } from '@ustapilot/localization';
-import { StatusPill, Textarea } from '@ustapilot/ui';
-import { ComplaintStatus, type AdminComplaintSummary } from '@ustapilot/types';
+import { COMPLAINT_STATUS_TONES } from '@talpio/config';
+import { formatDateTime } from '@talpio/localization';
+import { StatusPill, Textarea } from '@talpio/ui';
+import { ComplaintStatus, type AdminComplaintSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 
 import { OrdersPageBody } from '@/features/orders/orders-page-body';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Siparişlerim',
+  title: t('order.listTitle'),
   robots: { index: false, follow: false },
 };
 

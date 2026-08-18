@@ -1,8 +1,8 @@
 'use client';
 
-import { UPLOAD } from '@ustapilot/config';
-import { FilePurpose, type FileAsset } from '@ustapilot/types';
-import { Button } from '@ustapilot/ui';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose, type FileAsset } from '@talpio/types';
+import { Button } from '@talpio/ui';
 import { useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';

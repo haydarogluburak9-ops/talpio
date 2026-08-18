@@ -32,7 +32,7 @@ const clamp01 = (value: number): number => Math.min(Math.max(value, 0), 1);
 
 /**
  * Puanı yorum sayısına göre yumuşatır (Bayesian ortalama). Tek bir 5 yıldızlı
- * yorumu olan usta, 200 yorumla 4,8 tutturan ustanın önüne geçmemelidir.
+ * yorumu olan satıcı, 200 yorumla 4,8 tutturan satıcının önüne geçmemelidir.
  */
 function smoothedRating(rating: number | null | undefined, reviewCount: number): number {
   const priorWeight = 10;
@@ -80,7 +80,7 @@ export function scoreProvider(
   const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
   const normalized = totalWeight > 0 ? score / totalWeight : 0;
 
-  // Doğrulanmamış usta hiçbir koşulda doğrulanmışın önüne geçmemelidir.
+  // Doğrulanmamış satıcı hiçbir koşulda doğrulanmışın önüne geçmemelidir.
   return provider.isVerified ? clamp01(normalized) : clamp01(normalized) * 0.5;
 }
 

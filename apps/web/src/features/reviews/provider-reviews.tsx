@@ -1,8 +1,8 @@
 'use client';
 
-import { PAGINATION } from '@ustapilot/config';
-import type { ProviderSummary } from '@ustapilot/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@ustapilot/ui';
+import { PAGINATION } from '@talpio/config';
+import type { ProviderSummary } from '@talpio/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@talpio/ui';
 import { useState } from 'react';
 
 import { t } from '@/lib/i18n';
@@ -13,7 +13,7 @@ import { useProviderReviews } from './use-reviews';
 
 export interface ProviderReviewsProps {
   providerId: string;
-  /** Ortalama puan usta kartından okunur; liste sayfası puanı yeniden hesaplamaz. */
+  /** Ortalama puan satıcı kartından okunur; liste sayfası puanı yeniden hesaplamaz. */
   summary: Pick<ProviderSummary, 'averageRating' | 'reviewCount'> | undefined;
 }
 
@@ -43,7 +43,7 @@ export function ProviderReviews({ providerId, summary }: ProviderReviewsProps) {
 }
 
 function RatingSummary({ summary }: Pick<ProviderReviewsProps, 'summary'>) {
-  // Usta kartı yüklenmediyse puan uydurulmaz; alan boş bırakılır.
+  // Satıcı kartı yüklenmediyse puan uydurulmaz; alan boş bırakılır.
   if (!summary) return null;
 
   if (summary.averageRating === null || summary.averageRating === undefined) {

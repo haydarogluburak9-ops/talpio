@@ -1,12 +1,12 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AcceptOfferBody, ListOffersParams } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
+import type { AcceptOfferBody, ListOffersParams } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
 
 import { apiClient } from '@/lib/api';
 
-/** Ustanın kendi verdiği teklifler. */
+/** Satıcının kendi verdiği teklifler. */
 export function useMyOffers(params: ListOffersParams = {}) {
   return useQuery({
     queryKey: queryKeys.offers.mine(params as Record<string, unknown>),
@@ -23,7 +23,7 @@ export function useJobOffers(jobId: string, params: ListOffersParams = {}) {
 }
 
 /**
- * Teklif kabulü işi de değiştirir: talep "usta seçildi" durumuna geçer ve rakip
+ * Teklif kabulü işi de değiştirir: talep "satıcı seçildi" durumuna geçer ve rakip
  * teklifler düşer. Bu yüzden hem teklif hem talep sorguları geçersizlenir.
  */
 export function useAcceptOffer(jobId: string) {

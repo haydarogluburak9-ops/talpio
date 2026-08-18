@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ComplaintStatus, ComplaintSubjectType, SupportTicketStatus } from '@ustapilot/types';
+import { ComplaintStatus, ComplaintSubjectType, SupportTicketStatus } from '@talpio/types';
 import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,

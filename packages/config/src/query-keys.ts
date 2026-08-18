@@ -4,6 +4,18 @@
  * bilinir ve anahtar çakışmaları önlenir.
  */
 export const queryKeys = {
+  requests: {
+    all: () => ['requests'] as const,
+    mine: () => ['requests', 'mine'] as const,
+    matched: () => ['requests', 'matched'] as const,
+    detail: (id: string) => ['requests', 'detail', id] as const,
+    offers: (id: string) => ['requests', 'offers', id] as const,
+  },
+  businesses: {
+    all: () => ['businesses'] as const,
+    mine: () => ['businesses', 'mine'] as const,
+  },
+
   auth: {
     session: () => ['auth', 'session'] as const,
     sessions: () => ['auth', 'sessions'] as const,
@@ -59,6 +71,32 @@ export const queryKeys = {
     forProvider: (providerId: string, params?: Record<string, unknown>) =>
       ['reviews', 'provider', providerId, params ?? {}] as const,
   },
+  social: {
+    all: () => ['social'] as const,
+    me: () => ['social', 'me'] as const,
+    usernameAvailability: (username: string) => ['social', 'username-availability', username] as const,
+    profile: (username: string) => ['social', 'profile', username] as const,
+    followers: (username: string, params?: Record<string, unknown>) =>
+      ['social', 'followers', username, params ?? {}] as const,
+    following: (username: string, params?: Record<string, unknown>) =>
+      ['social', 'following', username, params ?? {}] as const,
+    feed: (params?: Record<string, unknown>) => ['social', 'feed', params ?? {}] as const,
+    discover: (params?: Record<string, unknown>) => ['social', 'discover', params ?? {}] as const,
+    categoryFollows: () => ['social', 'categoryFollows'] as const,
+    analyticsMe: () => ['social', 'analytics', 'me'] as const,
+    post: (id: string) => ['social', 'post', id] as const,
+    postsByUsername: (username: string, params?: Record<string, unknown>) =>
+      ['social', 'posts', username, params ?? {}] as const,
+    comments: (postId: string, params?: Record<string, unknown>) =>
+      ['social', 'comments', postId, params ?? {}] as const,
+    trending: (params?: Record<string, unknown>) =>
+      ['social', 'trending', params ?? {}] as const,
+    hashtagPosts: (slug: string, params?: Record<string, unknown>) =>
+      ['social', 'hashtag', slug, params ?? {}] as const,
+    saved: () => ['social', 'saved'] as const,
+    stories: () => ['social', 'stories'] as const,
+    groups: () => ['social', 'groups'] as const,
+  },
   payments: {
     all: () => ['payments'] as const,
     list: (params?: Record<string, unknown>) => ['payments', 'list', params ?? {}] as const,
@@ -73,6 +111,20 @@ export const queryKeys = {
     ticket: (id: string) => ['support', 'tickets', id] as const,
     complaints: (params?: Record<string, unknown>) =>
       ['support', 'complaints', params ?? {}] as const,
+  },
+  agent: {
+    all: () => ['agent'] as const,
+    threads: () => ['agent', 'threads'] as const,
+    thread: (id: string) => ['agent', 'threads', id] as const,
+    pendingActions: () => ['agent', 'actions', 'pending'] as const,
+  },
+  billing: {
+    all: () => ['billing'] as const,
+    credits: () => ['billing', 'credits'] as const,
+    transactions: (params?: Record<string, unknown>) =>
+      ['billing', 'transactions', params ?? {}] as const,
+    usage: (params?: Record<string, unknown>) => ['billing', 'usage', params ?? {}] as const,
+    plans: () => ['billing', 'plans'] as const,
   },
   admin: {
     dashboard: () => ['admin', 'dashboard'] as const,
@@ -100,8 +152,18 @@ export const queryKeys = {
       ['admin', 'provider-documents', params ?? {}] as const,
     settings: () => ['admin', 'settings'] as const,
     roles: () => ['admin', 'settings', 'roles'] as const,
+    subscriptions: () => ['admin', 'subscriptions'] as const,
+    campaigns: () => ['admin', 'campaigns'] as const,
+    aiUsage: () => ['admin', 'ai-usage'] as const,
+    fraudFlags: (params?: Record<string, unknown>) => ['admin', 'fraud-flags', params ?? {}] as const,
+    moderation: (params?: Record<string, unknown>) => ['admin', 'moderation', params ?? {}] as const,
+    commerceRequests: () => ['admin', 'commerce-requests'] as const,
+    backupStatus: () => ['admin', 'backup-status'] as const,
+    deadLetters: () => ['admin', 'dead-letters'] as const,
   },
   system: {
     health: () => ['system', 'health'] as const,
+    status: () => ['system', 'status'] as const,
+    queues: () => ['system', 'queues'] as const,
   },
 } as const;

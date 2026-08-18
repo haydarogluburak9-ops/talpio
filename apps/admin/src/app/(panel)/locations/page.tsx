@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { LocationsPanel } from '@/features/catalog/locations-panel';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Konumlar' };
+export const metadata: Metadata = { title: t('admin.locations') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'Ülke ekleme', detail: 'Yeni pazara açılırken ülke, para birimi ve saat dilimi.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function LocationsPage() {
   return (
     <ModuleScaffold
-      title="Konumlar"
-      description="Ülke, şehir ve ilçe hiyerarşisini yönetin."
+      titleKey="admin.locations"
+      descriptionKey="admin.locationsHint"
       dataSource="POST/PATCH /admin/locations"
       capabilities={CAPABILITIES}
     >

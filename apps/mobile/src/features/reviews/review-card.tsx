@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
-import { REVIEW } from '@ustapilot/config';
-import { formatRelativeTime } from '@ustapilot/localization';
-import type { Review } from '@ustapilot/types';
+import { ApiError } from '@talpio/api-client';
+import { REVIEW } from '@talpio/config';
+import { formatRelativeTime } from '@talpio/localization';
+import type { Review } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';

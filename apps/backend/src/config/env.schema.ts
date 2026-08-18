@@ -25,8 +25,8 @@ export const envSchema = z
     // Genel
     NODE_ENV: z.enum(['development', 'test', 'staging', 'production']).default('development'),
     TZ: z.string().default('UTC'),
-    DEFAULT_LOCALE: z.string().default('tr'),
-    SUPPORTED_LOCALES: csv('tr,en'),
+    DEFAULT_LOCALE: z.string().default('en'),
+    SUPPORTED_LOCALES: csv('en,tr,de,es,fr,ar'),
     DEFAULT_COUNTRY_CODE: z.string().length(2).default('TR'),
     DEFAULT_CURRENCY: z.string().length(3).default('TRY'),
 
@@ -34,11 +34,33 @@ export const envSchema = z
     API_PORT: z.coerce.number().int().positive().default(3000),
     API_PREFIX: z.string().default('api/v1'),
     API_PUBLIC_URL: z.string().url().default('http://localhost:3000'),
+    WEB_APP_URL: z.string().url().default('http://localhost:3002'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     CORS_ORIGINS: csv('http://localhost:3001'),
 
     // Veritabanı
     DATABASE_URL: z.string().min(1, 'DATABASE_URL zorunludur'),
+    /** Okuma replikası; yoksa birincil URL kullanılır. */
+    DATABASE_READ_URL: z
+      .string()
+      .optional()
+      .transform((value) => (value && value.trim().length > 0 ? value : undefined)),
+
+    // CDN / medya dağıtımı
+    /** CloudFront veya Cloudflare kök URL (sonunda / yok). Boşsa S3_PUBLIC_URL/bucket kullanılır. */
+    CDN_PUBLIC_URL: z
+      .string()
+      .optional()
+      .transform((value) => (value && value.trim().length > 0 ? value : undefined))
+      .pipe(z.string().url().optional()),
+
+    // Sosyal önbellek ve bakım
+    FEED_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).max(600).default(45),
+    STORY_TTL_HOURS: z.coerce.number().int().min(12).max(72).default(24),
+    SOCIAL_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().positive().default(3_600_000),
+    REALTIME_ENABLED: booleanFromString.default(true),
+    /** Video küçük resmi için ffmpeg yolu; yoksa yalnızca görsel sıkıştırma yapılır. */
+    FFMPEG_PATH: z.string().optional(),
 
     // Redis
     REDIS_HOST: z.string().default('localhost'),
@@ -66,9 +88,9 @@ export const envSchema = z
     S3_ENDPOINT: z.string().default('http://localhost:9000'),
     S3_PUBLIC_URL: z.string().default('http://localhost:9000'),
     S3_REGION: z.string().default('eu-central-1'),
-    S3_BUCKET: z.string().default('ustapilot'),
-    S3_ACCESS_KEY: z.string().default('ustapilot'),
-    S3_SECRET_KEY: z.string().default('ustapilot_dev_password'),
+    S3_BUCKET: z.string().default('talpio'),
+    S3_ACCESS_KEY: z.string().default('talpio'),
+    S3_SECRET_KEY: z.string().default('talpio_dev_password'),
     S3_FORCE_PATH_STYLE: booleanFromString.default(true),
     MAX_UPLOAD_SIZE_MB: z.coerce.number().int().positive().default(10),
     MAX_JOB_MEDIA_COUNT: z.coerce.number().int().positive().default(10),
@@ -79,8 +101,23 @@ export const envSchema = z
     PUSH_DRIVER: z.enum(['mock', 'firebase']).default('mock'),
     MAIL_DRIVER: z.enum(['mock', 'smtp']).default('mock'),
     SMS_DRIVER: z.enum(['mock', 'netgsm', 'twilio']).default('mock'),
-    MAIL_FROM: z.string().default('UstaPilot <no-reply@ustapilot.com>'),
-    SMS_SENDER: z.string().default('USTAPILOT'),
+    MAIL_FROM: z.string().default('Talpio <no-reply@talpio.com>'),
+    SMS_SENDER: z.string().default('TALPIO'),
+    FCM_SERVER_KEY: z.string().optional(),
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().int().positive().default(587),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    SMTP_SECURE: booleanFromString.default(false),
+    TWILIO_ACCOUNT_SID: z.string().optional(),
+    TWILIO_AUTH_TOKEN: z.string().optional(),
+    TWILIO_FROM: z.string().optional(),
+    NETGSM_USER: z.string().optional(),
+    NETGSM_PASS: z.string().optional(),
+    NETGSM_HEADER: z.string().optional(),
+    IYZICO_API_KEY: z.string().optional(),
+    IYZICO_SECRET_KEY: z.string().optional(),
+    IYZICO_BASE_URL: z.string().url().default('https://sandbox-api.iyzipay.com'),
     /** Mock sürücülerin bellekte tuttuğu son gönderim sayısı. */
     NOTIFICATION_OUTBOX_LIMIT: z.coerce.number().int().positive().max(1000).default(200),
     OTP_LENGTH: z.coerce.number().int().min(4).max(8).default(6),
@@ -94,9 +131,24 @@ export const envSchema = z
     DEFAULT_COMMISSION_BPS: z.coerce.number().int().min(0).max(10000).default(1250),
     DEFAULT_COMMISSION_FIXED_MINOR: z.coerce.number().int().min(0).default(0),
 
+    // AI
+    AI_DRIVER: z.enum(['mock', 'openai', 'anthropic']).default('mock'),
+    AI_OPENAI_API_KEY: z.string().optional(),
+    AI_ANTHROPIC_API_KEY: z.string().optional(),
+    AI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+    AI_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
+    AI_DEFAULT_MODEL: z.string().default('gpt-4o-mini'),
+
+    // Outbox / worker
+    OUTBOX_POLL_MS: z.coerce.number().int().positive().default(2_000),
+    WORKER_CONCURRENCY: z.coerce.number().int().positive().default(2),
+
     // Seed
     SEED_DEMO_ACCOUNTS: booleanFromString.default(false),
     DEMO_PASSWORD: z.string().default('Demo1234!'),
+
+    /** Açılışta bekleyen Prisma migrasyonu varsa süreci durdur. Testte kapalı. */
+    STRICT_MIGRATION_CHECK: booleanFromString.default(true),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production') {
@@ -124,10 +176,76 @@ export const envSchema = z
           message: 'Mock ödeme sağlayıcısı production ortamında kullanılamaz.',
         });
       }
-      // Mock push ve e-posta sürücüleri canlıda yalnızca gönderimi düşürür;
-      // veri bozulmaz, para kaybolmaz. Açılışta uyarı yazılır, süreç durmaz.
-      // SMS ise doğrulama kodu taşıyor: mock sürücü kodu hiç iletmediği için
-      // kullanıcı oturum açamaz, üstelik kodu günlüğe düşürür.
+      if (env.AI_DRIVER === 'mock') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_DRIVER'],
+          message: 'Mock AI sürücüsü production ortamında kullanılamaz.',
+        });
+      }
+      if (env.AI_DRIVER === 'openai' && !env.AI_OPENAI_API_KEY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_OPENAI_API_KEY'],
+          message: 'OpenAI sürücüsü için AI_OPENAI_API_KEY zorunludur.',
+        });
+      }
+      if (env.AI_DRIVER === 'anthropic' && !env.AI_ANTHROPIC_API_KEY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['AI_ANTHROPIC_API_KEY'],
+          message: 'Anthropic sürücüsü için AI_ANTHROPIC_API_KEY zorunludur.',
+        });
+      }
+      if (!env.API_PUBLIC_URL.startsWith('https://')) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['API_PUBLIC_URL'],
+          message: 'Production ortamında API_PUBLIC_URL HTTPS olmalıdır.',
+        });
+      }
+      if (env.CORS_ORIGINS.every((origin) => origin.includes('localhost'))) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['CORS_ORIGINS'],
+          message: 'Production ortamında CORS yalnızca localhost olamaz.',
+        });
+      }
+      if (env.PUSH_DRIVER === 'mock') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['PUSH_DRIVER'],
+          message: 'Mock push sürücüsü production ortamında kullanılamaz.',
+        });
+      }
+      if (env.MAIL_DRIVER === 'mock') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['MAIL_DRIVER'],
+          message: 'Mock e-posta sürücüsü production ortamında kullanılamaz.',
+        });
+      }
+      if (env.PUSH_DRIVER === 'firebase' && !env.FCM_SERVER_KEY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['FCM_SERVER_KEY'],
+          message: 'Firebase push sürücüsü için FCM_SERVER_KEY zorunludur.',
+        });
+      }
+      if (env.MAIL_DRIVER === 'smtp' && !env.SMTP_HOST) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SMTP_HOST'],
+          message: 'SMTP sürücüsü için SMTP_HOST zorunludur.',
+        });
+      }
+      if (env.PAYMENT_DRIVER === 'iyzico' && (!env.IYZICO_API_KEY || !env.IYZICO_SECRET_KEY)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['IYZICO_API_KEY'],
+          message: 'iyzico sürücüsü için IYZICO_API_KEY ve IYZICO_SECRET_KEY zorunludur.',
+        });
+      }
       if (env.SMS_DRIVER === 'mock') {
         ctx.addIssue({
           code: 'custom',

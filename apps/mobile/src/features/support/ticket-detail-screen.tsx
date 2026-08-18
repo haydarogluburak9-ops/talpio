@@ -1,9 +1,9 @@
 import { Alert, FlatList, StyleSheet, View } from 'react-native';
 import { useState } from 'react';
 
-import { SUPPORT_TICKET_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime, supportTicketStatusLabel } from '@ustapilot/localization';
-import { SupportTicketStatus, type SupportMessage } from '@ustapilot/types';
+import { SUPPORT_TICKET_STATUS_TONES } from '@talpio/config';
+import { formatDateTime, supportTicketStatusLabel } from '@talpio/localization';
+import { SupportTicketStatus, type SupportMessage } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';

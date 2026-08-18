@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { FlatList, StyleSheet } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
+import { ApiError } from '@talpio/api-client';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';

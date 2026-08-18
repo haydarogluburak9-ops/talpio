@@ -1,4 +1,4 @@
-import { OrderStatus, ReviewStatus, UserRole } from '@ustapilot/types';
+import { OrderStatus, ReviewStatus, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -12,7 +12,7 @@ import type { ListReviewsQueryDto } from './dto/list-reviews-query.dto';
 import type { ReviewRow } from './review.mapper';
 import { ReviewsService } from './reviews.service';
 
-const FILE_BASE_URL = 'http://localhost:9000/ustapilot';
+const FILE_BASE_URL = 'http://localhost:9000/talpio';
 const CUSTOMER_ID = 'customer-1';
 const PROVIDER_USER_ID = 'provider-user-1';
 const PROFILE_ID = 'profile-1';
@@ -268,7 +268,7 @@ describe('ReviewsService', () => {
     });
   });
 
-  describe('usta puan önbelleği', () => {
+  describe('satıcı puan önbelleği', () => {
     it('ortalamayı yayınlanmış yorumlar üzerinden yeniden hesaplar', async () => {
       await service.create(customer, createDto());
 
@@ -312,7 +312,7 @@ describe('ReviewsService', () => {
     });
   });
 
-  describe('usta cevabı', () => {
+  describe('satıcı cevabı', () => {
     it('yorumun ustası cevap yazabilir', async () => {
       await service.reply(provider, REVIEW_ID, { body: 'Teşekkür ederiz.' });
 
@@ -329,7 +329,7 @@ describe('ReviewsService', () => {
       expect(args.update.body).toBe('Düzeltilmiş cevap.');
     });
 
-    it('başka ustanın yorumuna cevap yazdırmaz', async () => {
+    it('başka satıcının yorumuna cevap yazdırmaz', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue({ id: 'profile-2' });
 
       await expect(
@@ -338,7 +338,7 @@ describe('ReviewsService', () => {
       expect(prisma.reviewReply.upsert).not.toHaveBeenCalled();
     });
 
-    it('usta profili olmayan hesaba cevap yazdırmaz', async () => {
+    it('satıcı profili olmayan hesaba cevap yazdırmaz', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -363,7 +363,7 @@ describe('ReviewsService', () => {
       expect(where.customerId).toBe(CUSTOMER_ID);
     });
 
-    it('ustaya aldığı yorumları sorgular', async () => {
+    it('satıcıya aldığı yorumları sorgular', async () => {
       await service.listMine(provider, listQuery());
 
       const { where } = firstCallArg<{ where: { providerProfileId?: string } }>(
@@ -389,7 +389,7 @@ describe('ReviewsService', () => {
       expect(where.status).toBe(ReviewStatus.PUBLISHED);
     });
 
-    it('bulunamayan usta için 404 üretir', async () => {
+    it('bulunamayan satıcı için 404 üretir', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(

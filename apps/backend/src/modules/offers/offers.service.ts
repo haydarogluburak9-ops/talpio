@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import {
   calculateCommission,
   canAcceptOffer,
   canSubmitOffer,
   selectCommissionRule,
   type OfferEligibility,
-} from '@ustapilot/business-logic';
-import { deepLinks } from '@ustapilot/config';
+} from '@talpio/business-logic';
+import { deepLinks } from '@talpio/config';
 import {
+  DOMAIN_EVENT_TYPES,
   JobRequestStatus,
   NotificationType,
   OfferStatus,
@@ -15,15 +16,18 @@ import {
   UserRole,
   type CommissionRule,
   type Offer,
-} from '@ustapilot/types';
+  type OrderCreatedEventPayload,
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import type { ErrorCode } from '@common/errors/error-codes';
 import { AppConfigService } from '@config/app-config.service';
+import { OutboxService } from '@infra/outbox/outbox.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { FraudService } from '@modules/fraud/fraud.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type { AcceptOfferDto, CreateOfferDto } from './dto/create-offer.dto';
@@ -42,7 +46,7 @@ const ELIGIBILITY_ERRORS: Record<
 > = {
   NOT_PROVIDER: {
     code: 'PROVIDER_PROFILE_INCOMPLETE',
-    message: 'Teklif vermek için usta profiliniz olmalıdır.',
+    message: 'Teklif vermek için satıcı profiliniz olmalıdır.',
   },
   PROFILE_INCOMPLETE: {
     code: 'PROVIDER_PROFILE_INCOMPLETE',
@@ -76,10 +80,12 @@ export class OffersService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly notifications: NotificationsService,
+    private readonly outbox: OutboxService,
+    @Optional() private readonly fraud?: FraudService,
   ) {}
 
   /**
-   * Usta bir talebe teklif verir.
+   * Satıcı bir talebe teklif verir.
    *
    * Uygunluk kontrolü ile kaydın yazılması tek işlemde yapılır; ayrıca
    * `(jobRequestId, providerProfileId)` benzersizliği veritabanında zorunludur;
@@ -188,17 +194,18 @@ export class OffersService {
       type: NotificationType.OFFER_RECEIVED,
       params: {
         jobTitle: job.title,
-        providerName: offer.provider?.displayName ?? 'Usta',
+        providerName: offer.provider?.displayName ?? 'Satıcı',
         amountMinor: offer.price.amountMinor,
         currency: offer.price.currency,
       },
       deepLink: deepLinks.jobOffers(job.id),
     });
+    this.fraud?.observeOffers(user.id, offer.id);
 
     return offer;
   }
 
-  /** Ustanın kendi verdiği teklifler. */
+  /** Satıcının kendi verdiği teklifler. */
   async listMine(
     user: AuthenticatedUser,
     query: ListMyOffersQueryDto,
@@ -231,7 +238,7 @@ export class OffersService {
     const where: Prisma.OfferWhereInput = {
       jobRequestId: jobId,
       deletedAt: null,
-      // Taslak teklifler ustanın kendi kaydıdır; müşteriye gösterilmez.
+      // Taslak teklifler satıcının kendi kaydıdır; müşteriye gösterilmez.
       status: query.status?.length ? { in: query.status } : { not: OfferStatus.DRAFT },
     };
 
@@ -255,10 +262,11 @@ export class OffersService {
     if (this.isStaff(user.role)) return this.present(row);
     if (row.jobRequest.customerId === user.id) return this.present(row);
 
-    if (user.role === UserRole.PROVIDER) {
-      const profile = await this.requireProviderProfile(user.id);
-      if (row.providerProfileId === profile.id) return this.present(row);
-    }
+    const profile = await this.prisma.providerProfile.findFirst({
+      where: { userId: user.id, deletedAt: null },
+      select: { id: true },
+    });
+    if (profile && row.providerProfileId === profile.id) return this.present(row);
 
     throw AppException.forbiddenResource('Teklif', { offerId: id });
   }
@@ -266,7 +274,7 @@ export class OffersService {
   /**
    * Müşteri teklifi kabul eder.
    *
-   * Tek işlemde: teklif kabul edilir, rakip teklifler reddedilir, talep usta
+   * Tek işlemde: teklif kabul edilir, rakip teklifler reddedilir, talep satıcı
    * seçildi durumuna geçer ve komisyonu dondurulmuş bir sipariş açılır.
    * Komisyon kabul anındaki kuralla hesaplanıp saklanır; kural sonradan
    * değişse bile taraflar arasında anlaşılan tutar değişmez.
@@ -317,7 +325,7 @@ export class OffersService {
         include: offerInclude,
       });
 
-      // Rakip teklifler otomatik düşer; usta seçildikten sonra bekleyen teklif
+      // Rakip teklifler otomatik düşer; satıcı seçildikten sonra bekleyen teklif
       // kalması ustaları boşuna bekletir.
       await tx.offer.updateMany({
         where: {
@@ -348,7 +356,7 @@ export class OffersService {
         },
       });
 
-      await tx.order.create({
+      const order = await tx.order.create({
         data: {
           jobRequestId: row.jobRequestId,
           offerId: offer.id,
@@ -364,6 +372,25 @@ export class OffersService {
         },
       });
 
+      // Marketplace → ERP köprüsü hazırlığı; mevcut ödeme/iş akışını değiştirmez.
+      const orderCreatedPayload: OrderCreatedEventPayload = {
+        orderId: order.id,
+        jobRequestId: row.jobRequestId,
+        customerId: user.id,
+        providerProfileId: row.providerProfileId,
+        totalMinor: breakdown.grossMinor,
+        currency: breakdown.currency,
+      };
+      await this.outbox.write(tx, {
+        type: DOMAIN_EVENT_TYPES.ORDER_CREATED,
+        idempotencyKey: `order.created:${order.id}`,
+        tenantId: row.providerProfileId,
+        aggregateType: 'Order',
+        aggregateId: order.id,
+        payload: orderCreatedPayload,
+        occurredAt: now.toISOString(),
+      });
+
       return offer;
     });
 
@@ -377,7 +404,7 @@ export class OffersService {
       },
     });
 
-    if (order) {
+    if (order?.jobRequest) {
       await this.notifications.dispatch({
         userId: order.providerProfile.userId,
         type: NotificationType.OFFER_ACCEPTED,
@@ -406,7 +433,7 @@ export class OffersService {
         rivals.map((rival) => ({
           userId: rival.providerProfile.userId,
           type: NotificationType.OFFER_REJECTED,
-          params: { jobTitle: order.jobRequest.title },
+          params: { jobTitle: order.jobRequest?.title ?? 'Talep' },
           deepLink: deepLinks.offers(),
         })),
       );
@@ -445,7 +472,7 @@ export class OffersService {
     return this.present(updated);
   }
 
-  /** Usta kendi teklifini geri çeker. Yanıtlanmış teklif geri çekilemez. */
+  /** Satıcı kendi teklifini geri çeker. Yanıtlanmış teklif geri çekilemez. */
   async withdraw(user: AuthenticatedUser, id: string): Promise<Offer> {
     const profile = await this.requireProviderProfile(user.id);
 
@@ -557,7 +584,7 @@ export class OffersService {
 
     if (!profile) {
       throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
-        message: 'Bu işlem için usta profiliniz olmalıdır.',
+        message: 'Bu işlem için satıcı profiliniz olmalıdır.',
       });
     }
 

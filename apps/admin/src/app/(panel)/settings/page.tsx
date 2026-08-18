@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { SettingsPanel } from '@/features/admin/settings-panel';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Sistem ayarları' };
+export const metadata: Metadata = { title: t('admin.settings') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'Varsayılanlar', detail: 'Ülke, para birimi, saat dilimi ve dil.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function SettingsPage() {
   return (
     <ModuleScaffold
-      title="Sistem ayarları"
-      description="Platform genelindeki yapılandırmayı yönetin."
+      titleKey="admin.settings"
+      descriptionKey="admin.settingsHint"
       dataSource="PATCH /admin/settings"
       capabilities={CAPABILITIES}
     >

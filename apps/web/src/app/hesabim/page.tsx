@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 
 import { AccountOverview } from '@/features/auth/account-overview';
+import { SocialShell } from '@/features/social/social-shell';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Hesabım',
+  title: t('nav.profile'),
   robots: { index: false, follow: false },
 };
 
 export default function AccountPage() {
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+    <SocialShell showRail={false}>
       <AccountOverview />
-    </div>
+    </SocialShell>
   );
 }

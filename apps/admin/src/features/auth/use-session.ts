@@ -1,14 +1,14 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiError, type LoginPayload } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import { UserRole, type CurrentUser } from '@ustapilot/types';
+import { ApiError, type LoginPayload } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import { UserRole, type CurrentUser } from '@talpio/types';
 import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/lib/api-client';
 
-/** Panele girebilen roller. Müşteri ve usta hesapları buraya alınmaz. */
+/** Panele girebilen roller. Müşteri ve satıcı hesapları buraya alınmaz. */
 export const STAFF_ROLES: readonly UserRole[] = [
   UserRole.ADMIN,
   UserRole.SUPER_ADMIN,

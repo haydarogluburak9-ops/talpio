@@ -1,4 +1,4 @@
-import { DevicePlatform, NotificationChannel, NotificationType, UserRole } from '@ustapilot/types';
+import { DevicePlatform, NotificationChannel, NotificationType, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -28,7 +28,7 @@ function notificationRow(overrides: Record<string, unknown> = {}) {
     type: NotificationType.OFFER_RECEIVED,
     params: { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta' },
     channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
-    deepLink: 'ustapilot://job-offers/job-1',
+    deepLink: 'talpio://job-offers/job-1',
     readAt: null,
     sentAt: null,
     createdAt: new Date('2026-02-01T10:00:00.000Z'),
@@ -39,7 +39,7 @@ function notificationRow(overrides: Record<string, unknown> = {}) {
 function recipientRow(overrides: Record<string, unknown> = {}) {
   return {
     id: USER_ID,
-    email: 'musteri@ustapilot.com',
+    email: 'musteri@talpio.com',
     phone: '+905551112233',
     fullName: 'Demo Müşteri',
     locale: 'tr',
@@ -57,7 +57,8 @@ type PrismaMock = {
     update: jest.Mock;
     updateMany: jest.Mock;
   };
-  deviceToken: { upsert: jest.Mock; deleteMany: jest.Mock };
+  notificationPreference: { findUnique: jest.Mock };
+  deviceToken: { upsert: jest.Mock; updateMany: jest.Mock };
   user: { findFirst: jest.Mock; findUnique: jest.Mock };
 };
 
@@ -71,6 +72,9 @@ function createPrismaMock(): PrismaMock {
       update: jest.fn().mockResolvedValue(notificationRow({ readAt: new Date() })),
       updateMany: jest.fn().mockResolvedValue({ count: 3 }),
     },
+    notificationPreference: {
+      findUnique: jest.fn().mockResolvedValue(null),
+    },
     deviceToken: {
       upsert: jest.fn().mockResolvedValue({
         id: 'device-1',
@@ -82,7 +86,7 @@ function createPrismaMock(): PrismaMock {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     user: {
       findFirst: jest.fn().mockResolvedValue(recipientRow()),
@@ -99,8 +103,8 @@ function createConfig(): AppConfigService {
       pushDriver: 'mock',
       mailDriver: 'mock',
       smsDriver: 'mock',
-      mailFrom: 'UstaPilot <no-reply@ustapilot.com>',
-      smsSender: 'USTAPILOT',
+      mailFrom: 'Talpio <no-reply@talpio.com>',
+      smsSender: 'TALPIO',
       outboxLimit: 50,
     },
   } as unknown as AppConfigService;
@@ -173,7 +177,7 @@ describe('NotificationsService', () => {
           amountMinor: 180000,
           currency: 'TRY',
         },
-        deepLink: 'ustapilot://job-offers/job-1',
+        deepLink: 'talpio://job-offers/job-1',
       });
 
       const { data } = firstCallArg<{ data: { type: string; channels: string[] } }>(
@@ -216,6 +220,52 @@ describe('NotificationsService', () => {
         userId: 'yok',
         type: NotificationType.JOB_COMPLETED,
         params: { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta' },
+      });
+
+      expect(prisma.notification.create).not.toHaveBeenCalled();
+    });
+
+    it('aynı dedupeKey ile ikinci bildirimi yazmaz', async () => {
+      prisma.notification.findUnique.mockResolvedValue(notificationRow({ dedupeKey: 'k1' }));
+
+      await service.dispatch({
+        userId: USER_ID,
+        type: NotificationType.REQUEST_MATCHED,
+        params: {
+          requestId: 'req-1',
+          requestTitle: 'Motor yağı',
+          categoryName: 'Yağ',
+          cityName: 'Gaziantep',
+          shortDescription: '200 lt',
+          deadline: '',
+          matchScore: 82,
+        },
+        dedupeKey: 'request.matched:req-1:user-1',
+      });
+
+      expect(prisma.notification.create).not.toHaveBeenCalled();
+    });
+
+    it('kanal tercihleri kapalıysa gönderim yapmaz', async () => {
+      prisma.notificationPreference.findUnique.mockResolvedValue({
+        inApp: false,
+        push: false,
+        email: false,
+        sms: false,
+      });
+
+      await service.dispatch({
+        userId: USER_ID,
+        type: NotificationType.REQUEST_MATCHED,
+        params: {
+          requestId: 'req-1',
+          requestTitle: 'Motor yağı',
+          categoryName: 'Yağ',
+          cityName: 'Gaziantep',
+          shortDescription: '200 lt',
+          deadline: '',
+          matchScore: 82,
+        },
       });
 
       expect(prisma.notification.create).not.toHaveBeenCalled();
@@ -314,7 +364,7 @@ describe('NotificationsService', () => {
     it('yalnızca kendi jetonunu siler', async () => {
       await service.removeDeviceToken(user, 'ExponentPushToken[abcdefghijklmnop]');
 
-      const { where } = firstCallArg<{ where: { userId: string } }>(prisma.deviceToken.deleteMany);
+      const { where } = firstCallArg<{ where: { userId: string } }>(prisma.deviceToken.updateMany);
       expect(where.userId).toBe(USER_ID);
     });
   });

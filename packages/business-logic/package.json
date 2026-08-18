@@ -1,5 +1,5 @@
 {
-  "name": "@ustapilot/business-logic",
+  "name": "@talpio/business-logic",
   "version": "0.1.0",
   "private": true,
   "description": "Platformun ortak iş kuralları: durum geçişleri, komisyon, yetki ve sıralama",
@@ -21,8 +21,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@ustapilot/config": "0.1.0",
-    "@ustapilot/types": "0.1.0"
+    "@talpio/config": "0.1.0",
+    "@talpio/types": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

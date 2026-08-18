@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 
-import { ApiError } from '@ustapilot/api-client';
+import { ApiError } from '@talpio/api-client';
 
 /**
  * Mobilde ağ dalgalanması masaüstünden daha sık; bu yüzden geçici hatalarda

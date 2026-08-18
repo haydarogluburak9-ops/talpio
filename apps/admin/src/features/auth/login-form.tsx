@@ -1,11 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Field, Input } from '@ustapilot/ui';
-import { loginSchema, type LoginInput } from '@ustapilot/validation';
+import { Button, Field, Input } from '@talpio/ui';
+import { loginSchema, type LoginInput } from '@talpio/validation';
 import { useForm } from 'react-hook-form';
 
 import { ApiError } from '@/lib/api-client';
+import { t } from '@/lib/i18n';
 
 import { isStaff, useLogin, useSession } from './use-session';
 
@@ -37,9 +38,7 @@ export function LoginForm() {
           role="alert"
           className="rounded-[--radius-control] bg-danger-surface p-3 text-sm text-danger-on-surface"
         >
-          {login.error instanceof ApiError
-            ? login.error.message
-            : 'Sunucuya ulaşılamadı. API çalışıyor mu?'}
+          {login.error instanceof ApiError ? login.error.message : t('admin.loginError')}
         </p>
       ) : null}
 
@@ -48,23 +47,23 @@ export function LoginForm() {
           role="alert"
           className="rounded-[--radius-control] bg-danger-surface p-3 text-sm text-danger-on-surface"
         >
-          Bu hesabın yönetim paneline erişim yetkisi yok.
+          {t('admin.noAccess')}
         </p>
       ) : null}
 
-      <Field label="E-posta" required error={errors.email?.message}>
+      <Field label={t('auth.email')} required error={errors.email?.message}>
         {(props) => (
           <Input
             {...props}
             {...register('email')}
             type="email"
             autoComplete="email"
-            placeholder="admin@ustapilot.com"
+            placeholder="admin@talpio.com"
           />
         )}
       </Field>
 
-      <Field label="Şifre" required error={errors.password?.message}>
+      <Field label={t('auth.password')} required error={errors.password?.message}>
         {(props) => (
           <Input
             {...props}
@@ -76,7 +75,7 @@ export function LoginForm() {
       </Field>
 
       <Button type="submit" className="w-full" disabled={login.isPending}>
-        {login.isPending ? 'Giriş yapılıyor…' : 'Giriş yap'}
+        {login.isPending ? t('admin.signingIn') : t('admin.signIn')}
       </Button>
     </form>
   );

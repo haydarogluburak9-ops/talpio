@@ -1,32 +1,25 @@
-import { UserRole } from '@ustapilot/types';
 import type { Metadata } from 'next';
 
 import { AuthShell } from '@/features/auth/auth-shell';
 import { RegisterForm } from '@/features/auth/register-form';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Hesap oluştur',
-  description: 'UstaPilot hesabı oluşturun; hizmet alın veya usta olarak iş bulun.',
+  title: t('auth.registerTitle'),
+  description: t('home.heroSubtitle'),
 };
 
-/** `/kayit?rol=usta` bağlantısı usta seçeneğiyle açılır. */
-export default async function RegisterPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ rol?: string }>;
-}) {
-  const { rol } = await searchParams;
-  const defaultRole = rol === 'usta' ? UserRole.PROVIDER : UserRole.CUSTOMER;
-
+export default function RegisterPage() {
   return (
     <AuthShell
-      title="Hesap oluştur"
-      description="Birkaç adımda kaydolun, dakikalar içinde teklif almaya başlayın."
-      footerText="Zaten hesabınız var mı?"
+      eyebrow={t('auth.registerEyebrow')}
+      title={t('auth.registerTitle')}
+      description={t('auth.registerDescription')}
+      footerText={t('auth.alreadyHaveAccount')}
       footerHref="/giris"
-      footerLinkLabel="Giriş yapın"
+      footerLinkLabel={t('nav.login')}
     >
-      <RegisterForm defaultRole={defaultRole} />
+      <RegisterForm />
     </AuthShell>
   );
 }

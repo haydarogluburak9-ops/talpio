@@ -1,4 +1,4 @@
-import { UserRole } from '@ustapilot/types';
+import { UserRole } from '@talpio/types';
 import { z } from 'zod';
 
 import {
@@ -8,21 +8,24 @@ import {
   otpSchema,
   passwordSchema,
   phoneSchema,
+  usernameSchema,
 } from './primitives';
-
-/** Kayıt sırasında yalnızca müşteri ve usta rolleri seçilebilir. */
-export const registerableRoleSchema = z.enum([UserRole.CUSTOMER, UserRole.PROVIDER]);
 
 export const registerSchema = z
   .object({
     fullName: fullNameSchema,
+    username: usernameSchema,
     email: emailSchema,
     phone: optionalPhoneSchema,
     password: passwordSchema,
     passwordConfirmation: z.string(),
-    role: registerableRoleSchema,
-    locale: z.string().min(2).max(5).default('tr'),
+    locale: z.string().min(2).max(5).default('en'),
+    interestCategoryIds: z
+      .array(z.string().uuid())
+      .min(3, 'En az 3 ilgi alanı seçin')
+      .max(12),
     acceptedTerms: z.literal(true, { message: 'Kullanım koşullarını kabul etmelisiniz' }),
+    acceptedMarketing: z.boolean().optional(),
   })
   .refine((value) => value.password === value.passwordConfirmation, {
     path: ['passwordConfirmation'],

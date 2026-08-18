@@ -4,4 +4,4 @@ export {
   readIsDark,
   setTheme,
   subscribeToTheme,
-} from '@ustapilot/ui';
+} from '@talpio/ui';

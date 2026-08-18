@@ -1,10 +1,10 @@
 'use client';
 
-import { ApiError } from '@ustapilot/api-client';
-import { REVIEW } from '@ustapilot/config';
-import { formatRelativeTime } from '@ustapilot/localization';
-import type { Review } from '@ustapilot/types';
-import { Button, Card, CardContent, Textarea } from '@ustapilot/ui';
+import { ApiError } from '@talpio/api-client';
+import { REVIEW } from '@talpio/config';
+import { formatRelativeTime } from '@talpio/localization';
+import type { Review } from '@talpio/types';
+import { Button, Card, CardContent, Textarea } from '@talpio/ui';
 import { useState } from 'react';
 
 import { publicEnv } from '@/lib/env';

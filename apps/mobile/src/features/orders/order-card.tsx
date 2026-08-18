@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { formatMoney, formatRelativeTime } from '@ustapilot/localization';
-import type { Order } from '@ustapilot/types';
+import { formatMoney, formatRelativeTime } from '@talpio/localization';
+import type { Order } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { OrderStatusPill } from '@/components/status-pill';
@@ -12,7 +12,7 @@ import { spacing } from '@/theme/tokens';
 export interface OrderCardProps {
   order: Order;
   onPress: () => void;
-  /** Usta hakedişini, müşteri ise ödeyeceği tutarı görmek ister. */
+  /** Satıcı hakedişini, müşteri ise ödeyeceği tutarı görmek ister. */
   variant?: 'customer' | 'provider';
 }
 

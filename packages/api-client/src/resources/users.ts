@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { CurrentUser } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { CurrentUser } from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 
@@ -23,6 +23,11 @@ export function createUsersResource(http: HttpClient) {
     /** Yalnızca gönderilen alanlar değişir; telefon değişirse doğrulama sıfırlanır. */
     updateMe(body: UpdateUserProfileBody): Promise<CurrentUser> {
       return http.patch<CurrentUser>(API_ROUTES.users.me, body);
+    },
+
+    /** Mağaza silme yükümlülüğü; oturum geçersiz kalır. */
+    deleteMe(): Promise<void> {
+      return http.delete<void>(API_ROUTES.users.me);
     },
   };
 }

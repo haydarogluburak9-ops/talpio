@@ -3,48 +3,51 @@ import { Link } from 'expo-router';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { UserRole } from '@ustapilot/types';
-import { registerSchema, type RegisterInput } from '@ustapilot/validation';
+import { registerSchema, suggestUsernameFromFullName, type RegisterInput } from '@talpio/validation';
 
 import { Button } from '@/components/button';
 import { FormField } from '@/components/form-field';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { authErrorMessage, useRegister } from '@/features/auth/use-auth-mutations';
+import { useCategories } from '@/features/catalog/use-categories';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
-import { MIN_TOUCH_TARGET, radius, spacing } from '@/theme/tokens';
-
-type RegisterableRole = typeof UserRole.CUSTOMER | typeof UserRole.PROVIDER;
+import { radius, spacing, MIN_TOUCH_TARGET } from '@/theme/tokens';
 
 export default function RegisterScreen() {
-  const { t, locale } = useI18n();
+  const { t, locale, categoryLabel } = useI18n();
   const colors = useColors();
   const register = useRegister();
 
-  const { control, handleSubmit, setValue } = useForm<RegisterInput>({
+  const { control, handleSubmit, setValue, getValues } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: '',
+      username: '',
       email: '',
       password: '',
       passwordConfirmation: '',
-      role: UserRole.CUSTOMER,
       locale,
       acceptedTerms: undefined,
+      acceptedMarketing: false,
+      interestCategoryIds: [],
     },
   });
 
-  const role = useWatch({ control, name: 'role' }) as RegisterableRole;
+  const categories = useCategories();
   const acceptedTerms = useWatch({ control, name: 'acceptedTerms' }) === true;
+  const interestIds = useWatch({ control, name: 'interestCategoryIds' }) ?? [];
 
   const onSubmit = handleSubmit((values) => {
     register.mutate({
       email: values.email,
       password: values.password,
       fullName: values.fullName,
-      role: values.role,
+      username: values.username,
       locale,
+      interestCategoryIds: values.interestCategoryIds,
+      acceptedMarketing: values.acceptedMarketing === true,
       ...(values.phone ? { phone: values.phone } : {}),
     });
   });
@@ -61,35 +64,9 @@ export default function RegisterScreen() {
         </View>
       )}
 
-      <View style={styles.roleRow}>
-        {(
-          [
-            { value: UserRole.CUSTOMER, label: t('auth.roleCustomer') },
-            { value: UserRole.PROVIDER, label: t('auth.roleProvider') },
-          ] as const
-        ).map((option) => {
-          const selected = role === option.value;
-          return (
-            <Pressable
-              key={option.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => setValue('role', option.value, { shouldValidate: true })}
-              style={[
-                styles.roleCard,
-                {
-                  backgroundColor: selected ? colors.brand : colors.surface,
-                  borderColor: selected ? colors.brand : colors.border,
-                },
-              ]}
-            >
-              <Text variant="bodyStrong" style={{ color: selected ? colors.onBrand : colors.foreground }}>
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Text variant="caption" tone="muted" style={{ marginBottom: spacing.md }}>
+        {t('auth.dualRoleHint')}
+      </Text>
 
       <View style={styles.form}>
         <Controller
@@ -100,10 +77,32 @@ export default function RegisterScreen() {
               label={t('auth.fullName')}
               value={field.value}
               onChangeText={field.onChange}
-              onBlur={field.onBlur}
+              onBlur={() => {
+                field.onBlur();
+                if (!getValues('username')?.trim() && field.value?.trim()) {
+                  setValue('username', suggestUsernameFromFullName(field.value), { shouldValidate: true });
+                }
+              }}
               error={fieldState.error?.message}
               autoComplete="name"
               textContentType="name"
+            />
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="username"
+          render={({ field, fieldState }) => (
+            <FormField
+              label={t('auth.username')}
+              value={field.value}
+              onChangeText={(text) => field.onChange(text.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
+              onBlur={field.onBlur}
+              error={fieldState.error?.message}
+              hint={t('auth.usernameHint')}
+              autoCapitalize="none"
+              autoComplete="username"
             />
           )}
         />
@@ -176,6 +175,65 @@ export default function RegisterScreen() {
 
         <Controller
           control={control}
+          name="interestCategoryIds"
+          render={({ fieldState }) => (
+            <View style={styles.interests}>
+              <Text variant="bodyStrong">{t('auth.interestsTitle')}</Text>
+              <Text variant="caption" tone="muted">
+                {t('auth.interestsHint')}
+              </Text>
+              {categories.isError ? (
+                <Text variant="caption" tone="danger">
+                  {t('auth.interestsLoadError')}
+                </Text>
+              ) : null}
+              {categories.isPending ? (
+                <Text variant="caption" tone="muted">
+                  {t('common.loading')}
+                </Text>
+              ) : null}
+              <View style={styles.chips}>
+                {(categories.data ?? []).map((category) => {
+                  const selected = interestIds.includes(category.id);
+                  return (
+                    <Pressable
+                      key={category.id}
+                      onPress={() => {
+                        const next = selected
+                          ? interestIds.filter((id) => id !== category.id)
+                          : [...interestIds, category.id].slice(0, 12);
+                        setValue('interestCategoryIds', next, { shouldValidate: true });
+                      }}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: selected ? colors.brand : colors.surface,
+                          borderColor: selected ? colors.brand : colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        variant="caption"
+                        style={{ color: selected ? colors.onBrand : colors.foreground, fontWeight: '600' }}
+                      >
+                        {selected ? '✓ ' : ''}
+                        {categoryLabel(category.slug, category.name)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {fieldState.error ? (
+                <Text variant="caption" tone="danger">
+                  {fieldState.error.message}
+                </Text>
+              ) : null}
+            </View>
+          )}
+        />
+
+        <Controller
+          control={control}
           name="acceptedTerms"
           render={({ fieldState }) => (
             <View style={styles.terms}>
@@ -216,6 +274,24 @@ export default function RegisterScreen() {
                 ) : null}
               </View>
             </View>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="acceptedMarketing"
+          render={({ field }) => (
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: field.value === true }}
+              onPress={() => field.onChange(!field.value)}
+              style={styles.terms}
+            >
+              <Text variant="caption" tone="muted">
+                {field.value ? '☑ ' : '☐ '}
+                {t('auth.acceptMarketing')}
+              </Text>
+            </Pressable>
           )}
         />
 
@@ -264,6 +340,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   termsText: { flex: 1, gap: spacing.xs },
+  interests: { gap: spacing.sm },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',

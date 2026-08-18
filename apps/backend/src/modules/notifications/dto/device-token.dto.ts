@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DevicePlatform } from '@ustapilot/types';
+import { DevicePlatform } from '@talpio/types';
 import { IsEnum, IsOptional, IsString, Length, MaxLength } from 'class-validator';
 
 export class RegisterDeviceTokenDto {

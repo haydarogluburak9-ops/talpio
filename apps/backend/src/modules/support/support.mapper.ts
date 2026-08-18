@@ -7,7 +7,7 @@ import type {
   SupportMessage,
   SupportTicket,
   SupportTicketDetail,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 export const supportTicketInclude = {
   messages: {

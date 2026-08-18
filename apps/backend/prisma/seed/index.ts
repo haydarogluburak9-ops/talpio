@@ -6,10 +6,22 @@ import { config as loadEnv } from 'dotenv';
 
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { UserRole, UserStatus, VerificationStatus } from '../../src/generated/prisma/enums';
-import { SERVICE_CATEGORIES } from './data/categories';
+import {
+  AI_FEATURE_SEEDS,
+  ALL_AI_FEATURES,
+  FREE_PLAN_FEATURES,
+  SUBSCRIPTION_PLAN_SEEDS,
+} from './data/billing';
+import { COMMERCE_CATEGORIES, SERVICE_CATEGORIES } from './data/categories';
 import { COMMISSION_RULES } from './data/commission';
-import { DEMO_ACCOUNTS } from './data/demo-accounts';
+import { DEMO_ACCOUNTS, LEGACY_DEMO_EMAILS } from './data/demo-accounts';
+import { seedSocialNetwork } from './data/social-feed';
 import { COUNTRIES } from './data/locations';
+import {
+  LEGACY_ROLE_PLATFORM_MAP,
+  MADENI_YAG_ATTRIBUTE_SCHEMA,
+  PLATFORM_ROLE_SEEDS,
+} from './data/platform-roles';
 import { SYSTEM_SETTINGS } from './data/system-settings';
 
 loadEnv({ path: path.resolve(__dirname, '../../../../.env'), quiet: true });
@@ -76,6 +88,13 @@ async function seedLocations(): Promise<void> {
 }
 
 async function seedServiceCategories(): Promise<void> {
+  const keepSlugs = COMMERCE_CATEGORIES.map((category) => category.slug);
+  // Eski satıcı dikeyi pasifleştirilir; FK bozulmasın diye silinmez.
+  const deactivated = await prisma.serviceCategory.updateMany({
+    where: { slug: { notIn: keepSlugs }, isActive: true },
+    data: { isActive: false },
+  });
+
   for (const [index, category] of SERVICE_CATEGORIES.entries()) {
     const created = await prisma.serviceCategory.upsert({
       where: { slug: category.slug },
@@ -84,6 +103,8 @@ async function seedServiceCategories(): Promise<void> {
         description: category.description,
         iconKey: category.iconKey,
         sortOrder: index,
+        isActive: true,
+        deletedAt: null,
       },
       create: {
         slug: category.slug,
@@ -91,18 +112,20 @@ async function seedServiceCategories(): Promise<void> {
         description: category.description,
         iconKey: category.iconKey,
         sortOrder: index,
+        isActive: true,
       },
     });
 
     for (const [subIndex, subcategory] of category.subcategories.entries()) {
       await prisma.serviceSubcategory.upsert({
         where: { categoryId_slug: { categoryId: created.id, slug: subcategory.slug } },
-        update: { name: subcategory.name, sortOrder: subIndex },
+        update: { name: subcategory.name, sortOrder: subIndex, isActive: true, deletedAt: null },
         create: {
           categoryId: created.id,
           slug: subcategory.slug,
           name: subcategory.name,
           sortOrder: subIndex,
+          isActive: true,
         },
       });
     }
@@ -113,7 +136,8 @@ async function seedServiceCategories(): Promise<void> {
     0,
   );
   console.log(
-    `  ${SERVICE_CATEGORIES.length} kategori, ${subcategoryCount} alt kategori yüklendi`,
+    `  ${SERVICE_CATEGORIES.length} ticaret kategorisi, ${subcategoryCount} alt kategori yüklendi` +
+      (deactivated.count ? ` (${deactivated.count} eski kategori pasif)` : ''),
   );
 }
 
@@ -159,7 +183,165 @@ async function seedSystemSettings(): Promise<void> {
  * Demo hesapları. Parolalar üretim akışıyla aynı biçimde argon2id ile
  * özetlenir; seed'e özel zayıf bir yol açılmaz.
  */
+async function seedPlatformRoles(): Promise<void> {
+  for (const role of PLATFORM_ROLE_SEEDS) {
+    const created = await prisma.platformRole.upsert({
+      where: { code: role.code },
+      update: { name: role.name, description: role.description, isSystem: true },
+      create: {
+        code: role.code,
+        name: role.name,
+        description: role.description,
+        isSystem: true,
+      },
+    });
+
+    for (const permissionCode of role.permissions) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionCode: { roleId: created.id, permissionCode },
+        },
+        update: {},
+        create: { roleId: created.id, permissionCode },
+      });
+    }
+  }
+  console.log(`  ${PLATFORM_ROLE_SEEDS.length} platform rolü yüklendi`);
+}
+
+async function seedBilling(): Promise<void> {
+  for (const plan of SUBSCRIPTION_PLAN_SEEDS) {
+    const created = await prisma.subscriptionPlan.upsert({
+      where: { code: plan.code },
+      update: {
+        name: plan.name,
+        monthlyCredits: plan.monthlyCredits,
+        sortOrder: plan.sortOrder,
+        isActive: true,
+      },
+      create: {
+        code: plan.code,
+        name: plan.name,
+        monthlyCredits: plan.monthlyCredits,
+        sortOrder: plan.sortOrder,
+        isActive: true,
+      },
+    });
+
+    await prisma.aiQuotaPolicy.upsert({
+      where: { planId: created.id },
+      update: { monthlyCredits: plan.monthlyCredits },
+      create: {
+        planId: created.id,
+        monthlyCredits: plan.monthlyCredits,
+        priorityQueue: plan.code !== 'FREE',
+      },
+    });
+
+    const features =
+      plan.code === 'FREE' ? FREE_PLAN_FEATURES : ALL_AI_FEATURES;
+    for (const featureCode of features) {
+      await prisma.planFeature.upsert({
+        where: {
+          planId_featureCode: { planId: created.id, featureCode },
+        },
+        update: { included: true },
+        create: { planId: created.id, featureCode, included: true },
+      });
+    }
+  }
+
+  for (const feature of AI_FEATURE_SEEDS) {
+    await prisma.aiFeature.upsert({
+      where: { code: feature.code },
+      update: {
+        name: feature.name,
+        baseCostCredits: feature.baseCostCredits,
+        description: feature.description,
+      },
+      create: {
+        code: feature.code,
+        name: feature.name,
+        baseCostCredits: feature.baseCostCredits,
+        description: feature.description,
+      },
+    });
+  }
+
+  console.log(
+    `  ${SUBSCRIPTION_PLAN_SEEDS.length} plan, ${AI_FEATURE_SEEDS.length} AI özelliği yüklendi`,
+  );
+}
+
+async function seedAttributeSchemas(): Promise<void> {
+  const category = await prisma.serviceCategory.findUnique({
+    where: { slug: 'madeni-yag' },
+    select: { id: true },
+  });
+  if (!category) {
+    console.log('  madeni-yag kategorisi bulunamadı; attribute schema atlandı');
+    return;
+  }
+
+  await prisma.attributeSchema.upsert({
+    where: {
+      categoryId_version: { categoryId: category.id, version: MADENI_YAG_ATTRIBUTE_SCHEMA.version },
+    },
+    update: { schema: MADENI_YAG_ATTRIBUTE_SCHEMA, isActive: true },
+    create: {
+      categoryId: category.id,
+      version: MADENI_YAG_ATTRIBUTE_SCHEMA.version,
+      schema: MADENI_YAG_ATTRIBUTE_SCHEMA,
+      isActive: true,
+    },
+  });
+  console.log('  madeni-yag attribute schema yüklendi');
+}
+
+async function assignPlatformRolesForUser(userId: string, legacyRole: string): Promise<void> {
+  const code = LEGACY_ROLE_PLATFORM_MAP[legacyRole];
+  if (!code) return;
+
+  const role = await prisma.platformRole.findUnique({ where: { code }, select: { id: true } });
+  if (!role) return;
+
+  await prisma.userRoleAssignment.upsert({
+    where: { userId_roleId: { userId, roleId: role.id } },
+    update: {},
+    create: { userId, roleId: role.id },
+  });
+}
+
+async function removeLegacyDemoAccounts(): Promise<void> {
+  let deactivated = 0;
+
+  for (const email of LEGACY_DEMO_EMAILS) {
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    if (!existing) continue;
+
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        email: `legacy.${existing.id.slice(0, 8)}.${email}`,
+        phone: null,
+        status: UserStatus.DEACTIVATED,
+        deletedAt: new Date(),
+      },
+    });
+    deactivated += 1;
+  }
+
+  if (deactivated > 0) {
+    console.log(`  ${deactivated} eski marka demo hesabı kapatıldı`);
+  }
+}
+
 async function seedDemoAccounts(password: string): Promise<void> {
+  await removeLegacyDemoAccounts();
+
   const passwordHash = await argon2.hash(password, {
     type: argon2.argon2id,
     memoryCost: 19_456,
@@ -184,6 +366,8 @@ async function seedDemoAccounts(password: string): Promise<void> {
         phoneVerifiedAt: now,
       },
     });
+
+    await assignPlatformRolesForUser(user.id, account.role);
 
     if (account.role === UserRole.CUSTOMER) {
       await prisma.customerProfile.upsert({
@@ -252,17 +436,72 @@ async function seedDemoAccounts(password: string): Promise<void> {
   }
 
   console.log(`  ${DEMO_ACCOUNTS.length} demo hesabı yüklendi`);
+  await seedDemoSocialProfiles();
+}
+
+async function findCityIdByName(name?: string | null): Promise<string | null> {
+  if (!name) return null;
+  const city = await prisma.city.findFirst({
+    where: { name: { equals: name, mode: 'insensitive' } },
+    select: { id: true },
+  });
+  return city?.id ?? null;
+}
+
+/** Demo hesaplar için kişisel sosyal profil. */
+async function seedDemoSocialProfiles(): Promise<void> {
+  for (const account of DEMO_ACCOUNTS) {
+    const user = await prisma.user.findUnique({
+      where: { email: account.email },
+      select: { id: true, fullName: true },
+    });
+    if (!user) continue;
+
+    const locationCityId = await findCityIdByName(account.locationText);
+
+    await prisma.socialProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        username: account.socialUsername,
+        displayName: user.fullName,
+        bio: account.bio ?? null,
+        locationText: account.locationText ?? null,
+        locationCityId,
+        deletedAt: null,
+      },
+      create: {
+        kind: 'PERSONAL',
+        userId: user.id,
+        username: account.socialUsername,
+        displayName: user.fullName,
+        bio: account.bio ?? null,
+        locationText: account.locationText ?? null,
+        locationCityId,
+      },
+    });
+  }
+
+  console.log('  Demo sosyal profilleri hazır');
 }
 
 async function main(): Promise<void> {
   const environment = process.env.NODE_ENV ?? 'development';
-  console.log(`UstaPilot seed başlıyor (ortam: ${environment})`);
+  console.log(`Talpio seed başlıyor (ortam: ${environment})`);
 
   console.log('Konumlar:');
   await seedLocations();
 
   console.log('Hizmet kategorileri:');
   await seedServiceCategories();
+
+  console.log('Platform rolleri:');
+  await seedPlatformRoles();
+
+  console.log('AI faturalama planları:');
+  await seedBilling();
+
+  console.log('Attribute şemaları:');
+  await seedAttributeSchemas();
 
   console.log('Komisyon kuralları:');
   await seedCommissionRules();
@@ -277,6 +516,8 @@ async function main(): Promise<void> {
 
     console.log('Demo hesapları:');
     await seedDemoAccounts(process.env.DEMO_PASSWORD ?? 'Demo1234!');
+    console.log('Sosyal ticaret ağı:');
+    await seedSocialNetwork(prisma);
   }
 
   console.log('Seed tamamlandı.');

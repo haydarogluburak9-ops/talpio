@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiError, type LoginPayload, type RegisterPayload } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { CurrentUser } from '@ustapilot/types';
+import { ApiError, type LoginPayload, type RegisterPayload } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { CurrentUser } from '@talpio/types';
 import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/lib/api';
@@ -36,7 +36,8 @@ function useAfterAuth() {
 
   return (user: CurrentUser) => {
     queryClient.setQueryData(queryKeys.auth.session(), user);
-    router.push(user.role === 'PROVIDER' ? '/usta/panel' : '/hesabim');
+    // Herkes sosyal akışa düşer; işletme paneli ikinci plandadır.
+    router.push('/akis');
   };
 }
 
@@ -64,6 +65,20 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: () => apiClient.auth.logout(),
+    onSettled: () => {
+      queryClient.setQueryData(queryKeys.auth.session(), null);
+      void queryClient.invalidateQueries();
+      router.push('/');
+    },
+  });
+}
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: () => apiClient.users.deleteMe(),
     onSettled: () => {
       queryClient.setQueryData(queryKeys.auth.session(), null);
       void queryClient.invalidateQueries();

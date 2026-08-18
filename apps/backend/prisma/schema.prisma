@@ -1,4 +1,4 @@
-// UstaPilot veritabanı şeması
+// Talpio veritabanı şeması
 //
 // Adlandırma kuralı: Prisma tarafında camelCase, PostgreSQL tarafında snake_case.
 // Bu ayrım @map/@@map ile sağlanır ve tüm modellerde uygulanır.
@@ -197,6 +197,7 @@ enum MessageType {
   SYSTEM
   OFFER
   APPOINTMENT
+  VOICE
 
   @@map("message_type")
 }
@@ -221,8 +222,292 @@ enum NotificationType {
   DOCUMENT_REJECTED
   SUPPORT_REPLY
   CAMPAIGN
+  REQUEST_MATCHED
+  REQUEST_OFFER_RECEIVED
+  REQUEST_OFFER_ACCEPTED
+  SOCIAL_FOLLOW
+  SOCIAL_LIKE
+  SOCIAL_COMMENT
+  SOCIAL_MENTION
+  SOCIAL_SHARE
 
   @@map("notification_type")
+}
+
+enum SocialProfileKind {
+  PERSONAL
+  BUSINESS
+
+  @@map("social_profile_kind")
+}
+
+enum PostType {
+  TEXT
+  IMAGE
+  MULTI_IMAGE
+  VIDEO
+  PRODUCT
+  SERVICE
+  COMPLETED_WORK
+  BEFORE_AFTER
+  CAMPAIGN
+  REQUEST_SHARE
+  REFERENCE
+  QUESTION
+  POLL
+  STANDARD
+  DEAL
+  SPECIAL_PRICE
+  DISCOUNT
+  BULK_PRICE
+  LIMITED_STOCK
+  CLEARANCE
+  SERVICE_PROMOTION
+  B2B_CAMPAIGN
+  NEW_PRODUCT
+  BUSINESS_UPDATE
+  REPOST
+  QUOTE
+
+  @@map("post_type")
+}
+
+enum PostVisibility {
+  PUBLIC
+  FOLLOWERS
+  BUSINESS_ONLY
+  CATEGORY_TARGETED
+  B2B_TARGETED
+  PRIVATE
+
+  @@map("post_visibility")
+}
+
+enum FeedItemKind {
+  POST
+  COMMERCE_REQUEST
+
+  @@map("feed_item_kind")
+}
+
+enum ContentReportStatus {
+  OPEN
+  REVIEWING
+  RESOLVED
+  REJECTED
+  APPEALED
+
+  @@map("content_report_status")
+}
+
+enum ContentReportTarget {
+  POST
+  COMMENT
+  PROFILE
+
+  @@map("content_report_target")
+}
+
+/// ERP WorkOrder kaynağı (docs/09).
+enum WorkOrderSource {
+  TALPIO
+  PHONE
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK
+  RETURNING
+  REFERRAL
+  GOOGLE
+  WEBSITE
+  SAHIBINDEN
+  OTHER
+
+  @@map("work_order_source")
+}
+
+/// ERP WorkOrder aşaması (docs/09).
+enum WorkOrderStage {
+  NEW
+  SURVEY
+  DISCOVERY
+  QUOTE
+  QUOTATION
+  NEGOTIATION
+  APPROVED
+  MATERIALS
+  APPOINTMENT
+  SCHEDULED
+  IN_PROGRESS
+  DONE
+  COMPLETED
+  INVOICED
+  COLLECTED
+  PAID
+  REVIEWED
+  REFERRED
+  REPEAT
+  CANCELLED
+
+  @@map("work_order_stage")
+}
+
+enum CrmCustomerSource {
+  TALPIO
+  PHONE
+  WHATSAPP
+  INSTAGRAM
+  FACEBOOK
+  GOOGLE
+  WEBSITE
+  REFERRAL
+  EXISTING_CUSTOMER
+  OTHER
+
+  @@map("crm_customer_source")
+}
+
+enum BusinessTaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+
+  @@map("business_task_status")
+}
+
+enum BusinessTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@map("business_task_priority")
+}
+
+enum CampaignAudience {
+  PUBLIC
+  FOLLOWERS
+  CATEGORY_TARGETED
+  BUSINESS_ONLY
+  B2B_TARGETED
+
+  @@map("campaign_audience")
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+  CANCELLED
+
+  @@map("campaign_status")
+}
+
+enum FraudFlagStatus {
+  OPEN
+  REVIEWING
+  DISMISSED
+  CONFIRMED
+
+  @@map("fraud_flag_status")
+}
+
+enum FraudFlagReason {
+  MANY_REQUESTS
+  MANY_OFFERS
+  FAKE_ENGAGEMENT
+  REVIEW_FARMING
+  MULTI_ACCOUNT
+  SPAM_MESSAGES
+  OTHER
+
+  @@map("fraud_flag_reason")
+}
+
+enum ChannelRelationType {
+  MANUFACTURER_DISTRIBUTOR
+  DISTRIBUTOR_DEALER
+  SUPPLIER_BUYER
+
+  @@map("channel_relation_type")
+}
+
+enum ChannelRelationStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+
+  @@map("channel_relation_status")
+}
+
+enum BusinessMembershipStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+
+  @@map("business_membership_status")
+}
+
+enum RequestType {
+  SERVICE
+  PRODUCT_SUPPLY
+  MANUFACTURING
+  RENTAL
+  LOGISTICS
+  PROFESSIONAL_SERVICE
+  CONSTRUCTION
+  WHOLESALE
+  B2B_PURCHASE
+  OTHER
+
+  @@map("request_type")
+}
+
+enum RequestStatus {
+  DRAFT
+  PUBLISHED
+  MATCHING
+  QUOTING
+  SELECTED
+  FULFILLING
+  COMPLETED
+  CANCELLED
+
+  @@map("request_status")
+}
+
+enum RequestVisibility {
+  PUBLIC_MATCHED
+  INVITE_ONLY
+
+  @@map("request_visibility")
+}
+
+enum RequestSource {
+  WEB
+  MOBILE
+  API
+  IMPORT
+  AGENT
+
+  @@map("request_source")
+}
+
+enum RequestOfferStatus {
+  SUBMITTED
+  WITHDRAWN
+  ACCEPTED
+  REJECTED
+
+  @@map("request_offer_status")
+}
+
+enum OrderSource {
+  MARKETPLACE
+  COMMERCE_REQUEST
+
+  @@map("order_source")
 }
 
 enum NotificationChannel {
@@ -279,6 +564,56 @@ enum VerificationTokenPurpose {
   @@map("verification_token_purpose")
 }
 
+enum SubscriptionPlanCode {
+  FREE
+  PREMIUM
+  PREMIUM_PLUS
+  BUSINESS
+
+  @@map("subscription_plan_code")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+
+  @@map("subscription_status")
+}
+
+enum SubscriptionProvider {
+  INTERNAL
+  STRIPE
+  APP_STORE
+  PLAY
+
+  @@map("subscription_provider")
+}
+
+enum AiCreditTxType {
+  GRANT
+  DEBIT
+  REFUND
+  ADJUST
+
+  @@map("ai_credit_tx_type")
+}
+
+enum AiFeatureCode {
+  AGENT_CHAT
+  REQUEST_DRAFT
+  OFFER_DRAFT
+  IMAGE_ANALYSIS
+  AUDIO_TRANSCRIBE
+  DOC_ANALYSIS
+  GENERIC_COMPLETE
+  SOCIAL_DRAFT
+  SALES_COACH
+
+  @@map("ai_feature_code")
+}
+
 // ---------------------------------------------------------------------------
 // Sistem ve konum
 // ---------------------------------------------------------------------------
@@ -329,18 +664,22 @@ model City {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  country         Country          @relation(fields: [countryId], references: [id], onDelete: Restrict)
-  districts       District[]
-  addresses       Address[]
-  jobRequests     JobRequest[]
-  commissionRules CommissionRule[]
+  country              Country               @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  districts            District[]
+  addresses            Address[]
+  jobRequests          JobRequest[]
+  commissionRules      CommissionRule[]
+  businessServiceAreas BusinessServiceArea[]
+  commerceRequests     CommerceRequest[]
+  socialProfiles       SocialProfile[]
+  trendingTopics       TrendingTopic[]
 
   @@unique([countryId, name])
   @@index([countryId, isActive])
   @@map("cities")
 }
 
-/// İlçeler. Ustaların hizmet bölgesi seçimi bu seviyede yapılır.
+/// İlçeler. Satıcıların hizmet bölgesi seçimi bu seviyede yapılır.
 model District {
   id        String   @id @default(uuid(7))
   cityId    String   @map("city_id")
@@ -351,11 +690,13 @@ model District {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  city          City                  @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  neighborhoods Neighborhood[]
-  addresses     Address[]
-  jobRequests   JobRequest[]
-  serviceAreas  ProviderServiceArea[]
+  city                 City                  @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  neighborhoods        Neighborhood[]
+  addresses            Address[]
+  jobRequests          JobRequest[]
+  serviceAreas         ProviderServiceArea[]
+  businessServiceAreas BusinessServiceArea[]
+  commerceRequests     CommerceRequest[]
 
   @@unique([cityId, name])
   @@index([cityId, isActive])
@@ -402,6 +743,12 @@ model ServiceCategory {
   providerServices ProviderService[]
   jobRequests      JobRequest[]
   commissionRules  CommissionRule[]
+  attributeSchemas AttributeSchema[]
+  businessCategories BusinessCategory[]
+  commerceRequests CommerceRequest[]
+  categoryFollows  CategoryFollow[]
+  dealMetadata     DealMetadata[]
+  trendingTopics   TrendingTopic[]
 
   @@index([isActive, sortOrder])
   @@map("service_categories")
@@ -421,6 +768,7 @@ model ServiceSubcategory {
   category         ServiceCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   providerServices ProviderService[]
   jobRequests      JobRequest[]
+  commerceRequests CommerceRequest[]
 
   @@unique([categoryId, slug])
   @@index([categoryId, isActive, sortOrder])
@@ -445,6 +793,8 @@ model User {
   avatarFileId    String?    @map("avatar_file_id")
   emailVerifiedAt DateTime?  @map("email_verified_at")
   phoneVerifiedAt DateTime?  @map("phone_verified_at")
+  /// Ticari ileti (e-posta / SMS) onayı. Avukat metni ayrıdır; bu yalnızca zaman damgası.
+  marketingConsentAt DateTime? @map("marketing_consent_at")
   lastActiveAt    DateTime?  @map("last_active_at")
   /// Ardışık hatalı giriş sayacı; brute-force korumasını besler.
   failedLoginCount Int       @default(0) @map("failed_login_count")
@@ -464,6 +814,7 @@ model User {
   reviews            Review[]
   favoriteProviders  FavoriteProvider[]
   notifications      Notification[]
+  notificationPreferences NotificationPreference[]
   deviceTokens       DeviceToken[]
   messages           Message[]
   conversationSeats  ConversationParticipant[]
@@ -475,6 +826,23 @@ model User {
   uploadedFiles      FileAsset[]          @relation("FileOwner")
   reviewedDocuments  ProviderDocument[]   @relation("DocumentReviewer")
   jobStatusChanges   JobStatusHistory[]
+  agentThreads       AgentThread[]
+  reminders          Reminder[]
+  platformRoleAssignments UserRoleAssignment[]
+  ownedBusinesses    Business[]              @relation("BusinessOwner")
+  businessMemberships BusinessMembership[]
+  commerceRequests   CommerceRequest[]       @relation("RequestBuyer")
+  requestOffers      RequestOffer[]          @relation("RequestOfferCreator")
+  subscriptions      Subscription[]
+  aiCreditWallet     AiCreditWallet?
+  aiUsageRecords     AiUsageRecord[]
+  socialProfile      SocialProfile?          @relation("PersonalSocialProfile")
+  contentReports     ContentReport[]
+  blocksInitiated    UserBlock[]             @relation("Blocker")
+  blocksReceived     UserBlock[]             @relation("Blocked")
+  assignedTasks      BusinessTask[]          @relation("TaskAssignee")
+  workOrderAssignments WorkOrderAssignment[]
+  fraudFlags         FraudFlag[]
 
   @@index([role, status])
   @@index([deletedAt])
@@ -566,6 +934,7 @@ model ProviderProfile {
   orders       Order[]
   reviews      Review[]
   favoritedBy  FavoriteProvider[]
+  businesses   Business[]
 
   @@index([verificationStatus])
   @@index([deletedAt])
@@ -633,7 +1002,7 @@ model ProviderAvailability {
   providerProfileId String   @map("provider_profile_id")
   /// 0 = Pazar ... 6 = Cumartesi
   dayOfWeek         Int      @map("day_of_week") @db.SmallInt
-  /// Ustanın yerel saatiyle "HH:mm".
+  /// Satıcının yerel saatiyle "HH:mm".
   startTime         String   @map("start_time")
   endTime           String   @map("end_time")
   isActive          Boolean  @default(true) @map("is_active")
@@ -686,6 +1055,7 @@ model FileAsset {
   checksum       String?
   /// Herkese açık okunabilir mi? Belgeler daima gizlidir.
   isPublic       Boolean   @default(false) @map("is_public")
+  metadata       Json?
   createdAt      DateTime  @default(now()) @map("created_at")
   deletedAt      DateTime? @map("deleted_at")
 
@@ -694,6 +1064,11 @@ model FileAsset {
   jobAttachments     JobAttachment[]
   messageAttachments MessageAttachment[]
   providerDocuments  ProviderDocument[]
+  requestAttachments RequestAttachment[]
+  postMedia          PostMedia[]
+  socialAvatars      SocialProfile[]     @relation("SocialAvatar")
+  socialCovers       SocialProfile[]     @relation("SocialCover")
+  crmNotes           CrmCustomerNote[]
 
   @@index([ownerUserId])
   @@map("file_assets")
@@ -730,26 +1105,30 @@ model JobRequest {
   offerCount         Int              @default(0) @map("offer_count")
   publishedAt        DateTime?        @map("published_at")
   expiresAt          DateTime?        @map("expires_at")
+  /// Opsiyonel köprü: CommerceRequest ile domain karışmaz, yalnızca bağlanır.
+  commerceRequestId  String?          @map("commerce_request_id")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
   deletedAt          DateTime?        @map("deleted_at")
 
-  customer      User                @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  category      ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  subcategory   ServiceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
-  address       Address?            @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  city          City                @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  district      District            @relation(fields: [districtId], references: [id], onDelete: Restrict)
-  neighborhood  Neighborhood?       @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
-  attachments   JobAttachment[]
-  statusHistory JobStatusHistory[]
-  offers        Offer[]
-  order         Order?
-  conversations Conversation[]
+  customer         User                @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  category         ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory      ServiceSubcategory? @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  address          Address?            @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  city             City                @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  district         District            @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  neighborhood     Neighborhood?       @relation(fields: [neighborhoodId], references: [id], onDelete: SetNull)
+  commerceRequest  CommerceRequest?    @relation(fields: [commerceRequestId], references: [id], onDelete: SetNull)
+  attachments      JobAttachment[]
+  statusHistory    JobStatusHistory[]
+  offers           Offer[]
+  order            Order?
+  conversations    Conversation[]
 
   @@index([status, publishedAt])
   @@index([customerId, status])
   @@index([categoryId, districtId, status])
+  @@index([commerceRequestId])
   @@index([deletedAt])
   @@map("job_requests")
 }
@@ -810,7 +1189,7 @@ model Offer {
   providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
   order           Order?
 
-  /// Bir usta aynı işe yalnızca bir teklif verebilir.
+  /// Bir satıcı aynı işe yalnızca bir teklif verebilir.
   @@unique([jobRequestId, providerProfileId])
   @@index([providerProfileId, status])
   @@index([status, validUntil])
@@ -819,11 +1198,13 @@ model Offer {
 
 model Order {
   id                String      @id @default(uuid(7))
-  jobRequestId      String      @unique @map("job_request_id")
-  offerId           String      @unique @map("offer_id")
+  /// Marketplace siparişlerinde dolu; Commerce Request köprüsünde null olabilir.
+  jobRequestId      String?     @unique @map("job_request_id")
+  offerId           String?     @unique @map("offer_id")
   customerId        String      @map("customer_id")
   providerProfileId String      @map("provider_profile_id")
   status            OrderStatus @default(PENDING_PAYMENT)
+  source            OrderSource @default(MARKETPLACE)
   /// Tutarlar kuruş cinsindendir ve teklif kabul anında dondurulur.
   totalMinor        Int         @map("total_minor")
   commissionMinor   Int         @map("commission_minor")
@@ -840,8 +1221,8 @@ model Order {
   updatedAt         DateTime    @updatedAt @map("updated_at")
   deletedAt         DateTime?   @map("deleted_at")
 
-  jobRequest      JobRequest      @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
-  offer           Offer           @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  jobRequest      JobRequest?     @relation(fields: [jobRequestId], references: [id], onDelete: Cascade)
+  offer           Offer?          @relation(fields: [offerId], references: [id], onDelete: Restrict)
   customer        User            @relation(fields: [customerId], references: [id], onDelete: Cascade)
   providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Restrict)
   payments        Payment[]
@@ -849,9 +1230,12 @@ model Order {
   review          Review?
   conversations   Conversation[]
   supportTickets  SupportTicket[]
+  workOrderLink   MarketplaceWorkOrderLink?
+  requestOrderLink RequestOrderLink?
 
   @@index([customerId, status])
   @@index([providerProfileId, status])
+  @@index([source, status])
   @@map("orders")
 }
 
@@ -922,6 +1306,8 @@ model Conversation {
   id           String             @id @default(uuid(7))
   jobRequestId String?            @map("job_request_id")
   orderId      String?            @map("order_id")
+  title        String?
+  isGroup      Boolean            @default(false) @map("is_group")
   status       ConversationStatus @default(ACTIVE)
   lastMessageAt DateTime?         @map("last_message_at")
   createdAt    DateTime           @default(now()) @map("created_at")
@@ -1006,6 +1392,8 @@ model Notification {
   params    Json                  @default("{}")
   channels  NotificationChannel[]
   deepLink  String?               @map("deep_link")
+  /// Aynı olayın ikinci kez yazılmasını engeller (nullable unique).
+  dedupeKey String?               @unique @map("dedupe_key")
   readAt    DateTime?             @map("read_at")
   sentAt    DateTime?             @map("sent_at")
   createdAt DateTime              @default(now()) @map("created_at")
@@ -1016,6 +1404,24 @@ model Notification {
   @@map("notifications")
 }
 
+/// Kullanıcı kanal tercihleri. Satır yoksa `channelsFor` varsayılanı kullanılır.
+model NotificationPreference {
+  id        String              @id @default(uuid(7))
+  userId    String              @map("user_id")
+  type      NotificationType
+  inApp     Boolean             @default(true) @map("in_app")
+  push      Boolean             @default(true)
+  email     Boolean             @default(true)
+  sms       Boolean             @default(false)
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("notification_preferences")
+}
+
 model DeviceToken {
   id         String         @id @default(uuid(7))
   userId     String         @map("user_id")
@@ -1023,12 +1429,13 @@ model DeviceToken {
   token      String         @unique
   locale     String         @default("tr")
   lastSeenAt DateTime       @default(now()) @map("last_seen_at")
+  revokedAt  DateTime?      @map("revoked_at")
   createdAt  DateTime       @default(now()) @map("created_at")
   updatedAt  DateTime       @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  @@index([userId, revokedAt])
   @@map("device_tokens")
 }
 
@@ -1208,4 +1615,1290 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Faz 0 — Outbox, AI Agent, hatırlatma
+// ---------------------------------------------------------------------------
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  FAILED
+
+  @@map("outbox_status")
+}
+
+enum AgentMessageRole {
+  USER
+  ASSISTANT
+  TOOL
+  SYSTEM
+
+  @@map("agent_message_role")
+}
+
+enum AgentActionStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+
+  @@map("agent_action_status")
+}
+
+/// Transactional outbox. Domain işlemiyle aynı transaction'da yazılır.
+model OutboxEvent {
+  id             String       @id @default(uuid(7))
+  type           String
+  idempotencyKey String       @unique @map("idempotency_key")
+  tenantId       String       @map("tenant_id")
+  aggregateType  String       @map("aggregate_type")
+  aggregateId    String       @map("aggregate_id")
+  payload        Json
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  lastError      String?      @map("last_error")
+  publishedAt    DateTime?    @map("published_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@index([tenantId, type])
+  @@map("outbox_events")
+}
+
+/// Satıcı işletme kapsamlı AI sohbeti. tenantId = providerProfileId.
+model AgentThread {
+  id        String    @id @default(uuid(7))
+  tenantId  String    @map("tenant_id")
+  userId    String    @map("user_id")
+  title     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user     User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AgentMessage[]
+  actions  AgentActionProposal[]
+  tools    AgentToolInvocation[]
+
+  @@index([tenantId, updatedAt])
+  @@index([userId])
+  @@map("agent_threads")
+}
+
+model AgentMessage {
+  id        String           @id @default(uuid(7))
+  threadId  String           @map("thread_id")
+  role      AgentMessageRole
+  content   String
+  metadata  Json?
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  thread AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+  @@map("agent_messages")
+}
+
+/// Her tool çağrısının denetim kaydı (input/özet/süre/onay).
+model AgentToolInvocation {
+  id           String    @id @default(uuid(7))
+  threadId     String    @map("thread_id")
+  tenantId     String    @map("tenant_id")
+  userId       String    @map("user_id")
+  toolName     String    @map("tool_name")
+  input        Json
+  resultSummary String?  @map("result_summary")
+  success      Boolean
+  durationMs   Int       @map("duration_ms")
+  approvalStatus String? @map("approval_status")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  thread AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([toolName, createdAt])
+  @@map("agent_tool_invocations")
+}
+
+/// Yazma tool'ları kullanıcı onayı olmadan çalışmaz.
+model AgentActionProposal {
+  id        String             @id @default(uuid(7))
+  threadId  String             @map("thread_id")
+  tenantId  String             @map("tenant_id")
+  userId    String             @map("user_id")
+  toolName  String             @map("tool_name")
+  summary   String
+  input     Json
+  status    AgentActionStatus  @default(PENDING_APPROVAL)
+  createdAt DateTime           @default(now()) @map("created_at")
+  decidedAt DateTime?          @map("decided_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  thread AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([threadId, status])
+  @@map("agent_action_proposals")
+}
+
+model Reminder {
+  id          String    @id @default(uuid(7))
+  tenantId    String    @map("tenant_id")
+  userId      String    @map("user_id")
+  title       String
+  body        String?
+  dueAt       DateTime  @map("due_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, dueAt])
+  @@index([userId, dueAt])
+  @@map("reminders")
+}
+
+/// Prompt sürümleri; hangi metnin hangi yanıtı ürettiği izlenebilir.
+model AiPromptVersion {
+  id        String   @id @default(uuid(7))
+  key       String
+  version   Int
+  content   String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([key, version])
+  @@map("ai_prompt_versions")
+}
+
+/// Provider bazlı kullanım / maliyet telemetrisi.
+model AiUsageEvent {
+  id           String   @id @default(uuid(7))
+  tenantId     String?  @map("tenant_id")
+  provider     String
+  operation    String
+  promptTokens Int      @default(0) @map("prompt_tokens")
+  completionTokens Int  @default(0) @map("completion_tokens")
+  costMicros   Int      @default(0) @map("cost_micros")
+  success      Boolean
+  durationMs   Int      @map("duration_ms")
+  errorCode    String?  @map("error_code")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([provider, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("ai_usage_events")
+}
+
+/**
+ * Marketplace Order ↔ WorkOrder köprüsü.
+ * Aynı sipariş iki kez köprülenemez (`marketplaceOrderId` unique).
+ */
+model MarketplaceWorkOrderLink {
+  id                 String   @id @default(uuid(7))
+  tenantId           String   @map("tenant_id")
+  marketplaceOrderId String   @unique @map("marketplace_order_id")
+  workOrderId        String?  @unique @map("work_order_id")
+  bridgeStatus       String   @default("PENDING") @map("bridge_status")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  order     Order      @relation(fields: [marketplaceOrderId], references: [id], onDelete: Cascade)
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, bridgeStatus])
+  @@map("marketplace_work_order_links")
+}
+
+/// ERP CRM müşterisi (tenant = businessId).
+model CrmCustomer {
+  id                   String            @id @default(uuid(7))
+  tenantId             String            @map("tenant_id")
+  userId               String?           @map("user_id")
+  displayName          String            @map("display_name")
+  phone                String?
+  email                String?
+  notes                String?
+  source               CrmCustomerSource @default(TALPIO)
+  tags                 String[]          @default([])
+  lastContactAt        DateTime?         @map("last_contact_at")
+  nextAction           String?           @map("next_action")
+  lifetimeValueMinor   Int               @default(0) @map("lifetime_value_minor")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  deletedAt            DateTime?         @map("deleted_at")
+
+  workOrders WorkOrder[]
+  noteEntries CrmCustomerNote[]
+  followUps  CrmFollowUp[]
+
+  @@index([tenantId, deletedAt])
+  @@index([tenantId, userId])
+  @@index([tenantId, source])
+  @@map("crm_customers")
+}
+
+model CrmCustomerNote {
+  id          String    @id @default(uuid(7))
+  customerId  String    @map("customer_id")
+  body        String
+  fileAssetId String?   @map("file_asset_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  customer  CrmCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  fileAsset FileAsset?  @relation(fields: [fileAssetId], references: [id], onDelete: SetNull)
+
+  @@index([customerId, createdAt])
+  @@index([fileAssetId])
+  @@map("crm_customer_notes")
+}
+
+model CrmFollowUp {
+  id          String    @id @default(uuid(7))
+  customerId  String    @map("customer_id")
+  dueAt       DateTime  @map("due_at")
+  body        String
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  customer CrmCustomer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, dueAt])
+  @@map("crm_follow_ups")
+}
+
+/// Satıcı ERP iş emri — marketplace Order ile köprü üzerinden bağlanır.
+model WorkOrder {
+  id                 String          @id @default(uuid(7))
+  tenantId           String          @map("tenant_id")
+  customerId         String          @map("customer_id")
+  source             WorkOrderSource @default(TALPIO)
+  stage              WorkOrderStage  @default(NEW)
+  title              String
+  notes              String?
+  scheduledAt        DateTime?       @map("scheduled_at")
+  assignedUserId     String?         @map("assigned_user_id")
+  marketplaceOrderId String?         @unique @map("marketplace_order_id")
+  currency           String          @default("TRY") @db.Char(3)
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  deletedAt          DateTime?       @map("deleted_at")
+
+  customer    CrmCustomer               @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  bridgeLink  MarketplaceWorkOrderLink?
+  assignments WorkOrderAssignment[]
+  tasks       BusinessTask[]
+
+  @@index([tenantId, stage, createdAt])
+  @@index([customerId])
+  @@index([assignedUserId])
+  @@map("work_orders")
+}
+
+model WorkOrderAssignment {
+  id          String   @id @default(uuid(7))
+  workOrderId String   @map("work_order_id")
+  userId      String   @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workOrderId, userId])
+  @@index([userId])
+  @@map("work_order_assignments")
+}
+
+model BusinessTask {
+  id             String               @id @default(uuid(7))
+  tenantId       String               @map("tenant_id")
+  workOrderId    String?              @map("work_order_id")
+  assigneeUserId String?              @map("assignee_user_id")
+  title          String
+  status         BusinessTaskStatus   @default(OPEN)
+  priority       BusinessTaskPriority @default(MEDIUM)
+  dueAt          DateTime?            @map("due_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  deletedAt      DateTime?            @map("deleted_at")
+
+  workOrder WorkOrder? @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+  assignee  User?      @relation("TaskAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, dueAt])
+  @@index([assigneeUserId])
+  @@map("business_tasks")
+}
+
+/// B2B kanal ilişkisi (üretici→distribütör→bayi).
+model ChannelRelation {
+  id             String                @id @default(uuid(7))
+  fromBusinessId String                @map("from_business_id")
+  toBusinessId   String                @map("to_business_id")
+  type           ChannelRelationType
+  status         ChannelRelationStatus @default(PENDING)
+  createdAt      DateTime              @default(now()) @map("created_at")
+  updatedAt      DateTime              @updatedAt @map("updated_at")
+
+  fromBusiness Business @relation("ChannelFrom", fields: [fromBusinessId], references: [id], onDelete: Cascade)
+  toBusiness   Business @relation("ChannelTo", fields: [toBusinessId], references: [id], onDelete: Cascade)
+
+  @@unique([fromBusinessId, toBusinessId, type])
+  @@index([toBusinessId, status])
+  @@map("channel_relations")
+}
+
+/// B2B / işletme kampanyası (admin iskeleti bu modele bağlanır).
+model B2bCampaign {
+  id               String            @id @default(uuid(7))
+  businessId       String            @map("business_id")
+  title            String
+  body             String?
+  description      String?
+  categoryId       String?           @map("category_id")
+  audience         CampaignAudience  @default(PUBLIC)
+  status           CampaignStatus    @default(DRAFT)
+  startsAt         DateTime?         @map("starts_at")
+  endsAt           DateTime?         @map("ends_at")
+  isActive         Boolean           @default(true) @map("is_active")
+  impressionCount  Int               @default(0) @map("impression_count")
+  clickCount       Int               @default(0) @map("click_count")
+  conversionCount  Int               @default(0) @map("conversion_count")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  deletedAt        DateTime?         @map("deleted_at")
+
+  business Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  posts    CampaignPost[]
+
+  @@index([businessId, isActive, createdAt])
+  @@index([status, startsAt])
+  @@map("b2b_campaigns")
+}
+
+model CampaignPost {
+  id         String   @id @default(uuid(7))
+  campaignId String   @map("campaign_id")
+  postId     String   @map("post_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  campaign B2bCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  post     Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, postId])
+  @@index([postId])
+  @@map("campaign_posts")
+}
+
+/// İşletme locale / vergi / para birimi rezervi (multi-currency v0).
+model BusinessLocaleSettings {
+  id                 String   @id @default(uuid(7))
+  businessId         String   @unique @map("business_id")
+  defaultCurrency    String   @default("TRY") @map("default_currency") @db.Char(3)
+  defaultCountryCode String   @default("TR") @map("default_country_code") @db.Char(2)
+  defaultTimezone    String   @default("Europe/Istanbul") @map("default_timezone")
+  taxId              String?  @map("tax_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("business_locale_settings")
+}
+
+model BusinessTrustScore {
+  id          String   @id @default(uuid(7))
+  businessId  String   @unique @map("business_id")
+  score       Int
+  breakdown   Json
+  computedAt  DateTime @default(now()) @map("computed_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([score])
+  @@map("business_trust_scores")
+}
+
+// ---------------------------------------------------------------------------
+// TeklifPilot Vision 2.0 — RBAC + Commerce Request
+// ---------------------------------------------------------------------------
+
+model PlatformRole {
+  id          String   @id @default(uuid(7))
+  code        String   @unique
+  name        String
+  description String?
+  isSystem    Boolean  @default(true) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  permissions              RolePermission[]
+  userAssignments          UserRoleAssignment[]
+  businessRoleAssignments  BusinessRoleAssignment[]
+
+  @@map("platform_roles")
+}
+
+/// İzin kodları types paketinden gelir; ayrı Permission tablosu tutulmaz.
+model RolePermission {
+  id             String   @id @default(uuid(7))
+  roleId         String   @map("role_id")
+  permissionCode String   @map("permission_code")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  role PlatformRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionCode])
+  @@index([permissionCode])
+  @@map("role_permissions")
+}
+
+model UserRoleAssignment {
+  id        String   @id @default(uuid(7))
+  userId    String   @map("user_id")
+  roleId    String   @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role PlatformRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([roleId])
+  @@map("user_role_assignments")
+}
+
+model Business {
+  id                 String             @id @default(uuid(7))
+  name               String
+  slug               String?            @unique
+  ownerUserId        String             @map("owner_user_id")
+  verificationStatus VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  isActive           Boolean            @default(true) @map("is_active")
+  minOrderQuantity   Decimal?           @map("min_order_quantity") @db.Decimal(18, 4)
+  maxOrderQuantity   Decimal?           @map("max_order_quantity") @db.Decimal(18, 4)
+  providerProfileId  String?            @map("provider_profile_id")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+
+  owner           User                   @relation("BusinessOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  providerProfile ProviderProfile?       @relation(fields: [providerProfileId], references: [id], onDelete: SetNull)
+  memberships     BusinessMembership[]
+  categories      BusinessCategory[]
+  serviceAreas    BusinessServiceArea[]
+  commerceRequests CommerceRequest[]
+  matches         RequestMatch[]
+  offers          RequestOffer[]
+  subscriptions   Subscription[]
+  aiCreditWallet  AiCreditWallet?
+  aiUsageRecords  AiUsageRecord[]
+  socialProfile   SocialProfile?         @relation("BusinessSocialProfile")
+  channelFrom     ChannelRelation[]      @relation("ChannelFrom")
+  channelTo       ChannelRelation[]      @relation("ChannelTo")
+  b2bCampaigns    B2bCampaign[]
+  localeSettings  BusinessLocaleSettings?
+  trustScore      BusinessTrustScore?
+
+  @@index([ownerUserId])
+  @@index([providerProfileId])
+  @@index([isActive, verificationStatus])
+  @@map("businesses")
+}
+
+model BusinessMembership {
+  id         String                   @id @default(uuid(7))
+  businessId String                   @map("business_id")
+  userId     String                   @map("user_id")
+  status     BusinessMembershipStatus @default(ACTIVE)
+  createdAt  DateTime                 @default(now()) @map("created_at")
+  updatedAt  DateTime                 @updatedAt @map("updated_at")
+
+  business Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles    BusinessRoleAssignment[]
+
+  @@unique([businessId, userId])
+  @@index([userId, status])
+  @@map("business_memberships")
+}
+
+model BusinessRoleAssignment {
+  id           String   @id @default(uuid(7))
+  membershipId String   @map("membership_id")
+  roleId       String   @map("role_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  membership BusinessMembership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  role       PlatformRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, roleId])
+  @@map("business_role_assignments")
+}
+
+model BusinessCategory {
+  id         String   @id @default(uuid(7))
+  businessId String   @map("business_id")
+  categoryId String   @map("category_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([businessId, categoryId])
+  @@index([categoryId])
+  @@map("business_categories")
+}
+
+model BusinessServiceArea {
+  id         String   @id @default(uuid(7))
+  businessId String   @map("business_id")
+  cityId     String   @map("city_id")
+  districtId String?  @map("district_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  city     City      @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  district District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+
+  @@unique([businessId, cityId, districtId])
+  @@index([cityId, districtId])
+  @@map("business_service_areas")
+}
+
+model AttributeSchema {
+  id         String   @id @default(uuid(7))
+  categoryId String   @map("category_id")
+  version    Int
+  schema     Json
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, version])
+  @@index([categoryId, isActive])
+  @@map("attribute_schemas")
+}
+
+model CommerceRequest {
+  id                  String            @id @default(uuid(7))
+  requestType         RequestType       @map("request_type")
+  title               String
+  description         String
+  categoryId          String?           @map("category_id")
+  subcategoryId       String?           @map("subcategory_id")
+  quantity            Decimal?          @db.Decimal(18, 4)
+  unit                String?
+  specifications      Json              @default("{}")
+  budgetMinor         Int?              @map("budget_minor")
+  currency            String            @default("TRY") @db.Char(3)
+  deliveryCityId      String?           @map("delivery_city_id")
+  deliveryDistrictId  String?           @map("delivery_district_id")
+  deliveryAddressText String?           @map("delivery_address_text")
+  deliveryDeadline    DateTime?         @map("delivery_deadline")
+  visibility          RequestVisibility @default(PUBLIC_MATCHED)
+  buyerUserId         String            @map("buyer_user_id")
+  businessId          String?           @map("business_id")
+  status              RequestStatus     @default(DRAFT)
+  source              RequestSource     @default(WEB)
+  aiClassification    Json?             @map("ai_classification")
+  aiConfidence        Decimal?          @map("ai_confidence") @db.Decimal(5, 4)
+  publishedAt         DateTime?         @map("published_at")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+  deletedAt           DateTime?         @map("deleted_at")
+
+  buyer         User                 @relation("RequestBuyer", fields: [buyerUserId], references: [id], onDelete: Cascade)
+  business      Business?            @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  category      ServiceCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategory   ServiceSubcategory?  @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  deliveryCity  City?                @relation(fields: [deliveryCityId], references: [id], onDelete: SetNull)
+  deliveryDistrict District?         @relation(fields: [deliveryDistrictId], references: [id], onDelete: SetNull)
+  attachments   RequestAttachment[]
+  matches       RequestMatch[]
+  offers        RequestOffer[]
+  jobRequests   JobRequest[]
+  sharedPosts   Post[]
+  feedItems     FeedItem[]
+
+  @@index([buyerUserId, status])
+  @@index([categoryId, status])
+  @@index([deliveryCityId, status])
+  @@index([deletedAt])
+  @@map("commerce_requests")
+}
+
+model RequestAttachment {
+  id        String   @id @default(uuid(7))
+  requestId String   @map("request_id")
+  fileId    String   @map("file_id")
+  kind      String   @default("other")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  request CommerceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  file    FileAsset       @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@unique([requestId, fileId])
+  @@map("request_attachments")
+}
+
+model RequestMatch {
+  id         String    @id @default(uuid(7))
+  requestId  String    @map("request_id")
+  businessId String    @map("business_id")
+  score      Int       @default(0)
+  reasons    Json      @default("{}")
+  notifiedAt DateTime? @map("notified_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  request  CommerceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  business Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, businessId])
+  @@index([businessId])
+  @@map("request_matches")
+}
+
+model RequestOffer {
+  id               String             @id @default(uuid(7))
+  requestId        String             @map("request_id")
+  businessId       String             @map("business_id")
+  createdByUserId  String             @map("created_by_user_id")
+  status           RequestOfferStatus @default(SUBMITTED)
+  amountMinor      Int                @map("amount_minor")
+  currency         String             @default("TRY") @db.Char(3)
+  deliveryDays     Int?               @map("delivery_days")
+  shippingIncluded Boolean?           @map("shipping_included")
+  locationText     String?            @map("location_text")
+  note             String?
+  validUntil       DateTime           @map("valid_until")
+  submittedAt      DateTime?          @map("submitted_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  deletedAt        DateTime?          @map("deleted_at")
+
+  request       CommerceRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  business      Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdBy     User              @relation("RequestOfferCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  orderLink     RequestOrderLink?
+
+  @@unique([requestId, businessId])
+  @@index([businessId, status])
+  @@index([status, validUntil])
+  @@map("request_offers")
+}
+
+model RequestOrderLink {
+  id             String   @id @default(uuid(7))
+  requestOfferId String   @unique @map("request_offer_id")
+  orderId        String   @unique @map("order_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  requestOffer RequestOffer @relation(fields: [requestOfferId], references: [id], onDelete: Cascade)
+  order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("request_order_links")
+}
+
+// ---------------------------------------------------------------------------
+// AI kredi / abonelik (faturalama). AiUsageEvent telemetri; AiUsageRecord billing.
+// ---------------------------------------------------------------------------
+
+model SubscriptionPlan {
+  id             String               @id @default(uuid(7))
+  code           SubscriptionPlanCode @unique
+  name           String
+  monthlyCredits Int                  @map("monthly_credits")
+  sortOrder      Int                  @default(0) @map("sort_order")
+  isActive       Boolean              @default(true) @map("is_active")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  features     PlanFeature[]
+  subscriptions Subscription[]
+  quotaPolicy  AiQuotaPolicy?
+
+  @@map("subscription_plans")
+}
+
+model PlanFeature {
+  id          String        @id @default(uuid(7))
+  planId      String        @map("plan_id")
+  featureCode AiFeatureCode @map("feature_code")
+  included    Boolean       @default(true)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  plan SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureCode])
+  @@index([featureCode])
+  @@map("plan_features")
+}
+
+/// userId veya businessId en az biri dolu olmalıdır (servis katmanı doğrular).
+model Subscription {
+  id                 String               @id @default(uuid(7))
+  userId             String?              @map("user_id")
+  businessId         String?              @map("business_id")
+  planId             String               @map("plan_id")
+  status             SubscriptionStatus   @default(ACTIVE)
+  provider           SubscriptionProvider @default(INTERNAL)
+  externalId         String?              @map("external_id")
+  currentPeriodStart DateTime             @map("current_period_start")
+  currentPeriodEnd   DateTime             @map("current_period_end")
+  cancelAtPeriodEnd  Boolean              @default(false) @map("cancel_at_period_end")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+
+  user     User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan     SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([businessId])
+  @@index([planId, status])
+  @@map("subscriptions")
+}
+
+/// Bireysel (userId) veya işletme (businessId) cüzdanı; MVP'de ayrı pool yok.
+model AiCreditWallet {
+  id              String   @id @default(uuid(7))
+  userId          String?  @unique @map("user_id")
+  businessId      String?  @unique @map("business_id")
+  balanceCredits  Int      @default(0) @map("balance_credits")
+  periodStart     DateTime @map("period_start")
+  periodEnd       DateTime @map("period_end")
+  lifetimeGranted Int      @default(0) @map("lifetime_granted")
+  lifetimeSpent   Int      @default(0) @map("lifetime_spent")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user         User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business     Business?             @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions AiCreditTransaction[]
+
+  @@map("ai_credit_wallets")
+}
+
+model AiCreditTransaction {
+  id             String         @id @default(uuid(7))
+  walletId       String         @map("wallet_id")
+  type           AiCreditTxType
+  /// Her zaman pozitif; yön `type` ile belirlenir.
+  amountCredits  Int            @map("amount_credits")
+  balanceAfter   Int            @map("balance_after")
+  featureCode    AiFeatureCode? @map("feature_code")
+  idempotencyKey String         @unique @map("idempotency_key")
+  usageRecordId  String?        @map("usage_record_id")
+  note           String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  wallet      AiCreditWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  usageRecord AiUsageRecord? @relation(fields: [usageRecordId], references: [id], onDelete: SetNull)
+
+  @@index([walletId, createdAt])
+  @@index([usageRecordId])
+  @@map("ai_credit_transactions")
+}
+
+model AiFeature {
+  id              String        @id @default(uuid(7))
+  code            AiFeatureCode @unique
+  name            String
+  baseCostCredits Int           @map("base_cost_credits")
+  description     String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("ai_features")
+}
+
+/// Faturalama düzeyinde kullanım kaydı (telemetri AiUsageEvent ayrıdır).
+model AiUsageRecord {
+  id               String        @id @default(uuid(7))
+  userId           String?       @map("user_id")
+  businessId       String?       @map("business_id")
+  tenantId         String?       @map("tenant_id")
+  featureCode      AiFeatureCode @map("feature_code")
+  provider         String
+  model            String?
+  promptTokens     Int           @default(0) @map("prompt_tokens")
+  completionTokens Int           @default(0) @map("completion_tokens")
+  creditsCharged   Int           @map("credits_charged")
+  durationMs       Int           @default(0) @map("duration_ms")
+  success          Boolean       @default(false)
+  errorCode        String?       @map("error_code")
+  idempotencyKey   String?       @unique @map("idempotency_key")
+  requestId        String?       @map("request_id")
+  offerId          String?       @map("offer_id")
+  workOrderId      String?       @map("work_order_id")
+  refundedAt       DateTime?     @map("refunded_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+
+  user         User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  business     Business?             @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  transactions AiCreditTransaction[]
+
+  @@index([userId, createdAt])
+  @@index([businessId, createdAt])
+  @@index([featureCode, createdAt])
+  @@map("ai_usage_records")
+}
+
+model AiQuotaPolicy {
+  id            String  @id @default(uuid(7))
+  planId        String  @unique @map("plan_id")
+  monthlyCredits Int    @map("monthly_credits")
+  priorityQueue Boolean @default(false) @map("priority_queue")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  plan SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@map("ai_quota_policies")
+}
+
+// ---------------------------------------------------------------------------
+// Sosyal katman (ücretsiz). Request ≠ Post; premium ≠ güven rozeti.
+// ---------------------------------------------------------------------------
+
+model SocialProfile {
+  id               String            @id @default(uuid(7))
+  kind             SocialProfileKind
+  userId           String?           @unique @map("user_id")
+  businessId       String?           @unique @map("business_id")
+  username         String            @unique
+  displayName      String            @map("display_name")
+  bio              String?
+  avatarFileId     String?           @map("avatar_file_id")
+  coverFileId      String?           @map("cover_file_id")
+  locationCityId   String?           @map("location_city_id")
+  locationText     String?           @map("location_text")
+  followerCount    Int               @default(0) @map("follower_count")
+  followingCount   Int               @default(0) @map("following_count")
+  postCount        Int               @default(0) @map("post_count")
+  /// Güven rozeti; abonelik/premium ile karıştırılmaz.
+  isVerifiedDisplay Boolean          @default(false) @map("is_verified_display")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  deletedAt        DateTime?         @map("deleted_at")
+
+  user         User?      @relation("PersonalSocialProfile", fields: [userId], references: [id], onDelete: Cascade)
+  business     Business?  @relation("BusinessSocialProfile", fields: [businessId], references: [id], onDelete: Cascade)
+  avatar       FileAsset? @relation("SocialAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  cover        FileAsset? @relation("SocialCover", fields: [coverFileId], references: [id], onDelete: SetNull)
+  locationCity City?      @relation(fields: [locationCityId], references: [id], onDelete: SetNull)
+
+  posts             Post[]
+  comments          PostComment[]
+  likes             PostLike[]
+  saves             SavedPost[]
+  followers         Follow[]          @relation("Following")
+  following         Follow[]          @relation("Follower")
+  feedItems         FeedItem[]
+  categoryFollows   CategoryFollow[]
+  mentionsReceived  PostMention[]
+  shares            PostShare[]
+  views             PostView[]
+  hides             PostHide[]
+
+  @@index([kind, deletedAt])
+  @@index([locationCityId])
+  @@map("social_profiles")
+}
+
+/// Kayıtta seçilen ilgi alanları; keşfet sıralamasında sinyal olarak kullanılır.
+model CategoryFollow {
+  id         String   @id @default(uuid(7))
+  profileId  String   @map("profile_id")
+  categoryId String   @map("category_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profile  SocialProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, categoryId])
+  @@index([categoryId, createdAt])
+  @@map("category_follows")
+}
+
+model Follow {
+  id                String   @id @default(uuid(7))
+  followerProfileId String   @map("follower_profile_id")
+  followingProfileId String  @map("following_profile_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  follower  SocialProfile @relation("Follower", fields: [followerProfileId], references: [id], onDelete: Cascade)
+  following SocialProfile @relation("Following", fields: [followingProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([followerProfileId, followingProfileId])
+  @@index([followingProfileId, createdAt])
+  @@index([followerProfileId, createdAt])
+  @@map("follows")
+}
+
+model Post {
+  id                String         @id @default(uuid(7))
+  authorProfileId   String         @map("author_profile_id")
+  type              PostType       @default(TEXT)
+  body              String?
+  visibility        PostVisibility @default(PUBLIC)
+  likeCount         Int            @default(0) @map("like_count")
+  commentCount      Int            @default(0) @map("comment_count")
+  saveCount         Int            @default(0) @map("save_count")
+  viewCount         Int            @default(0) @map("view_count")
+  uniqueViewCount   Int            @default(0) @map("unique_view_count")
+  shareCount        Int            @default(0) @map("share_count")
+  repostCount       Int            @default(0) @map("repost_count")
+  quoteRequestCount Int            @default(0) @map("quote_request_count")
+  messageStartCount Int            @default(0) @map("message_start_count")
+  requestConversionCount Int       @default(0) @map("request_conversion_count")
+  offerConversionCount   Int       @default(0) @map("offer_conversion_count")
+  originalPostId    String?        @map("original_post_id")
+  commerceRequestId String?        @map("commerce_request_id")
+  /// Kampanya / indirim etiketi (ör. "Hafta sonu %20").
+  promoLabel           String?   @map("promo_label")
+  originalPriceMinor   Int?      @map("original_price_minor")
+  promoPriceMinor      Int?      @map("promo_price_minor")
+  promoCurrency        String?   @map("promo_currency") @db.Char(3)
+  promoValidUntil      DateTime? @map("promo_valid_until")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  deletedAt         DateTime?      @map("deleted_at")
+
+  author          SocialProfile    @relation(fields: [authorProfileId], references: [id], onDelete: Cascade)
+  originalPost    Post?            @relation("PostOriginal", fields: [originalPostId], references: [id], onDelete: SetNull)
+  reposts         Post[]           @relation("PostOriginal")
+  commerceRequest CommerceRequest? @relation(fields: [commerceRequestId], references: [id], onDelete: SetNull)
+  dealMetadata    DealMetadata?
+  media           PostMedia[]
+  likes           PostLike[]
+  comments        PostComment[]
+  saves           SavedPost[]
+  feedItem        FeedItem?
+  hashtags        PostHashtag[]
+  mentions        PostMention[]
+  shares          PostShare[]
+  views           PostView[]
+  hides           PostHide[]
+  campaignLinks   CampaignPost[]
+
+  @@index([authorProfileId, createdAt])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([type, createdAt])
+  @@index([originalPostId])
+  @@map("posts")
+}
+
+/// SC3 — Post'a bağlı yapılandırılmış fırsat / fiyat metadata.
+model DealMetadata {
+  id               String    @id @default(uuid(7))
+  postId           String    @unique @map("post_id")
+  productName      String?   @map("product_name")
+  title            String?
+  listPriceMinor   Int?      @map("list_price_minor")
+  dealPriceMinor   Int?      @map("deal_price_minor")
+  /// 0–100 yüzde (display helper).
+  discountPercent  Int?      @map("discount_percent")
+  currency         String    @default("TRY") @db.Char(3)
+  unit             String?
+  minQuantity      String?   @map("min_quantity")
+  stockQuantity    String?   @map("stock_quantity")
+  startsAt         DateTime? @map("starts_at")
+  endsAt           DateTime? @map("ends_at")
+  vatIncluded      Boolean?  @map("vat_included")
+  shippingIncluded Boolean?  @map("shipping_included")
+  locationText     String?   @map("location_text")
+  categoryId       String?   @map("category_id")
+  subcategoryId    String?   @map("subcategory_id")
+  brand            String?
+  maxQuantity      String?   @map("max_quantity")
+  deliveryRegions  Json?     @map("delivery_regions")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  post     Post             @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  priceHistory PriceHistory[]
+
+  @@index([categoryId])
+  @@map("deal_metadata")
+}
+
+model PriceHistory {
+  id               String   @id @default(uuid(7))
+  dealMetadataId   String   @map("deal_metadata_id")
+  postId           String   @map("post_id")
+  businessId       String?  @map("business_id")
+  listPriceMinor   Int?     @map("list_price_minor")
+  dealPriceMinor   Int?     @map("deal_price_minor")
+  currency         String   @default("TRY") @db.Char(3)
+  recordedAt       DateTime @default(now()) @map("recorded_at")
+
+  deal DealMetadata @relation(fields: [dealMetadataId], references: [id], onDelete: Cascade)
+
+  @@index([postId, recordedAt])
+  @@index([businessId, recordedAt])
+  @@map("price_history")
+}
+
+model PostMedia {
+  id        String  @id @default(uuid(7))
+  postId    String  @map("post_id")
+  fileId    String  @map("file_id")
+  sortOrder Int     @default(0) @map("sort_order")
+  altText   String? @map("alt_text")
+
+  post Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  file FileAsset @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@unique([postId, fileId])
+  @@index([postId, sortOrder])
+  @@map("post_media")
+}
+
+model PostLike {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId, createdAt])
+  @@map("post_likes")
+}
+
+model PostComment {
+  id              String    @id @default(uuid(7))
+  postId          String    @map("post_id")
+  authorProfileId String    @map("author_profile_id")
+  parentId        String?   @map("parent_id")
+  body            String
+  likeCount       Int       @default(0) @map("like_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  post    Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  SocialProfile  @relation(fields: [authorProfileId], references: [id], onDelete: Cascade)
+  parent  PostComment?   @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies PostComment[]  @relation("CommentThread")
+
+  @@index([postId, createdAt])
+  @@index([authorProfileId])
+  @@index([parentId])
+  @@map("post_comments")
+}
+
+model SavedPost {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId, createdAt])
+  @@map("saved_posts")
+}
+
+model FeedItem {
+  id                String       @id @default(uuid(7))
+  kind              FeedItemKind
+  postId            String?      @unique @map("post_id")
+  commerceRequestId String?      @map("commerce_request_id")
+  authorProfileId   String?      @map("author_profile_id")
+  score             Int          @default(0)
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  post            Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  commerceRequest CommerceRequest? @relation(fields: [commerceRequestId], references: [id], onDelete: Cascade)
+  authorProfile   SocialProfile?   @relation(fields: [authorProfileId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([authorProfileId, createdAt])
+  @@map("feed_items")
+}
+
+model ContentReport {
+  id             String              @id @default(uuid(7))
+  reporterUserId String              @map("reporter_user_id")
+  targetType     ContentReportTarget @map("target_type")
+  targetId       String              @map("target_id")
+  reason         String
+  status         ContentReportStatus @default(OPEN)
+  actionNote     String?             @map("action_note")
+  reviewedAt     DateTime?           @map("reviewed_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+
+  reporter User @relation(fields: [reporterUserId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterUserId])
+  @@map("content_reports")
+}
+
+model FraudFlag {
+  id          String          @id @default(uuid(7))
+  userId      String?         @map("user_id")
+  subjectType String          @map("subject_type")
+  subjectId   String          @map("subject_id")
+  reason      FraudFlagReason
+  status      FraudFlagStatus @default(OPEN)
+  note        String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([subjectType, subjectId])
+  @@index([userId])
+  @@map("fraud_flags")
+}
+
+model PaymentWebhookEvent {
+  id            String   @id @default(uuid(7))
+  providerName  String   @map("provider_name")
+  eventId       String   @map("event_id")
+  payloadHash   String   @map("payload_hash")
+  processedAt   DateTime @default(now()) @map("processed_at")
+
+  @@unique([providerName, eventId])
+  @@index([processedAt])
+  @@map("payment_webhook_events")
+}
+
+model UserBlock {
+  id            String   @id @default(uuid(7))
+  blockerUserId String   @map("blocker_user_id")
+  blockedUserId String   @map("blocked_user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  blocker User @relation("Blocker", fields: [blockerUserId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerUserId, blockedUserId])
+  @@index([blockedUserId])
+  @@map("user_blocks")
+}
+
+model Hashtag {
+  id        String   @id @default(uuid(7))
+  slug      String   @unique
+  display   String
+  postCount Int      @default(0) @map("post_count")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  posts    PostHashtag[]
+  trending TrendingTopic[]
+
+  @@map("hashtags")
+}
+
+model PostHashtag {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  hashtagId String   @map("hashtag_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashtag Hashtag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, hashtagId])
+  @@index([hashtagId, createdAt])
+  @@map("post_hashtags")
+}
+
+model PostMention {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId, createdAt])
+  @@map("post_mentions")
+}
+
+model PostShare {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId, createdAt])
+  @@map("post_shares")
+}
+
+model PostView {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId, createdAt])
+  @@map("post_views")
+}
+
+model PostHide {
+  id        String   @id @default(uuid(7))
+  postId    String   @map("post_id")
+  profileId String   @map("profile_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, profileId])
+  @@index([profileId])
+  @@map("post_hides")
+}
+
+/// 24 saatlik pencere skoru; spam için unique etkileşim eşiği uygulanır.
+model TrendingTopic {
+  id                  String   @id @default(uuid(7))
+  hashtagId           String   @map("hashtag_id")
+  windowStart         DateTime @map("window_start")
+  score               Int      @default(0)
+  uniqueInteractions  Int      @default(0) @map("unique_interactions")
+  engagementVelocity  Float    @default(0) @map("engagement_velocity")
+  saveCount           Int      @default(0) @map("save_count")
+  requestConversions  Int      @default(0) @map("request_conversions")
+  regionCityId        String?  @map("region_city_id")
+  categoryId          String?  @map("category_id")
+  computedAt          DateTime @default(now()) @map("computed_at")
+
+  hashtag    Hashtag          @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+  regionCity City?            @relation(fields: [regionCityId], references: [id], onDelete: SetNull)
+  category   ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([hashtagId, windowStart])
+  @@index([windowStart, score])
+  @@map("trending_topics")
 }

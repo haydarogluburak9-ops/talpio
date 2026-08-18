@@ -3,7 +3,7 @@ import { Link } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
 
-import { loginSchema, type LoginInput } from '@ustapilot/validation';
+import { loginSchema, type LoginInput } from '@talpio/validation';
 
 import { Button } from '@/components/button';
 import { FormField } from '@/components/form-field';
@@ -91,6 +91,11 @@ export default function LoginScreen() {
           disabled={formState.isSubmitting}
           onPress={onSubmit}
         />
+        <Link href="/(auth)/forgot-password">
+          <Text variant="caption" tone="brand">
+            {t('auth.forgotPassword')}
+          </Text>
+        </Link>
       </View>
 
       <View style={styles.footer}>

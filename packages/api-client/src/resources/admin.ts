@@ -1,4 +1,4 @@
-import { API_ROUTES } from '@ustapilot/config';
+import { API_ROUTES } from '@talpio/config';
 import type {
   AdminCommissionRuleSummary,
   AdminComplaintSummary,
@@ -17,6 +17,7 @@ import type {
   AdminTransactionSummary,
   AdminUserSummary,
   AuditLogEntry,
+  ContentReport,
   ComplaintStatus,
   JobRequestStatus,
   OfferStatus,
@@ -25,13 +26,14 @@ import type {
   NotificationType,
   PaymentStatus,
   ReviewStatus,
+  ServiceCategory,
   SupportMessage,
   SupportTicketStatus,
   TransactionType,
   UserRole,
   UserStatus,
   VerificationStatus,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -355,6 +357,107 @@ export function createAdminResource(http: HttpClient) {
       return http.get<AdminRoleMatrix>(API_ROUTES.admin.settingsRoles, {
         ...(signal ? { signal } : {}),
       });
+    },
+
+    listCategories(signal?: AbortSignal): Promise<ServiceCategory[]> {
+      return http.get<ServiceCategory[]>(API_ROUTES.admin.categories, {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    createCategory(body: {
+      name: string;
+      slug: string;
+      description?: string;
+      iconKey?: string;
+      sortOrder?: number;
+    }): Promise<ServiceCategory> {
+      return http.post<ServiceCategory>(API_ROUTES.admin.categories, body);
+    },
+
+    updateCategory(
+      id: string,
+      body: {
+        name?: string;
+        description?: string | null;
+        iconKey?: string | null;
+        sortOrder?: number;
+        isActive?: boolean;
+      },
+    ): Promise<ServiceCategory> {
+      return http.patch<ServiceCategory>(API_ROUTES.admin.categoryById(id), body);
+    },
+
+    listSubscriptions(signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.subscriptions, { ...(signal ? { signal } : {}) });
+    },
+
+    listAiUsage(signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.aiUsage, { ...(signal ? { signal } : {}) });
+    },
+
+    listCampaigns(signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.campaigns, { ...(signal ? { signal } : {}) });
+    },
+
+    listModerationReports(
+      params: { status?: string; targetType?: string; q?: string } = {},
+      signal?: AbortSignal,
+    ) {
+      return http.get<ContentReport[]>(API_ROUTES.admin.moderationReports, {
+        query: params,
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    bulkUpdateModerationReports(body: {
+      ids: string[];
+      status: string;
+      action?: string;
+      actionNote?: string;
+    }) {
+      return http.post<{ updated: number }>(`${API_ROUTES.admin.moderationReports}/bulk`, body);
+    },
+
+    updateModerationReport(
+      id: string,
+      body: { status: string; action?: string; actionNote?: string },
+    ) {
+      return http.patch<ContentReport>(API_ROUTES.admin.moderationReportById(id), body);
+    },
+
+    listCommerceRequests(signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.commerceRequests, { ...(signal ? { signal } : {}) });
+    },
+
+    listFraudFlags(params: { status?: string } = {}, signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.fraudFlags, {
+        query: params,
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    updateFraudFlag(id: string, body: { status: string; note?: string }) {
+      return http.patch(API_ROUTES.admin.fraudFlagById(id), body);
+    },
+
+    getBackupStatus(signal?: AbortSignal) {
+      return http.get<{
+        lastVerifiedAt: string | null;
+        lastVerifiedBy: string | null;
+        lastNote: string | null;
+        checklist: string[];
+        runbook: string;
+        claimedAutomaticBackup: false;
+      }>(API_ROUTES.admin.backupStatus, { ...(signal ? { signal } : {}) });
+    },
+
+    verifyBackup(body: { note?: string } = {}) {
+      return http.post(API_ROUTES.admin.backupVerify, body);
+    },
+
+    listDeadLetters(signal?: AbortSignal) {
+      return http.get(API_ROUTES.admin.queueDeadLetters, { ...(signal ? { signal } : {}) });
     },
   };
 }

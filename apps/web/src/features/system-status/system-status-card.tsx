@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@ustapilot/config';
-import { Badge, Button, Card, CardContent, ErrorState, Skeleton } from '@ustapilot/ui';
+import { queryKeys } from '@talpio/config';
+import { Badge, Button, Card, CardContent, ErrorState, Skeleton } from '@talpio/ui';
 import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
 
 import { apiClient } from '@/lib/api';

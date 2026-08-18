@@ -1,10 +1,14 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ApiError } from '@ustapilot/api-client';
-import { Button, Field, Input } from '@ustapilot/ui';
-import { loginSchema, type LoginInput } from '@ustapilot/validation';
+import { ApiError } from '@talpio/api-client';
+import { Button, Field, Input } from '@talpio/ui';
+import { loginSchema, type LoginInput } from '@talpio/validation';
 import { useForm } from 'react-hook-form';
+
+import Link from 'next/link';
+
+import { t } from '@/lib/i18n';
 
 import { useLogin } from './use-session';
 
@@ -30,28 +34,32 @@ export function LoginForm() {
         <p role="alert" className="rounded-[--radius-control] bg-danger-surface p-3 text-sm text-danger-on-surface">
           {login.error instanceof ApiError
             ? login.error.message
-            : 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.'}
+            : t('auth.networkError')}
         </p>
       ) : null}
 
-      <Field label="E-posta" required error={errors.email?.message}>
+      <Field label={t('auth.email')} required error={errors.email?.message}>
         {(props) => (
           <Input
             {...props}
             {...register('email')}
             type="email"
             autoComplete="email"
-            placeholder="ornek@ustapilot.com"
+            placeholder="ornek@talpio.com"
           />
         )}
       </Field>
 
-      <Field label="Şifre" required error={errors.password?.message}>
+      <Field label={t('auth.password')} required error={errors.password?.message}>
         {(props) => <Input {...props} {...register('password')} type="password" autoComplete="current-password" />}
       </Field>
 
+      <Link href="/sifremi-unuttum" className="text-sm font-medium text-accent-600 hover:underline">
+        {t('auth.forgotPassword')}
+      </Link>
+
       <Button type="submit" className="w-full" disabled={login.isPending}>
-        {login.isPending ? 'Giriş yapılıyor…' : 'Giriş yap'}
+        {login.isPending ? t('auth.signingIn') : t('auth.signIn')}
       </Button>
     </form>
   );

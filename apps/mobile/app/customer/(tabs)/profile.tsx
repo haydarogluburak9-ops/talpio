@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Badge } from '@/components/badge';
+import { toLocaleTag } from '@talpio/localization';
+
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -10,12 +11,13 @@ import { ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { useLogout } from '@/features/auth/use-auth-mutations';
+
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
 
 export default function CustomerProfileScreen() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const colors = useColors();
   const user = useCurrentUser();
@@ -27,6 +29,8 @@ export default function CustomerProfileScreen() {
       label: t('profile.title'),
       href: '/customer/profile/edit',
     },
+    { icon: 'briefcase-outline' as const, label: t('nav.myBusiness'), href: '/provider/(tabs)/dashboard' },
+    { icon: 'cube-outline' as const, label: t('commerce.myListTitle'), href: '/customer/requests' },
     { icon: 'receipt-outline' as const, label: t('order.listTitle'), href: '/customer/orders' },
     { icon: 'star-outline' as const, label: t('review.writtenTitle'), href: '/customer/reviews' },
     { icon: 'card-outline' as const, label: t('payment.historyTitle'), href: '/customer/payments' },
@@ -49,7 +53,7 @@ export default function CustomerProfileScreen() {
           <View style={styles.identity}>
             <View style={[styles.avatar, { backgroundColor: colors.brand }]}>
               <Text variant="title" style={{ color: colors.onBrand }}>
-                {initials(user.data.fullName)}
+                {initials(user.data.fullName, locale)}
               </Text>
             </View>
             <View style={styles.identityCopy}>
@@ -59,7 +63,6 @@ export default function CustomerProfileScreen() {
               <Text variant="caption" tone="muted" numberOfLines={1}>
                 {user.data.email}
               </Text>
-              <Badge tone="brand" label={user.data.role} />
             </View>
           </View>
         </Card>
@@ -89,12 +92,12 @@ export default function CustomerProfileScreen() {
 }
 
 /** Avatar görseli yoksa ad-soyad baş harfleri gösterilir. */
-function initials(fullName: string): string {
+function initials(fullName: string, locale: string): string {
   return fullName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part.charAt(0).toLocaleUpperCase('tr-TR'))
+    .map((part) => part.charAt(0).toLocaleUpperCase(toLocaleTag(locale)))
     .join('');
 }
 

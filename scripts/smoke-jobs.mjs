@@ -39,7 +39,7 @@ console.log(`İş talebi duman testi — ${BASE}\n`);
 console.log('Hazırlık: müşteri hesabı ve referans veriler');
 const customer = await call('POST', '/auth/register', {
   body: {
-    email: `jobs+${Date.now()}@ustapilot.test`,
+    email: `jobs+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Talep Duman Testi',
     role: 'CUSTOMER',
@@ -143,7 +143,7 @@ check('kimliksiz erişim reddedilir', anonymous.status === 401, `status=${anonym
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `stranger+${Date.now()}@ustapilot.test`,
+    email: `stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Müşteri',
     role: 'CUSTOMER',
@@ -165,10 +165,10 @@ check(
 
 console.log('\nUsta havuzu:');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
+  body: { email: 'satici@talpio.com', password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
 });
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 
 if (providerToken) {
   const pool = await call('GET', '/jobs/available?matchMyServices=false', { token: providerToken });
@@ -181,19 +181,19 @@ if (providerToken) {
   check('havuzda ilçe adı görünür', typeof poolJob?.address?.districtName === 'string');
 
   const providerDetail = await call('GET', `/jobs/${job?.id}`, { token: providerToken });
-  check('usta detayı görebilir', providerDetail.status === 200);
-  check('usta detayında adres gizli', providerDetail.json?.data?.address?.isFullyVisible === false);
+  check('satıcı detayı görebilir', providerDetail.status === 200);
+  check('satıcı detayında adres gizli', providerDetail.json?.data?.address?.isFullyVisible === false);
 
   const providerCreate = await call('POST', '/jobs', {
     token: providerToken,
     body: {
       categoryId: category?.id,
-      title: 'Usta talep oluşturamaz',
-      description: 'Bu istek rol denetimi tarafından reddedilmelidir çünkü rol usta.',
+      title: 'Satıcı talep oluşturamaz',
+      description: 'Bu istek rol denetimi tarafından reddedilmelidir çünkü rol satıcı.',
       address: { cityId: city?.id, districtId: district?.id },
     },
   });
-  check('usta talep oluşturamaz', providerCreate.status === 403, `status=${providerCreate.status}`);
+  check('satıcı talep oluşturamaz', providerCreate.status === 403, `status=${providerCreate.status}`);
 }
 
 console.log('\nİptal:');

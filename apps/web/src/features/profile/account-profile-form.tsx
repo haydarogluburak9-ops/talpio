@@ -1,8 +1,9 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ApiError } from '@ustapilot/api-client';
-import type { CurrentUser } from '@ustapilot/types';
+import { ApiError } from '@talpio/api-client';
+import { LOCALE_META, SUPPORTED_LOCALES, isSupportedLocale } from '@talpio/config';
+import type { CurrentUser } from '@talpio/types';
 import {
   Badge,
   Button,
@@ -13,15 +14,17 @@ import {
   Field,
   Input,
   Select,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import {
   updateUserProfileSchema,
   type UpdateUserProfileInput,
   type UpdateUserProfilePayload,
-} from '@ustapilot/validation';
+} from '@talpio/validation';
 import { Controller, useForm } from 'react-hook-form';
 
-import { t } from '@/lib/i18n';
+import { apiClient } from '@/lib/api';
+import { hydrateLocale, t } from '@/lib/i18n';
+import { persistLocale } from '@/lib/locale';
 
 import { AvatarField } from './avatar-field';
 import { useUpdateUserProfile } from './use-profile';
@@ -110,9 +113,24 @@ export function AccountProfileForm({ user }: { user: CurrentUser }) {
 
             <Field label={t('profile.locale')} error={errors.locale?.message}>
               {(props) => (
-                <Select {...props} {...register('locale')}>
-                  <option value="tr">Türkçe</option>
-                  <option value="en">English</option>
+                <Select
+                  {...props}
+                  {...register('locale', {
+                    onChange: (event) => {
+                      const next = event.target.value;
+                      if (isSupportedLocale(next)) {
+                        hydrateLocale(next);
+                        persistLocale(next);
+                        apiClient.setLocale(next);
+                      }
+                    },
+                  })}
+                >
+                  {SUPPORTED_LOCALES.map((item) => (
+                    <option key={item} value={item}>
+                      {LOCALE_META[item].nativeLabel}
+                    </option>
+                  ))}
                 </Select>
               )}
             </Field>

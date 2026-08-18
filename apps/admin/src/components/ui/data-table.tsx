@@ -1,6 +1,6 @@
 'use client';
 
-import type { PaginationMeta } from '@ustapilot/types';
+import type { PaginationMeta } from '@talpio/types';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';

@@ -1,12 +1,12 @@
 'use client';
 
-import { UPLOAD } from '@ustapilot/config';
-import { FilePurpose } from '@ustapilot/types';
-import { Button } from '@ustapilot/ui';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose } from '@talpio/types';
+import { Button } from '@talpio/ui';
 import { useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';
-import { t } from '@/lib/i18n';
+import { localeTag, t } from '@/lib/i18n';
 
 export interface AvatarFieldProps {
   /** Gösterilecek adres. Henüz yükleme yapılmadıysa sunucudan gelen görsel. */
@@ -89,7 +89,7 @@ export function AvatarField({
             aria-hidden
             className="flex size-20 items-center justify-center rounded-full bg-brand-50 text-2xl font-semibold text-brand-700 dark:bg-brand-900 dark:text-brand-100"
           >
-            {displayName.trim().charAt(0).toLocaleUpperCase('tr-TR')}
+            {displayName.trim().charAt(0).toLocaleUpperCase(localeTag())}
           </span>
         )}
 

@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# UstaPilot API - çok aşamalı derleme
+# Talpio API - çok aşamalı derleme
 # Bağlam (context) monorepo köküdür.
 
 FROM node:22-alpine AS base
@@ -12,19 +12,22 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
-RUN npm ci --workspace @ustapilot/backend --include-workspace-root
+COPY apps/web/package.json ./apps/web/
+COPY packages ./packages
+RUN npm ci --include-workspace-root
 
 # --- Derleme -----------------------------------------------------------------
 FROM deps AS build
 COPY apps/backend ./apps/backend
-RUN npm run build --workspace @ustapilot/backend
+COPY packages ./packages
+RUN npm run build:packages && npm run build --workspace @talpio/backend
 
 # --- Yalnızca üretim bağımlılıkları -------------------------------------------
 FROM base AS prod-deps
 COPY package.json package-lock.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
-RUN npm ci --workspace @ustapilot/backend --include-workspace-root --omit=dev
+RUN npm ci --workspace @talpio/backend --include-workspace-root --omit=dev
 
 # --- Geliştirme (hot reload) --------------------------------------------------
 FROM deps AS development
@@ -47,9 +50,9 @@ COPY apps/backend/package.json ./apps/backend/
 COPY package.json ./
 
 # Root olmayan kullanıcı ile çalıştır
-RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs ustapilot \
-    && chown -R ustapilot:nodejs /app
-USER ustapilot
+RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs talpio \
+    && chown -R talpio:nodejs /app
+USER talpio
 
 WORKDIR /app/apps/backend
 EXPOSE 3000

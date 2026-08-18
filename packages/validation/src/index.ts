@@ -4,3 +4,6 @@ export * from './job';
 export * from './offer';
 export * from './profile';
 export * from './engagement';
+export * from './request';
+export * from './social';
+export * from './username';

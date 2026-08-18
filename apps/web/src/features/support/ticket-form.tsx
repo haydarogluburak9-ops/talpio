@@ -1,6 +1,6 @@
 'use client';
 
-import { createSupportTicketSchema } from '@ustapilot/validation';
+import { createSupportTicketSchema } from '@talpio/validation';
 import {
   Button,
   Card,
@@ -10,7 +10,7 @@ import {
   Field,
   Input,
   Textarea,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 

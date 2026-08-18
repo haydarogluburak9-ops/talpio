@@ -1,8 +1,8 @@
 {
-  "name": "ustapilot",
+  "name": "talpio",
   "version": "0.1.0",
   "private": true,
-  "description": "UstaPilot - hizmet pazaryeri platformu (monorepo)",
+  "description": "Talpio - talep odaklı ticaret platformu (monorepo)",
   "license": "UNLICENSED",
   "packageManager": "npm@11.13.0",
   "engines": {
@@ -17,11 +17,13 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev start:dev --filter=@ustapilot/backend --filter=@ustapilot/admin --filter=@ustapilot/web",
-    "dev:api": "turbo run start:dev --filter=@ustapilot/backend",
-    "dev:admin": "turbo run dev --filter=@ustapilot/admin",
-    "dev:web": "turbo run dev --filter=@ustapilot/web",
-    "dev:mobile": "npm run dev --workspace @ustapilot/mobile",
+    "dev": "turbo run dev start:dev --filter=@talpio/backend --filter=@talpio/admin --filter=@talpio/web",
+    "dev:api": "turbo run start:dev --filter=@talpio/backend",
+    "dev:worker": "turbo run start:worker --filter=@talpio/backend",
+    "dev:admin": "turbo run dev --filter=@talpio/admin",
+    "dev:web": "turbo run dev --filter=@talpio/web",
+    "dev:mobile": "npm run dev --workspace @talpio/mobile",
+    "smoke:agent": "node scripts/smoke-agent.mjs",
     "build": "turbo run build",
     "build:packages": "turbo run build --filter=./packages/*",
     "lint": "turbo run lint",
@@ -30,10 +32,11 @@
     "clean": "turbo run clean && rimraf node_modules/.cache/turbo",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md,yml,yaml}\"",
-    "db:generate": "npm run db:generate --workspace @ustapilot/backend",
-    "db:migrate": "npm run db:migrate --workspace @ustapilot/backend",
-    "db:seed": "npm run db:seed --workspace @ustapilot/backend",
-    "db:studio": "npm run db:studio --workspace @ustapilot/backend",
+    "db:generate": "npm run db:generate --workspace @talpio/backend",
+    "db:migrate": "npm run db:migrate --workspace @talpio/backend",
+    "db:seed": "npm run db:seed --workspace @talpio/backend",
+    "db:studio": "npm run db:studio --workspace @talpio/backend",
+    "eas-build-pre-install": "npm run build:packages",
     "smoke:auth": "node scripts/smoke-auth.mjs",
     "smoke:jobs": "node scripts/smoke-jobs.mjs",
     "smoke:offers": "node scripts/smoke-offers.mjs",
@@ -49,15 +52,19 @@
     "docker:up": "docker compose up -d",
     "docker:up:full": "docker compose --profile full up -d --build",
     "docker:down": "docker compose --profile full down",
-    "docker:logs": "docker compose --profile full logs -f"
+    "docker:logs": "docker compose --profile full logs -f",
+    "e2e": "playwright test --config e2e/playwright.config.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "turbo": "^2.5.9",
     "typescript": "^5.9.3"
   },
   "overrides": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "postcss": "^8.5.24",
     "sharp": "^0.35.3",
     "@nestjs/swagger": {

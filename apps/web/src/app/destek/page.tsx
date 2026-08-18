@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 
 import { SupportPageBody } from '@/features/support/support-page-body';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Destek',
+  title: t('support.listTitle'),
   robots: { index: false, follow: false },
 };
 

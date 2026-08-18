@@ -1,8 +1,8 @@
 {
-  "name": "@ustapilot/ui",
+  "name": "@talpio/ui",
   "version": "0.1.0",
   "private": true,
-  "description": "UstaPilot tasarım sistemi: renk belirteçleri ve paylaşılan React bileşenleri",
+  "description": "Talpio tasarım sistemi: renk belirteçleri ve paylaşılan React bileşenleri",
   "license": "UNLICENSED",
   "exports": {
     ".": "./src/index.ts",
@@ -14,8 +14,8 @@
     "clean": "rimraf .turbo"
   },
   "dependencies": {
-    "@ustapilot/config": "0.1.0",
-    "@ustapilot/types": "0.1.0",
+    "@talpio/config": "0.1.0",
+    "@talpio/types": "0.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.1"

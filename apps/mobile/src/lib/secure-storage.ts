@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-import type { SecureStorageAdapter } from '@ustapilot/api-client';
+import type { SecureStorageAdapter } from '@talpio/api-client';
 
 /**
  * Expo SecureStore, iOS'ta Keychain ve Android'de EncryptedSharedPreferences

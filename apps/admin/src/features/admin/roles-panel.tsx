@@ -1,6 +1,6 @@
 'use client';
 
-import type { Permission, UserRole } from '@ustapilot/types';
+import type { Permission, UserRole } from '@talpio/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { ServiceCategory } from '@ustapilot/types';
+import type { ServiceCategory } from '@talpio/types';
 
 import { Public } from '@modules/auth/decorators/public.decorator';
 

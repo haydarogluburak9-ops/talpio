@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { OrderStatus } from '@ustapilot/types';
+import { OrderStatus } from '@talpio/types';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 
@@ -13,7 +13,7 @@ const toStatusArray = ({ value }: { value: unknown }): unknown => {
 /**
  * Sipariş listesi süzgeçleri.
  *
- * Taraf ayrımı yapılmaz: müşteri kendi siparişlerini, usta üstlendiği işleri
+ * Taraf ayrımı yapılmaz: müşteri kendi siparişlerini, satıcı üstlendiği işleri
  * görür. Hangi tarafın sorgulandığı oturumdaki role göre belirlenir.
  */
 export class ListOrdersQueryDto extends PaginationQueryDto {

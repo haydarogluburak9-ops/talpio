@@ -1,9 +1,9 @@
 'use client';
 
-import { nextJobStatuses } from '@ustapilot/business-logic';
-import { JOB_STATUS_TONES } from '@ustapilot/config';
-import { formatDate, formatMoney, jobStatusLabel } from '@ustapilot/localization';
-import { JobRequestStatus, JobSize, JobTimeSlot, type JobRequest } from '@ustapilot/types';
+import { nextJobStatuses } from '@talpio/business-logic';
+import { JOB_STATUS_TONES } from '@talpio/config';
+import { formatDate, formatMoney, jobStatusLabel } from '@talpio/localization';
+import { JobRequestStatus, JobSize, JobTimeSlot, type JobRequest } from '@talpio/types';
 import {
   Badge,
   Button,
@@ -14,7 +14,7 @@ import {
   ErrorState,
   LoadingState,
   StatusPill,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useState } from 'react';
 
 import { publicEnv } from '@/lib/env';
@@ -61,7 +61,7 @@ function JobDetailView({ job }: { job: JobRequest }) {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   const canCancel = nextJobStatuses(job.status).includes(JobRequestStatus.CANCELLED);
-  // Usta seçildikten sonra teklif kabulü kapanır; kural iş mantığında tanımlıdır.
+  // Satıcı seçildikten sonra teklif kabulü kapanır; kural iş mantığında tanımlıdır.
   const canAcceptOffers = nextJobStatuses(job.status).includes(
     JobRequestStatus.PROVIDER_SELECTED,
   );

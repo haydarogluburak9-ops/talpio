@@ -1,7 +1,7 @@
 'use client';
 
-import { ComplaintSubjectType } from '@ustapilot/types';
-import { createComplaintSchema } from '@ustapilot/validation';
+import { ComplaintSubjectType } from '@talpio/types';
+import { createComplaintSchema } from '@talpio/validation';
 import {
   Button,
   Card,
@@ -11,7 +11,7 @@ import {
   Field,
   Input,
   Textarea,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useState } from 'react';
 
 import { t } from '@/lib/i18n';

@@ -7,7 +7,7 @@ import {
   REVIEW_STATUS_TONES,
   SUPPORT_TICKET_STATUS_TONES,
   type StatusTone,
-} from '@ustapilot/config';
+} from '@talpio/config';
 import {
   CommissionType,
   ComplaintStatus,
@@ -23,16 +23,15 @@ import {
   UserRole,
   UserStatus,
   VerificationStatus,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 /**
- * Panel arayüzü yalnızca Türkçedir; bu yüzden etiketler çeviri katmanı yerine
- * burada tutulur. Renk tonları web ve mobil ile aynı kaynaktan gelir, böylece
- * "tamamlandı" her yerde aynı renkte görünür.
+ * Durum etiketleri şu an Türkçe sabittir; dil seçici gezinti, giriş ve sayfa
+ * başlıklarını çevirir. Renk tonları web ve mobil ile aynı kaynaktan gelir.
  */
 export const ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.CUSTOMER]: 'Müşteri',
-  [UserRole.PROVIDER]: 'Usta',
+  [UserRole.PROVIDER]: 'Satıcı',
   [UserRole.ADMIN]: 'Admin',
   [UserRole.SUPER_ADMIN]: 'Süper admin',
   [UserRole.SUPPORT]: 'Destek',
@@ -72,9 +71,9 @@ export const JOB_STATUS_LABELS: Record<JobRequestStatus, string> = {
   [JobRequestStatus.DRAFT]: 'Taslak',
   [JobRequestStatus.PUBLISHED]: 'Yayında',
   [JobRequestStatus.OFFERS_RECEIVED]: 'Teklif aldı',
-  [JobRequestStatus.PROVIDER_SELECTED]: 'Usta seçildi',
+  [JobRequestStatus.PROVIDER_SELECTED]: 'Satıcı seçildi',
   [JobRequestStatus.SCHEDULED]: 'Planlandı',
-  [JobRequestStatus.PROVIDER_EN_ROUTE]: 'Usta yolda',
+  [JobRequestStatus.PROVIDER_EN_ROUTE]: 'Satıcı yolda',
   [JobRequestStatus.IN_PROGRESS]: 'Sürüyor',
   [JobRequestStatus.AWAITING_CUSTOMER_APPROVAL]: 'Onay bekliyor',
   [JobRequestStatus.COMPLETED]: 'Tamamlandı',
@@ -179,7 +178,7 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   [Permission.REVIEW_CREATE]: 'Değerlendirme yazma',
   [Permission.REVIEW_REPLY]: 'Değerlendirmeye yanıt',
   [Permission.REVIEW_MODERATE]: 'Değerlendirme moderasyonu',
-  [Permission.PROVIDER_PROFILE_MANAGE_OWN]: 'Kendi usta profili',
+  [Permission.PROVIDER_PROFILE_MANAGE_OWN]: 'Kendi satıcı profili',
   [Permission.PROVIDER_DOCUMENT_UPLOAD_OWN]: 'Belge yükleme',
   [Permission.PROVIDER_DOCUMENT_VERIFY]: 'Belge doğrulama',
   [Permission.PAYMENT_READ_OWN]: 'Kendi ödemesini okuma',
@@ -193,6 +192,26 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   [Permission.SETTINGS_MANAGE]: 'Sistem ayarları',
   [Permission.ROLE_MANAGE]: 'Rol yönetimi',
   [Permission.AUDIT_LOG_READ]: 'Denetim kaydı okuma',
+  [Permission.REQUEST_CREATE]: 'Talep oluşturma',
+  [Permission.REQUEST_READ_OWN]: 'Kendi talebini okuma',
+  [Permission.REQUEST_READ_MATCHED]: 'Eşleşen talepleri okuma',
+  [Permission.REQUEST_UPDATE_OWN]: 'Kendi talebini güncelleme',
+  [Permission.REQUEST_CANCEL_OWN]: 'Kendi talebini iptal',
+  [Permission.REQUEST_OFFER_CREATE]: 'Talep teklifi oluşturma',
+  [Permission.REQUEST_OFFER_READ_OWN]: 'Kendi talep teklifini okuma',
+  [Permission.REQUEST_OFFER_UPDATE_OWN]: 'Kendi talep teklifini güncelleme',
+  [Permission.REQUEST_OFFER_ACCEPT]: 'Talep teklifi kabul',
+  [Permission.SUPPLIER_PROFILE_MANAGE]: 'Satıcı profili yönetimi',
+  [Permission.CAMPAIGN_CREATE]: 'Kampanya oluşturma',
+  [Permission.CAMPAIGN_READ_TARGETED]: 'Hedefli kampanya okuma',
+  [Permission.CRM_CUSTOMER_MANAGE]: 'CRM müşteri yönetimi',
+  [Permission.WORKORDER_MANAGE]: 'İş emri yönetimi',
+  [Permission.ADMIN_REQUEST_MODERATE]: 'Talep moderasyonu',
+  [Permission.SOCIAL_PROFILE_MANAGE]: 'Sosyal profil yönetimi',
+  [Permission.SOCIAL_POST_CREATE]: 'Sosyal gönderi oluşturma',
+  [Permission.SOCIAL_INTERACT]: 'Sosyal etkileşim',
+  [Permission.SOCIAL_REPORT]: 'İçerik şikayeti',
+  [Permission.ADMIN_SOCIAL_MODERATE]: 'Sosyal moderasyon',
 };
 
 export {
@@ -209,8 +228,20 @@ export {
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
   'user.status.updated': 'Hesap durumu değiştirildi',
   'user.sessions.revoked': 'Oturumlar kapatıldı',
-  'provider.verification.updated': 'Usta doğrulaması güncellendi',
+  'provider.verification.updated': 'Satıcı doğrulaması güncellendi',
   'payment.refunded': 'Ödeme iade edildi',
   'review.moderation.updated': 'Değerlendirme moderasyonu',
   'setting.updated': 'Sistem ayarı güncellendi',
+  'content.report.reviewed': 'İçerik bildirimi incelendi',
+  'auth.login': 'Giriş',
+  'auth.logout': 'Çıkış',
+  'auth.logout_all': 'Tüm oturumlar kapatıldı',
+  'auth.register': 'Kayıt',
+  'auth.password_reset': 'Şifre sıfırlandı',
+  'auth.account_delete': 'Hesap kapatıldı',
+  'rbac.role.assign': 'Rol atandı',
+  'trust_score.recompute': 'Güven skoru yenilendi',
+  'campaign.create': 'Kampanya oluşturuldu',
+  'fraud.flag.updated': 'Dolandırıcılık bayrağı güncellendi',
+  'backup.verified': 'Yedek runbook doğrulandı',
 };

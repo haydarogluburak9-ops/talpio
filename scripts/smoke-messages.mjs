@@ -50,16 +50,16 @@ console.log(`Mesajlaşma duman testi — ${BASE}\n`);
 
 console.log('Hazırlık: sipariş oluştur');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-if (!providerToken) abort('Usta girişi yapılamadı.', providerLogin.json);
+if (!providerToken) abort('Satıcı girişi yapılamadı.', providerLogin.json);
 
 const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
   token: providerToken,
 });
 const sample = pool.json?.data?.[0];
-if (!sample) abort('Ustanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+if (!sample) abort('Satıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
 
 const cities = await call('GET', '/locations/cities');
 const city = cities.json?.data?.find((item) => item.name === sample.address.cityName);
@@ -69,7 +69,7 @@ if (!city || !district) abort('Şehir/ilçe çözülemedi.');
 
 const customer = await call('POST', '/auth/register', {
   body: {
-    email: `chat+${Date.now()}@ustapilot.test`,
+    email: `chat+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Sohbet Duman Testi',
     role: 'CUSTOMER',
@@ -124,7 +124,7 @@ check('ikinci açılışta aynı sohbet döner', reopened.json?.data?.id === con
 
 const strangerRegister = await call('POST', '/auth/register', {
   body: {
-    email: `chat-stranger+${Date.now()}@ustapilot.test`,
+    email: `chat-stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı',
     role: 'CUSTOMER',

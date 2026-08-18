@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { OFFER } from '@ustapilot/config';
-import { OfferPriceType } from '@ustapilot/types';
+import { OFFER } from '@talpio/config';
+import { OfferPriceType } from '@talpio/types';
 import { Transform, Type } from 'class-transformer';
 import {
   IsEnum,
@@ -25,7 +25,7 @@ const MIN_DURATION_MINUTES = 15;
 /**
  * Teklif oluşturma gövdesi.
  *
- * Kurallar `@ustapilot/validation` içindeki `createOfferSchema` ile aynıdır;
+ * Kurallar `@talpio/validation` içindeki `createOfferSchema` ile aynıdır;
  * istemciler formu o Zod şemasıyla doğrular, backend aynı sınırları burada
  * yeniden uygular çünkü istemci doğrulaması güvenlik sınırı sayılmaz.
  */
@@ -54,7 +54,7 @@ export class CreateOfferDto {
   @Max(MAX_DURATION_MINUTES)
   estimatedDurationMinutes?: number;
 
-  @ApiPropertyOptional({ description: 'Ustanın işe başlayabileceği en erken tarih.' })
+  @ApiPropertyOptional({ description: 'Satıcının işe başlayabileceği en erken tarih.' })
   @IsOptional()
   @IsISO8601()
   availableFrom?: string;

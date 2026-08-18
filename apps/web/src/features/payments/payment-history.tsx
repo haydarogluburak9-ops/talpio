@@ -1,6 +1,6 @@
 'use client';
 
-import { PAGINATION } from '@ustapilot/config';
+import { PAGINATION } from '@talpio/config';
 import {
   Button,
   Card,
@@ -10,7 +10,7 @@ import {
   EmptyState,
   ErrorState,
   ListSkeleton,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useState } from 'react';
 
 import { t } from '@/lib/i18n';

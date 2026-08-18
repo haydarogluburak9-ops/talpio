@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { ProviderProfile, ProviderService, ProviderSummary } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { ProviderProfile, ProviderService, ProviderSummary } from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 

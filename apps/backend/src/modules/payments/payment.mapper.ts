@@ -1,4 +1,4 @@
-import type { Payment, ProviderWalletSummary, Transaction } from '@ustapilot/types';
+import type { Payment, ProviderWalletSummary, Transaction } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 
@@ -37,7 +37,7 @@ export function toTransaction(row: TransactionRow): Transaction {
   };
 }
 
-/** Cüzdan kaydı ilk ödemeyle açıldığından, satırı olmayan usta sıfır bakiye görür. */
+/** Cüzdan kaydı ilk ödemeyle açıldığından, satırı olmayan satıcı sıfır bakiye görür. */
 export function toWalletSummary(row: WalletRow | null, currency: string): ProviderWalletSummary {
   return {
     balance: { amountMinor: row?.balanceMinor ?? 0, currency: row?.currency ?? currency },

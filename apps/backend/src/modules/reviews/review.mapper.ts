@@ -1,5 +1,5 @@
 import type { Prisma } from '@/generated/prisma/client';
-import type { CustomerSummary, Review, ReviewReply } from '@ustapilot/types';
+import type { CustomerSummary, Review, ReviewReply } from '@talpio/types';
 
 /**
  * Değerlendirme sorgularında daima çekilen ilişkiler. Liste ve detay uçları
@@ -55,7 +55,7 @@ function toPhotoUrls(fileIds: string[], options: ReviewMapperOptions): string[] 
 }
 
 /**
- * Yorumlar usta profilinde herkese açık görüldüğü için müşterinin soyadı
+ * Yorumlar satıcı profilinde herkese açık görüldüğü için müşterinin soyadı
  * baş harfe indirilir; e-posta ve telefon hiçbir sunumda taşınmaz.
  */
 function toCustomerSummary(row: ReviewRow['customer'], fileBaseUrl: string): CustomerSummary {

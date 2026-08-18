@@ -2,20 +2,21 @@ import type { Metadata } from 'next';
 
 import { AuthShell } from '@/features/auth/auth-shell';
 import { LoginForm } from '@/features/auth/login-form';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Giriş yap',
-  description: 'UstaPilot hesabınıza giriş yaparak taleplerinizi ve tekliflerinizi yönetin.',
+  title: t('nav.login'),
+  description: t('auth.loginTitle'),
 };
 
 export default function LoginPage() {
   return (
     <AuthShell
-      title="Giriş yap"
-      description="Taleplerinizi, tekliflerinizi ve mesajlarınızı görmek için hesabınıza girin."
-      footerText="Hesabınız yok mu?"
+      title={t('auth.loginPageTitle')}
+      description={t('auth.loginPageDescription')}
+      footerText={t('auth.noAccount')}
       footerHref="/kayit"
-      footerLinkLabel="Hemen oluşturun"
+      footerLinkLabel={t('auth.createNow')}
     >
       <LoginForm />
     </AuthShell>

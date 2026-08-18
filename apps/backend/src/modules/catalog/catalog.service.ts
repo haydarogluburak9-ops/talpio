@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ServiceCategory, ServiceSubcategory } from '@ustapilot/types';
+import type { ServiceCategory, ServiceSubcategory } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { PrismaService } from '@infra/prisma/prisma.service';

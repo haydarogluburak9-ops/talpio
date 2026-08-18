@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { ComplaintsPanel } from '@/features/admin/complaints-panel';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Şikâyetler' };
+export const metadata: Metadata = { title: t('admin.complaints') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'Şikâyet dosyası', detail: 'İlgili kayıt türü, taraflar ve açıklama.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function ComplaintsPage() {
   return (
     <ModuleScaffold
-      title="Şikâyetler"
-      description="Müşteri ve usta şikâyetlerini inceleyip karara bağlayın."
+      titleKey="admin.complaints"
+      descriptionKey="admin.complaintsHint"
       dataSource="GET /admin/complaints"
       capabilities={CAPABILITIES}
     >

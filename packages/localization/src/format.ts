@@ -1,10 +1,15 @@
-import { DEFAULT_CURRENCY, DEFAULT_LOCALE, minorUnitFactor } from '@ustapilot/config';
-import type { Money } from '@ustapilot/types';
+import {
+  DEFAULT_CURRENCY,
+  DEFAULT_LOCALE,
+  LOCALE_META,
+  isSupportedLocale,
+  minorUnitFactor,
+} from '@talpio/config';
+import type { Money } from '@talpio/types';
 
-const localeTags: Record<string, string> = { tr: 'tr-TR', en: 'en-US' };
-
-function toLocaleTag(locale: string): string {
-  return localeTags[locale] ?? locale;
+export function toLocaleTag(locale: string): string {
+  if (isSupportedLocale(locale)) return LOCALE_META[locale].tag;
+  return locale;
 }
 
 /**
@@ -90,7 +95,7 @@ export function formatDuration(minutes: number, locale: string = DEFAULT_LOCALE)
   const hours = Math.floor(minutes / 60);
   const remaining = minutes % 60;
   const labels =
-    locale === 'en' ? { hour: 'h', minute: 'min' } : { hour: 'sa', minute: 'dk' };
+    locale === 'tr' ? { hour: 'sa', minute: 'dk' } : { hour: 'h', minute: 'min' };
 
   if (hours === 0) return `${remaining} ${labels.minute}`;
   if (remaining === 0) return `${hours} ${labels.hour}`;

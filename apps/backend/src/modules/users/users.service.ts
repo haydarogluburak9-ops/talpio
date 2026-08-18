@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { FilePurpose, type CurrentUser } from '@ustapilot/types';
+import { FilePurpose, UserStatus, type CurrentUser } from '@talpio/types';
 
+import { writeAudit } from '@common/audit/write-audit';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -54,6 +55,49 @@ export class UsersService {
     });
 
     return toCurrentUser(row, this.config.fileBaseUrl);
+  }
+
+  /**
+   * Hesabı kapatır (mağaza silme yükümlülüğü). Sipariş geçmişi durur;
+   * e-posta/telefon serbest bırakılır, oturum ve cihaz jetonları iptal edilir.
+   */
+  async deleteMe(user: AuthenticatedUser): Promise<void> {
+    const existing = await this.prisma.user.findFirst({
+      where: { id: user.id, deletedAt: null },
+      select: { id: true },
+    });
+    if (!existing) throw AppException.notFound('Kullanıcı', user.id);
+
+    const now = new Date();
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          deletedAt: now,
+          status: UserStatus.DEACTIVATED,
+          email: `deleted.${user.id}@deleted.invalid`,
+          phone: null,
+          passwordHash: null,
+          emailVerifiedAt: null,
+          phoneVerifiedAt: null,
+          avatarFileId: null,
+        },
+      }),
+      this.prisma.userSession.updateMany({
+        where: { userId: user.id, revokedAt: null },
+        data: { revokedAt: now },
+      }),
+      this.prisma.deviceToken.updateMany({
+        where: { userId: user.id, revokedAt: null },
+        data: { revokedAt: now },
+      }),
+    ]);
+    void writeAudit(this.prisma, {
+      actorId: user.id,
+      action: 'auth.account_delete',
+      entityType: 'User',
+      entityId: user.id,
+    });
   }
 
   /** Görsel bu kullanıcıya ait ve avatar amaçlı yüklenmiş olmalı. */

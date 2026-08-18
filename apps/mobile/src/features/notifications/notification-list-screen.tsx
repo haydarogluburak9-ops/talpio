@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
-import { formatRelativeTime, renderNotification } from '@ustapilot/localization';
-import type { Notification } from '@ustapilot/types';
+import { formatRelativeTime, renderNotification } from '@talpio/localization';
+import type { Notification } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -91,12 +91,10 @@ function NotificationRow({ notification }: { notification: Notification }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const colors = useColors();
-  const { role } = useSession();
   const markRead = useMarkRead();
-
-  const rendered = renderNotification(notification.type, notification.params, locale);
-  const href = resolveMobileDeepLink(notification.deepLink, role);
+  const href = resolveMobileDeepLink(notification.deepLink);
   const unread = !notification.readAt;
+  const rendered = renderNotification(notification.type, notification.params, locale);
 
   async function open() {
     if (unread) {

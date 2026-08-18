@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { JobRequestStatus } from '@ustapilot/types';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@talpio/config';
+import { JobRequestStatus } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -11,6 +13,7 @@ import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { JobCard } from '@/features/jobs/job-card';
 import { flattenPages, useMyJobsInfinite } from '@/features/jobs/use-jobs';
+import { apiClient } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -46,6 +49,11 @@ export default function CustomerJobsScreen() {
 
   const jobs = useMyJobsInfinite(filter.status ? { status: [...filter.status] } : {});
   const items = flattenPages(jobs.data?.pages);
+  const commerce = useQuery({
+    queryKey: queryKeys.requests.mine(),
+    queryFn: ({ signal }) => apiClient.requests.listMine({}, signal),
+  });
+  const commerceItems = commerce.data?.items ?? [];
 
   const filterRow = (
     <View style={styles.filters}>
@@ -117,7 +125,22 @@ export default function CustomerJobsScreen() {
         data={items}
         keyExtractor={(job) => job.id}
         contentContainerStyle={styles.list}
-        ListHeaderComponent={filterRow}
+        ListHeaderComponent={
+          <>
+            {filterRow}
+            {commerceItems.length > 0 ? (
+              <View style={{ marginBottom: spacing.md, gap: spacing.xs }}>
+                <Text variant="caption">Ticaret talepleri</Text>
+                {commerceItems.slice(0, 5).map((row) => (
+                  <Card key={row.id}>
+                    <Text variant="caption">{row.status}</Text>
+                    <Text>{row.title}</Text>
+                  </Card>
+                ))}
+              </View>
+            ) : null}
+          </>
+        }
         refreshing={jobs.isRefetching}
         onRefresh={() => void jobs.refetch()}
         onEndReachedThreshold={0.4}

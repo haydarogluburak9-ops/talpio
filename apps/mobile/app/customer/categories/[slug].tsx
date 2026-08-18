@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
+import { ApiError } from '@talpio/api-client';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';

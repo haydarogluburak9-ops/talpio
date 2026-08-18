@@ -1,7 +1,7 @@
 'use client';
 
-import { OrderStatus, type Order } from '@ustapilot/types';
-import { Button, Card, CardContent, CardHeader, CardTitle, ListSkeleton } from '@ustapilot/ui';
+import { OrderStatus, type Order } from '@talpio/types';
+import { Button, Card, CardContent, CardHeader, CardTitle, ListSkeleton } from '@talpio/ui';
 import { useState } from 'react';
 
 import { t } from '@/lib/i18n';
@@ -12,7 +12,7 @@ import { useReviewForOrder } from './use-reviews';
 
 export interface OrderReviewSectionProps {
   order: Order;
-  /** Usta yalnızca yazılmış yorumu ve cevabını görür; puanlama müşterinindir. */
+  /** Satıcı yalnızca yazılmış yorumu ve cevabını görür; puanlama müşterinindir. */
   isProvider: boolean;
 }
 

@@ -69,7 +69,7 @@ export interface ProviderService extends BaseEntity {
   providerProfileId: string;
   categoryId: string;
   subcategoryId?: string | null;
-  /** Varsa ustanın bu hizmet için başlangıç fiyatı (kuruş). */
+  /** Varsa satıcının bu hizmet için başlangıç fiyatı (kuruş). */
   startingPriceMinor?: number | null;
 }
 

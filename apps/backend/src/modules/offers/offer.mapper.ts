@@ -1,6 +1,6 @@
 import type { Prisma } from '@/generated/prisma/client';
 import { VerificationStatus } from '@/generated/prisma/client';
-import type { Offer, ProviderSummary } from '@ustapilot/types';
+import type { Offer, ProviderSummary } from '@talpio/types';
 
 /**
  * Teklif sorgularında daima çekilen ilişkiler. Tek yerde tutulur ki liste ve

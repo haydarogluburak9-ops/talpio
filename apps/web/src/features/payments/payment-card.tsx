@@ -1,9 +1,9 @@
 'use client';
 
-import { PAYMENT_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime, formatMoney, paymentStatusLabel } from '@ustapilot/localization';
-import { PaymentStatus, type Payment } from '@ustapilot/types';
-import { StatusPill } from '@ustapilot/ui';
+import { PAYMENT_STATUS_TONES } from '@talpio/config';
+import { formatDateTime, formatMoney, paymentStatusLabel } from '@talpio/localization';
+import { PaymentStatus, type Payment } from '@talpio/types';
+import { StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
 import { publicEnv } from '@/lib/env';

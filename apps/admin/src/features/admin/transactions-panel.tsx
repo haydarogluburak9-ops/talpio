@@ -1,7 +1,7 @@
 'use client';
 
-import { formatDateTime, formatMoney } from '@ustapilot/localization';
-import { TransactionType, type AdminTransactionSummary } from '@ustapilot/types';
+import { formatDateTime, formatMoney } from '@talpio/localization';
+import { TransactionType, type AdminTransactionSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

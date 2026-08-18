@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { AuthSession, CurrentUser, UserRole } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { AuthSession, CurrentUser } from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 
@@ -7,9 +7,11 @@ export interface RegisterPayload {
   email: string;
   password: string;
   fullName: string;
-  role: Extract<UserRole, 'CUSTOMER' | 'PROVIDER'>;
+  username: string;
   phone?: string;
   locale?: string;
+  interestCategoryIds?: string[];
+  acceptedMarketing?: boolean;
 }
 
 export interface LoginPayload {
@@ -63,6 +65,30 @@ export function createAuthResource(http: HttpClient) {
       } finally {
         await http.clearTokens();
       }
+    },
+
+    requestEmailVerification(signal?: AbortSignal): Promise<{ sent: true }> {
+      return http.post(API_ROUTES.auth.requestEmailVerification, {}, { signal });
+    },
+
+    verifyEmail(token: string, signal?: AbortSignal): Promise<{ verified: true }> {
+      return http.post(API_ROUTES.auth.verifyEmail, { token }, { signal });
+    },
+
+    requestPhoneCode(phone: string, signal?: AbortSignal): Promise<{ sent: true }> {
+      return http.post(API_ROUTES.auth.requestPhoneCode, { phone }, { signal });
+    },
+
+    verifyPhone(phone: string, code: string, signal?: AbortSignal): Promise<{ verified: true }> {
+      return http.post(API_ROUTES.auth.verifyPhone, { phone, code }, { signal });
+    },
+
+    forgotPassword(email: string, signal?: AbortSignal): Promise<{ sent: true }> {
+      return http.post(API_ROUTES.auth.forgotPassword, { email }, { signal });
+    },
+
+    resetPassword(token: string, password: string, signal?: AbortSignal): Promise<{ reset: true }> {
+      return http.post(API_ROUTES.auth.resetPassword, { token, password }, { signal });
     },
   };
 }

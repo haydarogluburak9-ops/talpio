@@ -1,13 +1,17 @@
-import { DEFAULT_LOCALE, isSupportedLocale } from '@ustapilot/config';
-import type { SupportedLocale } from '@ustapilot/config';
+import { DEFAULT_LOCALE, isSupportedLocale } from '@talpio/config';
+import type { SupportedLocale } from '@talpio/config';
 
+import { ar } from './locales/ar';
+import { de } from './locales/de';
 import { en } from './locales/en';
+import { es } from './locales/es';
+import { fr } from './locales/fr';
 import { tr } from './locales/tr';
 import type { Messages } from './locales/tr';
 
 export type { Messages };
 
-export const catalogs: Record<SupportedLocale, Messages> = { tr, en };
+export const catalogs: Record<SupportedLocale, Messages> = { en, tr, de, es, fr, ar };
 
 export function messagesFor(locale: string): Messages {
   return isSupportedLocale(locale) ? catalogs[locale] : catalogs[DEFAULT_LOCALE];

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { ComplaintSubjectType } from '@ustapilot/types';
-import { createComplaintSchema } from '@ustapilot/validation';
+import { ComplaintSubjectType } from '@talpio/types';
+import { createComplaintSchema } from '@talpio/validation';
 
 import { Button } from '@/components/button';
 import { FormField } from '@/components/form-field';

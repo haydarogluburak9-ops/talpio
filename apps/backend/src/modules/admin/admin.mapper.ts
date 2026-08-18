@@ -11,7 +11,7 @@ import type {
   AdminTransactionSummary,
   AdminUserSummary,
   NotificationParams,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 
@@ -154,7 +154,7 @@ export function toAdminOffer(row: AdminOfferRow): AdminOfferSummary {
 export function toAdminOrder(row: AdminOrderRow): AdminOrderSummary {
   return {
     id: row.id,
-    jobTitle: row.jobRequest.title,
+    jobTitle: row.jobRequest?.title ?? 'Tedarik siparişi',
     customerName: row.customer.fullName,
     providerName: row.providerProfile.businessName ?? row.providerProfile.user.fullName,
     status: row.status,
@@ -170,7 +170,7 @@ export function toAdminPayment(row: AdminPaymentRow): AdminPaymentSummary {
   return {
     id: row.id,
     orderId: row.orderId,
-    jobTitle: row.order.jobRequest.title,
+    jobTitle: row.order.jobRequest?.title ?? 'Tedarik siparişi',
     customerName: row.order.customer.fullName,
     providerName: profile.businessName ?? profile.user.fullName,
     status: row.status,
@@ -273,7 +273,7 @@ export function toAdminReview(row: AdminReviewRow): AdminReviewSummary {
     customerName: row.customer.fullName,
     providerProfileId: row.providerProfileId,
     providerName: profile.businessName ?? profile.user.fullName,
-    jobTitle: row.order.jobRequest.title,
+    jobTitle: row.order.jobRequest?.title ?? 'Tedarik siparişi',
     status: row.status,
     overallRating: Number(row.overallRating),
     comment: row.comment,

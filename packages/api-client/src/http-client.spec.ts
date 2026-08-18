@@ -1,4 +1,4 @@
-import { ERROR_CODES } from '@ustapilot/types';
+import { ERROR_CODES } from '@talpio/types';
 
 import { ApiError } from './errors';
 import { HttpClient } from './http-client';
@@ -107,7 +107,7 @@ describe('HttpClient hata eşlemesi', () => {
           success: false,
           error: {
             code: ERROR_CODES.OFFER_ALREADY_ACCEPTED,
-            message: 'Bu iş için zaten bir usta seçilmiş.',
+            message: 'Bu iş için zaten bir satıcı seçilmiş.',
           },
           requestId: 'req-1',
         },

@@ -11,7 +11,7 @@ import { ReviewCard } from './review-card';
 import { flattenReviewPages, useMyReviewsInfinite } from './use-reviews';
 
 /**
- * Oturumdaki tarafın değerlendirmeleri. Aynı uç iki yönü de döndürür: usta
+ * Oturumdaki tarafın değerlendirmeleri. Aynı uç iki yönü de döndürür: satıcı
  * aldıklarını, müşteri yazdıklarını görür — cevap kutusu yalnızca ustada açılır.
  */
 export function ReceivedReviewsScreen({ variant }: { variant: 'customer' | 'provider' }) {

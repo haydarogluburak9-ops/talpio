@@ -45,7 +45,11 @@ export const FilePurpose = {
   MESSAGE_ATTACHMENT: 'MESSAGE_ATTACHMENT',
   AVATAR: 'AVATAR',
   REVIEW_PHOTO: 'REVIEW_PHOTO',
-  /** Usta belgeleri: yalnızca sahibi ve yönetim görebilir. */
+  /** Sosyal gönderi medyası. */
+  POST_MEDIA: 'POST_MEDIA',
+  /** Sosyal profil kapak görseli. */
+  COVER: 'COVER',
+  /** Satıcı belgeleri: yalnızca sahibi ve yönetim görebilir. */
   PROVIDER_DOCUMENT: 'PROVIDER_DOCUMENT',
 } as const;
 
@@ -60,6 +64,8 @@ export type FilePurpose = (typeof FilePurpose)[keyof typeof FilePurpose];
 export interface FileAsset {
   id: string;
   url: string;
+  /** Video / büyük görseller için küçük resim (CDN üzerinden). */
+  thumbnailUrl?: string | null;
   mimeType: string;
   sizeBytes: number;
   originalName?: string | null;

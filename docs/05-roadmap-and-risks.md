@@ -1,4 +1,4 @@
-# UstaPilot — Geliştirme Planı, Riskler ve Kapsam Sınırı
+# Talpio — Geliştirme Planı, Riskler ve Kapsam Sınırı
 
 ## 1. Fazlar
 
@@ -15,22 +15,22 @@ admin panel ve Flutter uygulaması derlenir.
 
 ### Faz 2 — Veritabanı ve Auth
 
-**Kapsam:** Prisma şeması (tüm modeller), migration, seed (Gaziantep + kategoriler + demo
+**Kapsam:** Prisma şeması (tüm modeller), migration, seed (çok ülkeli konumlar + kategoriler + demo
 hesaplar), kayıt/giriş, rol-izin sistemi, refresh token rotation, telefon/e-posta doğrulama,
 Flutter giriş-kayıt ekranlarının API'ye bağlanması.
 **Çıkış kriteri:** Demo hesaplarla mobilden giriş yapılabilir; auth ve yetki testleri geçer.
 
 ### Faz 3 — Profil ve Kategoriler
 
-**Kapsam:** Müşteri profili, usta profili, belge yükleme, kategori/konum servisleri, usta
+**Kapsam:** Müşteri profili, satıcı profili, belge yükleme, kategori/konum servisleri, satıcı
 kategori ve bölge seçimi, admin kategori-konum yönetimi.
-**Çıkış kriteri:** Usta profilini tamamlayıp doğrulamaya gönderebilir; admin onaylayabilir.
+**Çıkış kriteri:** Satıcı profilini tamamlayıp doğrulamaya gönderebilir; admin onaylayabilir.
 
 ### Faz 4 — İş Talebi
 
 **Kapsam:** Talep sihirbazı (6 adım), medya yükleme (presigned + sıkıştırma), talep listesi
-ve detayı, adres maskeleme, usta eşleştirme kuyruğu.
-**Çıkış kriteri:** Müşteri talep yayınlar, uygun ustaların havuzunda görünür.
+ve detayı, adres maskeleme, satıcı eşleştirme kuyruğu.
+**Çıkış kriteri:** Müşteri talep yayınlar, uygun satıcıların havuzunda görünür.
 
 ### Faz 5 — Teklifler
 
@@ -48,12 +48,12 @@ güvenlik filtresi, FCM push, bildirim merkezi ve tercihleri.
 ### Faz 7 — İş Tamamlama ve Değerlendirme
 
 **Kapsam:** Tüm iş durumları ve geçmişi, randevu akışı, tamamlama onayı, beş kriterli
-puanlama, yorum ve tek seferlik usta cevabı.
+puanlama, yorum ve tek seferlik satıcı cevabı.
 **Çıkış kriteri:** Uçtan uca senaryo (talep → teklif → kabul → iş → onay → yorum) çalışır.
 
 ### Faz 8 — Admin Paneli
 
-**Kapsam:** Dashboard, kullanıcı/usta yönetimi, belge doğrulama, talep-teklif-destek-şikâyet
+**Kapsam:** Dashboard, kullanıcı/satıcı yönetimi, belge doğrulama, talep-teklif-destek-şikâyet
 ekranları, sistem ayarları, denetim kayıtları.
 **Çıkış kriteri:** Admin, bir ustayı doğrulayıp askıya alabilir; tüm kritik listeler sayfalı
 ve filtreli çalışır.
@@ -74,12 +74,12 @@ mobil performans, Docker doğrulaması, API dokümantasyonu ve README.
 
 | #   | Risk                                                          | Etki            | Olasılık | Önlem                                                                                                   |
 | --- | ------------------------------------------------------------- | --------------- | :------: | ------------------------------------------------------------------------------------------------------- |
-| 1   | Teklif kabulünde yarış koşulu → iki usta seçilmesi            | Kritik          |   Orta   | `SELECT FOR UPDATE` + benzersiz kısıt + idempotency key + eşzamanlılık testi                            |
+| 1   | Teklif kabulünde yarış koşulu → iki satıcı seçilmesi            | Kritik          |   Orta   | `SELECT FOR UPDATE` + benzersiz kısıt + idempotency key + eşzamanlılık testi                            |
 | 2   | Ödeme mutabakatsızlığı (para float, yuvarlama, çift kesinti)  | Kritik          |   Orta   | Tam sayı kuruş, değişmez muhasebe kaydı, webhook idempotency, günlük mutabakat işi                      |
-| 3   | Adres/telefon sızıntısı (yetkisiz ustaya)                     | Yüksek          |   Orta   | Nesne bazlı policy guard, DTO seviyesinde maskeleme, sızıntı testleri                                   |
-| 4   | Platform dışına çıkma (usta-müşteri doğrudan anlaşma)         | Yüksek (gelir)  |  Yüksek  | Mesajda iletişim bilgisi filtresi, işaretleme, emanet ödemenin avantajlı kurgusu                        |
-| 5   | Sahte usta / belge sahteciliği                                | Yüksek          |   Orta   | Manuel belge doğrulama, kimlik kontrolü, rozet sistemi, şikâyet akışı                                   |
-| 6   | Soğuk başlangıç: kategoride usta yok → teklif gelmez          | Yüksek (ürün)   |  Yüksek  | Gaziantep'te dar kategori seti ile başlama, ustayı önce onboard etme, "usta aranıyor" beklenti yönetimi |
+| 3   | Adres/telefon sızıntısı (yetkisiz satıcıya)                     | Yüksek          |   Orta   | Nesne bazlı policy guard, DTO seviyesinde maskeleme, sızıntı testleri                                   |
+| 4   | Platform dışına çıkma (satıcı-müşteri doğrudan anlaşma)         | Yüksek (gelir)  |  Yüksek  | Mesajda iletişim bilgisi filtresi, işaretleme, emanet ödemenin avantajlı kurgusu                        |
+| 5   | Sahte satıcı / belge sahteciliği                                | Yüksek          |   Orta   | Manuel belge doğrulama, kimlik kontrolü, rozet sistemi, şikâyet akışı                                   |
+| 6   | Soğuk başlangıç: kategoride satıcı yok → teklif gelmez          | Yüksek (ürün)   |  Yüksek  | Dar kategori seti ile başlama, satıcıyı önce onboard etme, "satıcı aranıyor" beklenti yönetimi |
 | 7   | Socket.IO yatay ölçeklemede mesaj kaybı                       | Orta            |   Orta   | Redis adapter, mesajın önce DB'ye yazılması, istemcide yeniden bağlanınca cursor ile senkron            |
 | 8   | Push bildirim iletilememesi (jeton geçersiz)                  | Orta            |  Yüksek  | Jeton temizliği, çoklu cihaz, uygulama içi bildirim yedeği                                              |
 | 9   | Medya yükleme maliyeti ve yavaşlığı                           | Orta            |  Yüksek  | İstemcide sıkıştırma, presigned doğrudan yükleme, boyut/adet limiti, thumbnail                          |
@@ -99,12 +99,12 @@ Bilinçli olarak ilk sürüme alınmayan özellikler:
 | -------------------------------------------- | --------------------------------------------------- | ----------------- |
 | Video yükleme                                | Depolama/işleme maliyeti; altyapı hazır bırakılıyor | v1.1              |
 | Sesli/görüntülü arama                        | Yüksek karmaşıklık                                  | v2                |
-| Canlı usta konum takibi (harita üzerinde)    | Pil, gizlilik, altyapı                              | v1.2              |
+| Canlı satıcı konum takibi (harita üzerinde)    | Pil, gizlilik, altyapı                              | v1.2              |
 | Otomatik fiyat tahmini / yapay zekâ öneri    | Yeterli veri yok                                    | v2                |
 | Abonelik ödemesi otomatik yenileme           | Ödeme sağlayıcısı gerekli                           | Faz 9 sonrası     |
 | Çoklu para birimi canlı kur                  | Tek ülke ile başlıyoruz; şema hazır                 | Yurt dışı açılışı |
 | Fatura/e-arşiv entegrasyonu                  | Mali müşavir ve entegratör gerekir                  | v1.2              |
-| Usta ekip/çalışan yönetimi                   | Kurumsal segment sonraya                            | v2                |
+| Satıcı ekip/çalışan yönetimi                   | Kurumsal segment sonraya                            | v2                |
 | Takvim senkronizasyonu (Google/Apple)        | Düşük öncelik                                       | v1.2              |
 | Referans programı ve puan/rozet oyunlaştırma | Büyüme fazı                                         | v1.1              |
 | Web müşteri uygulaması                       | Mobil öncelikli strateji                            | v1.2              |
@@ -118,7 +118,7 @@ MVP başarısı şu göstergelerle izlenir (analytics olayları Faz 6'da eklenir
 
 - Talep başına ortalama teklif sayısı (hedef ≥ 3)
 - İlk teklif süresi (hedef < 30 dk)
-- Talep → usta seçimi dönüşümü (hedef ≥ %60)
+- Talep → satıcı seçimi dönüşümü (hedef ≥ %60)
 - Tamamlanan iş oranı ve iptal oranı
 - Değerlendirme bırakma oranı
-- Usta doğrulama süresi
+- Satıcı doğrulama süresi

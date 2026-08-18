@@ -1,0 +1,14 @@
+# EAS yüklemesini küçültür; monorepo kökünden build alınır.
+.git
+**/.turbo
+**/.expo
+**/coverage
+**/playwright-report
+**/test-results
+apps/admin/.next
+apps/web/.next
+apps/backend/dist
+docs
+e2e
+*.md
+!apps/mobile/README.md

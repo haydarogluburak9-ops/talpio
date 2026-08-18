@@ -6,14 +6,14 @@ import {
   PaymentStatus,
   ReviewStatus,
   SupportTicketStatus,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 /**
  * Durum → renk tonu eşlemesi. Ton adları anlamsaldır; web (Tailwind sınıfı) ve
  * mobil (StyleSheet rengi) aynı adı kendi teknolojisine çevirir. Böylece bir
  * durumun rengi tek yerden yönetilir.
  *
- * Etiket metni burada tutulmaz; çeviriler `@ustapilot/localization` içindedir.
+ * Etiket metni burada tutulmaz; çeviriler `@talpio/localization` içindedir.
  */
 export type StatusTone = 'neutral' | 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 

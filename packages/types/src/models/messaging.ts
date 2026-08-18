@@ -13,6 +13,8 @@ export interface ConversationParticipant {
 export interface Conversation extends BaseEntity {
   jobRequestId?: string | null;
   orderId?: string | null;
+  title?: string | null;
+  isGroup?: boolean;
   status: ConversationStatus;
   participants: ConversationParticipant[];
   lastMessage?: MessagePreview | null;
@@ -93,6 +95,27 @@ export interface NotificationParamsMap {
    * model gerekir.
    */
   CAMPAIGN: { title: string; message: string };
+  REQUEST_MATCHED: {
+    requestId: string;
+    requestTitle: string;
+    categoryName: string;
+    cityName: string;
+    shortDescription: string;
+    deadline: string;
+    matchScore: number;
+  };
+  REQUEST_OFFER_RECEIVED: {
+    requestTitle: string;
+    businessName: string;
+    amountMinor: number;
+    currency: string;
+  };
+  REQUEST_OFFER_ACCEPTED: { requestTitle: string; buyerName: string };
+  SOCIAL_FOLLOW: { actorName: string; actorUsername: string };
+  SOCIAL_LIKE: { actorName: string; preview: string };
+  SOCIAL_COMMENT: { actorName: string; preview: string };
+  SOCIAL_MENTION: { actorName: string; preview: string };
+  SOCIAL_SHARE: { actorName: string; preview: string };
 }
 
 /**
@@ -116,7 +139,7 @@ export interface Notification {
   /** Metin, istemcide `type` ve `params` üzerinden yerelleştirilir. */
   params: NotificationParams;
   channels: NotificationChannel[];
-  /** Dokunulduğunda gidilecek platformdan bağımsız hedef (`ustapilot://…`). */
+  /** Dokunulduğunda gidilecek platformdan bağımsız hedef (`talpio://…`). */
   deepLink?: string | null;
   readAt?: string | null;
   /** Uygulama dışı kanallara gönderim denemesinin zamanı. */

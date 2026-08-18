@@ -2,9 +2,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { nextJobStatuses } from '@ustapilot/business-logic';
-import { formatDate, formatMoney } from '@ustapilot/localization';
-import { JobRequestStatus, type JobRequest } from '@ustapilot/types';
+import { nextJobStatuses } from '@talpio/business-logic';
+import { formatDate, formatMoney } from '@talpio/localization';
+import { JobRequestStatus, type JobRequest } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -19,7 +19,7 @@ import { useOrderForJob } from '@/features/orders/use-orders';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
-/** Bu durumlarda usta seçilmiştir; artık takip edilecek bir sipariş vardır. */
+/** Bu durumlarda satıcı seçilmiştir; artık takip edilecek bir sipariş vardır. */
 const HAS_ORDER: JobRequestStatus[] = [
   JobRequestStatus.PROVIDER_SELECTED,
   JobRequestStatus.SCHEDULED,

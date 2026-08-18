@@ -1,25 +1,41 @@
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
-import { StyleSheet, View } from 'react-native';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 
-import { SUPPORTED_LOCALES, type SupportedLocale } from '@ustapilot/config';
+import { LOCALE_META, SUPPORTED_LOCALES } from '@talpio/config';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
+import { useLogout } from '@/features/auth/use-auth-mutations';
+import { apiClient } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
 
-const LOCALE_LABELS: Record<SupportedLocale, string> = { tr: 'Türkçe', en: 'English' };
+const WEB_ORIGIN = 'https://talpio.com';
 
 /**
- * Ayarlar içeriği müşteri ve usta bölümlerinde ortaktır; her iki yığın da bu
+ * Ayarlar içeriği müşteri ve satıcı bölümlerinde ortaktır; her iki yığın da bu
  * bileşeni kendi rotasından render eder.
  */
 export function SettingsContent() {
   const { t, locale, setLocale } = useI18n();
   const { colors, isDark } = useTheme();
+  const logout = useLogout();
+
+  const confirmDelete = () => {
+    Alert.alert(t('settings.deleteAccount'), t('settings.deleteAccountConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.deleteAccount'),
+        style: 'destructive',
+        onPress: () => {
+          void apiClient.users.deleteMe().finally(() => logout.mutate());
+        },
+      },
+    ]);
+  };
 
   return (
     <Screen>
@@ -36,7 +52,7 @@ export function SettingsContent() {
                 color={selected ? colors.brand : colors.foregroundMuted}
               />
               <Text variant="bodyStrong" style={styles.rowLabel}>
-                {LOCALE_LABELS[option]}
+                {LOCALE_META[option].nativeLabel}
               </Text>
             </View>
           </Card>
@@ -60,6 +76,17 @@ export function SettingsContent() {
         </View>
       </Card>
 
+      <Text variant="title">{t('settings.privacy')}</Text>
+      <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/gizlilik`)}>
+        <Text variant="bodyStrong">{t('settings.legalPrivacy')}</Text>
+      </Card>
+      <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/kullanim-kosullari`)}>
+        <Text variant="bodyStrong">{t('settings.legalTerms')}</Text>
+      </Card>
+      <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/kvkk`)}>
+        <Text variant="bodyStrong">{t('settings.legalKvkk')}</Text>
+      </Card>
+
       <Text variant="title">{t('settings.about')}</Text>
       <Card>
         <View style={styles.row}>
@@ -70,6 +97,12 @@ export function SettingsContent() {
             {Constants.expoConfig?.version ?? '0.1.0'}
           </Text>
         </View>
+      </Card>
+
+      <Card onPress={confirmDelete}>
+        <Text variant="bodyStrong" tone="danger">
+          {t('settings.deleteAccount')}
+        </Text>
       </Card>
     </Screen>
   );

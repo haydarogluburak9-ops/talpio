@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import type { UserRole } from '@ustapilot/types';
+import type { UserRole } from '@talpio/types';
 
 export const ROLES_KEY = 'auth:roles';
 

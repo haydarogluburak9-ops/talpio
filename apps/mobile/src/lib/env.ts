@@ -20,5 +20,8 @@ export const env = {
     // Android emülatörü ana makineye 10.0.2.2 üzerinden ulaşır.
     'http://localhost:3000/api/v1',
   ),
-  defaultLocale: process.env.EXPO_PUBLIC_DEFAULT_LOCALE ?? 'tr',
+  defaultLocale: process.env.EXPO_PUBLIC_DEFAULT_LOCALE ?? 'en',
+  featurePayments: process.env.EXPO_PUBLIC_FEATURE_PAYMENTS === 'true',
+  featureAgent: process.env.EXPO_PUBLIC_FEATURE_AGENT === 'true',
+  featurePremium: process.env.EXPO_PUBLIC_FEATURE_PREMIUM === 'true',
 } as const;

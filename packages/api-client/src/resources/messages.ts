@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { Conversation, GeoPoint, Message, MessageType } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { Conversation, GeoPoint, Message, MessageType } from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 

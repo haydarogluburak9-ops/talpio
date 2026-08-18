@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { Order, OrderStatus } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { Order, OrderStatus } from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -20,7 +20,7 @@ export interface PayOrderBody {
 
 export function createOrdersResource(http: HttpClient) {
   return {
-    /** Oturumdaki tarafın siparişleri: müşteri verdiği, usta üstlendiği işleri görür. */
+    /** Oturumdaki tarafın siparişleri: müşteri verdiği, satıcı üstlendiği işleri görür. */
     listMine(params: ListOrdersParams = {}, signal?: AbortSignal): Promise<Paginated<Order>> {
       return http.paginated<Order>(API_ROUTES.orders.root, {
         method: 'GET',

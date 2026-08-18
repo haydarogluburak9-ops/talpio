@@ -44,6 +44,11 @@ export default function CustomerLayout() {
       <Stack.Screen name="support/new" options={{ title: t('support.createTitle') }} />
       <Stack.Screen name="support/[id]" options={{ title: t('support.detailTitle') }} />
       <Stack.Screen name="complaint" options={{ title: t('complaint.createTitle') }} />
+      <Stack.Screen name="requests/index" options={{ title: t('commerce.myListTitle') }} />
+      <Stack.Screen name="requests/new" options={{ title: t('commerce.createTitle') }} />
+      <Stack.Screen name="requests/[id]" options={{ title: t('commerce.detailTitle') }} />
+      <Stack.Screen name="u/[username]" options={{ title: t('profile.title') }} />
+      <Stack.Screen name="messages/new-group" options={{ title: t('messaging.newGroup') }} />
     </Stack>
   );
 }

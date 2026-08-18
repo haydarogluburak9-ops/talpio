@@ -1,41 +1,51 @@
 'use client';
 
-import { formatRelativeTime } from '@ustapilot/localization';
-import type { Conversation } from '@ustapilot/types';
-import { Card, CardContent, EmptyState, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import { formatRelativeTime } from '@talpio/localization';
+import type { Conversation } from '@talpio/types';
+import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { localeTag, t } from '@/lib/i18n';
 
 import { useConversations } from './use-messages';
 
 export function ConversationList({ currentUserId }: { currentUserId: string }) {
   const conversations = useConversations();
+  const pathname = usePathname();
 
   if (conversations.isPending) return <ListSkeleton rows={3} />;
 
   if (conversations.isError) {
     return (
-      <ErrorState
-        title={t('status.errorTitle')}
-        description={t('messaging.loadFailed')}
-        action={{ label: t('common.retry'), onClick: () => void conversations.refetch() }}
-      />
+      <div className="social-panel p-4">
+        <ErrorState
+          title={t('status.errorTitle')}
+          description={t('messaging.loadFailed')}
+          action={{ label: t('common.retry'), onClick: () => void conversations.refetch() }}
+        />
+      </div>
     );
   }
 
   if (conversations.data.items.length === 0) {
     return (
-      <EmptyState title={t('messaging.empty')} description={t('messaging.emptyDescription')} />
+      <div className="social-panel px-6 py-10">
+        <EmptyState title={t('messaging.empty')} description={t('messaging.emptyDescription')} />
+      </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ul className="social-panel divide-y divide-border/70 overflow-hidden">
       {conversations.data.items.map((conversation) => (
         <li key={conversation.id}>
-          <ConversationRow conversation={conversation} currentUserId={currentUserId} />
+          <ConversationRow
+            conversation={conversation}
+            currentUserId={currentUserId}
+            active={pathname === `/mesajlar/${conversation.id}`}
+          />
         </li>
       ))}
     </ul>
@@ -45,9 +55,11 @@ export function ConversationList({ currentUserId }: { currentUserId: string }) {
 function ConversationRow({
   conversation,
   currentUserId,
+  active,
 }: {
   conversation: Conversation;
   currentUserId: string;
+  active: boolean;
 }) {
   const locale = publicEnv.defaultLocale;
   const other = conversation.participants.find((item) => item.userId !== currentUserId);
@@ -55,43 +67,46 @@ function ConversationRow({
   const hasUnread = conversation.unreadCount > 0;
 
   return (
-    <Link href={`/mesajlar/${conversation.id}`} className="block rounded-[--radius-card]">
-      <Card className="transition-colors hover:bg-surface-muted">
-        <CardContent className="flex items-center gap-3 pt-5 sm:pt-6">
-          <Avatar name={other?.displayName ?? '?'} url={other?.avatarUrl ?? null} />
+    <Link
+      href={`/mesajlar/${conversation.id}`}
+      className={cn(
+        'flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-muted/80',
+        active && 'bg-accent-50/70 dark:bg-accent-900/15',
+      )}
+    >
+      <Avatar name={other?.displayName ?? '?'} url={other?.avatarUrl ?? null} />
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="truncate font-medium text-foreground">
-                {other?.displayName ?? t('messaging.chatTitle')}
-              </p>
-              {preview ? (
-                <span className="shrink-0 text-xs text-foreground-muted">
-                  {formatRelativeTime(preview.createdAt, locale)}
-                </span>
-              ) : null}
-            </div>
-            <p
-              className={
-                hasUnread
-                  ? 'truncate text-sm font-medium text-foreground'
-                  : 'truncate text-sm text-foreground-muted'
-              }
-            >
-              {preview?.body ?? t('messaging.threadEmpty')}
-            </p>
-          </div>
-
-          {hasUnread ? (
-            <span
-              className="shrink-0 rounded-full bg-brand-600 px-2 py-0.5 text-xs font-medium text-white"
-              aria-label={`${conversation.unreadCount} ${t('messaging.unreadCount')}`}
-            >
-              {conversation.unreadCount}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="truncate text-sm font-semibold text-brand-900 dark:text-foreground">
+            {conversation.isGroup
+              ? conversation.title || t('messaging.newGroup')
+              : (other?.displayName ?? t('messaging.chatTitle'))}
+          </p>
+          {preview ? (
+            <span className="shrink-0 text-[11px] text-foreground-muted">
+              {formatRelativeTime(preview.createdAt, locale)}
             </span>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+        <p
+          className={cn(
+            'truncate text-sm',
+            hasUnread ? 'font-medium text-foreground' : 'text-foreground-muted',
+          )}
+        >
+          {preview?.body ?? t('messaging.threadEmpty')}
+        </p>
+      </div>
+
+      {hasUnread ? (
+        <span
+          className="shrink-0 rounded-full bg-accent-500 px-2 py-0.5 text-xs font-semibold text-white"
+          aria-label={`${conversation.unreadCount} ${t('messaging.unreadCount')}`}
+        >
+          {conversation.unreadCount}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -108,9 +123,9 @@ function Avatar({ name, url }: { name: string; url: string | null }) {
   return (
     <span
       aria-hidden
-      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-medium text-brand-700"
+      className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-900 text-sm font-semibold text-accent-400"
     >
-      {name.slice(0, 1).toLocaleUpperCase('tr-TR')}
+      {name.slice(0, 1).toLocaleUpperCase(localeTag())}
     </span>
   );
 }

@@ -39,7 +39,7 @@ export const JobRequestStatus = {
 
 export type JobRequestStatus = (typeof JobRequestStatus)[keyof typeof JobRequestStatus];
 
-/** Ustaların yeni teklif verebildiği durumlar. */
+/** Satıcıların yeni teklif verebildiği durumlar. */
 export const OFFERABLE_JOB_STATUSES: readonly JobRequestStatus[] = [
   JobRequestStatus.PUBLISHED,
   JobRequestStatus.OFFERS_RECEIVED,

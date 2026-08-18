@@ -1,4 +1,4 @@
-import { COMMISSION } from '@ustapilot/config';
+import { COMMISSION } from '@talpio/config';
 
 export interface CommissionRuleSeed {
   name: string;

@@ -1,7 +1,7 @@
 'use client';
 
-import { formatDateTime } from '@ustapilot/localization';
-import type { AdminSystemSetting } from '@ustapilot/types';
+import { formatDateTime } from '@talpio/localization';
+import type { AdminSystemSetting } from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';

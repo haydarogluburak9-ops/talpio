@@ -1,8 +1,8 @@
 'use client';
 
-import type { Paginated } from '@ustapilot/api-client';
-import type { Review } from '@ustapilot/types';
-import { Button, EmptyState, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import type { Paginated } from '@talpio/api-client';
+import type { Review } from '@talpio/types';
+import { Button, EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 
 import { t } from '@/lib/i18n';
 
@@ -22,7 +22,7 @@ export interface ReviewListProps {
 /**
  * Sayfalı değerlendirme listesi.
  *
- * Sonsuz kaydırma yerine sayfa düğmeleri kullanılır: yorumlar usta profilinde
+ * Sonsuz kaydırma yerine sayfa düğmeleri kullanılır: yorumlar satıcı profilinde
  * derin gezilen bir içerik değil, karar vermeye yeten bir örneklemdir.
  */
 export function ReviewList({

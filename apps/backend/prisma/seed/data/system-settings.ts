@@ -39,7 +39,7 @@ export const SYSTEM_SETTINGS: SystemSettingSeed[] = [
   {
     key: 'master.requireVerificationForOffers',
     value: true,
-    description: 'Teklif verebilmek için usta doğrulaması zorunlu olsun mu?',
+    description: 'Teklif verebilmek için satıcı doğrulaması zorunlu olsun mu?',
   },
   {
     key: 'messaging.blockContactSharing',

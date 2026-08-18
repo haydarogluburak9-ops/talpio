@@ -2,7 +2,7 @@
  * Değerlendirme akışının uçtan uca duman testi.
  *
  * Sipariş zincirini onaya kadar yürütür, ardından müşterinin puanlamasını,
- * ustanın cevabını ve herkese açık liste kurallarını doğrular. Çalışan bir API
+ * satıcının cevabını ve herkese açık liste kurallarını doğrular. Çalışan bir API
  * ve tohumlanmış veritabanı gerektirir; her çalıştırmada kendi müşterisini ve
  * talebini açar.
  */
@@ -58,7 +58,7 @@ const EXPECTED_OVERALL = 4.6;
 async function createOrderScenario(providerToken, sample, city, district) {
   const customer = await call('POST', '/auth/register', {
     body: {
-      email: `reviews+${Date.now()}${Math.random().toString(36).slice(2, 6)}@ustapilot.test`,
+      email: `reviews+${Date.now()}${Math.random().toString(36).slice(2, 6)}@talpio.test`,
       password: 'Guclu1Parola',
       fullName: 'Değerlendirme Duman Testi',
       role: 'CUSTOMER',
@@ -139,25 +139,25 @@ async function completeOrder(scenario, providerToken) {
 
 console.log(`Değerlendirme duman testi — ${BASE}\n`);
 
-console.log('Hazırlık: usta girişi ve hizmet kapsamı');
+console.log('Hazırlık: satıcı girişi ve hizmet kapsamı');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-if (!providerToken) abort('Usta girişi yapılamadı; değerlendirme akışı doğrulanamıyor.');
+if (!providerToken) abort('Satıcı girişi yapılamadı; değerlendirme akışı doğrulanamıyor.');
 
 const providerProfile = await call('GET', '/providers/me', { token: providerToken });
 const providerProfileId = providerProfile.json?.data?.id;
-check('usta profili okunur', Boolean(providerProfileId), `status=${providerProfile.status}`);
-if (!providerProfileId) abort('Usta profili bulunamadı.', providerProfile.json);
+check('satıcı profili okunur', Boolean(providerProfileId), `status=${providerProfile.status}`);
+if (!providerProfileId) abort('Satıcı profili bulunamadı.', providerProfile.json);
 
 const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
   token: providerToken,
 });
 const sample = pool.json?.data?.[0];
-check('ustanın kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
-if (!sample) abort('Ustanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+check('satıcının kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
+if (!sample) abort('Satıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
 
 const cities = await call('GET', '/locations/cities');
 const city = cities.json?.data?.find((item) => item.name === sample.address.cityName);
@@ -190,14 +190,14 @@ check(
 
 const beforeProfile = await call('GET', `/providers/${providerProfileId}`);
 const beforeCount = beforeProfile.json?.data?.reviewCount ?? 0;
-check('usta profili girişsiz okunur', beforeProfile.status === 200, `status=${beforeProfile.status}`);
+check('satıcı profili girişsiz okunur', beforeProfile.status === 200, `status=${beforeProfile.status}`);
 
 console.log('\nDeğerlendirme:');
 const wrongActor = await call('POST', '/reviews', {
   token: providerToken,
   body: { orderId: main.order.id, ratings: RATINGS },
 });
-check('usta kendi işini değerlendiremez', wrongActor.status === 403, `status=${wrongActor.status}`);
+check('satıcı kendi işini değerlendiremez', wrongActor.status === 403, `status=${wrongActor.status}`);
 
 const badRating = await call('POST', '/reviews', {
   token: main.token,
@@ -268,7 +268,7 @@ check('müşteri yazdığı yorumu görür', mine.json?.data?.[0]?.id === review
 
 const providerList = await call('GET', '/reviews', { token: providerToken });
 check(
-  'usta aldığı yorumu görür',
+  'satıcı aldığı yorumu görür',
   providerList.json?.data?.some((item) => item.id === reviewId),
   `status=${providerList.status}`,
 );
@@ -287,7 +287,7 @@ check('sayfalama üstverisi döner', typeof publicList.json?.meta?.total === 'nu
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `reviewstranger+${Date.now()}@ustapilot.test`,
+    email: `reviewstranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Müşteri',
     role: 'CUSTOMER',

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, TextInput, View } from 'react-native';
 
-import { MESSAGE } from '@ustapilot/config';
-import { formatDate, formatTime } from '@ustapilot/localization';
-import { ConversationStatus, MessageType, type Message } from '@ustapilot/types';
+import { MESSAGE } from '@talpio/config';
+import { formatDate, formatTime } from '@talpio/localization';
+import { ConversationStatus, MessageType, type Message } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';

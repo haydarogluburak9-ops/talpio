@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { formatRelativeTime } from '@ustapilot/localization';
-import type { Conversation } from '@ustapilot/types';
+import { formatRelativeTime } from '@talpio/localization';
+import type { Conversation } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -52,12 +52,21 @@ export function ConversationListScreen({ variant }: { variant: 'customer' | 'pro
           title={t('messaging.empty')}
           description={t('messaging.emptyDescription')}
         />
+        <Card onPress={() => router.push(`/${variant}/messages/new-group`)}>
+          <Text variant="bodyStrong">{t('messaging.newGroup')}</Text>
+        </Card>
       </Screen>
     );
   }
 
   return (
     <Screen scroll={false} padded={false}>
+      <View style={styles.toolbar}>
+        <Text variant="title">{t('messaging.listTitle')}</Text>
+        <Card onPress={() => router.push(`/${variant}/messages/new-group`)}>
+          <Text variant="caption">{t('messaging.newGroup')}</Text>
+        </Card>
+      </View>
       <FlatList
         data={items}
         keyExtractor={(conversation) => conversation.id}
@@ -103,7 +112,9 @@ function ConversationRow({
       <View style={styles.row}>
         <View style={styles.body}>
           <Text variant="bodyStrong" numberOfLines={1}>
-            {other?.displayName ?? t('messaging.chatTitle')}
+            {conversation.isGroup
+              ? conversation.title || t('messaging.newGroup')
+              : (other?.displayName ?? t('messaging.chatTitle'))}
           </Text>
           <Text
             variant="caption"
@@ -136,6 +147,15 @@ function ConversationRow({
 }
 
 const styles = StyleSheet.create({
+  toolbar: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
   list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing['3xl'] },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   body: { flex: 1, gap: spacing.xs },

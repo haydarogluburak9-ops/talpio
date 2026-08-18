@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@ustapilot/ui/theme.css';
+@import '@talpio/ui/theme.css';
 
 /* Ortak bileşenlerdeki sınıflar Tailwind tarafından taranmalı. */
 @source '../../../../packages/ui/src';

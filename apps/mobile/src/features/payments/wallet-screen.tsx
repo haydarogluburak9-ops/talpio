@@ -1,7 +1,7 @@
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { formatDateTime, formatMoney, transactionTypeLabel } from '@ustapilot/localization';
-import type { Transaction } from '@ustapilot/types';
+import { formatDateTime, formatMoney, transactionTypeLabel } from '@talpio/localization';
+import type { Transaction } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -16,7 +16,7 @@ import {
   useProviderWallet,
 } from './use-payments';
 
-/** Ustanın cüzdanı: kullanılabilir bakiye, bloke hakediş ve hareket dökümü. */
+/** Satıcının cüzdanı: kullanılabilir bakiye, bloke hakediş ve hareket dökümü. */
 export function WalletScreen() {
   const { t, locale } = useI18n();
 

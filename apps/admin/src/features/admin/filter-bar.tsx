@@ -1,6 +1,6 @@
 'use client';
 
-import { Input, Select } from '@ustapilot/ui';
+import { Input, Select } from '@talpio/ui';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';

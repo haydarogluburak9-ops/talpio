@@ -1,2 +1,2 @@
-export { Badge, badgeVariants } from '@ustapilot/ui';
-export type { BadgeProps, BadgeTone } from '@ustapilot/ui';
+export { Badge, badgeVariants } from '@talpio/ui';
+export type { BadgeProps, BadgeTone } from '@talpio/ui';

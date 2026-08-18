@@ -1,8 +1,8 @@
 'use client';
 
-import { ORDER_STATUS_TONES } from '@ustapilot/config';
-import { formatDate, formatMoney, orderStatusLabel } from '@ustapilot/localization';
-import { OrderStatus, UserRole, type Order } from '@ustapilot/types';
+import { ORDER_STATUS_TONES } from '@talpio/config';
+import { formatDate, formatMoney, orderStatusLabel } from '@talpio/localization';
+import { OrderStatus, type Order } from '@talpio/types';
 import {
   Button,
   Card,
@@ -12,7 +12,7 @@ import {
   ErrorState,
   LoadingState,
   StatusPill,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -68,7 +68,11 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 function OrderDetailView({ order }: { order: Order }) {
   const locale = publicEnv.defaultLocale;
   const session = useSession();
-  const isProvider = session.data?.role === UserRole.PROVIDER;
+  const userId = session.data?.id;
+  const providerProfileId = session.data?.providerProfileId;
+  const isProviderSide =
+    providerProfileId != null && order.providerProfileId === providerProfileId;
+  const isCustomerSide = userId != null && order.customerId === userId;
 
   const pay = usePayOrder(order.id);
   const start = useStartOrder(order.id);
@@ -101,10 +105,10 @@ function OrderDetailView({ order }: { order: Order }) {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <ProgressTrail status={order.status} />
-          <p className="text-sm text-foreground-muted">{waitingHint(order.status, isProvider)}</p>
-          {/* Talep detayı müşterinin kendi sayfasında yaşar; ustaya işin bilgileri
-              zaten bu ekranda gösterildiği için ayrıca bağlantı verilmez. */}
-          {order.job && !isProvider ? (
+          <p className="text-sm text-foreground-muted">
+            {waitingHint(order.status, isProviderSide)}
+          </p>
+          {order.job && isCustomerSide ? (
             <Link
               href={`/taleplerim/${order.job.id}`}
               className="text-sm font-medium text-brand-600 hover:underline"
@@ -113,9 +117,9 @@ function OrderDetailView({ order }: { order: Order }) {
             </Link>
           ) : null}
 
-          {!isProvider && order.provider ? (
+          {isCustomerSide && order.provider ? (
             <Link
-              href={`/ustalar/${order.providerProfileId}`}
+              href={`/saticilar/${order.providerProfileId}`}
               className="text-sm font-medium text-brand-600 hover:underline"
             >
               {t('provider.profileTitle')}: {order.provider.displayName}
@@ -128,12 +132,12 @@ function OrderDetailView({ order }: { order: Order }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{isProvider ? 'Hakediş' : 'Ödeme'}</CardTitle>
+          <CardTitle>{isProviderSide ? 'Hakediş' : 'Ödeme'}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <DetailRow label={t('order.total')} value={formatMoney(order.total, locale)} />
-            {isProvider ? (
+            {isProviderSide ? (
               <>
                 <DetailRow
                   label={t('order.commission')}
@@ -146,8 +150,8 @@ function OrderDetailView({ order }: { order: Order }) {
               </>
             ) : null}
             <DetailRow
-              label={isProvider ? 'Müşteri' : 'Usta'}
-              value={(isProvider ? order.customer?.displayName : order.provider?.displayName) ?? '—'}
+              label={isProviderSide ? 'Müşteri' : 'Satıcı'}
+              value={(isProviderSide ? order.customer?.displayName : order.provider?.displayName) ?? '—'}
             />
             <DetailRow
               label={t('order.scheduledAt')}
@@ -191,7 +195,7 @@ function OrderDetailView({ order }: { order: Order }) {
             </p>
           ) : null}
 
-          {!isProvider && order.status === OrderStatus.PENDING_PAYMENT ? (
+          {!isProviderSide && order.status === OrderStatus.PENDING_PAYMENT ? (
             <Action
               hint={t('order.payHint')}
               label={t('order.pay')}
@@ -200,7 +204,7 @@ function OrderDetailView({ order }: { order: Order }) {
             />
           ) : null}
 
-          {isProvider && order.status === OrderStatus.PAID ? (
+          {isProviderSide && order.status === OrderStatus.PAID ? (
             <Action
               hint={t('order.startHint')}
               label={t('order.start')}
@@ -209,7 +213,7 @@ function OrderDetailView({ order }: { order: Order }) {
             />
           ) : null}
 
-          {isProvider && order.status === OrderStatus.IN_PROGRESS ? (
+          {isProviderSide && order.status === OrderStatus.IN_PROGRESS ? (
             <Action
               hint={t('order.completeHint')}
               label={t('order.complete')}
@@ -218,7 +222,7 @@ function OrderDetailView({ order }: { order: Order }) {
             />
           ) : null}
 
-          {!isProvider && order.status === OrderStatus.AWAITING_APPROVAL ? (
+          {!isProviderSide && order.status === OrderStatus.AWAITING_APPROVAL ? (
             <Action
               hint={t('order.approveHint')}
               label={t('order.approve')}
@@ -257,10 +261,10 @@ function OrderDetailView({ order }: { order: Order }) {
         </CardContent>
       </Card>
 
-      {/* Makbuz müşterinin ödemesini gösterir; ustanın karşılığı cüzdan özetidir. */}
-      {!isProvider ? <OrderPaymentSection order={order} /> : null}
+      {/* Makbuz müşterinin ödemesini gösterir; satıcının karşılığı cüzdan özetidir. */}
+      {!isProviderSide ? <OrderPaymentSection order={order} /> : null}
 
-      <OrderReviewSection order={order} isProvider={isProvider} />
+      <OrderReviewSection order={order} isProvider={isProviderSide} />
     </div>
   );
 }

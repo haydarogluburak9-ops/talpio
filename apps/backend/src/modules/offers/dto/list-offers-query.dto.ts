@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { OfferStatus } from '@ustapilot/types';
+import { OfferStatus } from '@talpio/types';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional } from 'class-validator';
 
@@ -10,7 +10,7 @@ const toStatusArray = ({ value }: { value: unknown }): unknown => {
   return value;
 };
 
-/** Ustanın kendi tekliflerini süzmesi için parametreler. */
+/** Satıcının kendi tekliflerini süzmesi için parametreler. */
 export class ListMyOffersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ enum: OfferStatus, isArray: true })
   @IsOptional()

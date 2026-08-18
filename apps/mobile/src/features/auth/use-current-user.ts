@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { queryKeys } from '@ustapilot/config';
-import type { CurrentUser } from '@ustapilot/types';
+import { queryKeys } from '@talpio/config';
+import type { CurrentUser } from '@talpio/types';
 
 import { useSession } from '@/features/auth/session-provider';
 import { apiClient } from '@/lib/api';

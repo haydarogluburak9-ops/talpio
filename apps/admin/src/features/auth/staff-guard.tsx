@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, LoadingState } from '@ustapilot/ui';
+import { Button, LoadingState } from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 
@@ -45,7 +45,7 @@ export function StaffGuard({ children }: { children: ReactNode }) {
       <div role="alert" className="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center">
         <p className="text-base font-semibold">Bu panele erişim yetkiniz yok</p>
         <p className="max-w-sm text-sm text-foreground-muted">
-          {session.data?.email} hesabı müşteri veya usta rolünde. Personel hesabıyla giriş yapın.
+          {session.data?.email} hesabı müşteri veya satıcı rolünde. Personel hesabıyla giriş yapın.
         </p>
         <Button variant="outline" size="sm" onClick={() => logout.mutate()} disabled={logout.isPending}>
           Çıkış yap

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { ProviderProfile, ProviderService, ProviderSummary } from '@ustapilot/types';
+import type { ProviderProfile, ProviderService, ProviderSummary } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
@@ -31,23 +31,23 @@ export class ProvidersService {
     return toProviderProfile(await this.requireOwnProfile(user));
   }
 
-  /** Müşteriye açık usta kartı. Doğrulama durumu ve istatistikler dışında bilgi taşımaz. */
+  /** Müşteriye açık satıcı kartı. Doğrulama durumu ve istatistikler dışında bilgi taşımaz. */
   async getPublicById(id: string): Promise<ProviderSummary> {
     const row = await this.prisma.providerProfile.findFirst({
       where: { id, deletedAt: null },
       include: providerInclude,
     });
 
-    if (!row) throw AppException.notFound('Usta profili', id);
+    if (!row) throw AppException.notFound('Satıcı profili', id);
 
     return toProviderSummary(row, this.config.fileBaseUrl);
   }
 
   /**
-   * Ustanın kendi profil bilgilerini günceller.
+   * Satıcının kendi profil bilgilerini günceller.
    *
    * Doğrulama durumu, rozet ve istatistikler burada değişmez: bunlar yönetim
-   * onayından ve tamamlanan işlerden türetilir, ustanın beyanından değil.
+   * onayından ve tamamlanan işlerden türetilir, satıcının beyanından değil.
    */
   async updateMe(user: AuthenticatedUser, dto: UpdateProviderProfileDto): Promise<ProviderProfile> {
     const profile = await this.requireOwnProfile(user);
@@ -156,15 +156,20 @@ export class ProvidersService {
   }
 
   private async requireOwnProfile(user: AuthenticatedUser): Promise<ProviderRow> {
+    const existing = await this.prisma.providerProfile.findFirst({
+      where: { userId: user.id, deletedAt: null },
+      include: providerInclude,
+    });
+    if (existing) return existing;
+
+    await this.prisma.providerProfile.create({ data: { userId: user.id } });
     const row = await this.prisma.providerProfile.findFirst({
       where: { userId: user.id, deletedAt: null },
       include: providerInclude,
     });
-
     if (!row) {
-      throw AppException.forbiddenResource('Usta profili', { userId: user.id });
+      throw AppException.forbiddenResource('Satıcı profili', { userId: user.id });
     }
-
     return row;
   }
 

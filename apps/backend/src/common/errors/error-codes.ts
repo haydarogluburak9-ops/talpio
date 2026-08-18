@@ -1,9 +1,9 @@
 import type { HttpStatus } from '@nestjs/common';
-import { ERROR_CODES, ERROR_CODE_STATUS as SHARED_ERROR_CODE_STATUS } from '@ustapilot/types';
-import type { ErrorCode } from '@ustapilot/types';
+import { ERROR_CODES, ERROR_CODE_STATUS as SHARED_ERROR_CODE_STATUS } from '@talpio/types';
+import type { ErrorCode } from '@talpio/types';
 
 /**
- * Hata kodlarının tek kaynağı `@ustapilot/types` paketidir; backend, web,
+ * Hata kodlarının tek kaynağı `@talpio/types` paketidir; backend, web,
  * admin ve mobil aynı listeyi kullanır. Burada yalnızca NestJS tarafındaki
  * kullanım için yeniden dışa aktarılır.
  */

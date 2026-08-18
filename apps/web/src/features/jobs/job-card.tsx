@@ -1,9 +1,9 @@
 'use client';
 
-import { JOB_STATUS_TONES } from '@ustapilot/config';
-import { formatMoney, formatRelativeTime, jobStatusLabel } from '@ustapilot/localization';
-import type { JobRequest } from '@ustapilot/types';
-import { Badge, Card, CardContent, StatusPill } from '@ustapilot/ui';
+import { JOB_STATUS_TONES } from '@talpio/config';
+import { formatMoney, formatRelativeTime, jobStatusLabel } from '@talpio/localization';
+import type { JobRequest } from '@talpio/types';
+import { Badge, Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
 import { publicEnv } from '@/lib/env';

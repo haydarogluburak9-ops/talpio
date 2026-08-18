@@ -23,7 +23,7 @@ export class PayOrderDto {
 }
 
 export class CompleteOrderDto {
-  @ApiPropertyOptional({ maxLength: 1000, description: 'Ustanın iş teslim notu.' })
+  @ApiPropertyOptional({ maxLength: 1000, description: 'Satıcının iş teslim notu.' })
   @IsOptional()
   @Transform(trim)
   @IsString()

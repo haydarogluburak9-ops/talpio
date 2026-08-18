@@ -6,6 +6,24 @@ const baseEnv = {
   JWT_REFRESH_SECRET: 'b'.repeat(32),
 };
 
+const productionBase = {
+  ...baseEnv,
+  NODE_ENV: 'production' as const,
+  API_PUBLIC_URL: 'https://api.talpio.com',
+  CORS_ORIGINS: 'https://app.talpio.com',
+  PAYMENT_DRIVER: 'iyzico',
+  PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
+  SMS_DRIVER: 'netgsm',
+  AI_DRIVER: 'openai',
+  AI_OPENAI_API_KEY: 'sk-test',
+  PUSH_DRIVER: 'firebase',
+  MAIL_DRIVER: 'smtp',
+  FCM_SERVER_KEY: 'fcm-test-key',
+  SMTP_HOST: 'smtp.example.com',
+  IYZICO_API_KEY: 'iy-key',
+  IYZICO_SECRET_KEY: 'iy-secret',
+};
+
 describe('validateEnv', () => {
   it('varsayılan değerleri doldurur', () => {
     const env = validateEnv({ ...baseEnv });
@@ -13,7 +31,8 @@ describe('validateEnv', () => {
     expect(env.NODE_ENV).toBe('development');
     expect(env.API_PORT).toBe(3000);
     expect(env.DEFAULT_CURRENCY).toBe('TRY');
-    expect(env.SUPPORTED_LOCALES).toEqual(['tr', 'en']);
+    expect(env.DEFAULT_LOCALE).toBe('en');
+    expect(env.SUPPORTED_LOCALES).toEqual(['en', 'tr', 'de', 'es', 'fr', 'ar']);
   });
 
   it('virgülle ayrılmış listeleri diziye çevirir', () => {
@@ -44,15 +63,14 @@ describe('validateEnv', () => {
 
   it('production ortamında demo hesaplarına izin vermez', () => {
     expect(() =>
-      validateEnv({ ...baseEnv, NODE_ENV: 'production', SEED_DEMO_ACCOUNTS: 'true' }),
+      validateEnv({ ...productionBase, SEED_DEMO_ACCOUNTS: 'true' }),
     ).toThrow(/Demo hesapları production/);
   });
 
   it('production ortamında varsayılan gizli anahtarları reddeder', () => {
     expect(() =>
       validateEnv({
-        ...baseEnv,
-        NODE_ENV: 'production',
+        ...productionBase,
         JWT_ACCESS_SECRET: 'change_me_access_secret_min_32_chars_long',
       }),
     ).toThrow(/varsayılan JWT gizli anahtarları/);
@@ -61,42 +79,62 @@ describe('validateEnv', () => {
   it('production ortamında mock ödeme sağlayıcısını reddeder', () => {
     expect(() =>
       validateEnv({
-        ...baseEnv,
-        NODE_ENV: 'production',
+        ...productionBase,
         PAYMENT_DRIVER: 'mock',
-        PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
       }),
     ).toThrow(/Mock ödeme sağlayıcısı production/);
   });
 
+  it('production ortamında mock AI sürücüsünü reddeder', () => {
+    expect(() =>
+      validateEnv({
+        ...productionBase,
+        AI_DRIVER: 'mock',
+      }),
+    ).toThrow(/Mock AI sürücüsü production/);
+  });
+
+  it('development ortamında AI_DRIVER=mock varsayılanıdır', () => {
+    const env = validateEnv({ ...baseEnv });
+    expect(env.AI_DRIVER).toBe('mock');
+    expect(env.OUTBOX_POLL_MS).toBe(2000);
+    expect(env.WORKER_CONCURRENCY).toBe(2);
+  });
+
   it('production ortamında varsayılan webhook anahtarını reddeder', () => {
     expect(() =>
-      validateEnv({ ...baseEnv, NODE_ENV: 'production', PAYMENT_DRIVER: 'iyzico' }),
+      validateEnv({ ...productionBase, PAYMENT_WEBHOOK_SECRET: 'change_me_payment_webhook_secret' }),
     ).toThrow(/varsayılan webhook gizli anahtarı/);
   });
 
   it('production ortamında mock SMS sürücüsünü reddeder', () => {
     expect(() =>
       validateEnv({
-        ...baseEnv,
-        NODE_ENV: 'production',
-        PAYMENT_DRIVER: 'iyzico',
-        PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
+        ...productionBase,
+        SMS_DRIVER: 'mock',
       }),
     ).toThrow(/Mock SMS sürücüsü production/);
   });
 
-  it('production ortamında mock push ve e-posta sürücülerine izin verir', () => {
-    const env = validateEnv({
-      ...baseEnv,
-      NODE_ENV: 'production',
-      PAYMENT_DRIVER: 'iyzico',
-      PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
-      SMS_DRIVER: 'netgsm',
-    });
+  it('production ortamında mock push ve e-posta sürücülerini reddeder', () => {
+    expect(() => validateEnv({ ...productionBase, PUSH_DRIVER: 'mock' })).toThrow(
+      /Mock push sürücüsü production/,
+    );
+    expect(() => validateEnv({ ...productionBase, MAIL_DRIVER: 'mock' })).toThrow(
+      /Mock e-posta sürücüsü production/,
+    );
+  });
 
-    expect(env.PUSH_DRIVER).toBe('mock');
-    expect(env.MAIL_DRIVER).toBe('mock');
+  it('production ortamında HTTP API_PUBLIC_URL reddeder', () => {
+    expect(() =>
+      validateEnv({ ...productionBase, API_PUBLIC_URL: 'http://api.talpio.com' }),
+    ).toThrow(/API_PUBLIC_URL HTTPS/);
+  });
+
+  it('production ortamında OpenAI anahtarı olmadan openai sürücüsünü reddeder', () => {
+    expect(() =>
+      validateEnv({ ...productionBase, AI_OPENAI_API_KEY: undefined }),
+    ).toThrow(/AI_OPENAI_API_KEY/);
   });
 
   it('development ortamında demo hesaplarına izin verir', () => {

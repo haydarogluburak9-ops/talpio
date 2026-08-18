@@ -1,13 +1,13 @@
 'use client';
 
-import { SUPPORT_TICKET_STATUS_TONES } from '@ustapilot/config';
-import { formatDateTime } from '@ustapilot/localization';
-import { StatusPill, Textarea } from '@ustapilot/ui';
+import { SUPPORT_TICKET_STATUS_TONES } from '@talpio/config';
+import { formatDateTime } from '@talpio/localization';
+import { StatusPill, Textarea } from '@talpio/ui';
 import {
   SupportTicketStatus,
   type AdminSupportTicketDetail,
   type AdminSupportTicketSummary,
-} from '@ustapilot/types';
+} from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';

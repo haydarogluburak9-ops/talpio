@@ -5,9 +5,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
-import { JOB, UPLOAD } from '@ustapilot/config';
-import { JobSize, JobTimeSlot } from '@ustapilot/types';
+import { ApiError } from '@talpio/api-client';
+import { JOB, UPLOAD } from '@talpio/config';
+import { JobSize, JobTimeSlot } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -64,13 +64,13 @@ const EMPTY_DRAFT: Draft = {
 /**
  * Hizmet talebi sihirbazı.
  *
- * Alan sınırları `@ustapilot/config` içindeki ortak limitlerden gelir; son
+ * Alan sınırları `@talpio/config` içindeki ortak limitlerden gelir; son
  * adımda talep `POST /jobs` ile yayınlanır. Fotoğraflar seçim anında yüklenir;
  * talebe yalnızca dosya kimlikleri eklenir.
  */
 export default function NewJobScreen() {
   const params = useLocalSearchParams<{ categoryId?: string }>();
-  const { t } = useI18n();
+  const { t, categoryLabel } = useI18n();
   const colors = useColors();
   const router = useRouter();
 
@@ -215,7 +215,7 @@ export default function NewJobScreen() {
                 >
                   <CategoryIcon iconKey={category.iconKey} color={colors.brand} />
                   <Text variant="caption" numberOfLines={2}>
-                    {category.name}
+                    {categoryLabel(category.slug, category.name)}
                   </Text>
                 </Card>
               );

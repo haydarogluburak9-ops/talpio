@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { NotificationChannel, NotificationParams, NotificationType } from '@ustapilot/types';
+import type { NotificationChannel, NotificationParams, NotificationType } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
 

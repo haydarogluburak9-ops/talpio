@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { SendMessageBody } from '@ustapilot/api-client';
-import { MESSAGE, queryKeys } from '@ustapilot/config';
-import type { Conversation, Message } from '@ustapilot/types';
+import type { SendMessageBody } from '@talpio/api-client';
+import { MESSAGE, queryKeys } from '@talpio/config';
+import type { Conversation, Message } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
@@ -62,6 +62,19 @@ export function useMarkConversationRead(conversationId: string) {
 
   return useMutation({
     mutationFn: () => apiClient.messages.markRead(conversationId),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.conversations() });
+    },
+  });
+}
+
+export function useCreateGroupConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: { title: string; memberIds: string[] }) =>
+      apiClient.social.createGroupConversation(body),
     onSuccess: (conversation) => {
       queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
       void queryClient.invalidateQueries({ queryKey: queryKeys.messages.conversations() });

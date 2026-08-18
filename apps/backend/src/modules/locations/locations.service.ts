@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { City, Country, District } from '@ustapilot/types';
+import type { City, Country, District } from '@talpio/types';
 
 import { PrismaService } from '@infra/prisma/prisma.service';
 
@@ -11,7 +11,7 @@ interface CoordinateRow {
 /**
  * Konum hiyerarşisi: ülke → şehir → ilçe.
  *
- * Gaziantep hiçbir yerde koda gömülü değildir; yalnızca başlangıç verisidir.
+ * Hiçbir şehir koda gömülü değildir; konumlar seed veya admin verisidir.
  * Yeni şehir eklemek için veri girmek yeterlidir, kod değişikliği gerekmez.
  */
 @Injectable()

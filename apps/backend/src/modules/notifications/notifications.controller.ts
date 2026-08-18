@@ -6,7 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { DeviceToken, Notification, NotificationFeedMeta } from '@ustapilot/types';
+import type { DeviceToken, Notification, NotificationFeedMeta } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import type { OutboxEntry } from '@infra/notifications/notification-outbox';

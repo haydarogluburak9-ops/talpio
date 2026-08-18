@@ -1,4 +1,4 @@
-import type { JobAttachment } from '@ustapilot/types';
+import type { JobAttachment } from '@talpio/types';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';

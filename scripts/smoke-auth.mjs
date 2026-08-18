@@ -34,7 +34,7 @@ async function call(method, path, { body, token, platform = 'IOS' } = {}) {
   return { status: response.status, json, headers: response.headers };
 }
 
-const email = `smoke+${Date.now()}@ustapilot.test`;
+const email = `smoke+${Date.now()}@talpio.test`;
 const password = 'Guclu1Parola';
 
 console.log(`Kimlik duman testi — ${BASE}\n`);
@@ -61,7 +61,7 @@ check('EMAIL_ALREADY_EXISTS kodu', duplicate.json?.error?.code === 'EMAIL_ALREAD
 
 console.log('\nZayıf parola ile kayıt:');
 const weak = await call('POST', '/auth/register', {
-  body: { email: `weak+${Date.now()}@ustapilot.test`, password: 'zayif', fullName: 'Zayıf', role: 'CUSTOMER' },
+  body: { email: `weak+${Date.now()}@talpio.test`, password: 'zayif', fullName: 'Zayıf', role: 'CUSTOMER' },
 });
 check('422 doğrulama hatası', weak.status === 422, `status=${weak.status}`);
 
@@ -76,7 +76,7 @@ check('401 döner', badLogin.status === 401, `status=${badLogin.status}`);
 check('INVALID_CREDENTIALS kodu', badLogin.json?.error?.code === 'INVALID_CREDENTIALS', badLogin.json?.error?.code);
 
 console.log('\nOlmayan kullanıcı:');
-const ghost = await call('POST', '/auth/login', { body: { email: 'yok@ustapilot.test', password } });
+const ghost = await call('POST', '/auth/login', { body: { email: 'yok@talpio.test', password } });
 check('401 döner (hesap varlığı sızdırılmaz)', ghost.status === 401, `status=${ghost.status}`);
 check('mesaj yanlış paroladakiyle aynı', ghost.json?.error?.code === badLogin.json?.error?.code);
 
@@ -117,7 +117,7 @@ const staleAccess = await call('GET', '/auth/me', {
 check('çıkıştan sonra erişim jetonu geçersiz', staleAccess.status === 401, `status=${staleAccess.status}`);
 
 console.log('\nDemo hesapları:');
-for (const account of ['admin@ustapilot.com', 'musteri@ustapilot.com', 'usta@ustapilot.com']) {
+for (const account of ['kullanici@talpio.com', 'satici@talpio.com']) {
   const demo = await call('POST', '/auth/login', {
     body: { email: account, password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
   });
@@ -135,12 +135,12 @@ check('şehirler jetonsuz erişilebilir', cities.status === 200, `status=${citie
 console.log('\nWeb istemcisi (çerez akışı):');
 const webLogin = await call('POST', '/auth/login', { body: { email, password }, platform: 'WEB' });
 const setCookie = webLogin.headers.get('set-cookie') ?? '';
-check('yenileme çerezi gönderilir', setCookie.includes('up_refresh'), setCookie.slice(0, 80));
+check('yenileme çerezi gönderilir', setCookie.includes('talpio_refresh'), setCookie.slice(0, 80));
 check('çerez HttpOnly', /httponly/i.test(setCookie));
 check('çerez yolu kimlik uçlarıyla sınırlı', /path=\/api\/v1\/auth/i.test(setCookie), setCookie);
 
 const mobileLogin = await call('POST', '/auth/login', { body: { email, password }, platform: 'ANDROID' });
-check('mobilde çerez gönderilmez', !(mobileLogin.headers.get('set-cookie') ?? '').includes('up_refresh'));
+check('mobilde çerez gönderilmez', !(mobileLogin.headers.get('set-cookie') ?? '').includes('talpio_refresh'));
 
 console.log(`\n${passed} geçti, ${failed} başarısız`);
 process.exitCode = failed > 0 ? 1 : 0;

@@ -1,33 +1,70 @@
 import { cn } from '../lib/cn';
 
 /**
- * Marka işaretleri. Logodaki iki renkli okumayı ("Usta" lacivert, "Pilot"
- * turuncu) arayüzde tekrar eder.
- *
- * Marka adı çeviriye tabi değildir, bu yüzden parçalar burada sabittir;
- * `common.appName` bütün ad gerektiğinde (başlık, meta) kullanılmaya devam eder.
+ * Talpio marka varlıkları (kullanıcı logoları).
+ * - App ikon: `/brand/talpio-logo.png` (kare, oval)
+ * - Yatay lockup: `/brand/talpio-lockup.png` (sol bar / header)
  */
 
-export function BrandMark({ className }: { className?: string }) {
+const APP_ICON_SRC = '/brand/talpio-logo.png';
+const LOCKUP_SRC = '/brand/talpio-lockup.png';
+
+/** Kare uygulama ikonu. */
+export function BrandMark({
+  className,
+  src = APP_ICON_SRC,
+  alt = 'Talpio',
+}: {
+  className?: string;
+  src?: string;
+  alt?: string;
+}) {
   return (
     <span
-      aria-hidden
       className={cn(
-        'grid size-8 shrink-0 place-items-center rounded-[--radius-control] bg-brand-900 text-sm font-bold text-white',
+        'relative block size-10 shrink-0 overflow-hidden rounded-[22%] bg-transparent',
         className,
       )}
     >
-      <span>
-        U<span className="text-accent-500">P</span>
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="size-full object-contain" draggable={false} />
     </span>
   );
 }
 
+/** Yatay logo (T + Talpio) — sol bar üstü için. */
+export function BrandLockup({
+  className,
+  src = LOCKUP_SRC,
+  alt = 'Talpio',
+}: {
+  className?: string;
+  src?: string;
+  alt?: string;
+}) {
+  return (
+    <span className={cn('relative inline-flex h-9 w-auto max-w-full items-center', className)}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="h-full w-auto max-w-[11.5rem] object-contain object-left"
+        draggable={false}
+      />
+    </span>
+  );
+}
+
+/** Metin wordmark — logo asset yokken yedek. */
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={cn('font-semibold tracking-tight text-foreground', className)}>
-      Usta<span className="text-accent-500">Pilot</span>
+    <span
+      className={cn(
+        'inline-flex items-baseline font-semibold tracking-tight text-brand-900 dark:text-foreground',
+        className,
+      )}
+    >
+      Talp<span className="text-[#FF6A00]">io</span>
     </span>
   );
 }

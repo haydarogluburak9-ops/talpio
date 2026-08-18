@@ -1,7 +1,7 @@
 'use client';
 
-import { REVIEW } from '@ustapilot/config';
-import { cn } from '@ustapilot/ui';
+import { REVIEW } from '@talpio/config';
+import { cn } from '@talpio/ui';
 
 import { t } from '@/lib/i18n';
 

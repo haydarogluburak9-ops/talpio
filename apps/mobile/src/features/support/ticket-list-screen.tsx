@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import { SUPPORT_TICKET_STATUS_TONES } from '@ustapilot/config';
-import { formatRelativeTime, supportTicketStatusLabel } from '@ustapilot/localization';
-import type { SupportTicket } from '@ustapilot/types';
+import { SUPPORT_TICKET_STATUS_TONES } from '@talpio/config';
+import { formatRelativeTime, supportTicketStatusLabel } from '@talpio/localization';
+import type { SupportTicket } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';

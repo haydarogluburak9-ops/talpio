@@ -2,8 +2,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { formatDate, formatMoney } from '@ustapilot/localization';
-import { OrderStatus, type Order } from '@ustapilot/types';
+import { formatDate, formatMoney } from '@talpio/localization';
+import { OrderStatus, type Order } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -267,7 +267,7 @@ function OrderDetailContent({
         ) : null}
       </Card>
 
-      {/* Makbuz müşterinin ödemesini gösterir; ustanın karşılığı cüzdan ekranıdır. */}
+      {/* Makbuz müşterinin ödemesini gösterir; satıcının karşılığı cüzdan ekranıdır. */}
       {isProvider ? null : <OrderPaymentSection order={order} />}
 
       <OrderReviewSection order={order} isProvider={isProvider} />

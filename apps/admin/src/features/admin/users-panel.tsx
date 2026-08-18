@@ -1,13 +1,13 @@
 'use client';
 
-import { formatDate } from '@ustapilot/localization';
-import { StatusPill } from '@ustapilot/ui';
+import { formatDate } from '@talpio/localization';
+import { StatusPill } from '@talpio/ui';
 import {
   UserRole,
   UserStatus,
   type AdminUserSummary,
   type VerificationStatus,
-} from '@ustapilot/types';
+} from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,8 @@ import {
   VERIFICATION_LABELS,
   VERIFICATION_TONES,
 } from '@/lib/labels';
+
+import { getLocale, t } from '@/lib/i18n';
 
 import { FilterBar, FilterSelect, SearchField } from './filter-bar';
 import { useAdminUsers, useRevokeUserSessions, useUpdateUserStatus } from './use-admin';
@@ -36,10 +38,10 @@ const STATUS_OPTIONS = Object.values(UserStatus).map((status) => ({
 }));
 
 /** Yönetimin uygulayabileceği geçişler; kayıt akışına ait durumlar dışarıda. */
-const STATUS_ACTIONS: { status: UserStatus; label: string }[] = [
-  { status: UserStatus.ACTIVE, label: 'Etkinleştir' },
-  { status: UserStatus.SUSPENDED, label: 'Askıya al' },
-  { status: UserStatus.BANNED, label: 'Engelle' },
+const STATUS_ACTIONS: { status: UserStatus; labelKey: 'admin.activate' | 'admin.suspend' | 'admin.ban' }[] = [
+  { status: UserStatus.ACTIVE, labelKey: 'admin.activate' },
+  { status: UserStatus.SUSPENDED, labelKey: 'admin.suspend' },
+  { status: UserStatus.BANNED, labelKey: 'admin.ban' },
 ];
 
 export function UsersPanel() {
@@ -73,7 +75,7 @@ export function UsersPanel() {
   const columns: TableColumn<AdminUserSummary>[] = [
     {
       key: 'user',
-      header: 'Kullanıcı',
+      header: t('admin.users'),
       cell: (user) => (
         <div className="min-w-0">
           <p className="truncate font-medium">{user.fullName}</p>
@@ -83,20 +85,20 @@ export function UsersPanel() {
     },
     {
       key: 'role',
-      header: 'Rol',
+      header: t('admin.colRole'),
       hideBelow: 'sm',
       cell: (user) => <span className="text-foreground-muted">{ROLE_LABELS[user.role]}</span>,
     },
     {
       key: 'status',
-      header: 'Durum',
+      header: t('admin.colStatus'),
       cell: (user) => (
         <StatusPill label={USER_STATUS_LABELS[user.status]} tone={USER_STATUS_TONES[user.status]} />
       ),
     },
     {
       key: 'verification',
-      header: 'Doğrulama',
+      header: t('admin.colVerification'),
       hideBelow: 'lg',
       cell: (user) =>
         user.verificationStatus ? (
@@ -110,17 +112,17 @@ export function UsersPanel() {
     },
     {
       key: 'createdAt',
-      header: 'Katılım',
+      header: t('admin.colJoined'),
       hideBelow: 'md',
       cell: (user) => (
         <span className="whitespace-nowrap text-foreground-muted">
-          {formatDate(user.createdAt, 'tr', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+          {formatDate(user.createdAt, getLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' })}
         </span>
       ),
     },
     {
       key: 'actions',
-      header: 'İşlem',
+      header: t('admin.colActions'),
       align: 'right',
       cell: (user) => (
         <UserActions
@@ -138,11 +140,9 @@ export function UsersPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Kullanıcılar</CardTitle>
+        <CardTitle>{t('admin.usersTitle')}</CardTitle>
         <CardDescription>
-          {writable
-            ? 'Hesapları arayın, durumlarını değiştirin ve oturumlarını kapatın.'
-            : 'Destek rolü hesapları görüntüleyebilir; durum değişikliği admin yetkisi ister.'}
+          {writable ? t('admin.usersHintWrite') : t('admin.usersHintRead')}
         </CardDescription>
 
         <div className="pt-2">
@@ -160,20 +160,20 @@ export function UsersPanel() {
             <SearchField
               key={filterVersion}
               onChange={(value) => applyFilter(() => setQ(value))}
-              placeholder="Ad, e-posta veya telefon"
+              placeholder={t('admin.searchUsers')}
             />
             <FilterSelect
-              label="Rol"
+              label={t('admin.colRole')}
               value={role}
               options={ROLE_OPTIONS}
-              allLabel="Tüm roller"
+              allLabel={t('admin.allRoles')}
               onChange={(value) => applyFilter(() => setRole(value))}
             />
             <FilterSelect
-              label="Durum"
+              label={t('admin.colStatus')}
               value={status}
               options={STATUS_OPTIONS}
-              allLabel="Tüm durumlar"
+              allLabel={t('admin.allStatuses')}
               onChange={(value) => applyFilter(() => setStatus(value))}
             />
           </FilterBar>
@@ -183,7 +183,7 @@ export function UsersPanel() {
       <CardContent className="space-y-4">
         {updateStatus.isError || revoke.isError ? (
           <p role="alert" className="text-sm text-danger-on-surface">
-            İşlem tamamlanamadı. Yetkinizi ve bağlantınızı kontrol edin.
+            {t('admin.actionFailed')}
           </p>
         ) : null}
 
@@ -194,7 +194,7 @@ export function UsersPanel() {
           isPending={users.isPending}
           isError={users.isError}
           emptyLabel={
-            hasFilter ? 'Bu filtreye uyan kullanıcı yok.' : 'Kayıtlı kullanıcı bulunamadı.'
+            hasFilter ? t('admin.emptyFiltered') : t('admin.emptyUsers')
           }
           onRetry={() => void users.refetch()}
           minWidth={860}
@@ -229,11 +229,11 @@ function UserActions({
           disabled={disabled}
           onClick={() => onStatusChange(action.status)}
         >
-          {action.label}
+          {t(action.labelKey)}
         </Button>
       ))}
       <Button variant="ghost" size="sm" disabled={disabled} onClick={onRevoke}>
-        Oturumları kapat
+        {t('admin.revokeSessions')}
       </Button>
     </div>
   );

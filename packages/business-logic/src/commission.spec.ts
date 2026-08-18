@@ -1,5 +1,5 @@
-import { CommissionType } from '@ustapilot/types';
-import type { CommissionRule } from '@ustapilot/types';
+import { CommissionType } from '@talpio/types';
+import type { CommissionRule } from '@talpio/types';
 
 import { bpsToPercent, calculateCommission, percentToBps, selectCommissionRule } from './commission';
 
@@ -64,7 +64,7 @@ describe('calculateCommission', () => {
     expect(result.commissionMinor).toBe(12_500);
   });
 
-  it('premium ustaya indirimli oran uygular', () => {
+  it('premium satıcıya indirimli oran uygular', () => {
     const result = calculateCommission(
       { grossMinor: 100_000, currency: 'TRY', isPremiumProvider: true },
       makeRule({ rateBps: 1250, premiumRateBps: 1000 }),

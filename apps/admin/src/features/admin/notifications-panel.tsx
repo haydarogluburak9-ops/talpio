@@ -1,8 +1,8 @@
 'use client';
 
-import { formatDateTime, renderNotification } from '@ustapilot/localization';
-import { StatusPill } from '@ustapilot/ui';
-import { NotificationType, type AdminNotificationSummary } from '@ustapilot/types';
+import { formatDateTime, renderNotification } from '@talpio/localization';
+import { StatusPill } from '@talpio/ui';
+import { NotificationType, type AdminNotificationSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,5 +1,5 @@
-import { DEFAULT_LOCALE } from '@ustapilot/config';
-import type { NotificationParams, NotificationType } from '@ustapilot/types';
+import { DEFAULT_LOCALE } from '@talpio/config';
+import type { NotificationParams, NotificationType } from '@talpio/types';
 
 import { formatDateTime, formatMoneyMinor, formatRating } from './format';
 import { createTranslator } from './translator';

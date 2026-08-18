@@ -12,7 +12,7 @@ const trimToNull = ({ value }: { value: unknown }): unknown => {
 /**
  * Kullanıcının kendi profil güncellemesi.
  *
- * Kurallar `@ustapilot/validation` içindeki `updateUserProfileSchema` ile
+ * Kurallar `@talpio/validation` içindeki `updateUserProfileSchema` ile
  * aynıdır; istemci formu o şemayla doğrular, backend aynı sınırları burada
  * yeniden uygular çünkü istemci doğrulaması güvenlik sınırı sayılmaz.
  *

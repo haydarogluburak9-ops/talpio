@@ -1,5 +1,5 @@
 import type { Prisma } from '@/generated/prisma/client';
-import type { JobAttachment, JobRequest, MaskedAddress } from '@ustapilot/types';
+import type { JobAttachment, JobRequest, MaskedAddress } from '@talpio/types';
 
 /**
  * Talep sorgularında daima çekilen ilişkiler. Tek yerde tutulur ki liste ve
@@ -27,7 +27,7 @@ export type JobRequestRow = Prisma.JobRequestGetPayload<{ include: typeof jobReq
 /**
  * Talebi API gövdesine çevirir.
  *
- * `revealAddress` yalnızca müşterinin kendisi ve işi üstlenen usta için doğrudur.
+ * `revealAddress` yalnızca müşterinin kendisi ve işi üstlenen satıcı için doğrudur.
  * Havuzdaki ustalar açık adresi ve koordinatı göremez; ilçe seviyesi yeterlidir
  * ve müşterinin mahremiyeti korunur.
  */

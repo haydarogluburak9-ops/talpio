@@ -1,21 +1,21 @@
 'use client';
 
-import { formatMoney } from '@ustapilot/localization';
-import { OfferStatus, OrderStatus, UserRole } from '@ustapilot/types';
+import { formatMoney } from '@talpio/localization';
+import { isMarketplaceRole, OfferStatus, OrderStatus } from '@talpio/types';
 import {
   Button,
   buttonVariants,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
   ListSkeleton,
   LoadingState,
-} from '@ustapilot/ui';
+  cn,
+} from '@talpio/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { AgentPanel } from '@/features/agent/agent-panel';
+import { PremiumPlansPanel } from '@/features/billing/premium-plans-panel';
+import { SellerOpsPanels } from '@/features/businesses/seller-ops-panels';
 import { useMyOffers } from '@/features/offers/use-offers';
 import { OrderCard } from '@/features/orders/order-card';
 import { useMyOrders } from '@/features/orders/use-orders';
@@ -27,7 +27,7 @@ import { t } from '@/lib/i18n';
 
 import { useLogout, useSession } from './use-session';
 
-/** Ustanın "devam eden iş" saydığı sipariş durumları. */
+/** Satıcının "devam eden iş" saydığı sipariş durumları. */
 const ACTIVE_ORDER_STATUSES = [
   OrderStatus.PENDING_PAYMENT,
   OrderStatus.PAID,
@@ -42,44 +42,83 @@ export function ProviderDashboard() {
   if (isBlocked || !user) return <LoadingState label="Panel yükleniyor" />;
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-4">
+    <div className="flex flex-col gap-4 pb-20 lg:pb-6">
+      <section className="social-panel p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <CardTitle className="truncate">{user.fullName}</CardTitle>
-            <p className="truncate text-sm text-foreground-muted">{t('provider.dashboardTitle')}</p>
+            <p className="font-display text-xs font-semibold tracking-[0.18em] text-accent-600 uppercase">
+              {t('nav.myBusiness')}
+            </p>
+            <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight text-brand-900 dark:text-foreground">
+              {user.fullName}
+            </h1>
+            <p className="mt-1 truncate text-sm text-foreground-muted">{t('provider.dashboardTitle')}</p>
           </div>
-          <div className="flex shrink-0 flex-wrap gap-3">
-            <Link href="/mesajlar" className={buttonVariants({ variant: 'outline' })}>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Link
+              href="/akis"
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+            >
+              {t('social.goToFeed')}
+            </Link>
+            <Link
+              href="/satici/tedarik"
+              className={cn(buttonVariants({ size: 'sm' }), 'bg-accent-500 text-white hover:bg-accent-600')}
+            >
+              Tedarik talepleri
+            </Link>
+            <Link href="/mesajlar" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               {t('messaging.listTitle')}
             </Link>
-            <Link href="/profil" className={buttonVariants({ variant: 'outline' })}>
+            <Link href="/profil" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               {t('profile.title')}
             </Link>
-            <Button variant="outline" onClick={() => logout.mutate()} disabled={logout.isPending}>
+            <Button variant="outline" size="sm" onClick={() => logout.mutate()} disabled={logout.isPending}>
               {t('nav.logout')}
             </Button>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </section>
 
       <Metrics />
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between gap-4">
-          <CardTitle>{t('provider.activeJobsTitle')}</CardTitle>
+      <section id="isler" className="social-panel scroll-mt-28 p-5 sm:p-6">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+            {t('provider.activeJobsTitle')}
+          </h2>
           <Link href="/siparislerim" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
             Tümünü gör
           </Link>
-        </CardHeader>
-        <CardContent>
-          <ActiveOrders />
-        </CardContent>
-      </Card>
+        </div>
+        <ActiveOrders />
+      </section>
 
-      <ProviderWallet />
+      <section id="raporlar" className="scroll-mt-28">
+        <ProviderWallet />
+      </section>
+
+      <section id="crm" className="scroll-mt-28">
+        <SellerOpsPanels />
+      </section>
 
       <ReceivedReviews />
+
+      {publicEnv.featurePremium ? (
+        <section className="scroll-mt-28">
+          <PremiumPlansPanel />
+        </section>
+      ) : (
+        <p className="text-sm text-foreground-muted">{t('billing.featureOff')}</p>
+      )}
+
+      {publicEnv.featureAgent ? (
+        <section id="ai" className="scroll-mt-28">
+          <AgentPanel />
+        </section>
+      ) : (
+        <p className="text-sm text-foreground-muted">{t('agent.featureOff')}</p>
+      )}
     </div>
   );
 }
@@ -93,7 +132,7 @@ function Metrics() {
   const wallet = useProviderWallet();
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Metric
         label={t('provider.activeJobsTitle')}
         value={activeOrders.data ? String(activeOrders.data.meta.total) : null}
@@ -113,6 +152,7 @@ function Metrics() {
         label={t('provider.pendingPayout')}
         value={wallet.data ? formatMoney(wallet.data.pending, locale) : null}
         isPending={wallet.isPending}
+        accent
       />
     </div>
   );
@@ -122,21 +162,25 @@ function Metric({
   label,
   value,
   isPending,
+  accent = false,
 }: {
   label: string;
   value: string | null;
   isPending: boolean;
+  accent?: boolean;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        {/* Veri gelmediyse sayı uydurulmaz; tire gösterilir. */}
-        <p className="text-2xl font-semibold text-foreground">
-          {isPending ? '…' : (value ?? '—')}
-        </p>
-        <p className="text-sm text-foreground-muted">{label}</p>
-      </CardContent>
-    </Card>
+    <div className="social-panel p-4 sm:p-5">
+      <p
+        className={cn(
+          'text-2xl font-semibold tracking-tight',
+          accent ? 'text-accent-600' : 'text-brand-900 dark:text-foreground',
+        )}
+      >
+        {isPending ? '…' : (value ?? '—')}
+      </p>
+      <p className="mt-1 text-sm text-foreground-muted">{label}</p>
+    </div>
   );
 }
 
@@ -182,7 +226,8 @@ function useSessionForProvider() {
   const router = useRouter();
 
   const user = session.data ?? null;
-  const shouldRedirect = session.isSuccess && user?.role !== UserRole.PROVIDER && logout.isIdle;
+  const marketplace = user != null && isMarketplaceRole(user.role);
+  const shouldRedirect = session.isSuccess && !marketplace && logout.isIdle;
 
   useEffect(() => {
     if (!shouldRedirect) return;

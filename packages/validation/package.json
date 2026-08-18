@@ -1,5 +1,5 @@
 {
-  "name": "@ustapilot/validation",
+  "name": "@talpio/validation",
   "version": "0.1.0",
   "private": true,
   "description": "Backend ve istemciler arasında paylaşılan Zod doğrulama şemaları",
@@ -21,8 +21,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@ustapilot/config": "0.1.0",
-    "@ustapilot/types": "0.1.0",
+    "@talpio/config": "0.1.0",
+    "@talpio/types": "0.1.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

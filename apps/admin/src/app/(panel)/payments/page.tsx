@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { PaymentsPanel } from '@/features/admin/payments-panel';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Ödemeler' };
+export const metadata: Metadata = { title: t('admin.payments') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'İade', detail: 'Panelden kısmi ve tam iade başlatma.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function PaymentsPage() {
   return (
     <ModuleScaffold
-      title="Ödemeler"
-      description="Ödeme kayıtlarını, iadeleri ve başarısız işlemleri izleyin."
+      titleKey="admin.payments"
+      descriptionKey="admin.paymentsHint"
       dataSource="POST /payments/:id/refund"
       capabilities={CAPABILITIES}
     >

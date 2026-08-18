@@ -5,10 +5,10 @@ import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
-import { REVIEW, UPLOAD } from '@ustapilot/config';
-import { FilePurpose } from '@ustapilot/types';
-import { createReviewSchema, type CreateReviewInput } from '@ustapilot/validation';
+import { ApiError } from '@talpio/api-client';
+import { REVIEW, UPLOAD } from '@talpio/config';
+import { FilePurpose } from '@talpio/types';
+import { createReviewSchema, type CreateReviewInput } from '@talpio/validation';
 import type { z } from 'zod';
 
 import { Button } from '@/components/button';

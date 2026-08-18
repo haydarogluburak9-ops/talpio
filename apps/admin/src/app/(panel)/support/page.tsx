@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { SupportPanel } from '@/features/admin/support-panel';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Destek talepleri' };
+export const metadata: Metadata = { title: t('admin.supportTickets') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'Talep kuyruğu', detail: 'Durum ve arama ile süzülmüş destek talepleri.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function SupportPage() {
   return (
     <ModuleScaffold
-      title="Destek talepleri"
-      description="Kullanıcı destek taleplerini yanıtlayın ve sonuçlandırın."
+      titleKey="admin.supportTickets"
+      descriptionKey="admin.supportHint"
       dataSource="GET /admin/support-tickets"
       capabilities={CAPABILITIES}
     >

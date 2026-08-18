@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
 
 import { ProfilePageBody } from '@/features/profile/profile-page-body';
+import { SocialShell } from '@/features/social/social-shell';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Profilim',
+  title: t('profile.title'),
   robots: { index: false, follow: false },
 };
 
 export default function ProfilePage() {
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <ProfilePageBody />
-    </div>
+    <SocialShell showRail={false}>
+      <div className="social-panel p-5 sm:p-6">
+        <ProfilePageBody />
+      </div>
+    </SocialShell>
   );
 }

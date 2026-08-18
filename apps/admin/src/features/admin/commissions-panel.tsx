@@ -1,12 +1,13 @@
 'use client';
 
-import { formatDate, formatMoney } from '@ustapilot/localization';
-import { StatusPill } from '@ustapilot/ui';
-import type { AdminCommissionRuleSummary } from '@ustapilot/types';
+import { formatDate, formatMoney, toLocaleTag } from '@talpio/localization';
+import { StatusPill } from '@talpio/ui';
+import type { AdminCommissionRuleSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, TablePagination, type TableColumn } from '@/components/ui/data-table';
+import { getLocale } from '@/lib/i18n';
 import { COMMISSION_TYPE_LABELS } from '@/lib/labels';
 
 import { FilterBar, FilterSelect, SearchField } from './filter-bar';
@@ -21,7 +22,7 @@ const ACTIVE_OPTIONS: { value: ActiveFilter; label: string }[] = [
 
 /** 1250 baz puan = %12,5. Oran kuruş gibi tam sayı taşınır, bölme yalnızca gösterimde. */
 function formatRate(rateBps: number): string {
-  return `%${(rateBps / 100).toLocaleString('tr-TR', { maximumFractionDigits: 2 })}`;
+  return `%${(rateBps / 100).toLocaleString(toLocaleTag(getLocale()), { maximumFractionDigits: 2 })}`;
 }
 
 export function CommissionsPanel() {

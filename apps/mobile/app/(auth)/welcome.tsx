@@ -51,7 +51,7 @@ export default function WelcomeScreen() {
     <View style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.header}>
         <Text variant="title" tone="onBrand">
-          UstaPilot
+          Talpio
         </Text>
         <Button
           label={t('onboarding.skip')}

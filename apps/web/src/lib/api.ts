@@ -1,4 +1,4 @@
-import { createApiClient } from '@ustapilot/api-client';
+import { createApiClient } from '@talpio/api-client';
 
 import { publicEnv } from './env';
 
@@ -13,4 +13,4 @@ export const apiClient = createApiClient({
   defaultHeaders: { 'X-Client-Platform': 'WEB' },
 });
 
-export { ApiError } from '@ustapilot/api-client';
+export { ApiError } from '@talpio/api-client';

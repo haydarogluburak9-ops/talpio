@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { detectContactSharing } from '@ustapilot/business-logic';
-import { deepLinks } from '@ustapilot/config';
+import { Injectable, Optional } from '@nestjs/common';
+import { detectContactSharing } from '@talpio/business-logic';
+import { deepLinks } from '@talpio/config';
 import {
   ConversationStatus,
+  MessageType,
   NotificationType,
   OrderStatus,
   UserRole,
   type Conversation,
   type Message,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
@@ -17,6 +18,7 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
+import { FraudService } from '@modules/fraud/fraud.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 
 import type {
@@ -46,7 +48,95 @@ export class MessagesService {
     private readonly config: AppConfigService,
     private readonly files: FilesService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly fraud?: FraudService,
   ) {}
+
+  async openDirect(user: AuthenticatedUser, peerUserId: string): Promise<Conversation> {
+    if (peerUserId === user.id) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Kendinize mesaj gönderemezsiniz.',
+      });
+    }
+
+    const peer = await this.prisma.user.findFirst({
+      where: { id: peerUserId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!peer) throw AppException.notFound('Kullanıcı', peerUserId);
+
+    const existing = await this.prisma.conversation.findFirst({
+      where: {
+        deletedAt: null,
+        orderId: null,
+        jobRequestId: null,
+        AND: [
+          { participants: { some: { userId: user.id } } },
+          { participants: { some: { userId: peerUserId } } },
+        ],
+      },
+      include: conversationInclude,
+    });
+
+    if (existing && existing.participants.length === 2) {
+      return this.presentConversation(existing, user.id);
+    }
+
+    const created = await this.prisma.conversation.create({
+      data: {
+        status: ConversationStatus.ACTIVE,
+        participants: { create: [{ userId: user.id }, { userId: peerUserId }] },
+      },
+      include: conversationInclude,
+    });
+
+    return this.presentConversation(created, user.id);
+  }
+
+  async openGroup(
+    user: AuthenticatedUser,
+    input: { title: string; memberIds: string[] },
+  ): Promise<Conversation> {
+    const memberIds = [...new Set([user.id, ...input.memberIds])].filter(Boolean);
+    if (memberIds.length < 3) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Grup sohbeti için en az iki kişi daha seçin.',
+      });
+    }
+
+    const members = await this.prisma.user.findMany({
+      where: { id: { in: memberIds }, deletedAt: null },
+      select: { id: true },
+    });
+    if (members.length !== memberIds.length) {
+      throw new AppException('VALIDATION_ERROR', { message: 'Bazı kullanıcılar bulunamadı.' });
+    }
+
+    const created = await this.prisma.conversation.create({
+      data: {
+        title: input.title.trim().slice(0, 80),
+        isGroup: true,
+        status: ConversationStatus.ACTIVE,
+        participants: { create: memberIds.map((userId) => ({ userId })) },
+      },
+      include: conversationInclude,
+    });
+
+    return this.presentConversation(created, user.id);
+  }
+
+  async listGroups(user: AuthenticatedUser): Promise<Conversation[]> {
+    const rows = await this.prisma.conversation.findMany({
+      where: {
+        deletedAt: null,
+        isGroup: true,
+        participants: { some: { userId: user.id } },
+      },
+      include: conversationInclude,
+      orderBy: { lastMessageAt: 'desc' },
+      take: 50,
+    });
+    return Promise.all(rows.map((row) => this.presentConversation(row, user.id)));
+  }
 
   /**
    * Siparişin sohbetini açar; yoksa oluşturur.
@@ -246,6 +336,7 @@ export class MessagesService {
       dto.body,
       dto.attachmentFileIds.length > 0,
       dto.location !== undefined,
+      dto.type === MessageType.VOICE,
     );
 
     if (recipients.length > 0) {
@@ -259,6 +350,7 @@ export class MessagesService {
       );
     }
 
+    this.fraud?.observeMessages(user.id, created.id);
     return this.presentMessage(created);
   }
 
@@ -385,11 +477,13 @@ function messagePreview(
   body: string | undefined,
   hasAttachment: boolean,
   hasLocation: boolean,
+  isVoice = false,
 ): string {
   const text = body?.trim();
   if (text) {
     return text.length > PREVIEW_MAX_CHARS ? `${text.slice(0, PREVIEW_MAX_CHARS - 1)}…` : text;
   }
+  if (isVoice) return 'Sesli mesaj';
   if (hasAttachment) return 'Ek gönderdi';
   if (hasLocation) return 'Konum paylaştı';
   return 'Yeni mesaj';

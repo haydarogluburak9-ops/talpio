@@ -25,7 +25,7 @@ describe('scoreProvider', () => {
     expect(score).toBeLessThanOrEqual(1);
   });
 
-  it('doğrulanmamış usta doğrulanmışın gerisinde kalır', () => {
+  it('doğrulanmamış satıcı doğrulanmışın gerisinde kalır', () => {
     const verified = scoreProvider(makeProvider({ isVerified: true }), { now });
     const unverified = scoreProvider(makeProvider({ isVerified: false }), { now });
     expect(unverified).toBeLessThan(verified);
@@ -49,7 +49,7 @@ describe('scoreProvider', () => {
     expect(unreliable).toBeLessThan(reliable);
   });
 
-  it('uzun süredir aktif olmayan usta geriler', () => {
+  it('uzun süredir aktif olmayan satıcı geriler', () => {
     const active = scoreProvider(makeProvider({ lastActiveAt: '2026-03-01T09:00:00.000Z' }), {
       now,
     });
@@ -117,7 +117,7 @@ describe('sortOffers', () => {
     ]);
   });
 
-  it('önerilen sıralamada güçlü usta öne çıkar', () => {
+  it('önerilen sıralamada güçlü satıcı öne çıkar', () => {
     expect(sortOffers([cheap, premium], OfferSortKey.RECOMMENDED, { now })[0]?.id).toBe(
       'premium',
     );

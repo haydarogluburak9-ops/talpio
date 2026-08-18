@@ -1,6 +1,6 @@
 'use client';
 
-import { LoadingState } from '@ustapilot/ui';
+import { LoadingState } from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 

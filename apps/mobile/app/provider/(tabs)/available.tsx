@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
+import { ApiError } from '@talpio/api-client';
 
 import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
@@ -19,7 +19,7 @@ export default function ProviderAvailableJobsScreen() {
   const router = useRouter();
   const colors = useColors();
 
-  // Varsayılan olarak ustanın kendi hizmet alanı; kapatınca tüm havuz görünür.
+  // Varsayılan olarak satıcının kendi hizmet alanı; kapatınca tüm havuz görünür.
   const [matchMyServices, setMatchMyServices] = useState(true);
   const jobs = useAvailableJobsInfinite({ matchMyServices });
   const items = flattenPages(jobs.data?.pages);

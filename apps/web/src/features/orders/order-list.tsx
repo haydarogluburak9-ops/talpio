@@ -1,7 +1,7 @@
 'use client';
 
-import { OrderStatus, UserRole } from '@ustapilot/types';
-import { EmptyState, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import { OrderStatus } from '@talpio/types';
+import { EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 import { useState } from 'react';
 
 import { t } from '@/lib/i18n';
@@ -29,11 +29,10 @@ const FILTERS = [
   },
 ] as const;
 
-export function OrderList({ role }: { role: UserRole }) {
+export function OrderList() {
   const [filterId, setFilterId] = useState<(typeof FILTERS)[number]['id']>('all');
   const filter = FILTERS.find((item) => item.id === filterId) ?? FILTERS[0];
   const orders = useMyOrders(filter.status ? { status: [...filter.status] } : {});
-  const isProvider = role === UserRole.PROVIDER;
 
   return (
     <div className="flex flex-col gap-5">
@@ -66,16 +65,11 @@ export function OrderList({ role }: { role: UserRole }) {
       ) : null}
 
       {orders.isSuccess && orders.data.items.length === 0 ? (
-        // Süzgeç açıkken "hiç sipariş yok" demek yanıltıcı olur; sipariş vardır, o kümede yoktur.
         <EmptyState
-          title={
-            filterId === 'all'
-              ? t(isProvider ? 'order.providerEmpty' : 'order.empty')
-              : 'Bu süzgeçte sipariş yok'
-          }
+          title={filterId === 'all' ? t('order.empty') : 'Bu süzgeçte sipariş yok'}
           description={
             filterId === 'all'
-              ? t(isProvider ? 'order.providerEmptyDescription' : 'order.emptyDescription')
+              ? t('order.emptyDescription')
               : 'Başka bir durum seçerek diğer siparişlerinizi görebilirsiniz.'
           }
         />

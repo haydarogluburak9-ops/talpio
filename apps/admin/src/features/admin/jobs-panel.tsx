@@ -1,8 +1,8 @@
 'use client';
 
-import { formatRelativeTime } from '@ustapilot/localization';
-import { Badge, StatusPill } from '@ustapilot/ui';
-import { JobRequestStatus, type AdminJobSummary } from '@ustapilot/types';
+import { formatRelativeTime } from '@talpio/localization';
+import { Badge, StatusPill } from '@talpio/ui';
+import { JobRequestStatus, type AdminJobSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

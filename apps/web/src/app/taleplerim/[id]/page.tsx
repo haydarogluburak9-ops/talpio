@@ -1,4 +1,4 @@
-import { buttonVariants } from '@ustapilot/ui';
+import { buttonVariants } from '@talpio/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -6,7 +6,7 @@ import { JobDetail } from '@/features/jobs/job-detail';
 import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Talep detayı',
+  title: t('job.detailTitle'),
   robots: { index: false, follow: false },
 };
 

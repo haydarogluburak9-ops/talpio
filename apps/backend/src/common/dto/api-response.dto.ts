@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { AppErrorDetail } from '../errors/app.exception';
 
 /**
- * `@ustapilot/types` içindeki PaginationMeta ile birebir aynı olmalıdır;
+ * `@talpio/types` içindeki PaginationMeta ile birebir aynı olmalıdır;
  * istemciler zarfı o tiple okur.
  */
 export interface PaginationMeta {
@@ -41,7 +41,7 @@ export class ApiErrorBodyDto {
   @ApiProperty({ example: 'OFFER_ALREADY_ACCEPTED' })
   code!: string;
 
-  @ApiProperty({ example: 'Bu iş için zaten bir usta seçilmiş.' })
+  @ApiProperty({ example: 'Bu iş için zaten bir satıcı seçilmiş.' })
   message!: string;
 
   @ApiPropertyOptional({ type: 'array', items: { type: 'object' } })

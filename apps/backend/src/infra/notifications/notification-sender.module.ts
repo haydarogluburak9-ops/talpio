@@ -12,6 +12,12 @@ import {
   type PushSender,
   type SmsSender,
 } from './notification-sender';
+import {
+  FirebasePushSender,
+  NetgsmSmsSender,
+  SmtpEmailSender,
+  TwilioSmsSender,
+} from './production-notification.senders';
 
 /**
  * Kanal sürücülerini ortam değişkeninden seçer.
@@ -29,29 +35,46 @@ function warnIfMock(logger: Logger, channel: string, driver: string): void {
   }
 }
 
-function selectPushSender(config: AppConfigService, mock: MockPushSender): PushSender {
+function selectPushSender(
+  config: AppConfigService,
+  mock: MockPushSender,
+  firebase: FirebasePushSender,
+): PushSender {
   const driver = config.notifications.pushDriver;
   warnIfMock(new Logger('NotificationSenderModule'), 'Push', driver);
 
   if (driver === 'mock') return mock;
+  if (driver === 'firebase') return firebase;
 
-  // Ayakta kalıp her gönderimde hata vermektense açılışta durmak yeğdir.
   throw new Error(`Push sürücüsü adaptörü henüz yazılmadı: ${driver}`);
 }
 
-function selectEmailSender(config: AppConfigService, mock: MockEmailSender): EmailSender {
+function selectEmailSender(
+  config: AppConfigService,
+  mock: MockEmailSender,
+  smtp: SmtpEmailSender,
+): EmailSender {
   const driver = config.notifications.mailDriver;
   warnIfMock(new Logger('NotificationSenderModule'), 'E-posta', driver);
 
   if (driver === 'mock') return mock;
+  if (driver === 'smtp') return smtp;
 
   throw new Error(`E-posta sürücüsü adaptörü henüz yazılmadı: ${driver}`);
 }
 
-function selectSmsSender(config: AppConfigService, mock: MockSmsSender): SmsSender {
+function selectSmsSender(
+  config: AppConfigService,
+  mock: MockSmsSender,
+  netgsm: NetgsmSmsSender,
+  twilio: TwilioSmsSender,
+): SmsSender {
   const driver = config.notifications.smsDriver;
+  warnIfMock(new Logger('NotificationSenderModule'), 'SMS', driver);
 
   if (driver === 'mock') return mock;
+  if (driver === 'netgsm') return netgsm;
+  if (driver === 'twilio') return twilio;
 
   throw new Error(`SMS sürücüsü adaptörü henüz yazılmadı: ${driver}`);
 }
@@ -63,19 +86,23 @@ function selectSmsSender(config: AppConfigService, mock: MockSmsSender): SmsSend
     MockPushSender,
     MockEmailSender,
     MockSmsSender,
+    FirebasePushSender,
+    SmtpEmailSender,
+    NetgsmSmsSender,
+    TwilioSmsSender,
     {
       provide: PUSH_SENDER,
-      inject: [AppConfigService, MockPushSender],
+      inject: [AppConfigService, MockPushSender, FirebasePushSender],
       useFactory: selectPushSender,
     },
     {
       provide: EMAIL_SENDER,
-      inject: [AppConfigService, MockEmailSender],
+      inject: [AppConfigService, MockEmailSender, SmtpEmailSender],
       useFactory: selectEmailSender,
     },
     {
       provide: SMS_SENDER,
-      inject: [AppConfigService, MockSmsSender],
+      inject: [AppConfigService, MockSmsSender, NetgsmSmsSender, TwilioSmsSender],
       useFactory: selectSmsSender,
     },
   ],

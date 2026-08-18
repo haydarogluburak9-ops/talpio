@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { ProviderProfile } from '@ustapilot/types';
+import type { ProviderProfile } from '@talpio/types';
 import {
   Badge,
   Button,
@@ -12,12 +12,12 @@ import {
   Field,
   Input,
   Textarea,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import {
   updateProviderProfileSchema,
   type UpdateProviderProfileInput,
   type UpdateProviderProfilePayload,
-} from '@ustapilot/validation';
+} from '@talpio/validation';
 import { useForm } from 'react-hook-form';
 
 import { t } from '@/lib/i18n';
@@ -130,7 +130,7 @@ export function ProviderProfileForm({ profile }: { profile: ProviderProfile }) {
   );
 }
 
-/** Tamamlanan iş, puan ve yorum sayısı işlerden türetilir; usta bunları düzenleyemez. */
+/** Tamamlanan iş, puan ve yorum sayısı işlerden türetilir; satıcı bunları düzenleyemez. */
 function ProviderStats({ profile }: { profile: ProviderProfile }) {
   const items = [
     { label: t('profile.completedJobs'), value: String(profile.completedJobCount) },

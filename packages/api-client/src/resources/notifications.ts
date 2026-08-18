@@ -1,11 +1,11 @@
-import { API_ROUTES } from '@ustapilot/config';
+import { API_ROUTES } from '@talpio/config';
 import type {
   DevicePlatform,
   DeviceToken,
   Notification,
   NotificationFeedMeta,
   NotificationType,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 

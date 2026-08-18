@@ -1,10 +1,10 @@
-import { canTransitionJobStatus } from '@ustapilot/business-logic';
-import { JobRequestStatus, OrderStatus } from '@ustapilot/types';
+import { canTransitionJobStatus } from '@talpio/business-logic';
+import { JobRequestStatus, OrderStatus } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 
 /**
- * Siparişin durumu ile işin durumu birlikte ilerler. İş akışı müşteri ve usta
+ * Siparişin durumu ile işin durumu birlikte ilerler. İş akışı müşteri ve satıcı
  * ekranlarında talep üzerinden okunduğu için ikisi ayrı düşmemelidir.
  */
 const JOB_STATUS_FOR_ORDER: Partial<Record<OrderStatus, JobRequestStatus>> = {

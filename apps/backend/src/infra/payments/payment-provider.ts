@@ -1,4 +1,4 @@
-import type { PaymentStatus } from '@ustapilot/types';
+import type { PaymentStatus } from '@talpio/types';
 
 /** Nest DI belirteci; etkin sağlayıcı ortam değişkeninden seçilir. */
 export const PAYMENT_PROVIDER = Symbol('PAYMENT_PROVIDER');

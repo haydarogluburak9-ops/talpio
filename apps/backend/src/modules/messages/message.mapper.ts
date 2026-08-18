@@ -5,7 +5,7 @@ import type {
   Message,
   MessageAttachment,
   MessagePreview,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 /** Sohbet sorgularında daima çekilen ilişkiler. */
 export const conversationInclude = {
@@ -50,6 +50,8 @@ export function toConversation(
     id: row.id,
     jobRequestId: row.jobRequestId,
     orderId: row.orderId,
+    title: row.title,
+    isGroup: row.isGroup,
     status: row.status,
     participants: row.participants.map((item) => toParticipant(item, options.fileBaseUrl)),
     lastMessage: row.messages[0] ? toPreview(row.messages[0]) : null,

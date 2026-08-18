@@ -1,8 +1,8 @@
 'use client';
 
-import { SUPPORT_TICKET_STATUS_TONES } from '@ustapilot/config';
-import { formatRelativeTime, supportTicketStatusLabel } from '@ustapilot/localization';
-import type { SupportTicket } from '@ustapilot/types';
+import { SUPPORT_TICKET_STATUS_TONES } from '@talpio/config';
+import { formatRelativeTime, supportTicketStatusLabel } from '@talpio/localization';
+import type { SupportTicket } from '@talpio/types';
 import {
   buttonVariants,
   Card,
@@ -11,7 +11,7 @@ import {
   ErrorState,
   ListSkeleton,
   StatusPill,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import Link from 'next/link';
 
 import { publicEnv } from '@/lib/env';

@@ -4,45 +4,53 @@ import {
   OrderStatus,
   Permission,
   UserRole,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 /**
  * Rol → izin matrisi. Bu tablo yalnızca kaba yetkiyi belirler; kaydın
  * sahipliği gibi nesne bazlı kontroller ayrı fonksiyonlarla yapılır ve
  * ikisi birlikte uygulanır.
  */
+const MARKETPLACE_PERMISSIONS = [
+  Permission.JOB_CREATE,
+  Permission.JOB_READ_OWN,
+  Permission.JOB_UPDATE_OWN,
+  Permission.JOB_CANCEL_OWN,
+  Permission.OFFER_CREATE,
+  Permission.OFFER_READ_OWN,
+  Permission.OFFER_READ_FOR_OWN_JOB,
+  Permission.OFFER_ACCEPT,
+  Permission.OFFER_WITHDRAW_OWN,
+  Permission.ORDER_READ_OWN,
+  Permission.ORDER_UPDATE_STATUS,
+  Permission.MESSAGE_SEND,
+  Permission.MESSAGE_READ_OWN,
+  Permission.REVIEW_CREATE,
+  Permission.REVIEW_REPLY,
+  Permission.PROVIDER_PROFILE_MANAGE_OWN,
+  Permission.PROVIDER_DOCUMENT_UPLOAD_OWN,
+  Permission.PAYMENT_READ_OWN,
+  Permission.SUPPORT_TICKET_CREATE,
+  Permission.SUPPORT_TICKET_READ_OWN,
+  Permission.REQUEST_CREATE,
+  Permission.REQUEST_READ_OWN,
+  Permission.REQUEST_READ_MATCHED,
+  Permission.REQUEST_UPDATE_OWN,
+  Permission.REQUEST_CANCEL_OWN,
+  Permission.REQUEST_OFFER_CREATE,
+  Permission.REQUEST_OFFER_READ_OWN,
+  Permission.REQUEST_OFFER_UPDATE_OWN,
+  Permission.REQUEST_OFFER_ACCEPT,
+  Permission.SUPPLIER_PROFILE_MANAGE,
+  Permission.SOCIAL_PROFILE_MANAGE,
+  Permission.SOCIAL_POST_CREATE,
+  Permission.SOCIAL_INTERACT,
+  Permission.SOCIAL_REPORT,
+] as const;
+
 export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
-  [UserRole.CUSTOMER]: [
-    Permission.JOB_CREATE,
-    Permission.JOB_READ_OWN,
-    Permission.JOB_UPDATE_OWN,
-    Permission.JOB_CANCEL_OWN,
-    Permission.OFFER_READ_FOR_OWN_JOB,
-    Permission.OFFER_ACCEPT,
-    Permission.ORDER_READ_OWN,
-    Permission.MESSAGE_SEND,
-    Permission.MESSAGE_READ_OWN,
-    Permission.REVIEW_CREATE,
-    Permission.PAYMENT_READ_OWN,
-    Permission.SUPPORT_TICKET_CREATE,
-    Permission.SUPPORT_TICKET_READ_OWN,
-  ],
-  [UserRole.PROVIDER]: [
-    Permission.JOB_READ_OWN,
-    Permission.OFFER_CREATE,
-    Permission.OFFER_READ_OWN,
-    Permission.OFFER_WITHDRAW_OWN,
-    Permission.ORDER_READ_OWN,
-    Permission.ORDER_UPDATE_STATUS,
-    Permission.MESSAGE_SEND,
-    Permission.MESSAGE_READ_OWN,
-    Permission.REVIEW_REPLY,
-    Permission.PROVIDER_PROFILE_MANAGE_OWN,
-    Permission.PROVIDER_DOCUMENT_UPLOAD_OWN,
-    Permission.PAYMENT_READ_OWN,
-    Permission.SUPPORT_TICKET_CREATE,
-    Permission.SUPPORT_TICKET_READ_OWN,
-  ],
+  [UserRole.CUSTOMER]: MARKETPLACE_PERMISSIONS,
+  [UserRole.PROVIDER]: MARKETPLACE_PERMISSIONS,
   [UserRole.SUPPORT]: [
     Permission.JOB_READ_ANY,
     Permission.OFFER_READ_ANY,
@@ -69,6 +77,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     Permission.USER_MANAGE,
     Permission.SETTINGS_MANAGE,
     Permission.AUDIT_LOG_READ,
+    Permission.ADMIN_REQUEST_MODERATE,
+    Permission.ADMIN_SOCIAL_MODERATE,
   ],
   [UserRole.SUPER_ADMIN]: Object.values(Permission),
 };
@@ -94,9 +104,9 @@ export interface ActorContext {
 export interface JobAccessContext {
   customerId: string;
   status: JobRequestStatus;
-  /** Teklifi kabul edilmiş ustanın profil kimliği. */
+  /** Teklifi kabul edilmiş satıcının profil kimliği. */
   selectedProviderProfileId?: string | null;
-  /** Bu işe teklif vermiş ustaların profil kimlikleri. */
+  /** Bu işe teklif vermiş satıcıların profil kimlikleri. */
   offeredProviderProfileIds?: readonly string[];
 }
 
@@ -109,7 +119,7 @@ export function canViewJob(actor: ActorContext, job: JobAccessContext): boolean 
   if (isStaff(actor.role)) return true;
   if (actor.userId === job.customerId) return true;
 
-  if (actor.role === UserRole.PROVIDER && actor.providerProfileId) {
+  if (actor.providerProfileId) {
     if (job.selectedProviderProfileId === actor.providerProfileId) return true;
     if (job.offeredProviderProfileIds?.includes(actor.providerProfileId)) return true;
     return OFFERABLE_JOB_STATUSES.includes(job.status);
@@ -119,14 +129,13 @@ export function canViewJob(actor: ActorContext, job: JobAccessContext): boolean 
 }
 
 /**
- * Açık adres ve koordinat yalnızca işi alan ustaya, iş sahibine ve personele
+ * Açık adres ve koordinat yalnızca işi alan satıcıya, iş sahibine ve personele
  * gösterilir. Havuzdaki ustalar yalnızca ilçe seviyesini görür.
  */
 export function canViewFullAddress(actor: ActorContext, job: JobAccessContext): boolean {
   if (isStaff(actor.role)) return true;
   if (actor.userId === job.customerId) return true;
   return (
-    actor.role === UserRole.PROVIDER &&
     actor.providerProfileId != null &&
     job.selectedProviderProfileId === actor.providerProfileId
   );
@@ -154,7 +163,7 @@ export function canSubmitOffer(input: {
   providerDistrictIds: readonly string[];
   hasExistingOffer: boolean;
 }): OfferEligibility {
-  if (input.actor.role !== UserRole.PROVIDER || !input.actor.providerProfileId) {
+  if (!input.actor.providerProfileId) {
     return { allowed: false, reason: 'NOT_PROVIDER' };
   }
   if (!input.providerIsVerified) {

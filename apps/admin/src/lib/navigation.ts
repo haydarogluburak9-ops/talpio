@@ -5,17 +5,21 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
+  Flag,
   Gauge,
   Handshake,
   LayoutGrid,
   LifeBuoy,
   MapPin,
   MessageSquareWarning,
+  Package,
   Percent,
   Receipt,
   Settings,
+  ShieldAlert,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
   Star,
   Tag,
   TrendingUp,
@@ -25,7 +29,7 @@ import {
 } from 'lucide-react';
 
 export interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: LucideIcon;
   /**
@@ -37,69 +41,75 @@ export interface NavItem {
 }
 
 export interface NavGroup {
-  title: string;
+  titleKey: string;
   items: NavItem[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
   {
-    title: 'Genel',
-    items: [{ label: 'Panel', href: '/dashboard', icon: Gauge }],
+    titleKey: 'admin.groupOverview',
+    items: [{ labelKey: 'admin.dashboard', href: '/dashboard', icon: Gauge }],
   },
   {
-    title: 'Kullanıcılar',
+    titleKey: 'admin.groupUsers',
     items: [
-      { label: 'Kullanıcılar', href: '/users', icon: Users },
-      { label: 'Ustalar', href: '/masters', icon: Building2 },
-      { label: 'Usta doğrulamaları', href: '/verifications', icon: BadgeCheck },
+      { labelKey: 'admin.users', href: '/users', icon: Users },
+      { labelKey: 'admin.businesses', href: '/masters', icon: Building2 },
+      { labelKey: 'admin.verifications', href: '/verifications', icon: BadgeCheck },
     ],
   },
   {
-    title: 'İşler',
+    titleKey: 'admin.groupWork',
     items: [
-      { label: 'İş talepleri', href: '/job-requests', icon: ClipboardList },
-      { label: 'Teklifler', href: '/offers', icon: Handshake },
-      { label: 'Siparişler', href: '/orders', icon: ShoppingBag },
-      { label: 'Yorumlar', href: '/reviews', icon: Star },
+      { labelKey: 'admin.jobRequests', href: '/job-requests', icon: ClipboardList },
+      { labelKey: 'admin.commerceRequests', href: '/commerce-requests', icon: Package },
+      { labelKey: 'admin.offers', href: '/offers', icon: Handshake },
+      { labelKey: 'admin.orders', href: '/orders', icon: ShoppingBag },
+      { labelKey: 'admin.reviews', href: '/reviews', icon: Star },
     ],
   },
   {
-    title: 'Katalog',
+    titleKey: 'admin.groupCatalog',
     items: [
-      { label: 'Kategoriler', href: '/categories', icon: LayoutGrid },
-      { label: 'Konumlar', href: '/locations', icon: MapPin },
+      { labelKey: 'admin.categories', href: '/categories', icon: LayoutGrid },
+      { labelKey: 'admin.locations', href: '/locations', icon: MapPin },
     ],
   },
   {
-    title: 'Finans',
+    titleKey: 'admin.groupFinance',
     items: [
-      { label: 'Ödemeler', href: '/payments', icon: CreditCard },
-      { label: 'İşlemler', href: '/transactions', icon: Receipt },
-      { label: 'Komisyonlar', href: '/commissions', icon: Percent },
-      { label: 'Abonelikler', href: '/subscriptions', icon: Wallet, planned: true },
+      { labelKey: 'admin.payments', href: '/payments', icon: CreditCard },
+      { labelKey: 'admin.transactions', href: '/transactions', icon: Receipt },
+      { labelKey: 'admin.commissions', href: '/commissions', icon: Percent },
+      { labelKey: 'admin.subscriptions', href: '/subscriptions', icon: Wallet },
     ],
   },
   {
-    title: 'Destek',
+    titleKey: 'admin.groupSupport',
     items: [
-      { label: 'Destek talepleri', href: '/support', icon: LifeBuoy },
-      { label: 'Şikâyetler', href: '/complaints', icon: MessageSquareWarning },
+      { labelKey: 'admin.supportTickets', href: '/support', icon: LifeBuoy },
+      { labelKey: 'admin.complaints', href: '/complaints', icon: MessageSquareWarning },
     ],
   },
   {
-    title: 'Büyüme',
+    titleKey: 'admin.groupGrowth',
     items: [
-      { label: 'Kampanyalar', href: '/promotions', icon: Tag, planned: true },
-      { label: 'Bildirimler', href: '/notifications', icon: Bell },
-      { label: 'Raporlar', href: '/reports', icon: TrendingUp },
+      { labelKey: 'admin.campaigns', href: '/promotions', icon: Tag },
+      { labelKey: 'admin.moderation', href: '/moderation', icon: ShieldAlert },
+      { labelKey: 'admin.fraud', href: '/fraud', icon: Flag },
+      { labelKey: 'admin.aiUsage', href: '/ai-usage', icon: Sparkles },
+      { labelKey: 'admin.notifications', href: '/notifications', icon: Bell },
+      { labelKey: 'admin.reports', href: '/reports', icon: TrendingUp },
     ],
   },
   {
-    title: 'Sistem',
+    titleKey: 'admin.groupSystem',
     items: [
-      { label: 'Sistem ayarları', href: '/settings', icon: Settings },
-      { label: 'Yetkiler', href: '/settings/roles', icon: ShieldCheck },
-      { label: 'Denetim kayıtları', href: '/audit-logs', icon: FileText },
+      { labelKey: 'admin.systemHealth', href: '/system-health', icon: Gauge },
+      { labelKey: 'admin.backupStatus', href: '/backup', icon: FileText },
+      { labelKey: 'admin.settings', href: '/settings', icon: Settings },
+      { labelKey: 'admin.roles', href: '/settings/roles', icon: ShieldCheck },
+      { labelKey: 'admin.audit', href: '/audit-logs', icon: FileText },
     ],
   },
 ];

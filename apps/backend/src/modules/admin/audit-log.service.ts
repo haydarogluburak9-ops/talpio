@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { AuditLogEntry } from '@ustapilot/types';
+import type { AuditLogEntry } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import type { Prisma } from '@/generated/prisma/client';
@@ -54,6 +54,7 @@ export class AuditLogService {
     const where = {
       ...(query.entityType ? { entityType: query.entityType } : {}),
       ...(query.actorId ? { actorId: query.actorId } : {}),
+      ...(query.action ? { action: query.action } : {}),
     };
 
     const [rows, total] = await Promise.all([

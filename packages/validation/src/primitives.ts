@@ -1,4 +1,4 @@
-import { AUTH, PAGINATION } from '@ustapilot/config';
+import { AUTH, PAGINATION } from '@talpio/config';
 import { z } from 'zod';
 
 export const uuidSchema = z.uuid({ message: 'Geçersiz kimlik' });
@@ -49,6 +49,18 @@ export const fullNameSchema = z
   .trim()
   .min(2, 'Ad soyad en az 2 karakter olmalıdır')
   .max(120, 'Ad soyad çok uzun');
+
+/** Instagram tarzı profil kullanıcı adı (@handle). */
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3, 'Kullanıcı adı en az 3 karakter olmalıdır')
+  .max(32, 'Kullanıcı adı en fazla 32 karakter olabilir')
+  .regex(
+    /^[a-z0-9._]+$/,
+    'Kullanıcı adı yalnızca küçük harf, rakam, nokta ve alt çizgi içerebilir',
+  );
 
 /** Kuruş cinsinden pozitif tam sayı. Kayan noktalı tutar kabul edilmez. */
 export const minorAmountSchema = z

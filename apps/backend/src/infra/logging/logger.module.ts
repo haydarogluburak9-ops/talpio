@@ -43,7 +43,7 @@ const REDACTED_PATHS = [
           autoLogging: {
             ignore: (req: IncomingMessage) => req.url?.startsWith('/health') ?? false,
           },
-          customProps: () => ({ service: 'ustapilot-api' }),
+          customProps: () => ({ service: 'talpio-api' }),
           ...(config.isProduction
             ? {}
             : {

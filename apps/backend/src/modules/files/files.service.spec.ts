@@ -1,4 +1,4 @@
-import { FilePurpose, UserRole } from '@ustapilot/types';
+import { FilePurpose, UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import type { PrismaService } from '@infra/prisma/prisma.service';
@@ -60,7 +60,11 @@ function createMocks(): { prisma: PrismaMock; storage: StorageMock } {
 }
 
 function createService(prisma: PrismaMock, storage: StorageMock): FilesService {
-  return new FilesService(prisma as unknown as PrismaService, storage as unknown as StorageService);
+  return new FilesService(
+    prisma as unknown as PrismaService,
+    storage as unknown as StorageService,
+    { enqueue: jest.fn() } as never,
+  );
 }
 
 function imageInput(overrides: Record<string, unknown> = {}) {
@@ -108,7 +112,7 @@ describe('FilesService', () => {
       expect(args).toMatchObject({ folder: 'jobs', isPublic: true });
     });
 
-    it('usta belgesini gizli tutar ve imzalı adres üretir', async () => {
+    it('satıcı belgesini gizli tutar ve imzalı adres üretir', async () => {
       storage.upload.mockResolvedValue({ storageKey: 'documents/x.pdf', url: null });
       prisma.fileAsset.create.mockResolvedValue(
         fileRow({ isPublic: false, storageKey: 'documents/x.pdf', mimeType: 'application/pdf' }),

@@ -1,7 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import { PaymentStatus } from '@ustapilot/types';
+import { PaymentStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
@@ -23,7 +23,7 @@ import type {
  */
 const FAILURE_TRIGGER_MINOR = 13;
 
-const SIGNATURE_HEADER = 'x-ustapilot-signature';
+const SIGNATURE_HEADER = 'x-talpio-signature';
 
 const WEBHOOK_STATUSES: Record<string, PaymentStatus> = {
   'payment.captured': PaymentStatus.CAPTURED,

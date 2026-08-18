@@ -3,11 +3,24 @@ export interface NavItem {
   labelKey: string;
 }
 
-/** Üst menü. Etiketler çeviri kataloğundan çözülür. */
+/** Üst menü (giriş sonrası / genel). */
 export const primaryNav: NavItem[] = [
+  { href: '/akis', labelKey: 'nav.feed' },
+  { href: '/kesfet', labelKey: 'nav.discover' },
   { href: '/kategoriler', labelKey: 'nav.categories' },
+  { href: '/tedarik', labelKey: 'nav.newSupplyRequest' },
   { href: '/nasil-calisir', labelKey: 'nav.howItWorks' },
-  { href: '/usta-ol', labelKey: 'nav.becomeProvider' },
+  { href: '/satici/panel', labelKey: 'nav.myBusiness' },
+];
+
+/** Giriş öncesi ana sayfa üst menüsü (mockup). */
+export const landingNav: NavItem[] = [
+  { href: '/kesfet', labelKey: 'nav.discover' },
+  { href: '/kategoriler', labelKey: 'nav.deals' },
+  { href: '/tedarik', labelKey: 'nav.supplyRequests' },
+  { href: '/satici/panel', labelKey: 'nav.myBusiness' },
+  { href: '/akis', labelKey: 'nav.campaigns' },
+  { href: '/nasil-calisir', labelKey: 'nav.resources' },
 ];
 
 export const footerNav: { titleKey: string; items: NavItem[] }[] = [
@@ -19,7 +32,11 @@ export const footerNav: { titleKey: string; items: NavItem[] }[] = [
     ],
   },
   {
-    titleKey: 'nav.becomeProvider',
-    items: [{ href: '/usta-ol', labelKey: 'nav.becomeProvider' }],
+    titleKey: 'nav.legal',
+    items: [
+      { href: '/yasal/gizlilik', labelKey: 'nav.privacy' },
+      { href: '/yasal/kullanim-kosullari', labelKey: 'nav.terms' },
+      { href: '/yasal/kvkk', labelKey: 'nav.gdpr' },
+    ],
   },
 ];

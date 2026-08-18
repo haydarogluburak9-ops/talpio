@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NotificationChannel } from '@ustapilot/types';
+import { NotificationChannel } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
 

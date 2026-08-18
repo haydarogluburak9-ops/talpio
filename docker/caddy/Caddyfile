@@ -1,0 +1,34 @@
+# talpio.app — production reverse proxy (Caddy otomatik HTTPS)
+{
+	email {$CADDY_EMAIL}
+}
+
+(talpio_tls) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}
+
+talpio.app, www.talpio.app {
+	import talpio_tls
+	@www host www.talpio.app
+	redir @www https://talpio.app{uri} permanent
+	reverse_proxy web:3002
+}
+
+api.talpio.app {
+	import talpio_tls
+	reverse_proxy backend:3000
+}
+
+admin.talpio.app {
+	import talpio_tls
+	reverse_proxy admin:3001
+}
+
+media.talpio.app {
+	import talpio_tls
+	reverse_proxy minio:9000
+}

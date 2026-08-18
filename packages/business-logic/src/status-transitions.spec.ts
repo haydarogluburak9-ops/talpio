@@ -1,4 +1,4 @@
-import { JobRequestStatus, OfferStatus, OrderStatus } from '@ustapilot/types';
+import { JobRequestStatus, OfferStatus, OrderStatus } from '@talpio/types';
 
 import {
   canAcceptOffer,
@@ -100,7 +100,7 @@ describe('canAcceptOffer', () => {
     ).toBe(false);
   });
 
-  it('usta zaten seçilmişse ikinci teklif kabul edilemez', () => {
+  it('satıcı zaten seçilmişse ikinci teklif kabul edilemez', () => {
     expect(
       canAcceptOffer({
         offerStatus: OfferStatus.SUBMITTED,

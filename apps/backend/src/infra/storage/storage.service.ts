@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { extname } from 'node:path';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -92,6 +96,11 @@ export class StorageService {
     return `${this.publicBaseUrl}/${storageKey}`;
   }
 
+  /** Sağlık kontrolü: kova erişilebilir mi? */
+  async ping(): Promise<void> {
+    await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+  }
+
   /**
    * Nesneyi depodan siler.
    *
@@ -105,6 +114,45 @@ export class StorageService {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`Nesne silinemedi (${storageKey}): ${message}`);
     }
+  }
+
+  async downloadBuffer(storageKey: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: storageKey }),
+    );
+    const bytes = await response.Body?.transformToByteArray();
+    if (!bytes) throw new Error(`Nesne okunamadı: ${storageKey}`);
+    return Buffer.from(bytes);
+  }
+
+  async replaceObject(storageKey: string, body: Buffer, mimeType: string): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+        Body: body,
+        ContentType: mimeType,
+        ContentLength: body.byteLength,
+      }),
+    );
+  }
+
+  async uploadRaw(storageKey: string, body: Buffer, mimeType: string): Promise<void> {
+    await this.replaceObject(storageKey, body, mimeType);
+  }
+
+  /** ffmpeg gibi harici araçlar için geçici dosya yolu. */
+  async downloadToTemp(storageKey: string): Promise<string> {
+    const buffer = await this.downloadBuffer(storageKey);
+    const dir = await mkdtemp(join(tmpdir(), 'talpio-media-'));
+    const filePath = join(dir, storageKey.split('/').pop() ?? 'source.bin');
+    await writeFile(filePath, buffer);
+    return filePath;
+  }
+
+  async removeTempPath(filePath: string): Promise<void> {
+    const dir = join(filePath, '..');
+    await rm(dir, { recursive: true, force: true }).catch(() => undefined);
   }
 }
 

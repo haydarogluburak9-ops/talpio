@@ -1,12 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import {
   NotificationChannel,
+  NotificationType,
   type DeviceToken,
   type Notification,
   type NotificationDispatch,
   type NotificationFeedMeta,
   type NotificationParams,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { buildPaginationMeta, PaginatedResult } from '@common/dto/api-response.dto';
@@ -24,6 +25,7 @@ import {
   type SendResult,
   type SmsSender,
 } from '@infra/notifications/notification-sender';
+import { MetricsService } from '@infra/metrics/metrics.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
@@ -37,6 +39,8 @@ export type DispatchInput = NotificationDispatch & {
   userId: string;
   /** Bildirime dokunulduğunda gidilecek hedef; `deepLinks` yardımcısıyla üretilir. */
   deepLink?: string | null;
+  /** Aynı anahtar ikinci kez in-app satırı yazılmaz. */
+  dedupeKey?: string | null;
 };
 
 const recipientSelect = {
@@ -45,7 +49,7 @@ const recipientSelect = {
   phone: true,
   fullName: true,
   locale: true,
-  deviceTokens: { select: { token: true, locale: true } },
+  deviceTokens: { where: { revokedAt: null }, select: { token: true, locale: true } },
 } satisfies Prisma.UserSelect;
 
 type Recipient = Prisma.UserGetPayload<{ select: typeof recipientSelect }>;
@@ -61,6 +65,7 @@ export class NotificationsService {
     @Inject(PUSH_SENDER) private readonly push: PushSender,
     @Inject(EMAIL_SENDER) private readonly email: EmailSender,
     @Inject(SMS_SENDER) private readonly sms: SmsSender,
+    @Optional() private readonly metrics?: MetricsService,
   ) {}
 
   // -------------------------------------------------------------------------
@@ -84,10 +89,24 @@ export class NotificationsService {
       await this.deliver(input);
     } catch (error) {
       // Ana akış çoktan tamamlandı; burada yapılacak tek şey izi bırakmaktır.
+      this.metrics?.increment('notification_failures');
       this.logger.error(
         { userId: input.userId, type: input.type, error: describeError(error) },
         'Bildirim gönderilemedi',
       );
+    }
+  }
+
+  /**
+   * Worker yolu: hata yutulmaz, BullMQ yeniden dener ve tükenince DLQ'ya düşer.
+   * HTTP istekleri `dispatch` kullanmaya devam eder.
+   */
+  async dispatchStrict(input: DispatchInput): Promise<void> {
+    try {
+      await this.deliver(input);
+    } catch (error) {
+      this.metrics?.increment('notification_failures');
+      throw error;
     }
   }
 
@@ -193,6 +212,7 @@ export class NotificationsService {
         platform: dto.platform,
         locale,
         lastSeenAt: new Date(),
+        revokedAt: null,
       },
     });
 
@@ -201,11 +221,20 @@ export class NotificationsService {
 
   /** Oturum kapatıldığında çağrılır; başkasının jetonu silinemez. */
   async removeDeviceToken(user: AuthenticatedUser, token: string): Promise<{ removed: boolean }> {
-    const result = await this.prisma.deviceToken.deleteMany({
-      where: { token, userId: user.id },
+    const result = await this.prisma.deviceToken.updateMany({
+      where: { token, userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
     });
 
     return { removed: result.count > 0 };
+  }
+
+  async revokeAllDeviceTokens(userId: string): Promise<number> {
+    const result = await this.prisma.deviceToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return result.count;
   }
 
   /**
@@ -240,19 +269,42 @@ export class NotificationsService {
       return;
     }
 
-    const channels = channelsFor(input.type);
+    if (input.dedupeKey) {
+      const existing = await this.prisma.notification.findUnique({
+        where: { dedupeKey: input.dedupeKey },
+        select: { id: true },
+      });
+      if (existing) return;
+    }
+
+    const channels = await this.resolveChannels(recipient.id, input.type);
+    if (channels.length === 0) {
+      this.logger.debug(
+        { userId: recipient.id, type: input.type },
+        'Bildirim kanalları tercih nedeniyle boş; gönderim atlandı',
+      );
+      return;
+    }
+
     const params = input.params as unknown as NotificationParams;
     const deepLink = input.deepLink ?? null;
 
-    const created = await this.prisma.notification.create({
-      data: {
-        userId: recipient.id,
-        type: input.type,
-        params: params,
-        channels,
-        deepLink,
-      },
-    });
+    let created;
+    try {
+      created = await this.prisma.notification.create({
+        data: {
+          userId: recipient.id,
+          type: input.type,
+          params: params,
+          channels,
+          deepLink,
+          dedupeKey: input.dedupeKey ?? null,
+        },
+      });
+    } catch (error) {
+      if (isUniqueViolation(error) && input.dedupeKey) return;
+      throw error;
+    }
 
     const external = channels.filter((channel) => channel !== NotificationChannel.IN_APP);
     if (external.length === 0) return;
@@ -323,8 +375,44 @@ export class NotificationsService {
         return Promise.resolve({ delivered: false, failureReason: 'Bilinmeyen kanal.' });
     }
   }
+
+  private async resolveChannels(
+    userId: string,
+    type: NotificationType,
+  ): Promise<NotificationChannel[]> {
+    const defaults = channelsFor(type);
+    const pref = await this.prisma.notificationPreference.findUnique({
+      where: { userId_type: { userId, type } },
+      select: { inApp: true, push: true, email: true, sms: true },
+    });
+    if (!pref) return defaults;
+
+    return defaults.filter((channel) => {
+      switch (channel) {
+        case NotificationChannel.IN_APP:
+          return pref.inApp;
+        case NotificationChannel.PUSH:
+          return pref.push;
+        case NotificationChannel.EMAIL:
+          return pref.email;
+        case NotificationChannel.SMS:
+          return pref.sms;
+        default:
+          return false;
+      }
+    });
+  }
 }
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code?: string }).code === 'P2002'
+  );
 }

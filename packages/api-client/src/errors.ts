@@ -1,5 +1,5 @@
-import { ERROR_CODES } from '@ustapilot/types';
-import type { ApiErrorBody, ApiErrorDetail, ErrorCode } from '@ustapilot/types';
+import { ERROR_CODES } from '@talpio/types';
+import type { ApiErrorBody, ApiErrorDetail, ErrorCode } from '@talpio/types';
 
 /**
  * İstemci tarafındaki tek hata tipi. Arayüz kararlarını `code` üzerinden verir;

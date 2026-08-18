@@ -1,20 +1,18 @@
-# UstaPilot — Sistem Mimarisi
+# Talpio — Sistem Mimarisi
 
-> Doğru usta. Doğru fiyat. Güvenli hizmet.
+> İste. Teklif al. Fırsatı yakala.
 
-## 1. Genel Bakış
-
-UstaPilot, hizmet talebi oluşturan müşteriler ile ustaları buluşturan bir pazaryeri
-platformudur. İlk pazar Gaziantep'tir; mimari baştan **çok şehirli, çok ülkeli ve çok
-dilli** çalışacak şekilde kurgulanmıştır.
+Talpio talep odaklı ticaret + sosyal ticaret ağıdır. Ürün küreseldir; mimari
+**çok şehirli, çok ülkeli ve çok dilli** (EN, TR, DE, ES, FR, AR) kullanıma göredir. Paketler `@talpio/*`.
 
 Sistem üç istemci ve bir modüler monolit backend'den oluşur:
 
 ```mermaid
 flowchart TB
     subgraph Clients["İstemciler"]
-        MOB["Flutter Mobil<br/>(Müşteri + Usta)"]
-        ADM["Next.js Admin Panel<br/>(Admin + Destek)"]
+        WEB["Next.js Web :3002"]
+        MOB["Expo Mobil<br/>(iOS / Android)"]
+        ADM["Next.js Admin :3001"]
     end
 
     subgraph Edge["Edge"]
@@ -113,22 +111,15 @@ Kesişen ilgi alanları (cross-cutting):
 | `notifications` | Push/e-posta/SMS gönderimi, yeniden deneme                         |
 | `job-matching`  | Yeni talebi uygun ustalara dağıtma (kategori + bölge)              |
 | `media`         | Görsel işleme, thumbnail, EXIF temizleme                           |
-| `payments`      | Provizyon yakalama, ustaya aktarım, mutabakat                      |
+| `payments`      | Provizyon yakalama, satıcıya aktarım, mutabakat                      |
 | `maintenance`   | Süresi dolan teklifleri kapatma, hatırlatmalar, istatistik toplama |
 
-### 2.4 Mobil (Flutter — feature-first clean architecture)
+### 2.4 Mobil (Expo / React Native)
 
-```
-presentation  →  Riverpod provider / notifier  →  UseCase (domain)
-                                                →  Repository (domain arayüz)
-                                                →  RepositoryImpl (data)
-                                                →  RemoteDataSource (Dio) | LocalDataSource (Isar/Secure Storage)
-```
+Aktif istemci `apps/mobile` (Expo SDK 57). `apps/mobile-flutter` arşivdir, build'e dahil değildir.
 
-- Sunum katmanı domain modelleriyle çalışır; DTO sızıntısı yoktur.
-- Ağ hataları `Failure` tipine dönüştürülür; her ekran `loading / empty / error / retry`
-  durumlarını ele alır.
-- Token yenileme Dio interceptor'ında tek-uçuş (single-flight) mantığıyla yapılır.
+Jeton `expo-secure-store` içindedir. Web ile aynı API sözleşmesi kullanılır; ekran seti
+birebir kopya değildir.
 
 ### 2.5 Admin panel (Next.js App Router)
 
@@ -154,46 +145,16 @@ usta-pilot/
 │  │  │  └─ main.ts
 │  │  └─ test/
 │  ├─ admin/                   # Next.js yönetim paneli
-│  │  └─ src/{app,components,features,lib,hooks}
-│  └─ mobile/                  # Flutter uygulaması
-│     └─ lib/{app,core,features}
-├─ packages/
-│  ├─ shared-types/            # backend ↔ admin ortak tipler ve enum'lar
-│  └─ eslint-config/           # ortak lint kuralları
-├─ docs/                       # bu dokümanlar
-├─ docker/                     # Dockerfile'lar ve init script'leri
-├─ .github/workflows/          # CI
-├─ docker-compose.yml
-├─ .env.example
-└─ package.json                # npm workspaces kökü
+│  ├─ web/                     # Next.js müşteri + satıcı
+│  ├─ mobile/                  # Expo (aktif)
+│  └─ mobile-flutter/          # ARŞİV — build dışı
+├─ packages/                   # types, config, validation, business-logic, api-client, localization, ui
+├─ docs/
+├─ docker/
+└─ docker-compose.yml
 ```
 
-Flutter uygulaması `apps/mobile` altında yer alır ancak npm workspace üyesi değildir;
-kendi `pubspec.yaml` bağımlılık yönetimini kullanır.
-
-### Flutter iç yapısı
-
-```
-lib/
-├─ app/                        # uygulama kökü, bootstrap, global provider'lar
-├─ core/
-│  ├─ api/                     # Dio istemcisi, interceptor'lar, envelope çözümleme
-│  ├─ auth/                    # oturum durumu, token deposu
-│  ├─ constants/
-│  ├─ errors/                  # Failure, exception eşlemesi
-│  ├─ extensions/
-│  ├─ localization/            # ARB dosyaları, l10n üretimi
-│  ├─ routing/                 # GoRouter, koruma (guard) mantığı
-│  ├─ storage/                 # secure storage, Isar
-│  ├─ theme/                   # renk, tipografi, boşluk, bileşen temaları
-│  ├─ utils/
-│  └─ widgets/                 # tasarım sistemi (AppButton, JobCard, ...)
-└─ features/
-   └─ <feature>/
-      ├─ data/                 # dto, datasource, repository_impl
-      ├─ domain/               # entity, repository arayüzü, usecase
-      └─ presentation/         # ekran, widget, provider
-```
+Aktif mobil `apps/mobile` (Expo) npm workspace üyesidir. Flutter iskeleti arşivdir.
 
 ## 4. Ortamlar
 
@@ -241,4 +202,4 @@ Aşağıdaki maddelerde makul varsayımlarla ilerlenmiştir; nihai karar sizindi
 | Push               | Firebase Cloud Messaging (ücretsiz katman)                     | `google-services.json` gerekir                 |
 | Hukuki metinler    | Yer tutucu taslak                                              | Avukat onayı gerekir                           |
 | Store hesapları    | Yok                                                            | Yayın aşamasında gerekli                       |
-| Production domain  | Yok                                                            | `ustapilot.com` varsayıldı, yapılandırılabilir |
+| Production domain  | Yok                                                            | `talpio.com` varsayıldı, yapılandırılabilir |

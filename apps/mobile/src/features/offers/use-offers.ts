@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateOfferBody, ListOffersParams } from '@ustapilot/api-client';
-import { PAGINATION, queryKeys } from '@ustapilot/config';
-import type { Offer } from '@ustapilot/types';
+import type { CreateOfferBody, ListOffersParams } from '@talpio/api-client';
+import { PAGINATION, queryKeys } from '@talpio/config';
+import type { Offer } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
-/** Ustanın verdiği teklifler. */
+/** Satıcının verdiği teklifler. */
 export function useMyOffersInfinite(params: Omit<ListOffersParams, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: queryKeys.offers.mine(params as Record<string, unknown>),
@@ -61,7 +61,7 @@ export function useCreateOffer() {
 }
 
 /**
- * Teklif kabulü talebi de değiştirir: usta seçilir ve rakip teklifler düşer.
+ * Teklif kabulü talebi de değiştirir: satıcı seçilir ve rakip teklifler düşer.
  * Bu yüzden hem teklif hem talep sorguları geçersizlenir.
  */
 export function useAcceptOffer(jobId: string) {

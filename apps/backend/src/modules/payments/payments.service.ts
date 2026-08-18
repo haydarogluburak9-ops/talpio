@@ -1,6 +1,8 @@
+import { createHash } from 'node:crypto';
+
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { OrderStatus, UserRole, type Payment, type Transaction } from '@ustapilot/types';
-import type { ProviderWalletSummary } from '@ustapilot/types';
+import { OrderStatus, UserRole, type Payment, type Transaction } from '@talpio/types';
+import type { ProviderWalletSummary } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaymentStatus, TransactionType } from '@/generated/prisma/client';
@@ -26,7 +28,7 @@ const SORTABLE_PAYMENT_FIELDS = ['createdAt', 'amountMinor'] as const;
 
 /**
  * Personelin iade edebileceği sipariş durumları ve iade sonrası varacakları
- * durum. Onaylanmış işte hakediş ustanın kullanılabilir bakiyesine geçtiği
+ * durum. Onaylanmış işte hakediş satıcının kullanılabilir bakiyesine geçtiği
  * için tek yanlı geri alınamaz; itiraz akışı ayrı yürür.
  */
 const REFUND_TARGET_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
@@ -274,7 +276,7 @@ export class PaymentsService {
   /**
    * Oturumdaki tarafın ödemeleri.
    *
-   * Müşteri kendi ödemelerini, usta üstlendiği siparişlerin ödemelerini görür;
+   * Müşteri kendi ödemelerini, satıcı üstlendiği siparişlerin ödemelerini görür;
    * personel için süzgeç uygulanmaz.
    */
   async listMine(
@@ -323,7 +325,7 @@ export class PaymentsService {
   /**
    * Muhasebe hareketleri.
    *
-   * Müşteri kendi ödeme ve iade kayıtlarını, usta cüzdan hareketleriyle
+   * Müşteri kendi ödeme ve iade kayıtlarını, satıcı cüzdan hareketleriyle
    * siparişlerinden kesilen komisyonu görür.
    */
   async listTransactions(
@@ -368,6 +370,27 @@ export class PaymentsService {
    */
   async handleWebhook(request: WebhookRequest): Promise<{ applied: boolean }> {
     const event = this.provider.parseWebhook(request);
+    const payloadHash = createHash('sha256').update(request.rawBody).digest('hex');
+
+    try {
+      await this.prisma.paymentWebhookEvent.create({
+        data: {
+          providerName: this.provider.name,
+          eventId: event.eventId,
+          payloadHash,
+        },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error &&
+        'code' in error &&
+        (error as { code?: string }).code === 'P2002'
+      ) {
+        return { applied: false };
+      }
+      throw error;
+    }
 
     const payment = await this.prisma.payment.findFirst({
       where: { providerReference: event.providerReference },
@@ -446,13 +469,15 @@ export class PaymentsService {
         },
       });
 
-      await syncJobStatus(
-        tx,
-        { jobRequestId: order.jobRequestId, jobStatus: order.jobRequest.status },
-        targetStatus,
-        actor.id,
-        dto.reason ?? 'Ödeme iade edildi',
-      );
+      if (order.jobRequestId && order.jobRequest) {
+        await syncJobStatus(
+          tx,
+          { jobRequestId: order.jobRequestId, jobStatus: order.jobRequest.status },
+          targetStatus,
+          actor.id,
+          dto.reason ?? 'Ödeme iade edildi',
+        );
+      }
 
       return tx.payment.findUniqueOrThrow({ where: { id } });
     });
@@ -623,7 +648,7 @@ export class PaymentsService {
 
     if (!profile) {
       throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
-        message: 'Bu işlem için usta profiliniz olmalıdır.',
+        message: 'Bu işlem için satıcı profiliniz olmalıdır.',
       });
     }
 

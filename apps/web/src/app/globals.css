@@ -1,5 +1,326 @@
 @import 'tailwindcss';
-@import '@ustapilot/ui/theme.css';
+@import '@talpio/ui/theme.css';
 
 /* Ortak bileşenlerdeki sınıflar Tailwind tarafından taranmalı. */
 @source '../../../../packages/ui/src';
+
+/* -------------------------------------------------------------------------
+   Ana sayfa atmosferi ve hareketler
+   ------------------------------------------------------------------------- */
+
+.hero-atmosphere {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 20%, rgb(255 106 0 / 0.22), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 75%, rgb(27 38 59 / 0.55), transparent 50%),
+    linear-gradient(165deg, #07111f 0%, #0d1b2a 42%, #1b263b 100%);
+}
+
+.landing-hero-atmosphere {
+  background:
+    radial-gradient(ellipse 42% 48% at 72% 44%, rgb(255 90 10 / 0.2), transparent 62%),
+    radial-gradient(ellipse 28% 32% at 68% 38%, rgb(255 180 80 / 0.08), transparent 50%),
+    radial-gradient(ellipse 36% 40% at 16% 22%, rgb(255 90 10 / 0.08), transparent 58%),
+    radial-gradient(ellipse 80% 55% at 50% 108%, rgb(2 10 20 / 0.9), transparent 55%),
+    linear-gradient(168deg, #04111f 0%, #061426 36%, #07192d 72%, #0a1e34 100%);
+}
+
+.landing-hero-atmosphere::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+  background-image:
+    radial-gradient(1.2px 1.2px at 18% 22%, rgb(255 255 255 / 0.18), transparent),
+    radial-gradient(1px 1px at 42% 38%, rgb(255 90 10 / 0.35), transparent),
+    radial-gradient(1.4px 1.4px at 71% 28%, rgb(255 255 255 / 0.14), transparent),
+    radial-gradient(1px 1px at 84% 62%, rgb(255 90 10 / 0.28), transparent),
+    radial-gradient(1.2px 1.2px at 33% 74%, rgb(255 255 255 / 0.1), transparent),
+    radial-gradient(1px 1px at 58% 16%, rgb(255 210 140 / 0.22), transparent);
+  mask-image: radial-gradient(ellipse 75% 70% at 62% 42%, black, transparent 78%);
+}
+
+.landing-hero-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  background-image: radial-gradient(rgb(255 140 50 / 0.55) 0.8px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 55% 60% at 70% 42%, black 20%, transparent 72%);
+}
+
+.landing-float {
+  animation: pin-float 5.6s ease-in-out infinite;
+}
+
+.landing-glass {
+  background: rgb(10 22 40 / 0.58);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.landing-phone-frame {
+  background:
+    linear-gradient(160deg, #f4f6f8 0%, #d8dee6 38%, #aeb8c4 72%, #f7f8fa 100%);
+  box-shadow:
+    0 40px 90px rgb(0 0 0 / 0.42),
+    0 0 0 1px rgb(255 255 255 / 0.35),
+    0 0 42px rgb(255 90 10 / 0.18),
+    inset 0 1px 0 rgb(255 255 255 / 0.75);
+}
+
+.landing-phone-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.35),
+    inset 8px 0 18px rgb(255 90 10 / 0.12),
+    inset -6px 0 14px rgb(255 255 255 / 0.18);
+}
+
+.landing-card-premium {
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 0.28),
+    0 2px 0 rgb(255 255 255 / 0.7) inset;
+}
+
+.hero-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black 40%, transparent 95%);
+}
+
+.hero-copy {
+  animation: hero-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-visual {
+  animation: hero-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+.hero-pin {
+  animation: pin-float 4.5s ease-in-out infinite;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pin-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.seller-hero-visual {
+  animation: hero-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+.seller-orbit {
+  animation: seller-pulse 3.8s ease-in-out infinite;
+}
+
+.seller-orbit-delay {
+  animation: seller-pulse 3.8s ease-in-out 0.9s infinite;
+}
+
+.seller-section-wash {
+  background:
+    radial-gradient(ellipse 55% 40% at 8% 0%, rgb(252 140 10 / 0.07), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 92% 100%, rgb(20 55 90 / 0.06), transparent 55%);
+}
+
+.seller-benefit {
+  animation: hero-rise 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes seller-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy,
+  .hero-visual,
+  .hero-pin,
+  .seller-hero-visual,
+  .seller-orbit,
+  .seller-orbit-delay,
+  .seller-benefit {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Sosyal uygulama kabuğu (Facebook benzeri akış)
+   ------------------------------------------------------------------------- */
+
+:root {
+  --social-canvas: #eef3f8;
+}
+
+.dark {
+  --social-canvas: #07111f;
+}
+
+.social-app {
+  background:
+    radial-gradient(ellipse 70% 45% at 8% -10%, rgb(255 106 0 / 0.14), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 96% 8%, rgb(14 165 233 / 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 35% at 70% 100%, rgb(139 92 246 / 0.08), transparent 55%),
+    var(--social-canvas);
+}
+
+.social-panel {
+  border: 1px solid rgb(255 255 255 / 0.8);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    0 10px 28px rgb(13 27 42 / 0.06);
+}
+
+.social-panel:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 14px 36px rgb(13 27 42 / 0.1);
+}
+
+.social-post {
+  padding-bottom: 0.25rem;
+}
+
+.dark .social-app {
+  background:
+    radial-gradient(ellipse 70% 45% at 8% -10%, rgb(255 106 0 / 0.1), transparent 52%),
+    radial-gradient(ellipse 55% 40% at 96% 8%, rgb(14 165 233 / 0.08), transparent 50%),
+    var(--social-canvas);
+}
+
+.dark .social-panel {
+  border-color: var(--border);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
+}
+
+.story-ring {
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    var(--story-ring, linear-gradient(135deg, #ff6a00, #ff8c42, #f59e0b)) border-box;
+  border: 3px solid transparent;
+}
+
+.story-ring-hot {
+  --story-ring: linear-gradient(135deg, #ff6a00, #fb7185);
+}
+.story-ring-urgent {
+  --story-ring: linear-gradient(135deg, #f59e0b, #facc15);
+}
+.story-ring-top {
+  --story-ring: linear-gradient(135deg, #22c55e, #84cc16);
+}
+.story-ring-campaigns {
+  --story-ring: linear-gradient(135deg, #0ea5e9, #6366f1);
+}
+.story-ring-products {
+  --story-ring: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+.story-ring-services {
+  --story-ring: linear-gradient(135deg, #14b8a6, #22c55e);
+}
+.story-ring-hashtag {
+  --story-ring: linear-gradient(135deg, #38bdf8, #ff6a00);
+}
+
+.story-progress {
+  animation: story-progress 5.5s linear forwards;
+}
+
+@keyframes story-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-progress {
+    animation: none;
+    width: 100%;
+  }
+}
+
+.social-feed-item {
+  animation: social-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-intro {
+  animation: hero-rise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-wash {
+  background:
+    radial-gradient(ellipse 55% 40% at 8% 0%, rgb(252 140 10 / 0.07), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 92% 100%, rgb(20 55 90 / 0.06), transparent 55%);
+}
+
+.nav-link-active {
+  position: relative;
+  color: var(--color-brand-900);
+  background: color-mix(in srgb, var(--color-brand-50) 80%, transparent);
+}
+
+.dark .nav-link-active {
+  color: var(--color-accent-400);
+  background: rgb(255 255 255 / 0.06);
+}
+
+@keyframes social-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-feed-item,
+  .page-intro {
+    animation: none;
+  }
+}

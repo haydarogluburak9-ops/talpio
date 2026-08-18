@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { ListOrdersParams } from '@ustapilot/api-client';
-import { PAGINATION, queryKeys } from '@ustapilot/config';
-import type { Order } from '@ustapilot/types';
+import type { ListOrdersParams } from '@talpio/api-client';
+import { PAGINATION, queryKeys } from '@talpio/config';
+import type { Order } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
-/** Oturumdaki tarafın siparişleri: müşteri verdiği, usta üstlendiği işleri görür. */
+/** Oturumdaki tarafın siparişleri: müşteri verdiği, satıcı üstlendiği işleri görür. */
 export function useMyOrdersInfinite(params: Omit<ListOrdersParams, 'page'> = {}) {
   return useInfiniteQuery({
     queryKey: queryKeys.orders.list(params as Record<string, unknown>),

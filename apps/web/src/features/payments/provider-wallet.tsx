@@ -1,7 +1,7 @@
 'use client';
 
-import { formatDateTime, formatMoney, transactionTypeLabel } from '@ustapilot/localization';
-import type { Transaction } from '@ustapilot/types';
+import { formatDateTime, formatMoney, transactionTypeLabel } from '@talpio/localization';
+import type { Transaction } from '@talpio/types';
 import {
   Card,
   CardContent,
@@ -9,14 +9,14 @@ import {
   CardTitle,
   EmptyState,
   ListSkeleton,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
 
 import { useMyTransactions, useProviderWallet } from './use-payments';
 
-/** Ustanın cüzdanı: kullanılabilir bakiye, bloke hakediş ve son hareketler. */
+/** Satıcının cüzdanı: kullanılabilir bakiye, bloke hakediş ve son hareketler. */
 export function ProviderWallet() {
   const locale = publicEnv.defaultLocale;
   const wallet = useProviderWallet();

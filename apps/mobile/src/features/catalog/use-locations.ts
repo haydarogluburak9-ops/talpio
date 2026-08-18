@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { queryKeys } from '@ustapilot/config';
-import type { City, District } from '@ustapilot/types';
+import { queryKeys } from '@talpio/config';
+import type { City, District } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

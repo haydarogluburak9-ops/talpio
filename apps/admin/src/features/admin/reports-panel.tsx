@@ -1,7 +1,7 @@
 'use client';
 
-import { formatMoney, formatNumber } from '@ustapilot/localization';
-import type { AdminDashboard } from '@ustapilot/types';
+import { formatMoney, formatNumber } from '@talpio/localization';
+import type { AdminDashboard } from '@talpio/types';
 import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -175,7 +175,7 @@ function DistributionCard({
 function UserMixCard({ data }: { data: AdminDashboard }) {
   const slices: DistributionSlice[] = [
     { label: 'Müşteri', value: data.users.customers },
-    { label: 'Usta', value: data.users.providers },
+    { label: 'Satıcı', value: data.users.providers },
     {
       label: 'Diğer',
       value: Math.max(data.users.total - data.users.customers - data.users.providers, 0),
@@ -213,8 +213,8 @@ function UserMixCard({ data }: { data: AdminDashboard }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Usta doğrulama</CardTitle>
-          <CardDescription>Doğrulama kuyruğu ve onaylı usta sayısı.</CardDescription>
+          <CardTitle className="text-base">Satıcı doğrulama</CardTitle>
+          <CardDescription>Doğrulama kuyruğu ve onaylı satıcı sayısı.</CardDescription>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-3 sm:grid-cols-2">
@@ -271,6 +271,6 @@ function opacityFor(label: string): number {
   if (label === 'Açık' || label === 'Bekleyen' || label === 'Aktif' || label === 'Müşteri') {
     return 1;
   }
-  if (label === 'Tamamlanan' || label === 'Kabul' || label === 'Usta') return 0.72;
+  if (label === 'Tamamlanan' || label === 'Kabul' || label === 'Satıcı') return 0.72;
   return 0.4;
 }

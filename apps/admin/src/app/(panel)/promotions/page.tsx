@@ -1,38 +1,46 @@
-import type { Metadata } from 'next';
+'use client';
 
-import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@talpio/config';
+
+import { Topbar } from '@/components/layout/topbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-export const metadata: Metadata = { title: 'Kampanyalar' };
-
-const CAPABILITIES: ModuleCapability[] = [
-  { label: 'Kod tanımı', detail: 'Kullanım limiti, geçerlilik süresi ve kapsam.' },
-  { label: 'Hedefleme', detail: 'Şehir, kategori veya kullanıcı segmenti.' },
-  { label: 'Kullanım raporu', detail: 'Kod başına kullanım ve maliyet.' },
-  { label: 'Durdurma', detail: 'Aktif kampanyayı anında sonlandırma.' },
-];
+import { apiClient } from '@/lib/api-client';
 
 export default function PromotionsPage() {
+  const query = useQuery({
+    queryKey: queryKeys.admin.campaigns(),
+    queryFn: ({ signal }) => apiClient.admin.listCampaigns(signal),
+  });
+  const rows = (query.data as Array<{
+    id: string;
+    title: string;
+    status: string;
+    audience: string;
+    business?: { name?: string };
+  }> | undefined) ?? [];
+
   return (
-    <ModuleScaffold
-      title="Kampanyalar"
-      description="İndirim kodları ve tanıtım kampanyaları oluşturun."
-      dataSource="GET /admin/promotions"
-      capabilities={CAPABILITIES}
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Veri modeli yok</CardTitle>
-          <CardDescription>
-            Bu modül için veri modeli henüz tanımlı değil. Kampanya listesi veya sahte kayıt
-            gösterilmez.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-foreground-muted">
-          Prisma şemasında Promotion modeli ve ilgili API uçları eklenene kadar bu ekran iskelet
-          olarak kalır.
-        </CardContent>
-      </Card>
-    </ModuleScaffold>
+    <>
+      <Topbar titleKey="admin.campaigns" descriptionKey="admin.campaignsHint" />
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Kampanya listesi</CardTitle>
+            <CardDescription>GET /admin/campaigns</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {rows.map((row) => (
+              <p key={row.id}>
+                {row.title} — {row.business?.name ?? 'İşletme'} ({row.status} / {row.audience})
+              </p>
+            ))}
+            {query.isSuccess && rows.length === 0 ? (
+              <p className="text-foreground-muted">Kampanya kaydı yok.</p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

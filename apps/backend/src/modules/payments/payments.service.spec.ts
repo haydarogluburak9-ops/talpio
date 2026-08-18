@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto';
 
-import { OrderStatus, PaymentStatus, UserRole } from '@ustapilot/types';
+import { OrderStatus, PaymentStatus, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -81,6 +81,7 @@ type PrismaMock = {
   providerProfile: { findFirst: jest.Mock };
   jobRequest: { update: jest.Mock };
   jobStatusHistory: { create: jest.Mock };
+  paymentWebhookEvent: { create: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -112,6 +113,7 @@ function createPrismaMock(): PrismaMock {
     providerProfile: { findFirst: jest.fn().mockResolvedValue({ id: PROFILE_ID }) },
     jobRequest: { update: jest.fn().mockResolvedValue({}) },
     jobStatusHistory: { create: jest.fn().mockResolvedValue({}) },
+    paymentWebhookEvent: { create: jest.fn().mockResolvedValue({}) },
     $transaction: jest.fn(),
   };
 
@@ -155,7 +157,7 @@ function signedWebhook(body: Record<string, unknown>) {
   const rawBody = Buffer.from(JSON.stringify(body), 'utf8');
   const signature = createHmac('sha256', WEBHOOK_SECRET).update(rawBody).digest('hex');
 
-  return { headers: { 'x-ustapilot-signature': signature }, rawBody };
+  return { headers: { 'x-talpio-signature': signature }, rawBody };
 }
 
 async function codeOfRejection(run: () => Promise<unknown>): Promise<string> {
@@ -214,7 +216,7 @@ describe('PaymentsService', () => {
       expect(where.order?.customerId).toBe(CUSTOMER_ID);
     });
 
-    it('ustaya üstlendiği siparişlerin ödemelerini sorgular', async () => {
+    it('satıcıya üstlendiği siparişlerin ödemelerini sorgular', async () => {
       await service.listMine(provider, listQuery());
 
       const { where } = firstCallArg<{ where: { order?: { providerProfileId?: string } } }>(
@@ -239,7 +241,7 @@ describe('PaymentsService', () => {
       expect(where.type?.in).toEqual(['PAYMENT', 'REFUND']);
     });
 
-    it('ustaya cüzdan hareketlerini sorgular', async () => {
+    it('satıcıya cüzdan hareketlerini sorgular', async () => {
       await service.listTransactions(provider, transactionQuery());
 
       const { where } = firstCallArg<{ where: { OR?: unknown[] } }>(prisma.transaction.findMany);
@@ -275,7 +277,7 @@ describe('PaymentsService', () => {
   });
 
   describe('cüzdan özeti', () => {
-    it('cüzdanı olmayan ustaya sıfır bakiye döner', async () => {
+    it('cüzdanı olmayan satıcıya sıfır bakiye döner', async () => {
       const summary = await service.walletSummary(provider);
 
       expect(summary.balance.amountMinor).toBe(0);
@@ -315,7 +317,7 @@ describe('PaymentsService', () => {
       await expect(
         codeOfRejection(() =>
           service.handleWebhook({
-            headers: { 'x-ustapilot-signature': 'a'.repeat(64) },
+            headers: { 'x-talpio-signature': 'a'.repeat(64) },
             rawBody: request.rawBody,
           }),
         ),
@@ -335,6 +337,21 @@ describe('PaymentsService', () => {
 
       expect(result.applied).toBe(true);
       expect(prisma.transaction.create).toHaveBeenCalled();
+    });
+
+    it('aynı eventId ikinci kez geldiğinde yutulur', async () => {
+      prisma.paymentWebhookEvent.create.mockRejectedValue({ code: 'P2002' });
+
+      const result = await service.handleWebhook(
+        signedWebhook({
+          eventId: 'evt-dup',
+          type: 'payment.captured',
+          providerReference: 'mock_ref_1',
+        }),
+      );
+
+      expect(result.applied).toBe(false);
+      expect(prisma.payment.findFirst).not.toHaveBeenCalled();
     });
 
     it('aynı olay ikinci kez geldiğinde muhasebe hareketi yazmaz', async () => {
@@ -383,7 +400,7 @@ describe('PaymentsService', () => {
     });
 
     it('tahsil edilmiş ödemeyi iade eder', async () => {
-      const refunded = await service.refund(admin, PAYMENT_ID, { reason: 'Usta gelmedi' });
+      const refunded = await service.refund(admin, PAYMENT_ID, { reason: 'Satıcı gelmedi' });
 
       expect(refunded.status).toBe(PaymentStatus.REFUNDED);
       expect(prisma.providerWallet.updateMany).toHaveBeenCalled();

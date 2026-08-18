@@ -1,4 +1,4 @@
-import { JobRequestStatus, OrderStatus, PaymentStatus, UserRole } from '@ustapilot/types';
+import { JobRequestStatus, OrderStatus, PaymentStatus, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -48,6 +48,7 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
     customerId: CUSTOMER_ID,
     providerProfileId: PROFILE_ID,
     status: OrderStatus.PENDING_PAYMENT,
+    source: 'MARKETPLACE' as OrderRow['source'],
     totalMinor: 250000,
     commissionMinor: 25000,
     payoutMinor: 225000,
@@ -175,7 +176,7 @@ function createGatewayMock(): ProviderMock {
  */
 function createService(prisma: PrismaMock, gateway: ProviderMock): OrdersService {
   const config = {
-    fileBaseUrl: 'http://localhost:9000/ustapilot',
+    fileBaseUrl: 'http://localhost:9000/talpio',
     payment: { currency: 'TRY' },
   } as unknown as AppConfigService;
 
@@ -248,7 +249,7 @@ describe('OrdersService', () => {
       expect(prisma.transaction.create).toHaveBeenCalled();
     });
 
-    it('hakedişi ustanın cüzdanında bloke eder', async () => {
+    it('hakedişi satıcının cüzdanında bloke eder', async () => {
       await service.pay(customer, ORDER_ID, {});
 
       const args = firstCallArg<{ update: { pendingMinor: { increment: number } } }>(
@@ -362,7 +363,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('başka ustanın siparişini başlatmaz', async () => {
+    it('başka satıcının siparişini başlatmaz', async () => {
       prisma.order.findFirst.mockResolvedValue(orderRow({ status: OrderStatus.PAID }));
 
       await expect(codeOfRejection(() => service.start(otherProvider, ORDER_ID))).resolves.toBe(
@@ -372,7 +373,7 @@ describe('OrdersService', () => {
   });
 
   describe('tamamlama ve onay', () => {
-    it('usta işi onaya gönderir', async () => {
+    it('satıcı işi onaya gönderir', async () => {
       prisma.order.findFirst.mockResolvedValue(
         orderRow({
           status: OrderStatus.IN_PROGRESS,
@@ -426,7 +427,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('ustanın kendi işini onaylamasını engeller', async () => {
+    it('satıcının kendi işini onaylamasını engeller', async () => {
       prisma.order.findFirst.mockResolvedValue(orderRow({ status: OrderStatus.AWAITING_APPROVAL }));
 
       await expect(codeOfRejection(() => service.approve(provider, ORDER_ID))).resolves.toBe(
@@ -444,7 +445,7 @@ describe('OrdersService', () => {
       expect(data.cancellationReason).toBe('Vazgeçtim');
     });
 
-    it('üstlenen usta da iptal edebilir', async () => {
+    it('üstlenen satıcı da iptal edebilir', async () => {
       await service.cancel(provider, ORDER_ID, {});
 
       const { data } = firstCallArg<{ data: OrderUpdateData }>(prisma.order.update);
@@ -555,7 +556,7 @@ describe('OrdersService', () => {
       expect(where.customerId).toBe(CUSTOMER_ID);
     });
 
-    it('ustaya üstlendiği işleri sorgular', async () => {
+    it('satıcıya üstlendiği işleri sorgular', async () => {
       await service.listMine(provider, listQuery());
 
       const { where } = firstCallArg<{ where: { providerProfileId?: string } }>(
@@ -598,6 +599,6 @@ describe('OrdersService', () => {
 });
 
 /** Sipariş adımlarında işin beklenen durumunu kurar. */
-function jobAt(status: JobRequestStatus): OrderRow['jobRequest'] {
-  return { ...orderRow().jobRequest, status };
+function jobAt(status: JobRequestStatus): NonNullable<OrderRow['jobRequest']> {
+  return { ...orderRow().jobRequest!, status };
 }

@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 
 import { ModuleScaffold, type ModuleCapability } from '@/components/layout/module-scaffold';
 import { CategoriesTable } from '@/features/catalog/categories-table';
+import { t } from '@/lib/i18n';
 
-export const metadata: Metadata = { title: 'Kategoriler' };
+export const metadata: Metadata = { title: t('admin.categories') };
 
 const CAPABILITIES: ModuleCapability[] = [
   { label: 'Kategori ekleme', detail: 'Ad, kısa ad, ikon ve sıralama bilgisiyle yeni kategori.' },
@@ -15,8 +16,8 @@ const CAPABILITIES: ModuleCapability[] = [
 export default function CategoriesPage() {
   return (
     <ModuleScaffold
-      title="Kategoriler"
-      description="Hizmet kataloğunu görüntüleyin ve yönetin."
+      titleKey="admin.categories"
+      descriptionKey="admin.categoriesHint"
       dataSource="POST/PATCH /admin/categories"
       capabilities={CAPABILITIES}
     >

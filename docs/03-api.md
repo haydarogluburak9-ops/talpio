@@ -1,4 +1,4 @@
-# UstaPilot — API Sözleşmesi
+# Talpio — API Sözleşmesi
 
 Taban yol: `/api/v1` · Kimlik: `Authorization: Bearer <accessToken>` · Format: JSON
 
@@ -21,7 +21,7 @@ Hatalı:
   "success": false,
   "error": {
     "code": "OFFER_ALREADY_ACCEPTED",
-    "message": "Bu iş için zaten bir usta seçilmiş.",
+    "message": "Bu iş için zaten bir satıcı seçilmiş.",
     "details": [{ "field": "offerId", "issue": "conflict" }]
   },
   "requestId": "01J8XZ..."
@@ -74,23 +74,23 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | DELETE | `/users/me`                 | Hesap silme talebi (soft delete)            | Kimlikli |
 | GET    | `/customers/me`             | Müşteri profili                             | Müşteri  |
 | PATCH  | `/customers/me`             | Müşteri profili güncelle                    | Müşteri  |
-| POST   | `/masters`                  | Usta profili oluştur                        | Kimlikli |
-| GET    | `/masters/me`               | Kendi usta profili (özel alanlar dahil)     | Usta     |
-| PATCH  | `/masters/me`               | Usta profili güncelle                       | Usta     |
-| GET    | `/masters/:id`              | Herkese açık usta profili                   | Kimlikli |
-| GET    | `/masters`                  | Usta arama (kategori, bölge, puan filtreli) | Kimlikli |
-| PUT    | `/masters/me/categories`    | Hizmet kategorilerini ayarla                | Usta     |
-| PUT    | `/masters/me/service-areas` | Hizmet bölgelerini ayarla                   | Usta     |
-| PUT    | `/masters/me/working-hours` | Çalışma saatleri                            | Usta     |
-| GET    | `/masters/me/stats`         | Performans özeti                            | Usta     |
+| POST   | `/masters`                  | Satıcı profili oluştur                        | Kimlikli |
+| GET    | `/masters/me`               | Kendi satıcı profili (özel alanlar dahil)     | Satıcı     |
+| PATCH  | `/masters/me`               | Satıcı profili güncelle                       | Satıcı     |
+| GET    | `/masters/:id`              | Herkese açık satıcı profili                   | Kimlikli |
+| GET    | `/masters`                  | Satıcı arama (kategori, bölge, puan filtreli) | Kimlikli |
+| PUT    | `/masters/me/categories`    | Hizmet kategorilerini ayarla                | Satıcı     |
+| PUT    | `/masters/me/service-areas` | Hizmet bölgelerini ayarla                   | Satıcı     |
+| PUT    | `/masters/me/working-hours` | Çalışma saatleri                            | Satıcı     |
+| GET    | `/masters/me/stats`         | Performans özeti                            | Satıcı     |
 
 ### Documents & Verification
 
 | Metot  | Yol                                | Açıklama                    | Erişim |
 | ------ | ---------------------------------- | --------------------------- | ------ |
-| POST   | `/masters/me/documents`            | Belge yükle                 | Usta   |
-| GET    | `/masters/me/documents`            | Kendi belgeleri + durumları | Usta   |
-| DELETE | `/masters/me/documents/:id`        | Belge sil (onaylanmamışsa)  | Usta   |
+| POST   | `/masters/me/documents`            | Belge yükle                 | Satıcı   |
+| GET    | `/masters/me/documents`            | Kendi belgeleri + durumları | Satıcı   |
+| DELETE | `/masters/me/documents/:id`        | Belge sil (onaylanmamışsa)  | Satıcı   |
 | GET    | `/admin/verifications`             | Bekleyen doğrulamalar       | Admin  |
 | POST   | `/admin/verifications/:id/approve` | Belge onayla                | Admin  |
 | POST   | `/admin/verifications/:id/reject`  | Gerekçeyle reddet           | Admin  |
@@ -129,11 +129,11 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | GET    | `/job-requests/:id`                | Detay (role göre maskeli adres)       | İlgili taraf |
 | POST   | `/job-requests/:id/cancel`         | İptal + gerekçe                       | Sahip        |
 | GET    | `/job-requests/:id/status-history` | Durum geçmişi                         | İlgili taraf |
-| POST   | `/job-requests/:id/status`         | Durum güncelle (usta yolda, başladı…) | Seçilen usta |
-| POST   | `/job-requests/:id/complete`       | Usta tamamlandı bildirir              | Seçilen usta |
+| POST   | `/job-requests/:id/status`         | Durum güncelle (satıcı yolda, başladı…) | Seçilen satıcı |
+| POST   | `/job-requests/:id/complete`       | Satıcı tamamlandı bildirir              | Seçilen satıcı |
 | POST   | `/job-requests/:id/approve`        | Müşteri onaylar → ödeme serbest       | Sahip        |
 | POST   | `/job-requests/:id/dispute`        | Anlaşmazlık aç                        | İlgili taraf |
-| GET    | `/job-requests/available`          | Ustaya uygun iş havuzu                | Usta         |
+| GET    | `/job-requests/available`          | Satıcıya uygun iş havuzu                | Satıcı         |
 | POST   | `/job-requests/:id/media`          | Fotoğraf yükleme (presigned)          | Sahip        |
 | DELETE | `/job-requests/:id/media/:mediaId` | Medya sil                             | Sahip        |
 
@@ -141,13 +141,13 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 
 | Metot | Yol                        | Açıklama                                  | Erişim        |
 | ----- | -------------------------- | ----------------------------------------- | ------------- |
-| POST  | `/job-requests/:id/offers` | Teklif ver                                | Usta          |
+| POST  | `/job-requests/:id/offers` | Teklif ver                                | Satıcı          |
 | GET   | `/job-requests/:id/offers` | İşin teklifleri (karşılaştırma verisiyle) | İş sahibi     |
 | PATCH | `/offers/:id`              | Teklifi güncelle (revizyon kaydı)         | Teklif sahibi |
 | POST  | `/offers/:id/withdraw`     | Teklifi geri çek                          | Teklif sahibi |
 | POST  | `/offers/:id/accept`       | Teklifi kabul et (transaction)            | İş sahibi     |
 | POST  | `/offers/:id/reject`       | Tek teklifi reddet                        | İş sahibi     |
-| GET   | `/offers/mine`             | Verdiğim teklifler                        | Usta          |
+| GET   | `/offers/mine`             | Verdiğim teklifler                        | Satıcı          |
 
 ### Appointments
 
@@ -157,7 +157,7 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | PATCH | `/appointments/:id`             | Zaman değişikliği öner | İlgili taraf |
 | POST  | `/appointments/:id/confirm`     | Onayla                 | Karşı taraf  |
 | POST  | `/appointments/:id/cancel`      | İptal                  | İlgili taraf |
-| GET   | `/appointments/calendar`        | Takvim görünümü        | Usta         |
+| GET   | `/appointments/calendar`        | Takvim görünümü        | Satıcı         |
 
 ### Messaging
 
@@ -184,24 +184,24 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | GET   | `/payments/:id`                | Ödeme detayı                           | İlgili taraf |
 | GET   | `/payments/mine`               | Ödeme geçmişi                          | Kimlikli     |
 | POST  | `/webhooks/payments/:provider` | Sağlayıcı webhook'u (imza doğrulamalı) | Sağlayıcı    |
-| GET   | `/wallet/me`                   | Usta cüzdan bakiyesi                   | Usta         |
-| GET   | `/wallet/me/transactions`      | Cüzdan hareketleri                     | Usta         |
-| POST  | `/wallet/me/payout-request`    | Ödeme talebi                           | Usta         |
+| GET   | `/wallet/me`                   | Satıcı cüzdan bakiyesi                   | Satıcı         |
+| GET   | `/wallet/me/transactions`      | Cüzdan hareketleri                     | Satıcı         |
+| POST  | `/wallet/me/payout-request`    | Ödeme talebi                           | Satıcı         |
 
 ### Reviews
 
 | Metot | Yol                        | Açıklama                    | Erişim                    |
 | ----- | -------------------------- | --------------------------- | ------------------------- |
 | POST  | `/job-requests/:id/review` | Değerlendirme bırak         | İş sahibi, tamamlanmış iş |
-| GET   | `/masters/:id/reviews`     | Usta yorumları (sayfalı)    | Herkes                    |
-| POST  | `/reviews/:id/reply`       | Ustanın tek seferlik cevabı | Yorumun ustası            |
+| GET   | `/masters/:id/reviews`     | Satıcı yorumları (sayfalı)    | Herkes                    |
+| POST  | `/reviews/:id/reply`       | Satıcının tek seferlik cevabı | Yorumun ustası            |
 | POST  | `/reviews/:id/report`      | Yorumu şikâyet et           | Kimlikli                  |
 
 ### Favorites, Notifications, Support
 
 | Metot           | Yol                              | Açıklama                | Erişim   |
 | --------------- | -------------------------------- | ----------------------- | -------- |
-| GET/POST/DELETE | `/favorites/masters[/:masterId]` | Favori usta yönetimi    | Müşteri  |
+| GET/POST/DELETE | `/favorites/masters[/:masterId]` | Favori satıcı yönetimi    | Müşteri  |
 | GET             | `/notifications`                 | Bildirim merkezi        | Kimlikli |
 | POST            | `/notifications/read-all`        | Tümünü okundu yap       | Kimlikli |
 | PUT             | `/notifications/preferences`     | Kanal tercihleri        | Kimlikli |
@@ -217,8 +217,8 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | Metot  | Yol                    | Açıklama               | Erişim   |
 | ------ | ---------------------- | ---------------------- | -------- |
 | GET    | `/subscriptions/plans` | Planlar                | Kimlikli |
-| POST   | `/subscriptions`       | Abonelik başlat        | Usta     |
-| DELETE | `/subscriptions/me`    | Aboneliği iptal et     | Usta     |
+| POST   | `/subscriptions`       | Abonelik başlat        | Satıcı     |
+| DELETE | `/subscriptions/me`    | Aboneliği iptal et     | Satıcı     |
 | POST   | `/promotions/validate` | Promosyon kodu doğrula | Kimlikli |
 
 ### Admin
@@ -228,7 +228,7 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | GET            | `/admin/dashboard`               | Özet metrikler              |
 | GET            | `/admin/users`                   | Kullanıcı listesi + filtre  |
 | PATCH          | `/admin/users/:id/status`        | Askıya alma / aktifleştirme |
-| GET            | `/admin/masters`                 | Usta listesi                |
+| GET            | `/admin/masters`                 | Satıcı listesi                |
 | GET            | `/admin/job-requests`            | Tüm talepler                |
 | GET            | `/admin/offers`                  | Tüm teklifler               |
 | GET            | `/admin/payments`                | Ödeme ve mutabakat          |
@@ -259,10 +259,10 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | `TOKEN_EXPIRED`                            | 401       | Access token süresi doldu                         |
 | `REFRESH_TOKEN_REUSED`                     | 401       | Token yeniden kullanımı — tüm oturumlar kapatılır |
 | `PHONE_NOT_VERIFIED`                       | 403       | Telefon doğrulaması gerekli                       |
-| `MASTER_NOT_VERIFIED`                      | 403       | Doğrulanmamış usta teklif veremez                 |
+| `MASTER_NOT_VERIFIED`                      | 403       | Doğrulanmamış satıcı teklif veremez                 |
 | `FORBIDDEN_RESOURCE`                       | 403       | Nesne sahipliği yok                               |
 | `JOB_NOT_OPEN_FOR_OFFERS`                  | 409       | İş teklife kapalı                                 |
-| `OFFER_ALREADY_ACCEPTED`                   | 409       | Zaten usta seçilmiş                               |
+| `OFFER_ALREADY_ACCEPTED`                   | 409       | Zaten satıcı seçilmiş                               |
 | `OFFER_EXPIRED`                            | 409       | Teklif geçerlilik süresi doldu                    |
 | `DUPLICATE_OFFER`                          | 409       | Bu işe zaten teklif verilmiş                      |
 | `PAYMENT_REQUIRED`                         | 402       | Ödeme tamamlanmadan devam edilemez                |

@@ -1,9 +1,13 @@
-import { NotificationType } from '@ustapilot/types';
+import { NotificationType } from '@talpio/types';
 
 import { formatDuration, formatMoneyMinor, formatRating, formatRelativeTime } from './format';
 import { renderNotification } from './notifications';
 import { createTranslator, interpolate } from './translator';
+import { ar } from './locales/ar';
+import { de } from './locales/de';
 import { en } from './locales/en';
+import { es } from './locales/es';
+import { fr } from './locales/fr';
 import { tr } from './locales/tr';
 
 describe('çeviri katalogları', () => {
@@ -14,33 +18,48 @@ describe('çeviri katalogları', () => {
     );
   }
 
-  it('İngilizce katalog Türkçe ile aynı anahtarlara sahiptir', () => {
-    expect(collectKeys(en).sort()).toEqual(collectKeys(tr).sort());
+  it('tüm kataloglar İngilizce ile aynı anahtarlara sahiptir', () => {
+    const english = collectKeys(en).sort();
+    for (const catalog of [tr, de, es, fr, ar]) {
+      expect(collectKeys(catalog).sort()).toEqual(english);
+    }
   });
 
   it('hiçbir metin boş değildir', () => {
-    for (const catalog of [tr, en]) {
+    for (const catalog of [tr, en, de, es, fr, ar]) {
       const flat = JSON.stringify(catalog);
       expect(flat).not.toContain('""');
     }
+  });
+
+  it('landing metinleri sahte üretim metriği taşımaz', () => {
+    const home = JSON.stringify(tr.home) + JSON.stringify(en.home);
+    expect(home).not.toMatch(/1M\+|50K\+|10M\+|200\.000|200,000/);
   });
 });
 
 describe('createTranslator', () => {
   it('Türkçe metni çözer', () => {
     expect(createTranslator('tr').t('common.tagline')).toBe(
-      'Doğru usta. Doğru fiyat. Güvenli hizmet.',
+      'İste. Teklif al. Fırsatı yakala.',
     );
   });
 
   it('İngilizce metni çözer', () => {
     expect(createTranslator('en').t('common.tagline')).toBe(
-      'The right pro. The right price. Safe service.',
+      'Request. Get offers. Catch the deal.',
     );
   });
 
-  it('desteklenmeyen dilde Türkçeye düşer', () => {
-    expect(createTranslator('de').locale).toBe('tr');
+  it('desteklenmeyen dilde varsayılana düşer', () => {
+    expect(createTranslator('xx').locale).toBe('en');
+  });
+
+  it('yeni dillerde chrome metinlerini çözer', () => {
+    expect(createTranslator('de').t('common.language')).toBe('Sprache');
+    expect(createTranslator('es').t('social.feedTitle')).toBe('Feed');
+    expect(createTranslator('fr').t('home.heroAskOffer')).toBe('Demander un devis');
+    expect(createTranslator('ar').t('home.heroSaleBadge')).toBe('تخفيض');
   });
 
   it('eksik anahtarda anahtarın kendisini döndürür', () => {

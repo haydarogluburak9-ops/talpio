@@ -1,7 +1,7 @@
 /**
  * Sohbette iletişim bilgisi paylaşımını sezer.
  *
- * Platform dışına çıkan anlaşmalarda müşteri güvencesi ve usta hakedişi
+ * Platform dışına çıkan anlaşmalarda müşteri güvencesi ve satıcı hakedişi
  * korunamaz. Mesaj engellenmez — engellemek meşru konuşmaları da keserdi —
  * yalnızca işaretlenir ve denetime düşer.
  */

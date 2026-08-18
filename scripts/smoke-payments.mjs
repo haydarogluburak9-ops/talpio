@@ -56,7 +56,7 @@ async function callWebhook(payload, { signature } = {}) {
     headers: {
       'Content-Type': 'application/json',
       'X-Client-Platform': 'IOS',
-      'x-ustapilot-signature': digest,
+      'x-talpio-signature': digest,
     },
     body: rawBody,
   });
@@ -75,7 +75,7 @@ function abort(message, payload) {
 async function createOrderScenario(providerToken, sample, city, district, amountMinor) {
   const customer = await call('POST', '/auth/register', {
     body: {
-      email: `payments+${Date.now()}${Math.random().toString(36).slice(2, 6)}@ustapilot.test`,
+      email: `payments+${Date.now()}${Math.random().toString(36).slice(2, 6)}@talpio.test`,
       password: 'Guclu1Parola',
       fullName: 'Ödeme Duman Testi',
       role: 'CUSTOMER',
@@ -133,16 +133,16 @@ async function createOrderScenario(providerToken, sample, city, district, amount
 
 console.log(`Ödeme duman testi — ${BASE}\n`);
 
-console.log('Hazırlık: usta girişi ve hizmet kapsamı');
+console.log('Hazırlık: satıcı girişi ve hizmet kapsamı');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-if (!providerToken) abort('Usta girişi yapılamadı; ödeme akışı doğrulanamıyor.');
+if (!providerToken) abort('Satıcı girişi yapılamadı; ödeme akışı doğrulanamıyor.');
 
 const adminLogin = await call('POST', '/auth/login', {
-  body: { email: 'admin@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'admin@talpio.com', password: DEMO_PASSWORD },
 });
 check('demo yönetici girişi', adminLogin.status === 200, `status=${adminLogin.status}`);
 const adminToken = adminLogin.json?.data?.tokens?.accessToken;
@@ -152,8 +152,8 @@ const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
   token: providerToken,
 });
 const sample = pool.json?.data?.[0];
-check('ustanın kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
-if (!sample) abort('Ustanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+check('satıcının kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
+if (!sample) abort('Satıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
 
 const cities = await call('GET', '/locations/cities');
 const city = cities.json?.data?.find((item) => item.name === sample.address.cityName);
@@ -163,7 +163,7 @@ check('örnek işin şehir/ilçesi çözüldü', Boolean(city?.id && district?.i
 if (!city || !district) abort('Şehir/ilçe çözülemedi.');
 
 const walletBefore = await call('GET', '/payments/wallet', { token: providerToken });
-check('usta cüzdan özetini görür', walletBefore.status === 200, `status=${walletBefore.status}`);
+check('satıcı cüzdan özetini görür', walletBefore.status === 200, `status=${walletBefore.status}`);
 check(
   'bakiye kuruş cinsinden tam sayı',
   Number.isInteger(walletBefore.json?.data?.balance?.amountMinor),
@@ -215,14 +215,14 @@ check(
 
 console.log('\nYetki:');
 const providerView = await call('GET', `/payments/${payment.id}`, { token: providerToken });
-check('ilgili usta ödemeyi görür', providerView.status === 200, `status=${providerView.status}`);
+check('ilgili satıcı ödemeyi görür', providerView.status === 200, `status=${providerView.status}`);
 
 const staffView = await call('GET', `/payments/${payment.id}`, { token: adminToken });
 check('personel ödemeyi görür', staffView.status === 200, `status=${staffView.status}`);
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `payments-stranger+${Date.now()}@ustapilot.test`,
+    email: `payments-stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Müşteri',
     role: 'CUSTOMER',

@@ -1,6 +1,6 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { Offer, OfferStatus } from '@ustapilot/types';
-import type { CreateOfferPayload } from '@ustapilot/validation';
+import { API_ROUTES } from '@talpio/config';
+import type { Offer, OfferStatus } from '@talpio/types';
+import type { CreateOfferPayload } from '@talpio/validation';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -26,7 +26,7 @@ export function createOffersResource(http: HttpClient) {
       });
     },
 
-    /** Ustanın verdiği teklifler. */
+    /** Satıcının verdiği teklifler. */
     listMine(params: ListOffersParams = {}, signal?: AbortSignal): Promise<Paginated<Offer>> {
       return http.paginated<Offer>(API_ROUTES.offers.mine, {
         method: 'GET',

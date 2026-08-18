@@ -4,7 +4,7 @@ import {
   OfferStatus,
   OrderStatus,
   UserRole,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -144,7 +144,7 @@ function createPrismaMock(): PrismaMock {
     jobStatusHistory: { create: jest.fn().mockResolvedValue({}) },
     commissionRule: { findMany: jest.fn().mockResolvedValue([]) },
     order: {
-      create: jest.fn().mockResolvedValue({}),
+      create: jest.fn().mockResolvedValue({ id: 'order-1' }),
       findFirst: jest.fn().mockResolvedValue({
         id: 'order-1',
         jobRequest: { title: 'Test talep' },
@@ -164,7 +164,7 @@ function createPrismaMock(): PrismaMock {
 
 function createService(prisma: PrismaMock): OffersService {
   const config = {
-    fileBaseUrl: 'http://localhost:9000/ustapilot',
+    fileBaseUrl: 'http://localhost:9000/talpio',
   } as unknown as AppConfigService;
 
   const notifications = {
@@ -172,7 +172,16 @@ function createService(prisma: PrismaMock): OffersService {
     dispatchAll: jest.fn().mockResolvedValue(undefined),
   };
 
-  return new OffersService(prisma as unknown as PrismaService, config, notifications as never);
+  const outbox = {
+    write: jest.fn().mockResolvedValue({ id: 'outbox-1', created: true }),
+  };
+
+  return new OffersService(
+    prisma as unknown as PrismaService,
+    config,
+    notifications as never,
+    outbox as never,
+  );
 }
 
 type JobUpdateData = { status?: JobRequestStatus; offerCount?: { increment: number } };
@@ -268,7 +277,7 @@ describe('OffersService', () => {
       );
     });
 
-    it('doğrulanmamış ustanın teklif vermesini engeller', async () => {
+    it('doğrulanmamış satıcının teklif vermesini engeller', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue({
         id: PROFILE_ID,
         verificationStatus: 'PENDING',
@@ -324,7 +333,7 @@ describe('OffersService', () => {
       );
     });
 
-    it('usta profili yoksa hata verir', async () => {
+    it('satıcı profili yoksa hata verir', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(codeOfRejection(() => service.create(provider, dto))).resolves.toBe(
@@ -334,7 +343,7 @@ describe('OffersService', () => {
   });
 
   describe('teklif kabulü', () => {
-    it('rakip teklifleri düşürür ve talebi usta seçildi durumuna taşır', async () => {
+    it('rakip teklifleri düşürür ve talebi satıcı seçildi durumuna taşır', async () => {
       prisma.offer.findFirst.mockResolvedValue(offerWithJob());
       prisma.offer.update.mockResolvedValue(offerRow({ status: OfferStatus.ACCEPTED }));
 
@@ -398,7 +407,7 @@ describe('OffersService', () => {
       );
     });
 
-    it('usta seçilmiş talepte ikinci kabulü engeller', async () => {
+    it('satıcı seçilmiş talepte ikinci kabulü engeller', async () => {
       prisma.offer.findFirst.mockResolvedValue(
         offerWithJob({ jobStatus: JobRequestStatus.PROVIDER_SELECTED }),
       );
@@ -433,7 +442,7 @@ describe('OffersService', () => {
   });
 
   describe('teklif geri çekme', () => {
-    it('ustanın bekleyen teklifini geri çeker', async () => {
+    it('satıcının bekleyen teklifini geri çeker', async () => {
       prisma.offer.findFirst.mockResolvedValue({
         id: OFFER_ID,
         providerProfileId: PROFILE_ID,
@@ -458,7 +467,7 @@ describe('OffersService', () => {
       );
     });
 
-    it('başka ustanın teklifini geri çektirmez', async () => {
+    it('başka satıcının teklifini geri çektirmez', async () => {
       prisma.offer.findFirst.mockResolvedValue({
         id: OFFER_ID,
         providerProfileId: 'profile-9',
@@ -472,7 +481,7 @@ describe('OffersService', () => {
   });
 
   describe('listeleme', () => {
-    it('ustaya yalnızca kendi tekliflerini sorgular', async () => {
+    it('satıcıya yalnızca kendi tekliflerini sorgular', async () => {
       await service.listMine(provider, listQuery());
 
       const { where } = firstCallArg<{ where: OfferWhere }>(prisma.offer.findMany);

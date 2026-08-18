@@ -1,7 +1,7 @@
 'use client';
 
-import { JobRequestStatus } from '@ustapilot/types';
-import { buttonVariants, EmptyState, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import { JobRequestStatus } from '@talpio/types';
+import { buttonVariants, EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -72,7 +72,7 @@ export function JobList() {
             title={filterId === 'all' ? t('status.emptyJobs') : 'Bu süzgeçte talep yok'}
             description={
               filterId === 'all'
-                ? 'Talebinizi anlatın, bölgenizdeki doğrulanmış ustalar size teklif göndersin.'
+                ? 'Talebinizi anlatın, doğrulanmış satıcılar size teklif göndersin.'
                 : 'Başka bir durum seçerek diğer taleplerinizi görebilirsiniz.'
             }
             className="w-full"

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { createSupportTicketSchema } from '@ustapilot/validation';
+import { createSupportTicketSchema } from '@talpio/validation';
 
 import { Button } from '@/components/button';
 import { FormField } from '@/components/form-field';

@@ -95,7 +95,7 @@ export interface OrderJobSummary {
   address: MaskedAddress;
 }
 
-/** Ustaya gösterilen müşteri kartı. Telefon ve e-posta burada yer almaz. */
+/** Satıcıya gösterilen müşteri kartı. Telefon ve e-posta burada yer almaz. */
 export interface CustomerSummary {
   id: string;
   displayName: string;
@@ -103,8 +103,10 @@ export interface CustomerSummary {
 }
 
 export interface Order extends BaseEntity {
-  jobRequestId: string;
-  offerId: string;
+  jobRequestId?: string | null;
+  offerId?: string | null;
+  /** MARKETPLACE | COMMERCE_REQUEST */
+  source?: string;
   customerId: string;
   providerProfileId: string;
   status: OrderStatus;

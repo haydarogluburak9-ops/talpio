@@ -1,11 +1,11 @@
-import { API_ROUTES } from '@ustapilot/config';
+import { API_ROUTES } from '@talpio/config';
 import type {
   Payment,
   PaymentStatus,
   ProviderWalletSummary,
   Transaction,
   TransactionType,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -28,7 +28,7 @@ export interface ListTransactionsParams {
 
 export function createPaymentsResource(http: HttpClient) {
   return {
-    /** Oturumdaki tarafın ödemeleri: müşteri yaptıklarını, usta aldıklarını görür. */
+    /** Oturumdaki tarafın ödemeleri: müşteri yaptıklarını, satıcı aldıklarını görür. */
     listMine(params: ListPaymentsParams = {}, signal?: AbortSignal): Promise<Paginated<Payment>> {
       return http.paginated<Payment>(API_ROUTES.payments.root, {
         method: 'GET',
@@ -52,7 +52,7 @@ export function createPaymentsResource(http: HttpClient) {
       });
     },
 
-    /** Ustanın kullanılabilir bakiyesi ve bloke hakedişi. */
+    /** Satıcının kullanılabilir bakiyesi ve bloke hakedişi. */
     wallet(signal?: AbortSignal): Promise<ProviderWalletSummary> {
       return http.get<ProviderWalletSummary>(API_ROUTES.payments.wallet, {
         ...(signal ? { signal } : {}),

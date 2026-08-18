@@ -11,7 +11,7 @@ import type {
   SupportMessage,
   SupportTicket,
   SupportTicketDetail,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';

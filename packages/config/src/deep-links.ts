@@ -9,11 +9,12 @@
  * Şema mobil uygulamanın `app.json` içindeki şemasıyla aynıdır; ileride işletim
  * sistemi düzeyinde bağlantı açmak için ek bir biçim gerekmez.
  */
-export const DEEP_LINK_SCHEME = 'ustapilot';
+export const DEEP_LINK_SCHEME = 'talpio';
 
 /** Bağlantı hedefleri. Kimlik gerektirenler `:id` taşır, diğerleri listedir. */
 export const DEEP_LINK_RESOURCES = [
   'job',
+  'commerce-request',
   'job-offers',
   'order',
   'conversation',
@@ -23,6 +24,9 @@ export const DEEP_LINK_RESOURCES = [
   'payments',
   'provider-profile',
   'support-ticket',
+  'social-profile',
+  'social-post',
+  'social-feed',
 ] as const;
 
 export type DeepLinkResource = (typeof DEEP_LINK_RESOURCES)[number];
@@ -38,18 +42,22 @@ function build(resource: DeepLinkResource, id?: string): string {
 
 export const deepLinks = {
   job: (id: string) => build('job', id),
+  commerceRequest: (id: string) => build('commerce-request', id),
   /** Talebe gelen teklifler; müşteri tarafında karşılaştırma ekranı. */
   jobOffers: (id: string) => build('job-offers', id),
   order: (id: string) => build('order', id),
   conversation: (id: string) => build('conversation', id),
-  /** Ustanın verdiği teklifler listesi. */
+  /** Satıcının verdiği teklifler listesi. */
   offers: () => build('offers'),
-  /** Ustanın aldığı değerlendirmeler. */
+  /** Satıcının aldığı değerlendirmeler. */
   reviews: () => build('reviews'),
   wallet: () => build('wallet'),
   payments: () => build('payments'),
   providerProfile: () => build('provider-profile'),
   supportTicket: (id: string) => build('support-ticket', id),
+  socialProfile: (username: string) => build('social-profile', username),
+  socialPost: (id: string) => build('social-post', id),
+  socialFeed: () => build('social-feed'),
 } as const;
 
 /**

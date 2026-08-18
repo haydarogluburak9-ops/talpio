@@ -1,11 +1,13 @@
 'use client';
 
-import { MESSAGE } from '@ustapilot/config';
-import { formatDate, formatTime } from '@ustapilot/localization';
-import { MessageType, type Message } from '@ustapilot/types';
-import { Button, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import { MESSAGE } from '@talpio/config';
+import { formatDate, formatTime } from '@talpio/localization';
+import { FilePurpose, MessageType, type Message } from '@talpio/types';
+import { Button, ErrorState, ListSkeleton } from '@talpio/ui';
+import { Mic } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { apiClient } from '@/lib/api';
 import { publicEnv } from '@/lib/env';
 import { t } from '@/lib/i18n';
 
@@ -50,9 +52,9 @@ export function ChatThread({
   const isClosed = conversation.data.status !== 'ACTIVE';
 
   return (
-    <div className="flex h-[calc(100dvh-14rem)] min-h-[26rem] flex-col rounded-[--radius-card] border border-border bg-surface">
-      <header className="border-b border-border px-4 py-3">
-        <p className="font-medium text-foreground">
+    <div className="social-panel flex h-[calc(100dvh-14rem)] min-h-[26rem] flex-col overflow-hidden">
+      <header className="border-b border-border/70 bg-brand-900 px-4 py-3 text-white">
+        <p className="font-semibold tracking-tight">
           {other?.displayName ?? t('messaging.chatTitle')}
         </p>
       </header>
@@ -144,6 +146,20 @@ function MessageRow({
         >
           {message.body ? <p className="whitespace-pre-wrap text-sm">{message.body}</p> : null}
 
+          {message.type === MessageType.VOICE ||
+          message.attachments.some((item) => item.mimeType.startsWith('audio/')) ? (
+            <div className="mt-1 space-y-1">
+              <p className="text-xs opacity-80">{t('messaging.voiceMessage')}</p>
+              {message.attachments
+                .filter((item) => item.mimeType.startsWith('audio/'))
+                .map((item) => (
+                  <audio key={item.id} controls preload="metadata" className="max-w-full">
+                    <source src={item.url} type={item.mimeType} />
+                  </audio>
+                ))}
+            </div>
+          ) : null}
+
           {message.location ? (
             <p className="text-sm">
               {message.location.latitude.toFixed(5)}, {message.location.longitude.toFixed(5)}
@@ -173,7 +189,11 @@ function MessageRow({
 
 function Composer({ conversationId }: { conversationId: string }) {
   const [body, setBody] = useState('');
+  const [recording, setRecording] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const send = useSendMessage(conversationId);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const trimmed = body.trim();
   const canSend = trimmed.length > 0 && trimmed.length <= MESSAGE.maxBodyLength && !send.isPending;
@@ -189,15 +209,92 @@ function Composer({ conversationId }: { conversationId: string }) {
     );
   }
 
+  async function startRecording() {
+    setVoiceError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksRef.current, { type: mimeType.split(';')[0] });
+        void sendVoice(blob);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecording(true);
+    } catch {
+      setVoiceError(t('messaging.micDenied'));
+    }
+  }
+
+  function stopRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') {
+      setRecording(false);
+      return;
+    }
+    recorder.stop();
+    setRecording(false);
+  }
+
+  async function sendVoice(blob: Blob) {
+    if (blob.size < 500) return;
+    try {
+      const file = new File([blob], `voice-${Date.now()}.webm`, {
+        type: blob.type || 'audio/webm',
+      });
+      const uploaded = await apiClient.files.upload(file, FilePurpose.MESSAGE_ATTACHMENT);
+      await send.mutateAsync({
+        type: MessageType.VOICE,
+        attachmentFileIds: [uploaded.id],
+        clientMessageId: crypto.randomUUID(),
+      });
+    } catch {
+      setVoiceError(t('messaging.sendFailed'));
+    }
+  }
+
   return (
     <form onSubmit={submit} className="flex flex-col gap-2 border-t border-border p-3">
-      {send.isError ? (
+      {send.isError || voiceError ? (
         <p role="alert" className="rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger-on-surface">
-          {t('messaging.sendFailed')}
+          {voiceError ?? t('messaging.sendFailed')}
         </p>
       ) : null}
 
+      {recording ? (
+        <p className="text-xs font-medium text-accent-600">{t('messaging.recording')}</p>
+      ) : null}
+
       <div className="flex items-end gap-2">
+        <button
+          type="button"
+          aria-label={t('messaging.holdToRecord')}
+          title={t('messaging.holdToRecord')}
+          onPointerDown={(event) => {
+            event.preventDefault();
+            void startRecording();
+          }}
+          onPointerUp={() => stopRecording()}
+          onPointerLeave={() => {
+            if (recording) stopRecording();
+          }}
+          onPointerCancel={() => stopRecording()}
+          className={
+            recording
+              ? 'grid size-11 place-items-center rounded-full bg-accent-500 text-white'
+              : 'grid size-11 place-items-center rounded-full border border-border bg-surface text-foreground-muted hover:bg-surface-muted'
+          }
+        >
+          <Mic className="size-5" aria-hidden />
+        </button>
         <label htmlFor="message-body" className="sr-only">
           {t('messaging.inputPlaceholder')}
         </label>

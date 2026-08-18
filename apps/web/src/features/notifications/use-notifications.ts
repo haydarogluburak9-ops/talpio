@@ -1,8 +1,8 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ListNotificationsParams } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
+import type { ListNotificationsParams } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
 
 import { apiClient } from '@/lib/api';
 

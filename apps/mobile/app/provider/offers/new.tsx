@@ -3,10 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ApiError } from '@ustapilot/api-client';
-import { OFFER } from '@ustapilot/config';
-import { formatMoney } from '@ustapilot/localization';
-import { OfferPriceType } from '@ustapilot/types';
+import { ApiError } from '@talpio/api-client';
+import { OFFER } from '@talpio/config';
+import { formatMoney } from '@talpio/localization';
+import { OfferPriceType } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -27,7 +27,7 @@ const VALIDITY_CHOICES = [24, 48, OFFER.defaultValidityHours, 168] as const;
 /**
  * Teklif verme formu.
  *
- * Tutar liradan kuruşa çevrilir; sınırlar `@ustapilot/config` içindeki ortak
+ * Tutar liradan kuruşa çevrilir; sınırlar `@talpio/config` içindeki ortak
  * `OFFER` limitlerinden gelir, böylece istemci ve backend aynı aralığı uygular.
  * Keşif sonrası fiyat seçildiğinde açıklama zorunludur: müşteri neyin keşfe
  * bağlı olduğunu bilmeden karar veremez.

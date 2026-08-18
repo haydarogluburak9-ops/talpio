@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { canReviewOrder } from '@ustapilot/business-logic';
-import { deepLinks } from '@ustapilot/config';
+import { canReviewOrder } from '@talpio/business-logic';
+import { deepLinks } from '@talpio/config';
 import {
   NotificationType,
   OrderStatus,
   ReviewStatus,
   UserRole,
   type Review,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaymentStatus } from '@/generated/prisma/client';
@@ -120,7 +120,7 @@ export class ReviewsService {
     return review;
   }
 
-  /** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, usta aldıklarını görür. */
+  /** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, satıcı aldıklarını görür. */
   async listMine(
     user: AuthenticatedUser,
     query: ListReviewsQueryDto,
@@ -135,9 +135,9 @@ export class ReviewsService {
   }
 
   /**
-   * Ustanın herkese açık yorumları.
+   * Satıcının herkese açık yorumları.
    *
-   * Giriş yapmamış ziyaretçi de usta profilinde yorumları görebildiği için
+   * Giriş yapmamış ziyaretçi de satıcı profilinde yorumları görebildiği için
    * yalnızca yayınlanmış kayıtlar döner; moderasyondaki ve gizlenmiş yorumlar
    * hiçbir çağırana gösterilmez.
    */
@@ -150,7 +150,7 @@ export class ReviewsService {
       select: { id: true },
     });
 
-    if (!profile) throw AppException.notFound('Usta profili', providerProfileId);
+    if (!profile) throw AppException.notFound('Satıcı profili', providerProfileId);
 
     return this.paginate(
       { providerProfileId, status: ReviewStatus.PUBLISHED, deletedAt: null },
@@ -163,11 +163,11 @@ export class ReviewsService {
   }
 
   /**
-   * Usta aldığı yoruma cevap yazar.
+   * Satıcı aldığı yoruma cevap yazar.
    *
    * Bir yoruma tek cevap düşer (`ReviewReply.reviewId` benzersiz). İkinci
    * istek 409 yerine mevcut cevabı günceller: ayrı bir düzenleme ucu yoktur ve
-   * şemadaki `updatedAt` alanı cevabın değişebileceğini varsayar; ustanın bir
+   * şemadaki `updatedAt` alanı cevabın değişebileceğini varsayar; satıcının bir
    * yazım hatasını kalıcı olarak taşıması cezalandırıcı olurdu.
    */
   async reply(user: AuthenticatedUser, id: string, dto: ReplyToReviewDto): Promise<Review> {
@@ -241,16 +241,21 @@ export class ReviewsService {
     return role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.SUPPORT;
   }
 
-  /** Rol bazlı liste süzgeci. */
+  /** Rol bazlı liste süzgeci — marketplace kullanıcıları hem alıcı hem satıcı tarafını görür. */
   private async scopeFor(user: AuthenticatedUser): Promise<Prisma.ReviewWhereInput> {
     if (this.isStaff(user.role)) return {};
 
-    if (user.role === UserRole.PROVIDER) {
-      const profile = await this.requireProviderProfile(user.id);
-      return { providerProfileId: profile.id };
-    }
+    const profile = await this.prisma.providerProfile.findFirst({
+      where: { userId: user.id, deletedAt: null },
+      select: { id: true },
+    });
 
-    return { customerId: user.id };
+    return {
+      OR: [
+        { customerId: user.id },
+        ...(profile ? [{ providerProfileId: profile.id }] : []),
+      ],
+    };
   }
 
   private async requireProviderProfile(userId: string): Promise<{ id: string }> {
@@ -261,7 +266,7 @@ export class ReviewsService {
 
     if (!profile) {
       throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
-        message: 'Bu işlem için usta profiliniz olmalıdır.',
+        message: 'Bu işlem için satıcı profiliniz olmalıdır.',
       });
     }
 
@@ -280,7 +285,7 @@ export class ReviewsService {
 
   /**
    * Yayınlanmış yorum herkese açıktır; moderasyondaki veya gizlenmiş yorumu
-   * yalnızca yazarı, hakkında yazılan usta ve personel görebilir.
+   * yalnızca yazarı, hakkında yazılan satıcı ve personel görebilir.
    */
   private async requireVisibleReview(user: AuthenticatedUser, id: string): Promise<ReviewRow> {
     const row = await this.findReview(id);
@@ -289,16 +294,17 @@ export class ReviewsService {
     if (this.isStaff(user.role)) return row;
     if (row.customerId === user.id) return row;
 
-    if (user.role === UserRole.PROVIDER) {
-      const profile = await this.requireProviderProfile(user.id);
-      if (row.providerProfileId === profile.id) return row;
-    }
+    const profile = await this.prisma.providerProfile.findFirst({
+      where: { userId: user.id, deletedAt: null },
+      select: { id: true },
+    });
+    if (profile && row.providerProfileId === profile.id) return row;
 
     throw AppException.forbiddenResource('Değerlendirme', { reviewId: id });
   }
 
   /**
-   * Ustanın ortalama puanı ve yorum sayısı önbellek alanlarıdır.
+   * Satıcının ortalama puanı ve yorum sayısı önbellek alanlarıdır.
    *
    * Sayaç körlemesine artırılmaz; yayınlanmış yorumlar üzerinden yeniden
    * hesaplanır. Böylece bir yorum moderasyonda gizlendiğinde veya geri

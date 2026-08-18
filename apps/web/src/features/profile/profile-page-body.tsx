@@ -1,7 +1,7 @@
 'use client';
 
-import { UserRole } from '@ustapilot/types';
-import { ErrorState, ListSkeleton, LoadingState } from '@ustapilot/ui';
+import { isMarketplaceRole } from '@talpio/types';
+import { ErrorState, ListSkeleton, LoadingState } from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -47,12 +47,12 @@ export function ProfilePageBody() {
 
       <AccountProfileForm user={user} />
 
-      {user.role === UserRole.PROVIDER ? <ProviderSections /> : null}
+      {isMarketplaceRole(user.role) ? <ProviderSections /> : null}
     </div>
   );
 }
 
-/** Usta bölümleri ayrı bir bileşende: müşteri hesabında bu sorgular hiç açılmaz. */
+/** Satıcı bölümleri ayrı bir bileşende: müşteri hesabında bu sorgular hiç açılmaz. */
 function ProviderSections() {
   const profile = useProviderProfile();
   const services = useMyServices();

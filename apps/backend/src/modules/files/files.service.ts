@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UPLOAD } from '@ustapilot/config';
-import { FilePurpose, UserRole, type FileAsset } from '@ustapilot/types';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose, QUEUE_NAMES, UserRole, type FileAsset } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { QueueService } from '@infra/queue/queue.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { StorageService } from '@infra/storage/storage.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
@@ -25,8 +26,11 @@ const RULES: Record<FilePurpose, PurposeRule> = {
   },
   [FilePurpose.MESSAGE_ATTACHMENT]: {
     folder: 'messages',
-    maxSizeBytes: UPLOAD.maxImageSizeBytes,
-    allowedMimeTypes: UPLOAD.allowedImageMimeTypes,
+    maxSizeBytes: UPLOAD.maxAudioSizeBytes,
+    allowedMimeTypes: [
+      ...UPLOAD.allowedImageMimeTypes,
+      ...UPLOAD.allowedAudioMimeTypes,
+    ],
     isPublic: true,
   },
   [FilePurpose.AVATAR]: {
@@ -37,6 +41,18 @@ const RULES: Record<FilePurpose, PurposeRule> = {
   },
   [FilePurpose.REVIEW_PHOTO]: {
     folder: 'reviews',
+    maxSizeBytes: UPLOAD.maxImageSizeBytes,
+    allowedMimeTypes: UPLOAD.allowedImageMimeTypes,
+    isPublic: true,
+  },
+  [FilePurpose.POST_MEDIA]: {
+    folder: 'posts',
+    maxSizeBytes: UPLOAD.maxVideoSizeBytes,
+    allowedMimeTypes: UPLOAD.allowedPostMediaMimeTypes,
+    isPublic: true,
+  },
+  [FilePurpose.COVER]: {
+    folder: 'covers',
     maxSizeBytes: UPLOAD.maxImageSizeBytes,
     allowedMimeTypes: UPLOAD.allowedImageMimeTypes,
     isPublic: true,
@@ -62,6 +78,7 @@ export class FilesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly queues: QueueService,
   ) {}
 
   /**
@@ -76,18 +93,24 @@ export class FilesService {
     input: UploadInput,
   ): Promise<FileAsset> {
     const rule = RULES[purpose];
+    const allowed = [...rule.allowedMimeTypes];
 
-    if (input.sizeBytes > rule.maxSizeBytes) {
-      throw new AppException('FILE_TOO_LARGE', {
-        message: `Dosya en fazla ${Math.round(rule.maxSizeBytes / (1024 * 1024))} MB olabilir.`,
-        context: { sizeBytes: input.sizeBytes, maxSizeBytes: rule.maxSizeBytes },
+    if (!allowed.includes(input.mimeType)) {
+      throw new AppException('UNSUPPORTED_FILE_TYPE', {
+        message: 'Bu dosya türü kabul edilmiyor.',
+        context: { mimeType: input.mimeType, allowed },
       });
     }
 
-    if (!rule.allowedMimeTypes.includes(input.mimeType)) {
-      throw new AppException('UNSUPPORTED_FILE_TYPE', {
-        message: 'Bu dosya türü kabul edilmiyor.',
-        context: { mimeType: input.mimeType, allowed: rule.allowedMimeTypes },
+    const maxSizeBytes =
+      purpose === FilePurpose.POST_MEDIA && input.mimeType.startsWith('image/')
+        ? UPLOAD.maxImageSizeBytes
+        : rule.maxSizeBytes;
+
+    if (input.sizeBytes > maxSizeBytes) {
+      throw new AppException('FILE_TOO_LARGE', {
+        message: `Dosya en fazla ${Math.round(maxSizeBytes / (1024 * 1024))} MB olabilir.`,
+        context: { sizeBytes: input.sizeBytes, maxSizeBytes },
       });
     }
 
@@ -110,6 +133,10 @@ export class FilesService {
       },
     });
 
+    if (purpose === FilePurpose.POST_MEDIA) {
+      this.enqueuePostMediaProcessing(user.id, row.id);
+    }
+
     return {
       id: row.id,
       url: stored.url ?? (await this.storage.signedUrl(row.storageKey)),
@@ -119,6 +146,17 @@ export class FilesService {
       isPublic: row.isPublic,
       createdAt: row.createdAt.toISOString(),
     };
+  }
+
+  private enqueuePostMediaProcessing(userId: string, fileId: string): void {
+    void this.queues
+      .enqueue(QUEUE_NAMES.MEDIA_ANALYSIS, {
+        idempotencyKey: `post-media:${fileId}`,
+        tenantId: userId,
+        payload: { fileId, purpose: 'post_media' },
+        enqueuedAt: new Date().toISOString(),
+      })
+      .catch(() => undefined);
   }
 
   /**
@@ -153,14 +191,19 @@ export class FilesService {
    *
    * Yalnızca yükleyen kişi silebilir ve yalnızca henüz hiçbir kayda bağlanmamış
    * dosyalar silinir: yayınlanmış bir talebin fotoğrafını sonradan kaldırmak
-   * teklif veren ustaların gördüğü işi değiştirirdi.
+   * teklif veren satıcıların gördüğü işi değiştirirdi.
    */
   async remove(user: AuthenticatedUser, id: string): Promise<void> {
     const row = await this.prisma.fileAsset.findFirst({
       where: { id, deletedAt: null },
       include: {
         _count: {
-          select: { jobAttachments: true, messageAttachments: true, providerDocuments: true },
+          select: {
+            jobAttachments: true,
+            messageAttachments: true,
+            providerDocuments: true,
+            postMedia: true,
+          },
         },
       },
     });
@@ -172,7 +215,10 @@ export class FilesService {
     }
 
     const attachedCount =
-      row._count.jobAttachments + row._count.messageAttachments + row._count.providerDocuments;
+      row._count.jobAttachments +
+      row._count.messageAttachments +
+      row._count.providerDocuments +
+      row._count.postMedia;
 
     if (attachedCount > 0) {
       throw new AppException('CONFLICT', {

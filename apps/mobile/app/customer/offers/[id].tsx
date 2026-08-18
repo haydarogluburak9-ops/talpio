@@ -2,9 +2,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { nextJobStatuses } from '@ustapilot/business-logic';
-import { formatDate, formatMoney } from '@ustapilot/localization';
-import { JobRequestStatus, OfferStatus, type Offer } from '@ustapilot/types';
+import { nextJobStatuses } from '@talpio/business-logic';
+import { formatDate, formatMoney } from '@talpio/localization';
+import { JobRequestStatus, OfferStatus, type Offer } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -79,7 +79,7 @@ function OfferDetailContent({
   const provider = offer.provider;
   const isExpired = new Date(offer.validUntil).getTime() <= now;
 
-  // Usta seçildikten sonra karar düğmeleri kapanır; kural iş mantığındadır.
+  // Satıcı seçildikten sonra karar düğmeleri kapanır; kural iş mantığındadır.
   const jobAcceptsOffers = job.data
     ? nextJobStatuses(job.data.status).includes(JobRequestStatus.PROVIDER_SELECTED)
     : false;

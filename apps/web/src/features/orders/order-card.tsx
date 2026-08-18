@@ -1,9 +1,9 @@
 'use client';
 
-import { ORDER_STATUS_TONES } from '@ustapilot/config';
-import { formatMoney, formatRelativeTime, orderStatusLabel } from '@ustapilot/localization';
-import type { Order } from '@ustapilot/types';
-import { Card, CardContent, StatusPill } from '@ustapilot/ui';
+import { ORDER_STATUS_TONES } from '@talpio/config';
+import { formatMoney, formatRelativeTime, orderStatusLabel } from '@talpio/localization';
+import type { Order } from '@talpio/types';
+import { Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
 import { publicEnv } from '@/lib/env';

@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { AvailableJobsParams, CreateJobBody, ListJobsParams } from '@ustapilot/api-client';
-import { PAGINATION, queryKeys } from '@ustapilot/config';
-import type { JobRequest } from '@ustapilot/types';
+import type { AvailableJobsParams, CreateJobBody, ListJobsParams } from '@talpio/api-client';
+import { PAGINATION, queryKeys } from '@talpio/config';
+import type { JobRequest } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

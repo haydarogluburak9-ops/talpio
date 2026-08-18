@@ -1,7 +1,7 @@
 /**
  * Yönetim panelinin uçtan uca duman testi.
  *
- * Özet sayımları, kullanıcı ve usta yönetimini, liste uçlarını, denetim
+ * Özet sayımları, kullanıcı ve satıcı yönetimini, liste uçlarını, denetim
  * kaydını ve rol kısıtlarını doğrular. Çalışan bir API ile tohumlanmış
  * (`SEED_DEMO_ACCOUNTS=true`) veritabanı gerektirir.
  */
@@ -55,7 +55,7 @@ async function login(email, label) {
 async function register(role, label) {
   const result = await call('POST', '/auth/register', {
     body: {
-      email: `admin-smoke-${label}+${Date.now()}@ustapilot.test`,
+      email: `admin-smoke-${label}+${Date.now()}@talpio.test`,
       password: 'Guclu1Parola',
       fullName: 'Yönetim Duman Testi',
       role,
@@ -70,8 +70,8 @@ async function register(role, label) {
 
 console.log(`Yönetim duman testi — ${BASE}\n`);
 
-const adminToken = await login('admin@ustapilot.com', 'Süper admin');
-const supportToken = await login('destek@ustapilot.com', 'Destek');
+const adminToken = await login('admin@talpio.com', 'Süper admin');
+const supportToken = await login('destek@talpio.com', 'Destek');
 const target = await register('CUSTOMER', 'target');
 const targetProvider = await register('PROVIDER', 'provider');
 
@@ -83,7 +83,7 @@ console.log('Özet:');
 const dashboard = await call('GET', '/admin/dashboard', { token: adminToken });
 check('özet okunur', dashboard.status === 200, `status=${dashboard.status}`);
 check('kullanıcı sayımı pozitif', (dashboard.json?.data?.users?.total ?? 0) > 0);
-check('müşteri ve usta ayrı sayılır', dashboard.json?.data?.users?.customers !== undefined);
+check('müşteri ve satıcı ayrı sayılır', dashboard.json?.data?.users?.customers !== undefined);
 check(
   'komisyon para birimiyle döner',
   typeof dashboard.json?.data?.orders?.commissionEarned?.currency === 'string',
@@ -95,8 +95,8 @@ check('liste okunur', users.status === 200, `status=${users.status}`);
 check('sayfa boyutu uygulanır', (users.json?.data?.length ?? 0) <= 5);
 check('sayfalama üst verisi döner', users.json?.meta?.total > 0);
 
-const searched = await call(`GET`, `/admin/users?q=admin@ustapilot.com`, { token: adminToken });
-check('e-posta ile aranır', searched.json?.data?.[0]?.email === 'admin@ustapilot.com');
+const searched = await call(`GET`, `/admin/users?q=admin@talpio.com`, { token: adminToken });
+check('e-posta ile aranır', searched.json?.data?.[0]?.email === 'admin@talpio.com');
 
 const filtered = await call('GET', '/admin/users?role=PROVIDER', { token: adminToken });
 check(
@@ -165,13 +165,13 @@ const revokedAgain = await call('POST', `/admin/users/${sessionTarget.userId}/re
 });
 check('açık oturum yokken sıfır döner', revokedAgain.json?.data?.revokedCount === 0);
 
-console.log('\nUsta doğrulama:');
+console.log('\nSatıcı doğrulama:');
 const providers = await call('GET', '/admin/providers', { token: adminToken });
-check('usta listesi okunur', providers.status === 200, `status=${providers.status}`);
+check('satıcı listesi okunur', providers.status === 200, `status=${providers.status}`);
 
 const providerProfile = await call('GET', '/providers/me', { token: targetProvider.token });
 const providerProfileId = providerProfile.json?.data?.id;
-if (!providerProfileId) abort('Usta profili okunamadı.', providerProfile.json);
+if (!providerProfileId) abort('Satıcı profili okunamadı.', providerProfile.json);
 
 const verified = await call('PATCH', `/admin/providers/${providerProfileId}/verification`, {
   token: adminToken,
@@ -253,7 +253,7 @@ check(
 
 console.log('\nYetki kısıtları:');
 const customerDashboard = await call('GET', '/admin/dashboard', { token: targetProvider.token });
-check('usta panele erişemez', customerDashboard.status === 403, `status=${customerDashboard.status}`);
+check('satıcı panele erişemez', customerDashboard.status === 403, `status=${customerDashboard.status}`);
 
 const anonymous = await call('GET', '/admin/users');
 check('oturumsuz istek reddedilir', anonymous.status === 401, `status=${anonymous.status}`);

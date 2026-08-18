@@ -6,7 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRole, type Offer } from '@ustapilot/types';
+import { MARKETPLACE_ROLES, type Offer } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -24,7 +24,7 @@ export class OffersController {
   constructor(private readonly offers: OffersService) {}
 
   @Post()
-  @Roles(UserRole.PROVIDER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Bir iş talebine teklif verir' })
   @ApiCreatedResponse({ description: 'Oluşturulan teklif' })
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateOfferDto): Promise<Offer> {
@@ -36,8 +36,8 @@ export class OffersController {
    * "mine" bir kimlik sanılır.
    */
   @Get('mine')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın verdiği teklifleri listeler' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının verdiği teklifleri listeler' })
   listMine(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: ListMyOffersQueryDto,
@@ -55,7 +55,7 @@ export class OffersController {
   }
 
   @Post(':id/accept')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Teklifi kabul eder ve siparişi başlatır' })
   accept(
     @CurrentUser() user: AuthenticatedUser,
@@ -66,7 +66,7 @@ export class OffersController {
   }
 
   @Post(':id/reject')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Teklifi reddeder' })
   reject(
     @CurrentUser() user: AuthenticatedUser,
@@ -77,8 +77,8 @@ export class OffersController {
   }
 
   @Post(':id/withdraw')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın kendi teklifini geri çeker' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının kendi teklifini geri çeker' })
   withdraw(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,

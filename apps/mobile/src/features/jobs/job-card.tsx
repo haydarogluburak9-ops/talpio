@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { formatMoney, formatRelativeTime } from '@ustapilot/localization';
-import type { JobRequest } from '@ustapilot/types';
+import { formatMoney, formatRelativeTime } from '@talpio/localization';
+import type { JobRequest } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Card } from '@/components/card';
@@ -13,7 +13,7 @@ import { spacing } from '@/theme/tokens';
 export interface JobCardProps {
   job: JobRequest;
   onPress: () => void;
-  /** Usta havuzunda teklif sayısı yerine bütçe öne çıkar. */
+  /** Satıcı havuzunda teklif sayısı yerine bütçe öne çıkar. */
   variant?: 'customer' | 'provider';
 }
 

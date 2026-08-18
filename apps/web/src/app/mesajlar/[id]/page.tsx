@@ -1,12 +1,12 @@
-import { buttonVariants } from '@ustapilot/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { ChatPageBody } from '@/features/messages/messages-page-body';
+import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Sohbet',
+  title: t('messaging.chatTitle'),
   robots: { index: false, follow: false },
 };
 
@@ -14,15 +14,14 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+    <SocialShell showRail={false}>
       <Link
         href="/mesajlar"
-        className={`${buttonVariants({ variant: 'ghost', size: 'sm' })} mb-4`}
+        className="mb-3 inline-flex text-sm font-medium text-accent-600 hover:underline"
       >
         ← {t('messaging.listTitle')}
       </Link>
-
       <ChatPageBody conversationId={id} />
-    </div>
+    </SocialShell>
   );
 }

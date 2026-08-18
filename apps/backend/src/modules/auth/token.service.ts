@@ -2,7 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { UserRole } from '@ustapilot/types';
+import type { UserRole } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
 

@@ -1,5 +1,5 @@
-import { MESSAGE, REVIEW, UPLOAD } from '@ustapilot/config';
-import { MessageType } from '@ustapilot/types';
+import { MESSAGE, REVIEW, UPLOAD } from '@talpio/config';
+import { MessageType } from '@talpio/types';
 import { z } from 'zod';
 
 import { geoPointSchema, uuidSchema } from './primitives';

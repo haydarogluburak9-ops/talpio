@@ -1,16 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { AuthSession, AuthTokens, CurrentUser } from '@ustapilot/types';
+import type { AuthSession, AuthTokens, CurrentUser } from '@talpio/types';
 
+import { writeAudit } from '@common/audit/write-audit';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
+import { RbacService } from '@modules/rbac/rbac.service';
+import { CategoryFollowsService } from '@modules/social/category-follows.service';
+import { ProfilesService } from '@modules/social/profiles.service';
 import { toCurrentUser, userInclude, type UserRow } from '@modules/users/user.mapper';
 import type { DevicePlatform, User } from '@/generated/prisma/client';
+import { PlatformRoleCode, isMarketplaceRole, type UserRole } from '@talpio/types';
+import { SocialProfileKind } from '@/generated/prisma/client';
 
 import type { LoginDto } from './dto/login.dto';
 import type { RegisterDto } from './dto/register.dto';
 import { PasswordService } from './password.service';
 import { hashRefreshToken, TokenService } from './token.service';
+import { VerificationService } from './verification.service';
 
 /** Oturumu açan cihaz hakkında istekten türetilen bilgi. */
 export interface DeviceContext {
@@ -30,6 +37,10 @@ export class AuthService {
     private readonly passwords: PasswordService,
     private readonly tokens: TokenService,
     private readonly config: AppConfigService,
+    private readonly rbac: RbacService,
+    private readonly categoryFollows: CategoryFollowsService,
+    private readonly profiles: ProfilesService,
+    private readonly verification: VerificationService,
   ) {}
 
   async register(dto: RegisterDto, device: DeviceContext): Promise<AuthSession> {
@@ -53,24 +64,50 @@ export class AuthService {
     }
 
     const passwordHash = await this.passwords.hash(dto.password);
+    const username = dto.username.trim().toLowerCase();
+    await this.profiles.assertUsernameAvailable(username);
 
-    // Profil kaydı kullanıcıyla aynı işlemde açılır; yarım kalmış hesap oluşmaz.
+    // Her hesap hem talep açar hem teklif verir; alıcı/satıcı ayrımı yoktur.
     const user = await this.prisma.user.create({
       data: {
         email,
         phone: dto.phone ?? null,
         passwordHash,
         fullName: dto.fullName,
-        role: dto.role,
+        role: 'CUSTOMER',
         locale: dto.locale ?? this.config.defaultLocale,
-        ...(dto.role === 'PROVIDER'
-          ? { providerProfile: { create: {} } }
-          : { customerProfile: { create: {} } }),
+        marketingConsentAt: dto.acceptedMarketing ? new Date() : null,
+        customerProfile: { create: {} },
+        providerProfile: { create: {} },
+        socialProfile: {
+          create: {
+            kind: SocialProfileKind.PERSONAL,
+            username,
+            displayName: dto.fullName,
+          },
+        },
       },
       include: userInclude,
     });
 
+    await this.rbac.assignPlatformRole(user.id, PlatformRoleCode.BUYER);
+    await this.rbac.assignPlatformRole(user.id, PlatformRoleCode.SERVICE_PROVIDER);
+    if (dto.interestCategoryIds?.length) {
+      await this.categoryFollows.replaceForUser(user.id, dto.interestCategoryIds);
+    }
+
     this.logger.log({ userId: user.id, role: user.role }, 'Yeni kullanıcı kaydı');
+    void writeAudit(this.prisma, {
+      actorId: user.id,
+      action: 'auth.register',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: device.ipAddress,
+      userAgent: device.userAgent,
+    });
+    void this.verification.requestEmailVerification(user.id).catch((error: unknown) => {
+      this.logger.warn({ error }, 'Kayıt sonrası e-posta doğrulama gönderilemedi');
+    });
 
     return this.issueSession(user, device);
   }
@@ -119,7 +156,22 @@ export class AuthService {
       });
     }
 
-    return this.issueSession(user, device);
+    await this.ensureMarketplaceAccess(user.id, user.role as UserRole);
+    const hydrated = await this.prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+      include: userInclude,
+    });
+
+    const session = await this.issueSession(hydrated, device);
+    void writeAudit(this.prisma, {
+      actorId: user.id,
+      action: 'auth.login',
+      entityType: 'User',
+      entityId: user.id,
+      ipAddress: device.ipAddress,
+      userAgent: device.userAgent,
+    });
+    return session;
   }
 
   /**
@@ -153,10 +205,23 @@ export class AuthService {
 
   async logout(refreshToken: string): Promise<void> {
     // Bilinmeyen jeton için de başarı döner; jeton varlığı sızdırılmaz.
+    const hash = hashRefreshToken(refreshToken);
+    const session = await this.prisma.userSession.findFirst({
+      where: { refreshTokenHash: hash, revokedAt: null },
+      select: { userId: true },
+    });
     await this.prisma.userSession.updateMany({
-      where: { refreshTokenHash: hashRefreshToken(refreshToken), revokedAt: null },
+      where: { refreshTokenHash: hash, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    if (session) {
+      void writeAudit(this.prisma, {
+        actorId: session.userId,
+        action: 'auth.logout',
+        entityType: 'User',
+        entityId: session.userId,
+      });
+    }
   }
 
   /** Tüm cihazlardaki oturumları kapatır (parola değişimi, şüpheli erişim). */
@@ -164,6 +229,16 @@ export class AuthService {
     await this.prisma.userSession.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
+    });
+    await this.prisma.deviceToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    void writeAudit(this.prisma, {
+      actorId: userId,
+      action: 'auth.logout_all',
+      entityType: 'User',
+      entityId: userId,
     });
   }
 
@@ -176,6 +251,24 @@ export class AuthService {
     if (!user) throw AppException.notFound('Kullanıcı', userId);
 
     return toCurrentUser(user, this.config.fileBaseUrl);
+  }
+
+  /** Personel hariç her hesabın hem alıcı hem satıcı profili ve platform rolleri olur. */
+  private async ensureMarketplaceAccess(userId: string, role: UserRole): Promise<void> {
+    if (!isMarketplaceRole(role)) return;
+
+    await this.prisma.customerProfile.upsert({
+      where: { userId },
+      update: {},
+      create: { userId },
+    });
+    await this.prisma.providerProfile.upsert({
+      where: { userId },
+      update: {},
+      create: { userId },
+    });
+    await this.rbac.assignPlatformRole(userId, PlatformRoleCode.BUYER);
+    await this.rbac.assignPlatformRole(userId, PlatformRoleCode.SERVICE_PROVIDER);
   }
 
   private async issueSession(user: UserRow, device: DeviceContext): Promise<AuthSession> {

@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentStatus, TransactionType } from '@ustapilot/types';
+import { PaymentStatus, TransactionType } from '@talpio/types';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 

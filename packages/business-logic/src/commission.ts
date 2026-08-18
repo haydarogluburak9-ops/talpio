@@ -1,6 +1,10 @@
-import { COMMISSION } from '@ustapilot/config';
-import { CommissionType } from '@ustapilot/types';
-import type { CommissionBreakdown, CommissionRule } from '@ustapilot/types';
+/**
+ * Accept sonrası marketplace komisyonu (keşif / lead paywall değil).
+ * Birincil gelir modeli: premium AI kredileri (`MONETIZATION.primaryRevenue`).
+ */
+import { COMMISSION } from '@talpio/config';
+import { CommissionType } from '@talpio/types';
+import type { CommissionBreakdown, CommissionRule } from '@talpio/types';
 
 export interface CommissionContext {
   grossMinor: number;

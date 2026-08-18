@@ -1,9 +1,9 @@
 'use client';
 
-import { OFFER_STATUS_TONES } from '@ustapilot/config';
-import { formatDate, formatMoney, formatRelativeTime, offerStatusLabel } from '@ustapilot/localization';
-import { OfferPriceType, OfferStatus, type Offer } from '@ustapilot/types';
-import { Badge, Button, Card, CardContent, StatusPill } from '@ustapilot/ui';
+import { OFFER_STATUS_TONES } from '@talpio/config';
+import { formatDate, formatMoney, formatRelativeTime, offerStatusLabel } from '@talpio/localization';
+import { OfferPriceType, OfferStatus, type Offer } from '@talpio/types';
+import { Badge, Button, Card, CardContent, StatusPill } from '@talpio/ui';
 import { useState } from 'react';
 
 import { publicEnv } from '@/lib/env';
@@ -24,9 +24,17 @@ export interface OfferCardProps {
   onAccept: (offerId: string) => void;
   onReject: (offerId: string) => void;
   isDeciding: boolean;
+  badges?: string[];
 }
 
-export function OfferCard({ offer, decidable, onAccept, onReject, isDeciding }: OfferCardProps) {
+export function OfferCard({
+  offer,
+  decidable,
+  onAccept,
+  onReject,
+  isDeciding,
+  badges = [],
+}: OfferCardProps) {
   const locale = publicEnv.defaultLocale;
   const [confirmingAccept, setConfirmingAccept] = useState(false);
 
@@ -40,7 +48,7 @@ export function OfferCard({ offer, decidable, onAccept, onReject, isDeciding }: 
       <CardContent className="flex flex-col gap-4 pt-5 sm:pt-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-medium text-foreground">{provider?.displayName ?? 'Usta'}</p>
+            <p className="font-medium text-foreground">{provider?.displayName ?? 'Satıcı'}</p>
             <p className="text-sm text-foreground-muted">
               {provider?.averageRating != null
                 ? `${provider.averageRating.toFixed(1)} puan · ${provider.reviewCount} değerlendirme`
@@ -65,7 +73,9 @@ export function OfferCard({ offer, decidable, onAccept, onReject, isDeciding }: 
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-foreground-muted">
           {provider?.isVerified ? <Badge tone="success">Doğrulanmış</Badge> : null}
-          {provider?.isPremium ? <Badge tone="accent">Öncelikli usta</Badge> : null}
+          {publicEnv.featurePremium && provider?.isPremium ? (
+            <Badge tone="accent">Öncelikli satıcı</Badge>
+          ) : null}
           {offer.materialsIncluded ? <Badge tone="info">{t('job.materialsIncluded')}</Badge> : null}
           {offer.estimatedDurationMinutes ? (
             <Badge tone="neutral">{formatDuration(offer.estimatedDurationMinutes)}</Badge>
@@ -73,6 +83,11 @@ export function OfferCard({ offer, decidable, onAccept, onReject, isDeciding }: 
           {offer.availableFrom ? (
             <Badge tone="neutral">En erken {formatDate(offer.availableFrom, locale)}</Badge>
           ) : null}
+          {badges.map((badge) => (
+            <Badge key={badge} tone="accent">
+              {comparisonBadgeLabel(badge)}
+            </Badge>
+          ))}
           <span className="ml-auto">{formatRelativeTime(offer.createdAt, locale)}</span>
         </div>
 
@@ -87,7 +102,7 @@ export function OfferCard({ offer, decidable, onAccept, onReject, isDeciding }: 
             {confirmingAccept ? (
               <>
                 <p className="text-sm text-foreground">
-                  Bu teklifi kabul ederseniz diğer teklifler kapanır ve açık adresiniz bu ustayla
+                  Bu teklifi kabul ederseniz diğer teklifler kapanır ve açık adresiniz bu satıcıyla
                   paylaşılır.
                 </p>
                 <Button size="sm" isLoading={isDeciding} onClick={() => onAccept(offer.id)}>
@@ -127,4 +142,19 @@ function formatDuration(minutes: number): string {
   if (hours < 24) return rest === 0 ? `${hours} saat` : `${hours} sa ${rest} dk`;
 
   return `${Math.round(hours / 24)} gün`;
+}
+
+const BADGE_I18N: Record<string, string> = {
+  LOWEST_PRICE: 'offer.badgeLowestPrice',
+  FASTEST_DELIVERY: 'offer.badgeFastestDelivery',
+  HIGHEST_RATED: 'offer.badgeHighestRated',
+  CLOSEST_SELLER: 'offer.badgeClosest',
+  VERIFIED_BUSINESS: 'offer.badgeVerified',
+  BEST_WARRANTY: 'offer.badgeBestWarranty',
+  RESPONSE_QUALITY: 'offer.badgeResponseQuality',
+};
+
+function comparisonBadgeLabel(badge: string): string {
+  const key = BADGE_I18N[badge];
+  return key ? t(key) : badge;
 }

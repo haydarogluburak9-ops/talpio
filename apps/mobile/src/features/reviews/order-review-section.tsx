@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 
-import { OrderStatus, type Order } from '@ustapilot/types';
+import { OrderStatus, type Order } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -22,7 +22,7 @@ export function OrderReviewSection({
   isProvider,
 }: {
   order: Order;
-  /** Usta yalnızca yazılmış yorumu ve cevabını görür; puanlama müşterinindir. */
+  /** Satıcı yalnızca yazılmış yorumu ve cevabını görür; puanlama müşterinindir. */
   isProvider: boolean;
 }) {
   const { t } = useI18n();

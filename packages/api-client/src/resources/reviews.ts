@@ -1,5 +1,5 @@
-import { API_ROUTES } from '@ustapilot/config';
-import type { Review, ReviewRatings } from '@ustapilot/types';
+import { API_ROUTES } from '@talpio/config';
+import type { Review, ReviewRatings } from '@talpio/types';
 
 import type { HttpClient, Paginated } from '../http-client';
 
@@ -31,7 +31,7 @@ export function createReviewsResource(http: HttpClient) {
       return http.post<Review>(API_ROUTES.reviews.root, body);
     },
 
-    /** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, usta aldıklarını görür. */
+    /** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, satıcı aldıklarını görür. */
     listMine(params: ListReviewsParams = {}, signal?: AbortSignal): Promise<Paginated<Review>> {
       return http.paginated<Review>(API_ROUTES.reviews.root, {
         method: 'GET',
@@ -40,7 +40,7 @@ export function createReviewsResource(http: HttpClient) {
       });
     },
 
-    /** Ustanın herkese açık yorumları; oturum gerektirmez. */
+    /** Satıcının herkese açık yorumları; oturum gerektirmez. */
     listForProvider(
       providerId: string,
       params: ListProviderReviewsParams = {},

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import type { AuthSession, CurrentUser } from '@ustapilot/types';
+import type { AuthSession, CurrentUser } from '@talpio/types';
 import type { Request, Response } from 'express';
 
 import { AppException } from '@common/errors/app.exception';
@@ -14,11 +14,19 @@ import { Public } from './decorators/public.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
+import {
+  ForgotPasswordDto,
+  RequestPhoneCodeDto,
+  ResetPasswordDto,
+  VerifyEmailDto,
+  VerifyPhoneDto,
+} from './dto/verification.dto';
 import type { AuthenticatedUser } from './jwt.strategy';
 import { TokenService } from './token.service';
+import { VerificationService } from './verification.service';
 
-const REFRESH_COOKIE = 'up_refresh';
-const ACCESS_COOKIE = 'up_access';
+const REFRESH_COOKIE = 'talpio_refresh';
+const ACCESS_COOKIE = 'talpio_access';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -27,12 +35,13 @@ export class AuthController {
     private readonly auth: AuthService,
     private readonly tokens: TokenService,
     private readonly config: AppConfigService,
+    private readonly verification: VerificationService,
   ) {}
 
   @Public()
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Yeni müşteri veya usta hesabı oluşturur' })
+  @ApiOperation({ summary: 'Yeni müşteri veya satıcı hesabı oluşturur' })
   async register(
     @Body() dto: RegisterDto,
     @Req() request: Request,
@@ -109,6 +118,60 @@ export class AuthController {
   @ApiOkResponse({ description: 'Kullanıcı bilgisi ve rol izinleri' })
   me(@CurrentUserParam() user: AuthenticatedUser): Promise<CurrentUser> {
     return this.auth.currentUser(user.id);
+  }
+
+  @Post('verify-email/request')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'E-posta doğrulama bağlantısı gönderir' })
+  requestEmailVerification(@CurrentUserParam() user: AuthenticatedUser) {
+    return this.verification.requestEmailVerification(user.id);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'E-posta doğrulama jetonunu tüketir' })
+  verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.verification.verifyEmail(dto.token);
+  }
+
+  @Post('phone/request-code')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Telefon OTP kodu gönderir' })
+  requestPhoneCode(@CurrentUserParam() user: AuthenticatedUser, @Body() dto: RequestPhoneCodeDto) {
+    return this.verification.requestPhoneCode(user.id, dto.phone);
+  }
+
+  @Post('phone/verify')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Telefon OTP kodunu doğrular' })
+  verifyPhone(@CurrentUserParam() user: AuthenticatedUser, @Body() dto: VerifyPhoneDto) {
+    return this.verification.verifyPhone(user.id, dto.phone, dto.code);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Şifre sıfırlama bağlantısı gönderir' })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.verification.forgotPassword(dto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Şifre sıfırlama jetonunu tüketir' })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.verification.resetPassword(dto.token, dto.password);
   }
 
   /**

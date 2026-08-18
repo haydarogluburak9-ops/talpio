@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { JOB, UPLOAD } from '@ustapilot/config';
-import { JobSize, JobTimeSlot } from '@ustapilot/types';
+import { JOB, UPLOAD } from '@talpio/config';
+import { JobSize, JobTimeSlot } from '@talpio/types';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -46,7 +46,7 @@ export class JobAddressDto {
   @IsUUID()
   neighborhoodId?: string;
 
-  @ApiPropertyOptional({ description: 'Açık adres. Yalnızca usta seçildikten sonra paylaşılır.' })
+  @ApiPropertyOptional({ description: 'Açık adres. Yalnızca satıcı seçildikten sonra paylaşılır.' })
   @IsOptional()
   @Transform(trim)
   @IsString()
@@ -63,7 +63,7 @@ export class JobAddressDto {
 /**
  * Talep oluşturma gövdesi.
  *
- * Kurallar `@ustapilot/validation` içindeki `createJobRequestSchema` ile aynıdır;
+ * Kurallar `@talpio/validation` içindeki `createJobRequestSchema` ile aynıdır;
  * istemciler formu o Zod şemasıyla doğrular, backend aynı sınırları burada
  * yeniden uygular çünkü istemci doğrulaması güvenlik sınırı sayılmaz.
  */

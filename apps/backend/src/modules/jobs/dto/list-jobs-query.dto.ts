@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { JobRequestStatus } from '@ustapilot/types';
+import { JobRequestStatus } from '@talpio/types';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsUUID } from 'class-validator';
 
@@ -27,7 +27,7 @@ export class ListJobsQueryDto extends PaginationQueryDto {
   categoryId?: string;
 }
 
-/** Ustaya açık iş havuzu için parametreler. */
+/** Satıcıya açık iş havuzu için parametreler. */
 export class AvailableJobsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -48,7 +48,7 @@ export class AvailableJobsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     default: true,
     description:
-      'Ustanın hizmet verdiği kategori ve bölgelerle sınırla. Kapatılırsa tüm açık talepler döner.',
+      'Satıcının hizmet verdiği kategori ve bölgelerle sınırla. Kapatılırsa tüm açık talepler döner.',
   })
   @IsOptional()
   @Transform(toBoolean)

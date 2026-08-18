@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { queryKeys } from '@ustapilot/config';
-import type { ServiceCategory } from '@ustapilot/types';
+import { queryKeys } from '@talpio/config';
+import type { ServiceCategory } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

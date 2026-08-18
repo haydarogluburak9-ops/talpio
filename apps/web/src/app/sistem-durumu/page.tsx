@@ -1,4 +1,4 @@
-import { Container, Section } from '@ustapilot/ui';
+import { Container, Section } from '@talpio/ui';
 import type { Metadata } from 'next';
 
 import { SystemStatusCard } from '@/features/system-status/system-status-card';

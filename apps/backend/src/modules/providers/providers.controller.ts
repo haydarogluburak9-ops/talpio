@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  UserRole,
+  MARKETPLACE_ROLES,
   type ProviderProfile,
   type ProviderService,
   type ProviderSummary,
   type Review,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -37,16 +37,16 @@ export class ProvidersController {
    * bir kimlik sanılır.
    */
   @Get('me')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın kendi profili' })
-  @ApiOkResponse({ description: 'Usta profili' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının kendi profili' })
+  @ApiOkResponse({ description: 'Satıcı profili' })
   getMe(@CurrentUser() user: AuthenticatedUser): Promise<ProviderProfile> {
     return this.providers.getMe(user);
   }
 
   @Patch('me')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın kendi profilini günceller' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının kendi profilini günceller' })
   @ApiOkResponse({ description: 'Güncellenmiş profil' })
   updateMe(
     @CurrentUser() user: AuthenticatedUser,
@@ -56,15 +56,15 @@ export class ProvidersController {
   }
 
   @Get('me/services')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın verdiği hizmetler' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının verdiği hizmetler' })
   @ApiOkResponse({ description: 'Hizmet listesi' })
   listMyServices(@CurrentUser() user: AuthenticatedUser): Promise<ProviderService[]> {
     return this.providers.listMyServices(user);
   }
 
   @Put('me/services')
-  @Roles(UserRole.PROVIDER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Hizmet listesini gönderilen içerikle değiştirir' })
   @ApiOkResponse({ description: 'Güncellenmiş hizmet listesi' })
   replaceMyServices(
@@ -75,7 +75,7 @@ export class ProvidersController {
   }
 
   @Put('me/service-areas')
-  @Roles(UserRole.PROVIDER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Hizmet bölgelerini gönderilen ilçelerle değiştirir' })
   @ApiOkResponse({ description: 'Güncellenmiş profil' })
   replaceMyServiceAreas(
@@ -88,19 +88,19 @@ export class ProvidersController {
   /** Kart ve yorumlar aynı sayfada durur; biri ziyaretçiye açıksa diğeri de açık olmalı. */
   @Get(':id')
   @Public()
-  @ApiOperation({ summary: 'Ustanın herkese açık kartı' })
-  @ApiOkResponse({ description: 'Usta özeti' })
+  @ApiOperation({ summary: 'Satıcının herkese açık kartı' })
+  @ApiOkResponse({ description: 'Satıcı özeti' })
   getById(@Param('id', ParseUUIDPipe) id: string): Promise<ProviderSummary> {
     return this.providers.getPublicById(id);
   }
 
   /**
-   * Yorumlar usta kartının bir parçası olduğu için değerlendirme modülü yerine
+   * Yorumlar satıcı kartının bir parçası olduğu için değerlendirme modülü yerine
    * burada durur; ziyaretçi profili görebiliyorsa yorumları da görebilmelidir.
    */
   @Get(':id/reviews')
   @Public()
-  @ApiOperation({ summary: 'Ustanın herkese açık değerlendirmeleri' })
+  @ApiOperation({ summary: 'Satıcının herkese açık değerlendirmeleri' })
   @ApiOkResponse({ description: 'Sayfalı değerlendirme listesi' })
   listReviews(
     @Param('id', ParseUUIDPipe) id: string,

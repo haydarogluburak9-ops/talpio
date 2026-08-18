@@ -1,7 +1,10 @@
+'use client';
+
 import type { ReactNode } from 'react';
 
 import { Topbar } from '@/components/layout/topbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { t } from '@/lib/i18n';
 
 export interface ModuleCapability {
   label: string;
@@ -17,30 +20,38 @@ export interface ModuleCapability {
  */
 export function ModuleScaffold({
   title,
+  titleKey,
   description,
+  descriptionKey,
   capabilities,
   dataSource,
   children,
 }: {
-  title: string;
-  description: string;
+  title?: string;
+  titleKey?: string;
+  description?: string;
+  descriptionKey?: string;
   capabilities: ModuleCapability[];
   dataSource: string;
   children?: ReactNode;
 }) {
   return (
     <>
-      <Topbar title={title} description={description} />
+      <Topbar
+        title={title}
+        titleKey={titleKey}
+        description={description}
+        descriptionKey={descriptionKey}
+      />
 
       <main className="flex-1 space-y-6 p-6">
         {children}
 
         <Card>
           <CardHeader>
-            <CardTitle>Planlanan yetenekler</CardTitle>
+            <CardTitle>{t('admin.plannedCapabilities')}</CardTitle>
             <CardDescription>
-              Bu modül <code className="font-mono text-xs">{dataSource}</code> ucuna bağlandığında
-              aşağıdaki işlemler kullanılabilir olacak.
+              {t('admin.plannedCapabilitiesHint', { source: dataSource })}
             </CardDescription>
           </CardHeader>
           <CardContent>

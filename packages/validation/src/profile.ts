@@ -1,4 +1,4 @@
-import { DocumentType } from '@ustapilot/types';
+import { DocumentType } from '@talpio/types';
 import { z } from 'zod';
 
 import {

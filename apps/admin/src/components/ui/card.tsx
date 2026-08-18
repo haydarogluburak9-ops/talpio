@@ -5,4 +5,4 @@ export {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@ustapilot/ui';
+} from '@talpio/ui';

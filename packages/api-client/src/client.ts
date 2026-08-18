@@ -1,7 +1,9 @@
 import { HttpClient } from './http-client';
 import type { HttpClientOptions } from './http-client';
 import { createAdminResource } from './resources/admin';
+import { createAgentResource } from './resources/agent';
 import { createAuthResource } from './resources/auth';
+import { createBillingResource } from './resources/billing';
 import { createCatalogResource } from './resources/catalog';
 import { createHealthResource } from './resources/health';
 import { createJobsResource } from './resources/jobs';
@@ -12,7 +14,9 @@ import { createOffersResource } from './resources/offers';
 import { createOrdersResource } from './resources/orders';
 import { createPaymentsResource } from './resources/payments';
 import { createProvidersResource } from './resources/providers';
+import { createBusinessesResource, createRequestsResource } from './resources/requests';
 import { createReviewsResource } from './resources/reviews';
+import { createSocialResource } from './resources/social';
 import { createSupportResource } from './resources/support';
 import { createUsersResource } from './resources/users';
 
@@ -34,6 +38,8 @@ export function createApiClient(options: HttpClientOptions) {
     catalog: createCatalogResource(http),
     jobs: createJobsResource(http),
     offers: createOffersResource(http),
+    requests: createRequestsResource(http),
+    businesses: createBusinessesResource(http),
     orders: createOrdersResource(http),
     payments: createPaymentsResource(http),
     messages: createMessagesResource(http),
@@ -42,7 +48,10 @@ export function createApiClient(options: HttpClientOptions) {
     users: createUsersResource(http),
     providers: createProvidersResource(http),
     reviews: createReviewsResource(http),
+    social: createSocialResource(http),
     support: createSupportResource(http),
+    agent: createAgentResource(http),
+    billing: createBillingResource(http),
     admin: createAdminResource(http),
   };
 }

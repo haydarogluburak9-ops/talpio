@@ -1,5 +1,5 @@
-import { JOB, UPLOAD } from '@ustapilot/config';
-import { JobSize, JobTimeSlot } from '@ustapilot/types';
+import { JOB, UPLOAD } from '@talpio/config';
+import { JobSize, JobTimeSlot } from '@talpio/types';
 import { z } from 'zod';
 
 import { geoPointSchema, isoDateSchema, minorAmountSchema, uuidSchema } from './primitives';

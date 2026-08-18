@@ -17,11 +17,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  MARKETPLACE_ROLES,
   UserRole,
   type Payment,
   type ProviderWalletSummary,
   type Transaction,
-} from '@ustapilot/types';
+} from '@talpio/types';
 import type { Request } from 'express';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
@@ -64,8 +65,8 @@ export class PaymentsController {
   }
 
   @Get('wallet')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustanın cüzdan özeti' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcının cüzdan özeti' })
   @ApiOkResponse({ description: 'Kullanılabilir bakiye ve bloke hakediş' })
   wallet(@CurrentUser() user: AuthenticatedUser): Promise<ProviderWalletSummary> {
     return this.payments.walletSummary(user);

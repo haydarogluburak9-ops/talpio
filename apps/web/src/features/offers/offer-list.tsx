@@ -1,8 +1,8 @@
 'use client';
 
-import { OfferSortKey, sortOffers, type SortableOffer } from '@ustapilot/business-logic';
-import { OfferStatus, type Offer } from '@ustapilot/types';
-import { Button, EmptyState, ErrorState, ListSkeleton } from '@ustapilot/ui';
+import { OfferSortKey, compareOffers, sortOffers, type SortableOffer } from '@talpio/business-logic';
+import { OfferStatus, type Offer } from '@talpio/types';
+import { Button, EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 import { useMemo, useState } from 'react';
 
 import { t } from '@/lib/i18n';
@@ -11,15 +11,15 @@ import { OfferCard } from './offer-card';
 import { useAcceptOffer, useJobOffers, useRejectOffer } from './use-offers';
 
 /**
- * "Önerilen" sıralama ustanın iptal oranı ve son etkinlik bilgisine dayanır;
- * bunlar teklif gövdesindeki usta özetinde taşınmadığı için burada sunulmaz.
+ * "Önerilen" sıralama satıcının iptal oranı ve son etkinlik bilgisine dayanır;
+ * bunlar teklif gövdesindeki satıcı özetinde taşınmadığı için burada sunulmaz.
  * Aşağıdaki anahtarların hepsi teklifin kendi alanlarından hesaplanabilir.
  */
 const SORT_OPTIONS = [
-  { id: OfferSortKey.PRICE_ASC, label: 'En düşük fiyat' },
-  { id: OfferSortKey.RATING_DESC, label: 'En yüksek puan' },
-  { id: OfferSortKey.FASTEST, label: 'En hızlı' },
-  { id: OfferSortKey.NEWEST, label: 'En yeni' },
+  { id: OfferSortKey.PRICE_ASC, labelKey: 'offer.badgeLowestPrice' },
+  { id: OfferSortKey.RATING_DESC, labelKey: 'offer.badgeHighestRated' },
+  { id: OfferSortKey.FASTEST, labelKey: 'offer.badgeFastestDelivery' },
+  { id: OfferSortKey.NEWEST, labelKey: 'offer.sortNewest' },
 ] as const;
 
 /** Tek sayfada gösterilen teklif sayısı. Sıralama bu küme üzerinde yapılır. */
@@ -35,6 +35,20 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
   // useMemo'yu işlevsiz bırakırdı.
   const items = offers.data?.items;
   const sorted = useMemo(() => sortForDisplay(items ?? [], sortKey), [items, sortKey]);
+  const badgesById = useMemo(() => {
+    const comparison = compareOffers(
+      (items ?? []).map((offer) => ({
+        id: offer.id,
+        amountMinor: offer.price.amountMinor,
+        estimatedDurationMinutes: offer.estimatedDurationMinutes ?? null,
+        averageRating: offer.provider?.averageRating ?? null,
+        verified: offer.provider?.isVerified ?? false,
+        noteLength: offer.note?.length ?? 0,
+        responseMinutes: offer.provider?.averageResponseMinutes ?? null,
+      })),
+    );
+    return comparison.badgesByOfferId;
+  }, [items]);
 
   if (offers.isError) {
     return (
@@ -52,7 +66,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
     return (
       <EmptyState
         title={t('job.noOffers')}
-        description="Talebiniz bölgenizdeki ustalara gösteriliyor. Teklif geldiğinde burada listelenir."
+        description="Talebiniz satıcılara gösteriliyor. Teklif geldiğinde burada listelenir."
       />
     );
   }
@@ -71,7 +85,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
             aria-pressed={sortKey === option.id}
             onClick={() => setSortKey(option.id)}
           >
-            {option.label}
+            {t(option.labelKey)}
           </Button>
         ))}
       </div>
@@ -89,6 +103,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
             offer={offer}
             decidable={decidable}
             isDeciding={isDeciding}
+            badges={badgesById[offer.id] ?? []}
             onAccept={(offerId) => acceptOffer.mutate({ offerId })}
             onReject={(offerId) => rejectOffer.mutate({ offerId })}
           />

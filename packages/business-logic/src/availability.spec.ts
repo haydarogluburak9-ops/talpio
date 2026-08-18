@@ -85,7 +85,7 @@ describe('isAppointmentDateAllowed', () => {
     ).toBe(false);
   });
 
-  it('ustanın müsait olduğu tarihten önceye randevu vermez', () => {
+  it('satıcının müsait olduğu tarihten önceye randevu vermez', () => {
     expect(
       isAppointmentDateAllowed({
         scheduledAt: new Date('2026-03-02T10:00:00.000Z'),

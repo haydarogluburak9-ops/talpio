@@ -1,9 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { ListPaymentsParams, ListTransactionsParams } from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { Payment } from '@ustapilot/types';
+import type { ListPaymentsParams, ListTransactionsParams } from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { Payment } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 

@@ -12,6 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,8 +22,8 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UPLOAD } from '@ustapilot/config';
-import type { FileAsset } from '@ustapilot/types';
+import { UPLOAD } from '@talpio/config';
+import type { FileAsset } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -38,6 +39,7 @@ export class FilesController {
   constructor(private readonly files: FilesService) {}
 
   @Post('upload')
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ApiOperation({ summary: 'Dosya yükler ve üst verisini döner' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

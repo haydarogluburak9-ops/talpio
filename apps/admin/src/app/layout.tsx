@@ -1,8 +1,12 @@
+import { LOCALE_COOKIE, LOCALE_META } from '@talpio/config';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { cookies, headers } from 'next/headers';
 
 import { Providers } from '@/components/providers';
-import { THEME_INIT_SCRIPT } from '@/lib/theme';
+import { ThemeScript } from '@/components/theme-script';
+import { t } from '@/lib/i18n';
+import { localeFromAcceptLanguage, resolveLocale } from '@/lib/locale';
 
 import './globals.css';
 
@@ -14,21 +18,30 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'UstaPilot Yönetim Paneli',
-    template: '%s · UstaPilot',
+    default: t('admin.panel'),
+    template: '%s · Talpio',
   },
-  description: 'UstaPilot hizmet pazaryeri yönetim paneli',
+  description: t('admin.brandSubtitle'),
   robots: { index: false, follow: false },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const jar = await cookies();
+  const accept = (await headers()).get('accept-language');
+  const initialLocale = resolveLocale(
+    jar.get(LOCALE_COOKIE)?.value ?? localeFromAcceptLanguage(accept),
+  );
+
   return (
-    <html lang="tr" className={`${inter.variable} h-full`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
+    <html
+      lang={initialLocale}
+      dir={LOCALE_META[initialLocale].dir}
+      className={`${inter.variable} h-full`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full">
-        <Providers>{children}</Providers>
+        <ThemeScript />
+        <Providers initialLocale={initialLocale}>{children}</Providers>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import type { EntityRef } from '@ustapilot/types';
+import type { EntityRef } from '@talpio/types';
 import {
   Badge,
   Button,
@@ -10,7 +10,7 @@ import {
   CardTitle,
   ListSkeleton,
   Select,
-} from '@ustapilot/ui';
+} from '@talpio/ui';
 import { useState } from 'react';
 
 import { useCities, useDistricts } from '@/features/catalog/use-locations';

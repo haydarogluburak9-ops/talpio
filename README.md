@@ -1,29 +1,29 @@
-# UstaPilot
+# Talpio
 
-**Doğru usta. Doğru fiyat. Güvenli hizmet.**
+**Talebinizi yayınlayın. Doğru teklifi alın.**
 
-Hizmet ihtiyacı olan müşterilerle profesyonel ustaları buluşturan pazaryeri platformu. İlk pazar Gaziantep'tir; mimari çok şehirli, çok ülkeli ve çok dilli büyümeye göre tasarlanmıştır.
+Talep odaklı ticaret platformu: hizmet ve B2B tedarik taleplerini doğru tedarikçilerle buluşturur. Ürün küreseldir — çok şehirli, çok ülkeli ve çok dilli (EN, TR, DE, ES, FR, AR). Paketler `@talpio/*`; ürün adı **Talpio**.
 
 Tek bir backend ve tek bir veritabanı üç istemciye hizmet eder: responsive web sitesi, iOS/Android mobil uygulama ve yönetim paneli. İş kuralları, tipler, doğrulama şemaları ve API istemcisi paylaşılan TypeScript paketlerinde yaşar; her istemci yalnızca kendi arayüzünü yazar.
 
 ## Durum
 
-| Alan                                     | Durum                                                                              |
-| ---------------------------------------- | ---------------------------------------------------------------------------------- |
-| Monorepo, paylaşılan paketler            | Çalışıyor                                                                          |
-| Veritabanı şeması (tüm alan modelleri)   | Çalışıyor                                                                          |
-| Kimlik doğrulama (kayıt/giriş/yenile)    | Uçtan uca çalışıyor — web ve mobil                                                 |
-| Katalog (kategoriler, konumlar)          | Uçtan uca çalışıyor — web, mobil ve admin                                          |
-| İş talebi (oluştur, listele, iptal)      | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Teklif (ver, listele, kabul/ret/geri çek)| Uçtan uca çalışıyor — web ve mobil                                                  |
-| Sipariş (ödeme, başlat, teslim, onay)    | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Mesajlaşma (sohbet, gönder, okundu)      | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Dosya yükleme (görsel, belge, ek)        | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Profil (kullanıcı, usta, hizmet, bölge)  | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Değerlendirme (puanla, cevapla, listele) | Uçtan uca çalışıyor — web ve mobil                                                  |
-| Ödeme (tahsilat, iade, cüzdan, webhook)  | Uçtan uca çalışıyor — mock sağlayıcıyla; gerçek sağlayıcı adaptörü yazılmadı        |
-| Bildirim (in-app, mock push/e-posta/SMS) | Uçtan uca çalışıyor — olay bağlantıları, web/mobil liste, admin izleme; gerçek sağlayıcı adaptörü yazılmadı |
-| Yönetim paneli                           | Özet, kullanıcı, usta, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, bildirim, destek, şikâyet, değerlendirme, ayar, yetki, rapor, denetim ve katalog gerçek veriyle; kampanya ve abonelik iskelet (veri modeli yok) |
+| Alan                                      | Durum                                                                                                                                                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Monorepo, paylaşılan paketler             | Çalışıyor                                                                                                                                                                                                                                      |
+| Veritabanı şeması (tüm alan modelleri)    | Çalışıyor                                                                                                                                                                                                                                      |
+| Kimlik doğrulama (kayıt/giriş/yenile)     | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Katalog (kategoriler, konumlar)           | Uçtan uca çalışıyor — web, mobil ve admin                                                                                                                                                                                                      |
+| İş talebi (oluştur, listele, iptal)       | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Teklif (ver, listele, kabul/ret/geri çek) | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Sipariş (ödeme, başlat, teslim, onay)     | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Mesajlaşma (sohbet, gönder, okundu)       | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Dosya yükleme (görsel, belge, ek)         | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Profil (kullanıcı, satıcı, hizmet, bölge) | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Değerlendirme (puanla, cevapla, listele)  | Uçtan uca çalışıyor — web ve mobil                                                                                                                                                                                                             |
+| Ödeme (tahsilat, iade, cüzdan, webhook)   | Uçtan uca çalışıyor — mock sağlayıcıyla; gerçek sağlayıcı adaptörü yazılmadı                                                                                                                                                                   |
+| Bildirim (in-app, mock push/e-posta/SMS)  | Uçtan uca çalışıyor — olay bağlantıları, web/mobil liste, admin izleme; gerçek sağlayıcı adaptörü yazılmadı                                                                                                                                    |
+| Yönetim paneli                            | Özet, kullanıcı, satıcı, doğrulama, talep, teklif, sipariş, ödeme, hareket, komisyon, bildirim, destek, şikâyet, değerlendirme, ayar, yetki, rapor, denetim ve katalog gerçek veriyle; kampanya ve abonelik bağlı (B2bCampaign / Subscription) |
 
 Ekranlarda sahte veri gösterilmez. Bir uç henüz bağlı değilse ekran bunu açıkça belirtir; uydurma sayı veya örnek kayıt basılmaz.
 
@@ -59,16 +59,19 @@ Jeton taşıma yöntemi platforma göre değişir, kimlik akışı değişmez: w
 | [02-data-model.md](docs/02-data-model.md)                           | Varlık ilişkileri, tablo tasarımı, para ve konum modelleri |
 | [03-api.md](docs/03-api.md)                                         | Endpoint listesi, yanıt zarfı, hata kodları                |
 | [04-screens-and-permissions.md](docs/04-screens-and-permissions.md) | Ekran listeleri ve yetki matrisi                           |
-| [05-roadmap-and-risks.md](docs/05-roadmap-and-risks.md)             | Fazlara ayrılmış plan, teknik riskler, MVP dışı kapsam     |
+| [20-phase-8-50-delivery.md](docs/20-phase-8-50-delivery.md)         | Trust/CRM/AI/billing teslim özeti                          |
+| [22-package-rename-plan.md](docs/22-package-rename-plan.md)         | `@ustapilot` → `@talpio` uygulandı                         |
+| [23-legal-todos.md](docs/23-legal-todos.md)                         | Yasal yer tutucular / lansman engeli                       |
+| [25-final-audit.md](docs/25-final-audit.md)                         | Faz 50 denetim puanları                                    |
 
 ## Gereksinimler
 
-| Araç                | Sürüm          |
-| ------------------- | -------------- |
-| Node.js             | >= 20.11       |
-| npm                 | >= 10          |
-| Docker Desktop      | Compose v2 ile |
-| Expo Go / EAS (opsiyonel) | SDK 57 uyumlu |
+| Araç                      | Sürüm          |
+| ------------------------- | -------------- |
+| Node.js                   | >= 20.11       |
+| npm                       | >= 10          |
+| Docker Desktop            | Compose v2 ile |
+| Expo Go / EAS (opsiyonel) | SDK 57 uyumlu  |
 
 ## Hızlı başlangıç
 
@@ -100,11 +103,11 @@ npm run dev:mobile     # ardından Expo Go ile QR kodu okutun
 
 `localhost` telefonun kendisini işaret eder. `apps/mobile/.env` içindeki adresi ortamınıza göre ayarlayın:
 
-| Ortam                 | Adres                          |
-| --------------------- | ------------------------------ |
-| Android emülatörü     | `http://10.0.2.2:3000/api/v1`  |
-| iOS simülatörü        | `http://localhost:3000/api/v1` |
-| Fiziksel cihaz (LAN)  | `http://<makine-ip>:3000/api/v1` |
+| Ortam                | Adres                            |
+| -------------------- | -------------------------------- |
+| Android emülatörü    | `http://10.0.2.2:3000/api/v1`    |
+| iOS simülatörü       | `http://localhost:3000/api/v1`   |
+| Fiziksel cihaz (LAN) | `http://<makine-ip>:3000/api/v1` |
 
 Fiziksel cihaz kullanıyorsanız makinenizin IP adresini `CORS_ORIGINS` listesine eklemeniz gerekmez — Expo istemcisi `Origin` başlığı göndermez.
 
@@ -120,6 +123,8 @@ Fiziksel cihaz kullanıyorsanız makinenizin IP adresini `CORS_ORIGINS` listesin
 | MinIO konsolu   | http://localhost:9011              |
 | PostgreSQL      | localhost:5442                     |
 | Redis           | localhost:6389                     |
+
+Web üst çubuğundaki dil seçici EN, TR, DE, ES, FR ve AR dillerini değiştirir (Arapça sağdan sola). Tercih `talpio_locale` çerezinde saklanır; tarayıcı `Accept-Language` başlığı ilk ziyarette varsayılanı belirler.
 
 PostgreSQL ve Redis host portları bilinçli olarak varsayılan değerlerinden farklıdır; aynı makinede çalışan diğer projelerin kapsayıcılarıyla çakışmayı önler. Kapsayıcı içi portlar standarttır (5432 / 6379).
 
@@ -156,15 +161,15 @@ usta-pilot/
 
 ## Paylaşılan paketler ne içerir
 
-| Paket             | Örnek içerik                                                                    |
-| ----------------- | ------------------------------------------------------------------------------- |
-| `types`           | `UserRole`, `JobStatus`, `OfferStatus`, `CurrentUser`, `ApiErrorResponse`        |
-| `config`          | `API_ROUTES`, `queryKeys`, `JOB`, `OFFER`, `COMMISSION`, durum renk eşlemeleri   |
-| `validation`      | `registerSchema`, `loginSchema`, `createJobRequestSchema`, `createOfferSchema`   |
-| `business-logic`  | `canTransition`, `calculateCommission`, `permissionsForRole`, `rankProviders`    |
-| `api-client`      | `createApiClient`, otomatik jeton yenileme, `ApiError` eşlemesi                 |
-| `localization`    | `createTranslator`, `formatMoneyMinor`, `formatDateTime`, durum etiketleri       |
-| `ui`              | `Button`, `Card`, `Badge`, `Field`, `StatusPill`, `EmptyState`, `ErrorState`     |
+| Paket            | Örnek içerik                                                                   |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `types`          | `UserRole`, `JobStatus`, `OfferStatus`, `CurrentUser`, `ApiErrorResponse`      |
+| `config`         | `API_ROUTES`, `queryKeys`, `JOB`, `OFFER`, `COMMISSION`, durum renk eşlemeleri |
+| `validation`     | `registerSchema`, `loginSchema`, `createJobRequestSchema`, `createOfferSchema` |
+| `business-logic` | `canTransition`, `calculateCommission`, `permissionsForRole`, `rankProviders`  |
+| `api-client`     | `createApiClient`, otomatik jeton yenileme, `ApiError` eşlemesi                |
+| `localization`   | `createTranslator`, `formatMoneyMinor`, `formatDateTime`, durum etiketleri     |
+| `ui`             | `Button`, `Card`, `Badge`, `Field`, `StatusPill`, `EmptyState`, `ErrorState`   |
 
 Aynı Zod şeması hem istemcide (anında geri bildirim) hem sunucuda (asıl güvenlik sınırı) çalışır. İstemci doğrulaması hiçbir zaman güvenlik önlemi sayılmaz.
 
@@ -172,24 +177,24 @@ Aynı Zod şeması hem istemcide (anında geri bildirim) hem sunucuda (asıl gü
 
 Kök dizinden çalıştırılır ve tüm workspace'lere yayılır.
 
-| Komut                    | Açıklama                                              |
-| ------------------------ | ----------------------------------------------------- |
-| `npm run dev`            | API, web ve admin'i birlikte izleme modunda başlatır  |
-| `npm run dev:api`        | Yalnızca backend                                      |
-| `npm run dev:web`        | Yalnızca web sitesi                                   |
-| `npm run dev:admin`      | Yalnızca yönetim paneli                               |
-| `npm run dev:mobile`     | Expo geliştirme sunucusu                              |
-| `npm run build`          | Tüm workspace'leri derler                             |
-| `npm run lint`           | ESLint                                                |
-| `npm run test`           | Jest                                                  |
-| `npm run typecheck`      | TypeScript tip kontrolü                               |
-| `npm run format`         | Prettier ile biçimlendirir                            |
-| `npm run db:migrate`     | Migration oluşturur ve uygular                        |
-| `npm run db:seed`        | Tohum verisini yükler                                 |
-| `npm run db:studio`      | Prisma Studio                                         |
-| `npm run docker:up`      | Altyapı servisleri (Postgres, Redis, MinIO)           |
-| `npm run docker:up:full` | Backend ve admin dahil tam yığın                      |
-| `npm run docker:down`    | Tüm kapsayıcıları durdurur                            |
+| Komut                    | Açıklama                                             |
+| ------------------------ | ---------------------------------------------------- |
+| `npm run dev`            | API, web ve admin'i birlikte izleme modunda başlatır |
+| `npm run dev:api`        | Yalnızca backend                                     |
+| `npm run dev:web`        | Yalnızca web sitesi                                  |
+| `npm run dev:admin`      | Yalnızca yönetim paneli                              |
+| `npm run dev:mobile`     | Expo geliştirme sunucusu                             |
+| `npm run build`          | Tüm workspace'leri derler                            |
+| `npm run lint`           | ESLint                                               |
+| `npm run test`           | Jest                                                 |
+| `npm run typecheck`      | TypeScript tip kontrolü                              |
+| `npm run format`         | Prettier ile biçimlendirir                           |
+| `npm run db:migrate`     | Migration oluşturur ve uygular                       |
+| `npm run db:seed`        | Tohum verisini yükler                                |
+| `npm run db:studio`      | Prisma Studio                                        |
+| `npm run docker:up`      | Altyapı servisleri (Postgres, Redis, MinIO)          |
+| `npm run docker:up:full` | Backend ve admin dahil tam yığın                     |
+| `npm run docker:down`    | Tüm kapsayıcıları durdurur                           |
 
 Turborepo görev bağımlılıklarını yönetir: bir uygulamayı derlemeden önce bağımlı olduğu paketler otomatik derlenir.
 
@@ -207,13 +212,13 @@ npm run docker:up:full
 
 Her uygulamanın kendi `.env.example` dosyası vardır:
 
-| Dosya                       | Kapsam                                              |
-| --------------------------- | --------------------------------------------------- |
-| `.env.example`              | Docker Compose altyapı servisleri                   |
-| `apps/backend/.env.example` | API, veritabanı, JWT, sağlayıcılar                  |
-| `apps/web/.env.example`     | Web sitesi (yalnızca `NEXT_PUBLIC_`)                |
-| `apps/admin/.env.example`   | Yönetim paneli (yalnızca `NEXT_PUBLIC_`)            |
-| `apps/mobile/.env.example`  | Mobil uygulama (yalnızca `EXPO_PUBLIC_`)            |
+| Dosya                       | Kapsam                                   |
+| --------------------------- | ---------------------------------------- |
+| `.env.example`              | Docker Compose altyapı servisleri        |
+| `apps/backend/.env.example` | API, veritabanı, JWT, sağlayıcılar       |
+| `apps/web/.env.example`     | Web sitesi (yalnızca `NEXT_PUBLIC_`)     |
+| `apps/admin/.env.example`   | Yönetim paneli (yalnızca `NEXT_PUBLIC_`) |
+| `apps/mobile/.env.example`  | Mobil uygulama (yalnızca `EXPO_PUBLIC_`) |
 
 `NEXT_PUBLIC_` ve `EXPO_PUBLIC_` önekli değişkenler istemci paketine gömülür ve cihazdan okunabilir. Gizli anahtarlar yalnızca backend'de tutulur.
 
@@ -221,14 +226,14 @@ Backend değişkenlerini açılışta Zod şemasıyla doğrular (`apps/backend/s
 
 ## Kimlik doğrulama
 
-| Uç                       | Açıklama                                              |
-| ------------------------ | ----------------------------------------------------- |
-| `POST /auth/register`    | Müşteri veya usta hesabı oluşturur                    |
-| `POST /auth/login`       | E-posta ve şifreyle oturum açar                       |
-| `POST /auth/refresh`     | Yenileme jetonuyla yeni erişim jetonu üretir          |
-| `POST /auth/logout`      | Bulunulan cihazdaki oturumu kapatır                   |
-| `POST /auth/logout-all`  | Tüm cihazlardaki oturumları kapatır                   |
-| `GET  /auth/me`          | Oturum açmış kullanıcı ve rol izinleri                |
+| Uç                      | Açıklama                                     |
+| ----------------------- | -------------------------------------------- |
+| `POST /auth/register`   | Müşteri veya satıcı hesabı oluşturur         |
+| `POST /auth/login`      | E-posta ve şifreyle oturum açar              |
+| `POST /auth/refresh`    | Yenileme jetonuyla yeni erişim jetonu üretir |
+| `POST /auth/logout`     | Bulunulan cihazdaki oturumu kapatır          |
+| `POST /auth/logout-all` | Tüm cihazlardaki oturumları kapatır          |
+| `GET  /auth/me`         | Oturum açmış kullanıcı ve rol izinleri       |
 
 Uygulanan önlemler:
 
@@ -259,7 +264,7 @@ Hata yanıtı:
   "success": false,
   "error": {
     "code": "OFFER_ALREADY_ACCEPTED",
-    "message": "Bu iş için zaten bir usta seçilmiş.",
+    "message": "Bu iş için zaten bir satıcı seçilmiş.",
     "details": []
   },
   "requestId": "fda847e0-6e5e-4036-ad20-f06669452699"
@@ -280,11 +285,11 @@ Kategoriler ve konumlar veritabanından gelir; hiçbir istemcide sabit liste tut
 
 ```bash
 npm run test                                    # tümü
-npm run test --workspace @ustapilot/backend     # backend
-npm run test --workspace @ustapilot/validation  # doğrulama şemaları
+npm run test --workspace @talpio/backend     # backend
+npm run test --workspace @talpio/validation  # doğrulama şemaları
 ```
 
-Kapsam: ortam değişkeni doğrulaması, yanıt zarfı interceptor'ı, parola özetleme, jeton üretimi ve süre ayrıştırma, rol tabanlı yetkilendirme matrisi, durum geçiş kuralları, komisyon hesabı, usta sıralaması, yerelleştirme biçimlendirmesi ve kayıt/giriş/talep/teklif şemaları.
+Kapsam: ortam değişkeni doğrulaması, yanıt zarfı interceptor'ı, parola özetleme, jeton üretimi ve süre ayrıştırma, rol tabanlı yetkilendirme matrisi, durum geçiş kuralları, komisyon hesabı, satıcı sıralaması, yerelleştirme biçimlendirmesi ve kayıt/giriş/talep/teklif şemaları.
 
 ### Duman testleri
 
@@ -296,11 +301,11 @@ npm run smoke:jobs      # talep oluşturma, listeleme, iptal
 npm run smoke:offers    # teklif verme, kabul, ret, geri çekme
 npm run smoke:orders    # ödeme, başlatma, tamamlama, onay, iptal
 npm run smoke:payments  # tahsilat, istemci anahtarı, sağlayıcı reddi, webhook imzası, iade
-npm run smoke:reviews   # değerlendirme, ortalama puan, usta cevabı, herkese açık liste
+npm run smoke:reviews   # değerlendirme, ortalama puan, satıcı cevabı, herkese açık liste
 npm run smoke:messages  # sohbet açma, mesaj gönderme, okundu işaretleme
 npm run smoke:files     # yükleme, sahiplik ve tür kontrolleri
-npm run smoke:profile   # kullanıcı/usta profili, hizmet ve bölge yönetimi
-npm run smoke:admin     # panel özeti, kullanıcı ve usta yönetimi, denetim kaydı
+npm run smoke:profile   # kullanıcı/satıcı profili, hizmet ve bölge yönetimi
+npm run smoke:admin     # panel özeti, kullanıcı ve satıcı yönetimi, denetim kaydı
 npm run smoke:notifications # olay → bildirim, okundu, cihaz jetonu, mock outbox
 npm run smoke:support       # destek bileti, personel yanıtı, bildirim, şikâyet çözümü
 ```
@@ -313,7 +318,7 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 
 | Konu                    | Varsayım                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| Ödeme sağlayıcısı       | `PaymentProvider` arayüzü + mock sürücü (`PAYMENT_DRIVER`). iyzico sandbox ilk aday. |
+| Ödeme sağlayıcısı       | `PaymentProvider` arayüzü + mock sürücü (`PAYMENT_DRIVER`). iyzico sandbox ilk aday.                 |
 | SMS / OTP               | Mock sürücü; Netgsm veya Twilio için adaptör noktası hazır.                                          |
 | Push bildirim           | Expo Notifications altyapısı kurulu; FCM/APNs proje anahtarları henüz yok.                           |
 | Harita                  | Soyut harita katmanı; Google Maps varsayılan, Mapbox alternatif.                                     |
@@ -325,8 +330,9 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 
 Yalnızca `SEED_DEMO_ACCOUNTS=true` iken oluşturulur; şema bu değerin production ortamında true olmasını reddeder.
 
-| Rol     | E-posta               | Parola    |
-| ------- | --------------------- | --------- |
-| Admin   | admin@ustapilot.com   | Demo1234! |
-| Müşteri | musteri@ustapilot.com | Demo1234! |
-| Usta    | usta@ustapilot.com    | Demo1234! |
+| Rol       | E-posta              | Parola    |
+| --------- | -------------------- | --------- |
+| Kullanıcı | kullanici@talpio.com | Demo1234! |
+| Satıcı    | satici@talpio.com    | Demo1234! |
+| Yönetici  | admin@talpio.com     | Demo1234! |
+| Destek    | destek@talpio.com    | Demo1234! |

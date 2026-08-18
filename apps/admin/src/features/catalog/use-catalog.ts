@@ -1,16 +1,15 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@ustapilot/config';
-import type { City, Country, ServiceCategory } from '@ustapilot/types';
+import { queryKeys } from '@talpio/config';
+import type { City, Country, ServiceCategory } from '@talpio/types';
 
 import { apiClient } from '@/lib/api-client';
 
 export function useAdminCategories() {
   return useQuery<ServiceCategory[]>({
-    queryKey: queryKeys.catalog.categories({ withSubcategories: true }),
-    queryFn: ({ signal }) =>
-      apiClient.catalog.listCategories({ withSubcategories: true, signal }),
+    queryKey: queryKeys.catalog.categories({ admin: true, withSubcategories: true }),
+    queryFn: ({ signal }) => apiClient.admin.listCategories(signal),
     staleTime: 60_000,
   });
 }

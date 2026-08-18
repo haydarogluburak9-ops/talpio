@@ -1,4 +1,4 @@
-import { API_ROUTES } from '@ustapilot/config';
+import { API_ROUTES } from '@talpio/config';
 
 import type { HttpClient } from '../http-client';
 
@@ -47,6 +47,53 @@ export function createHealthResource(http: HttpClient) {
           ...(value.message !== undefined ? { message: value.message } : {}),
         })),
       };
+    },
+
+    metrics(signal?: AbortSignal) {
+      return http.get<Record<string, unknown>>(`${http.origin}${API_ROUTES.health.metrics}`, {
+        raw: true,
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    async status(signal?: AbortSignal): Promise<SystemHealth> {
+      const payload = await http.get<TerminusResponse>(`${http.origin}${API_ROUTES.health.status}`, {
+        raw: true,
+        acceptStatuses: [200, 503],
+        ...(signal ? { signal } : {}),
+      });
+      const details = payload.details ?? { ...payload.info, ...payload.error };
+      return {
+        isHealthy: payload.status === 'ok',
+        components: Object.entries(details).map(([key, value]) => ({
+          key,
+          isUp: value.status === 'up',
+          ...(value.responseTimeMs !== undefined ? { responseTimeMs: value.responseTimeMs } : {}),
+          ...(value.message !== undefined ? { message: value.message } : {}),
+        })),
+      };
+    },
+
+    queues(signal?: AbortSignal) {
+      return http.get<{
+        generatedAt: string;
+        worker: { alive: boolean; heartbeat: { at: string; pid: number; queues: string[] } | null };
+        queues: Record<string, { waiting: number; active: number; failed: number }>;
+        deadLetters: Array<{
+          id: string;
+          sourceQueue: string;
+          originalJobId: string;
+          failedReason: string;
+          attemptsMade: number;
+          failedAt: string;
+        }>;
+        staleUnnotifiedMatches: number;
+        outboxPending: number;
+        outboxFailed: number;
+      }>(`${http.origin}${API_ROUTES.health.queues}`, {
+        raw: true,
+        ...(signal ? { signal } : {}),
+      });
     },
   };
 }

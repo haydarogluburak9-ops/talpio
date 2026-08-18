@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { ComplaintSubjectType } from '@ustapilot/types';
+import { ComplaintSubjectType } from '@talpio/types';
 
 import { ComplaintFormScreen } from '@/features/support/complaint-form-screen';
 import { useCurrentUser } from '@/features/auth/use-current-user';

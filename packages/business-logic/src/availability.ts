@@ -38,8 +38,8 @@ export function findOverlappingSlots(slots: readonly AvailabilitySlot[]): Availa
 }
 
 /**
- * Verilen anın ustanın çalışma saatlerine denk gelip gelmediğini söyler.
- * Saat dilimi dönüşümü çağıran tarafın sorumluluğundadır; buraya ustanın yerel
+ * Verilen anın satıcının çalışma saatlerine denk gelip gelmediğini söyler.
+ * Saat dilimi dönüşümü çağıran tarafın sorumluluğundadır; buraya satıcının yerel
  * saatine çevrilmiş bir tarih verilmelidir.
  */
 export function isWithinAvailability(

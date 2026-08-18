@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { deepLinks } from '@ustapilot/config';
+import { deepLinks } from '@talpio/config';
 import {
   ComplaintStatus,
   NotificationType,
@@ -12,7 +12,7 @@ import {
   type SupportMessage,
   type SupportTicket,
   type SupportTicketDetail,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';

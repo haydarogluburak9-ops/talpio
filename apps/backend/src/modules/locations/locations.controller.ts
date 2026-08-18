@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { City, Country, District } from '@ustapilot/types';
+import type { City, Country, District } from '@talpio/types';
 import { IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 import { Public } from '@modules/auth/decorators/public.decorator';

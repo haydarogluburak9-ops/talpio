@@ -5,7 +5,7 @@ import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-valid
 import { normalizeEmail } from './register.dto';
 
 export class LoginDto {
-  @ApiProperty({ example: 'musteri@ustapilot.com' })
+  @ApiProperty({ example: 'kullanici@talpio.com' })
   @IsEmail({}, { message: 'Geçerli bir e-posta adresi girin.' })
   @Transform(normalizeEmail)
   email!: string;

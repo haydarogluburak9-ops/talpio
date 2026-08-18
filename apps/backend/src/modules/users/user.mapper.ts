@@ -1,5 +1,5 @@
-import { permissionsForRole } from '@ustapilot/business-logic';
-import type { CurrentUser } from '@ustapilot/types';
+import { permissionsForRole } from '@talpio/business-logic';
+import type { CurrentUser } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 

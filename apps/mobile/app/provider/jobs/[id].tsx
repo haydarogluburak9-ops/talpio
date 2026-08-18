@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { formatDate, formatMoney } from '@ustapilot/localization';
+import { formatDate, formatMoney } from '@talpio/localization';
 
 import { Badge } from '@/components/badge';
 import { Button } from '@/components/button';
@@ -16,7 +16,7 @@ import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
 /**
- * Ustanın gördüğü talep detayı. Açık adres backend tarafından maskelenir;
+ * Satıcının gördüğü talep detayı. Açık adres backend tarafından maskelenir;
  * burada yalnızca ilçe/şehir gösterilir ve nedeni kullanıcıya belirtilir.
  */
 export default function ProviderJobDetailScreen() {

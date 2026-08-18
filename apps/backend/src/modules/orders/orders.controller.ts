@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UserRole, type Order } from '@ustapilot/types';
+import { MARKETPLACE_ROLES, type Order } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -37,7 +37,7 @@ export class OrdersController {
   }
 
   @Post(':id/pay')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Siparişin ödemesini tamamlar' })
   pay(
     @CurrentUser() user: AuthenticatedUser,
@@ -48,8 +48,8 @@ export class OrdersController {
   }
 
   @Post(':id/start')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Usta işe başladığını bildirir' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcı işe başladığını bildirir' })
   start(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -58,8 +58,8 @@ export class OrdersController {
   }
 
   @Post(':id/complete')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Usta işi tamamlar ve onaya gönderir' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcı işi tamamlar ve onaya gönderir' })
   complete(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
@@ -69,7 +69,7 @@ export class OrdersController {
   }
 
   @Post(':id/approve')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Müşteri işi onaylar ve hakedişi serbest bırakır' })
   approve(
     @CurrentUser() user: AuthenticatedUser,

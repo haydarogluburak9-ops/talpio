@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 
 import { NewTicketPageBody } from '@/features/support/support-page-body';
+import { t } from '@/lib/i18n';
 
 export const metadata: Metadata = {
-  title: 'Yeni destek talebi',
+  title: t('support.createTitle'),
   robots: { index: false, follow: false },
 };
 

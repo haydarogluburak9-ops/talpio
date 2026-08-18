@@ -13,7 +13,6 @@ import { Logger as PinoLogger } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
 import { ApiErrorResponseDto } from './common/dto/api-response.dto';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppConfigService } from './config/app-config.service';
 
 async function bootstrap(): Promise<void> {
@@ -49,7 +48,9 @@ async function bootstrap(): Promise<void> {
     exposedHeaders: ['x-request-id'],
   });
 
-  app.setGlobalPrefix(config.apiPrefix, { exclude: ['health', 'health/ready'] });
+  app.setGlobalPrefix(config.apiPrefix, {
+    exclude: ['health', 'health/ready', 'health/metrics', 'health/status', 'health/queues'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -61,12 +62,11 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.useGlobalFilters(new AllExceptionsFilter(config.isProduction));
   app.enableShutdownHooks();
 
   if (!config.isProduction) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('UstaPilot API')
+      .setTitle('Talpio API')
       .setDescription('Hizmet pazaryeri platformu API dokümantasyonu')
       .setVersion('0.1.0')
       .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
@@ -93,7 +93,7 @@ async function bootstrap(): Promise<void> {
 
   const logger = app.get(PinoLogger);
   logger.log(
-    `UstaPilot API ${config.nodeEnv} modunda http://localhost:${config.port}/${config.apiPrefix} adresinde çalışıyor`,
+    `Talpio API ${config.nodeEnv} modunda http://localhost:${config.port}/${config.apiPrefix} adresinde çalışıyor`,
   );
   if (!config.isProduction) {
     logger.log(`Swagger: http://localhost:${config.port}/docs`);

@@ -38,11 +38,11 @@ async function call(method, path, { body, token } = {}) {
 
 console.log(`Teklif duman testi — ${BASE}\n`);
 
-console.log('Hazırlık: usta girişi ve hizmet kapsamı');
+console.log('Hazırlık: satıcı girişi ve hizmet kapsamı');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
 
 if (!providerToken) {
@@ -51,7 +51,7 @@ if (!providerToken) {
 }
 
 /**
- * Teklif verilebilmesi için talebin ustanın hizmet kategorisi ve bölgesinde
+ * Teklif verilebilmesi için talebin satıcının hizmet kategorisi ve bölgesinde
  * olması gerekir. Havuzdan bir iş çekip aynı kategori/ilçeyi kullanırız.
  */
 const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
@@ -59,10 +59,10 @@ const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
 });
 check('havuz 200 döner', pool.status === 200, JSON.stringify(pool.json)?.slice(0, 300));
 const sample = pool.json?.data?.[0];
-check('ustanın kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
+check('satıcının kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
 
 if (!sample) {
-  console.log('\nUstanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+  console.log('\nSatıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
   process.exit(1);
 }
 
@@ -74,7 +74,7 @@ check('örnek işin şehir/ilçesi çözüldü', Boolean(city?.id && district?.i
 
 const customer = await call('POST', '/auth/register', {
   body: {
-    email: `offers+${Date.now()}@ustapilot.test`,
+    email: `offers+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Teklif Duman Testi',
     role: 'CUSTOMER',
@@ -119,7 +119,7 @@ const offer = offerCreated.json?.data;
 check('durum SUBMITTED', offer?.status === 'SUBMITTED', offer?.status);
 check('tutar kuruş olarak korunur', offer?.price?.amountMinor === 180000, JSON.stringify(offer?.price));
 check('geçerlilik tarihi ileri', new Date(offer?.validUntil).getTime() > Date.now());
-check('usta özeti döner', typeof offer?.provider?.displayName === 'string', JSON.stringify(offer?.provider)?.slice(0, 200));
+check('satıcı özeti döner', typeof offer?.provider?.displayName === 'string', JSON.stringify(offer?.provider)?.slice(0, 200));
 
 const jobAfterOffer = await call('GET', `/jobs/${job?.id}`, { token });
 check(
@@ -163,7 +163,7 @@ check('teklif listede', jobOffers.json?.data?.some((item) => item.id === offer?.
 
 const stranger = await call('POST', '/auth/register', {
   body: {
-    email: `stranger+${Date.now()}@ustapilot.test`,
+    email: `stranger+${Date.now()}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Yabancı Müşteri',
     role: 'CUSTOMER',
@@ -178,7 +178,7 @@ check(
 );
 
 const mine = await call('GET', '/offers/mine', { token: providerToken });
-check('usta kendi tekliflerini listeler', mine.status === 200, `status=${mine.status}`);
+check('satıcı kendi tekliflerini listeler', mine.status === 200, `status=${mine.status}`);
 check('yeni teklif listede', mine.json?.data?.some((item) => item.id === offer?.id));
 
 const strangerDetail = await call('GET', `/offers/${offer?.id}`, { token: strangerToken });
@@ -229,7 +229,7 @@ const lateOffer = await call('POST', '/offers', {
   body: { jobRequestId: job?.id, amountMinor: 150000, priceType: 'FIXED' },
 });
 check(
-  'usta seçilmiş talebe yeni teklif verilemez',
+  'satıcı seçilmiş talebe yeni teklif verilemez',
   lateOffer.json?.error?.code === 'DUPLICATE_OFFER' ||
     lateOffer.json?.error?.code === 'JOB_NOT_OPEN_FOR_OFFERS',
   `status=${lateOffer.status} code=${lateOffer.json?.error?.code}`,

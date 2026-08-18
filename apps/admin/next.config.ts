@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // Kaynak olarak yayımlanan monorepo paketleri Next tarafından derlenir.
-  transpilePackages: ['@ustapilot/ui'],
+  transpilePackages: ['@talpio/ui', '@talpio/localization'],
   async headers() {
     return [
       {

@@ -1,5 +1,5 @@
 {
-  "name": "@ustapilot/api-client",
+  "name": "@talpio/api-client",
   "version": "0.1.0",
   "private": true,
   "description": "Web ve admin için ortak API istemcisi: zarf çözümü, hata eşlemesi, jeton yenileme",
@@ -21,9 +21,9 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@ustapilot/config": "0.1.0",
-    "@ustapilot/types": "0.1.0",
-    "@ustapilot/validation": "0.1.0"
+    "@talpio/config": "0.1.0",
+    "@talpio/types": "0.1.0",
+    "@talpio/validation": "0.1.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

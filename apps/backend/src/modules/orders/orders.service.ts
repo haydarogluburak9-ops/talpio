@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { canTransitionOrderStatus } from '@ustapilot/business-logic';
-import { deepLinks } from '@ustapilot/config';
+import { canTransitionOrderStatus } from '@talpio/business-logic';
+import { deepLinks } from '@talpio/config';
 import {
   NotificationType,
   OrderStatus,
   PaymentStatus,
   UserRole,
   type Order,
-} from '@ustapilot/types';
+} from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
@@ -40,7 +40,7 @@ export class OrdersService {
   /**
    * Oturumdaki tarafın siparişleri.
    *
-   * Müşteri kendi verdiği işleri, usta üstlendiği işleri görür; personel için
+   * Müşteri kendi verdiği işleri, satıcı üstlendiği işleri görür; personel için
    * süzgeç uygulanmaz.
    */
   async listMine(
@@ -82,7 +82,7 @@ export class OrdersService {
    * Müşteri ödemeyi tamamlar.
    *
    * Tahsilat etkin ödeme sağlayıcısı üzerinden yapılır; hakediş, iş onaylanana
-   * kadar ustanın cüzdanında bloke tutulur.
+   * kadar satıcının cüzdanında bloke tutulur.
    */
   async pay(user: AuthenticatedUser, id: string, dto: PayOrderDto): Promise<Order> {
     const row = await this.requireOwnOrderAsCustomer(user, id);
@@ -150,7 +150,7 @@ export class OrdersService {
       userId: updated.providerProfile.userId,
       type: NotificationType.PAYMENT_RECEIVED,
       params: {
-        jobTitle: updated.jobRequest.title,
+        jobTitle: orderTitle(updated),
         amountMinor: updated.totalMinor,
         currency: updated.currency,
       },
@@ -160,7 +160,7 @@ export class OrdersService {
     return this.present(updated, true);
   }
 
-  /** Usta işe başladığını bildirir. */
+  /** Satıcı işe başladığını bildirir. */
   async start(user: AuthenticatedUser, id: string): Promise<Order> {
     const row = await this.requireOwnOrderAsProvider(user, id);
     this.assertTransition(row.status, OrderStatus.IN_PROGRESS);
@@ -172,7 +172,7 @@ export class OrdersService {
         include: orderInclude,
       });
 
-      await this.syncJob(tx, row, OrderStatus.IN_PROGRESS, user.id, 'Usta işe başladı');
+      await this.syncJob(tx, row, OrderStatus.IN_PROGRESS, user.id, 'Satıcı işe başladı');
 
       return order;
     });
@@ -181,7 +181,7 @@ export class OrdersService {
       userId: updated.customerId,
       type: NotificationType.JOB_STARTED,
       params: {
-        jobTitle: updated.jobRequest.title,
+        jobTitle: orderTitle(updated),
         providerName: providerDisplayName(updated.providerProfile),
       },
       deepLink: deepLinks.order(updated.id),
@@ -190,7 +190,7 @@ export class OrdersService {
     return this.present(updated, true);
   }
 
-  /** Usta işi bitirir; müşterinin onayı beklenir. */
+  /** Satıcı işi bitirir; müşterinin onayı beklenir. */
   async complete(user: AuthenticatedUser, id: string, dto: CompleteOrderDto): Promise<Order> {
     const row = await this.requireOwnOrderAsProvider(user, id);
     this.assertTransition(row.status, OrderStatus.AWAITING_APPROVAL);
@@ -207,7 +207,7 @@ export class OrdersService {
         row,
         OrderStatus.AWAITING_APPROVAL,
         user.id,
-        dto.note ?? 'Usta işi tamamladı',
+        dto.note ?? 'Satıcı işi tamamladı',
       );
 
       return order;
@@ -217,7 +217,7 @@ export class OrdersService {
       userId: updated.customerId,
       type: NotificationType.JOB_COMPLETED,
       params: {
-        jobTitle: updated.jobRequest.title,
+        jobTitle: orderTitle(updated),
         providerName: providerDisplayName(updated.providerProfile),
       },
       deepLink: deepLinks.order(updated.id),
@@ -229,7 +229,7 @@ export class OrdersService {
   /**
    * Müşteri işi onaylar.
    *
-   * Onayla birlikte bloke hakediş ustanın kullanılabilir bakiyesine geçer ve
+   * Onayla birlikte bloke hakediş satıcının kullanılabilir bakiyesine geçer ve
    * tamamlanan iş sayaçları artar.
    */
   async approve(user: AuthenticatedUser, id: string): Promise<Order> {
@@ -267,7 +267,7 @@ export class OrdersService {
         userId: updated.providerProfile.userId,
         type: NotificationType.PAYOUT_SENT,
         params: {
-          jobTitle: updated.jobRequest.title,
+          jobTitle: orderTitle(updated),
           amountMinor: updated.payoutMinor,
           currency: updated.currency,
         },
@@ -277,7 +277,7 @@ export class OrdersService {
         userId: updated.customerId,
         type: NotificationType.REVIEW_REQUESTED,
         params: {
-          jobTitle: updated.jobRequest.title,
+          jobTitle: orderTitle(updated),
           providerName: providerDisplayName(updated.providerProfile),
         },
         deepLink: deepLinks.order(updated.id),
@@ -359,31 +359,21 @@ export class OrdersService {
     });
   }
 
-  /** Rol bazlı liste süzgeci. */
+  /** Rol bazlı liste süzgeci — marketplace kullanıcıları hem alıcı hem satıcı tarafını görür. */
   private async scopeFor(user: AuthenticatedUser): Promise<Prisma.OrderWhereInput> {
     if (this.isStaff(user.role)) return {};
 
-    if (user.role === UserRole.PROVIDER) {
-      const profile = await this.requireProviderProfile(user.id);
-      return { providerProfileId: profile.id };
-    }
-
-    return { customerId: user.id };
-  }
-
-  private async requireProviderProfile(userId: string): Promise<{ id: string }> {
     const profile = await this.prisma.providerProfile.findFirst({
-      where: { userId, deletedAt: null },
+      where: { userId: user.id, deletedAt: null },
       select: { id: true },
     });
 
-    if (!profile) {
-      throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
-        message: 'Bu işlem için usta profiliniz olmalıdır.',
-      });
-    }
-
-    return profile;
+    return {
+      OR: [
+        { customerId: user.id },
+        ...(profile ? [{ providerProfileId: profile.id }] : []),
+      ],
+    };
   }
 
   private async findOrder(id: string): Promise<OrderRow> {
@@ -396,7 +386,7 @@ export class OrdersService {
     return row;
   }
 
-  /** Siparişi görmeye yetkili taraflar: müşteri, üstlenen usta ve personel. */
+  /** Siparişi görmeye yetkili taraflar: müşteri, üstlenen satıcı ve personel. */
   private async requireVisibleOrder(
     user: AuthenticatedUser,
     id: string,
@@ -438,6 +428,7 @@ export class OrdersService {
     userId: string,
     note: string,
   ): Promise<void> {
+    if (!row.jobRequestId || !row.jobRequest) return Promise.resolve();
     return syncJobStatus(
       tx,
       { jobRequestId: row.jobRequestId, jobStatus: row.jobRequest.status },
@@ -450,4 +441,8 @@ export class OrdersService {
 
 function providerDisplayName(profile: OrderRow['providerProfile']): string {
   return profile.businessName ?? profile.user.fullName;
+}
+
+function orderTitle(row: OrderRow): string {
+  return row.jobRequest?.title ?? 'Tedarik siparişi';
 }

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
-import { formatDateTime, formatMoney } from '@ustapilot/localization';
-import { OrderStatus, PaymentStatus, type Order } from '@ustapilot/types';
+import { formatDateTime, formatMoney } from '@talpio/localization';
+import { OrderStatus, PaymentStatus, type Order } from '@talpio/types';
 
 import { Card } from '@/components/card';
 import { ListSkeleton } from '@/components/state-views';

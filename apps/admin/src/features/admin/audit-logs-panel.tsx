@@ -1,7 +1,7 @@
 'use client';
 
-import { formatDateTime } from '@ustapilot/localization';
-import type { AuditLogEntry } from '@ustapilot/types';
+import { formatDateTime } from '@talpio/localization';
+import type { AuditLogEntry } from '@talpio/types';
 import { useState } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { useAuditLogs } from './use-admin';
 
 const ENTITY_OPTIONS = [
   { value: 'User', label: 'Kullanıcı' },
-  { value: 'ProviderProfile', label: 'Usta profili' },
+  { value: 'ProviderProfile', label: 'Satıcı profili' },
 ];
 
 export function AuditLogsPanel() {

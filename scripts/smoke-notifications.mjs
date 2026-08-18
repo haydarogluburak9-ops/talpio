@@ -59,20 +59,20 @@ function messageKey(suffix) {
 
 console.log(`Bildirim duman testi — ${BASE}\n`);
 
-console.log('Hazırlık: usta girişi ve hizmet kapsamı');
+console.log('Hazırlık: satıcı girişi ve hizmet kapsamı');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'usta@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'satici@talpio.com', password: DEMO_PASSWORD },
 });
-check('demo usta girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
+check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
-if (!providerToken) abort('Usta girişi yapılamadı.');
+if (!providerToken) abort('Satıcı girişi yapılamadı.');
 
 const pool = await call('GET', '/jobs/available?matchMyServices=true&limit=1', {
   token: providerToken,
 });
 const sample = pool.json?.data?.[0];
-check('ustanın kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
-if (!sample) abort('Ustanın hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
+check('satıcının kapsamında örnek iş var', Boolean(sample?.id), 'havuz boş');
+if (!sample) abort('Satıcının hizmet kapsamında açık iş yok; tohumlama gerekiyor.');
 
 const cities = await call('GET', '/locations/cities');
 const city = cities.json?.data?.find((item) => item.name === sample.address.cityName);
@@ -86,7 +86,7 @@ const providerBeforeJob = await listTypes(providerToken);
 console.log('\nKayıt ve talep:');
 const customer = await call('POST', '/auth/register', {
   body: {
-    email: `notif+${Date.now()}${Math.random().toString(36).slice(2, 6)}@ustapilot.test`,
+    email: `notif+${Date.now()}${Math.random().toString(36).slice(2, 6)}@talpio.test`,
     password: 'Guclu1Parola',
     fullName: 'Bildirim Duman Testi',
     role: 'CUSTOMER',
@@ -116,7 +116,7 @@ if (!job) abort('Talep oluşturulamadı.', created.json);
 
 const providerAfterJob = await listTypes(providerToken);
 check(
-  'eşleşen ustaya JOB_MATCHED düşer',
+  'eşleşen satıcıya JOB_MATCHED düşer',
   providerAfterJob.includes('JOB_MATCHED') &&
     providerAfterJob.filter((type) => type === 'JOB_MATCHED').length >
       providerBeforeJob.filter((type) => type === 'JOB_MATCHED').length,
@@ -153,7 +153,7 @@ const order = orders.json?.data?.find((item) => item.jobRequestId === job.id);
 check('sipariş oluşur', Boolean(order?.id));
 if (!order) abort('Sipariş bulunamadı.', orders.json);
 
-check('ustaya OFFER_ACCEPTED düşer', await hasType(providerToken, 'OFFER_ACCEPTED'));
+check('satıcıya OFFER_ACCEPTED düşer', await hasType(providerToken, 'OFFER_ACCEPTED'));
 
 console.log('\nÖdeme → başlat → tamamla → onay:');
 const paid = await call('POST', `/orders/${order.id}/pay`, {
@@ -161,7 +161,7 @@ const paid = await call('POST', `/orders/${order.id}/pay`, {
   body: { idempotencyKey: `notif-pay-${Date.now()}` },
 });
 check('ödeme alınır', paid.status === 200 || paid.status === 201, `status=${paid.status}`);
-check('ustaya PAYMENT_RECEIVED düşer', await hasType(providerToken, 'PAYMENT_RECEIVED'));
+check('satıcıya PAYMENT_RECEIVED düşer', await hasType(providerToken, 'PAYMENT_RECEIVED'));
 
 const started = await call('POST', `/orders/${order.id}/start`, { token: providerToken });
 check('iş başlar', started.status === 200 || started.status === 201, `status=${started.status}`);
@@ -176,7 +176,7 @@ check('müşteriye JOB_COMPLETED düşer', await hasType(customerToken, 'JOB_COM
 
 const approved = await call('POST', `/orders/${order.id}/approve`, { token: customerToken });
 check('iş onaylanır', approved.status === 200 || approved.status === 201, `status=${approved.status}`);
-check('ustaya PAYOUT_SENT düşer', await hasType(providerToken, 'PAYOUT_SENT'));
+check('satıcıya PAYOUT_SENT düşer', await hasType(providerToken, 'PAYOUT_SENT'));
 check('müşteriye REVIEW_REQUESTED düşer', await hasType(customerToken, 'REVIEW_REQUESTED'));
 
 console.log('\nMesaj:');
@@ -198,7 +198,7 @@ const sent = await call('POST', `/messages/conversations/${conversationId}/messa
   },
 });
 check('mesaj gönderilir', sent.status === 201, `status=${sent.status}`);
-check('ustaya MESSAGE_RECEIVED düşer', await hasType(providerToken, 'MESSAGE_RECEIVED'));
+check('satıcıya MESSAGE_RECEIVED düşer', await hasType(providerToken, 'MESSAGE_RECEIVED'));
 
 console.log('\nDeğerlendirme:');
 const review = await call('POST', '/reviews', {
@@ -217,7 +217,7 @@ const review = await call('POST', '/reviews', {
   },
 });
 check('değerlendirme yazılır', review.status === 201, `status=${review.status}`);
-check('ustaya REVIEW_RECEIVED düşer', await hasType(providerToken, 'REVIEW_RECEIVED'));
+check('satıcıya REVIEW_RECEIVED düşer', await hasType(providerToken, 'REVIEW_RECEIVED'));
 
 console.log('\nOkundu ve cihaz jetonu:');
 const feed = await call('GET', '/notifications?limit=50', { token: customerToken });
@@ -278,7 +278,7 @@ if (Array.isArray(outbox.json?.data)) {
 
 console.log('\nAdmin bildirim listesi:');
 const adminLogin = await call('POST', '/auth/login', {
-  body: { email: 'admin@ustapilot.com', password: DEMO_PASSWORD },
+  body: { email: 'admin@talpio.com', password: DEMO_PASSWORD },
 });
 const adminToken = adminLogin.json?.data?.tokens?.accessToken;
 if (adminToken) {
@@ -289,7 +289,7 @@ if (adminToken) {
     `status=${adminList.status}`,
   );
 } else {
-  check('admin girişi (atlandı)', false, 'admin@ustapilot.com bulunamadı');
+  check('admin girişi (atlandı)', false, 'admin@talpio.com bulunamadı');
 }
 
 console.log(`\nSonuç: ${passed} geçti, ${failed} kaldı`);

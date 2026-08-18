@@ -5,13 +5,13 @@ import type {
   CreateReviewBody,
   ListProviderReviewsParams,
   ListReviewsParams,
-} from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { Review } from '@ustapilot/types';
+} from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { Review } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 
-/** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, usta aldıklarını görür. */
+/** Oturumdaki tarafın değerlendirmeleri: müşteri yazdıklarını, satıcı aldıklarını görür. */
 export function useMyReviews(params: ListReviewsParams = {}) {
   return useQuery({
     queryKey: queryKeys.reviews.mine(params as Record<string, unknown>),
@@ -41,7 +41,7 @@ export function useProviderReviews(providerId: string, params: ListProviderRevie
 }
 
 /**
- * Yorum ustanın ortalama puanını da değiştirir; bu yüzden başarıdan sonra usta
+ * Yorum satıcının ortalama puanını da değiştirir; bu yüzden başarıdan sonra satıcı
  * kartını taşıyan sorgular da geçersizlenir.
  */
 export function useCreateReview() {

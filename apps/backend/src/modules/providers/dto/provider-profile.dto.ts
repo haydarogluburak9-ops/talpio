@@ -24,7 +24,7 @@ const trimToNull = ({ value }: { value: unknown }): unknown => {
 };
 
 /**
- * Sınırlar `@ustapilot/validation` içindeki `setProviderServicesSchema` ve
+ * Sınırlar `@talpio/validation` içindeki `setProviderServicesSchema` ve
  * `setProviderServiceAreasSchema` ile aynıdır; istemci formu o şemayla doğrular,
  * backend aynı sınırları burada yeniden uygular çünkü istemci doğrulaması
  * güvenlik sınırı sayılmaz.
@@ -90,7 +90,7 @@ export class ProviderServiceInputDto {
 /**
  * Hizmet listesinin tamamı gönderilir.
  *
- * Tek tek ekle/çıkar yerine toplu yazım seçildi: usta ekranında hizmetler bir
+ * Tek tek ekle/çıkar yerine toplu yazım seçildi: satıcı ekranında hizmetler bir
  * form olarak düzenlenir ve kısmi güncellemeler yarım kalan isteklerde tutarsız
  * bir liste bırakırdı.
  */

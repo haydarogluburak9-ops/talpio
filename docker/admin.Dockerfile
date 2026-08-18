@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# UstaPilot Admin Panel - Next.js standalone çıktısı
+# Talpio Admin Panel - Next.js standalone çıktısı
 # Bağlam (context) monorepo köküdür.
 
 FROM node:22-alpine AS base
@@ -12,7 +12,9 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
-RUN npm ci --workspace @ustapilot/admin --include-workspace-root
+COPY apps/web/package.json ./apps/web/
+COPY packages ./packages
+RUN npm ci --include-workspace-root
 
 # --- Derleme -----------------------------------------------------------------
 FROM deps AS build
@@ -20,7 +22,8 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY apps/admin ./apps/admin
-RUN npm run build --workspace @ustapilot/admin
+COPY packages ./packages
+RUN npm run build:packages && npm run build --workspace @talpio/admin
 
 # --- Üretim ------------------------------------------------------------------
 FROM base AS production

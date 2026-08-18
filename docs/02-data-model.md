@@ -1,4 +1,4 @@
-# UstaPilot — Veri Modeli
+# Talpio — Veri Modeli
 
 ## 1. Genel Kurallar
 
@@ -9,7 +9,7 @@
 | Soft delete      | Kullanıcı üretimi içerikte `deletedAt`; referans tablolarında `isActive` |
 | Para             | `amountMinor BIGINT` (kuruş) + `currency CHAR(3)`; **float yasak**       |
 | Enum             | PostgreSQL native enum, Prisma enum ile eşlenir                          |
-| Metin arama      | `pg_trgm` + GIN index (kategori, usta adı, iş başlığı)                   |
+| Metin arama      | `pg_trgm` + GIN index (kategori, satıcı adı, iş başlığı)                   |
 | Coğrafi          | `latitude/longitude DECIMAL(9,6)`; ileride PostGIS'e geçilebilir         |
 | Denetim          | Kritik tablolarda değişiklikler `AuditLog`'a yazılır                     |
 
@@ -97,9 +97,9 @@ enum JobStatus {
   PUBLISHED, // Yayında
   AWAITING_OFFERS, // Teklif bekliyor
   OFFERS_RECEIVED, // Teklifler alındı
-  MASTER_SELECTED, // Usta seçildi
+  MASTER_SELECTED, // Satıcı seçildi
   APPOINTMENT_SCHEDULED, // Randevu planlandı
-  MASTER_EN_ROUTE, // Usta yolda
+  MASTER_EN_ROUTE, // Satıcı yolda
   IN_PROGRESS, // İş başladı
   AWAITING_CUSTOMER_APPROVAL, // Müşteri onayı bekliyor
   COMPLETED, // Tamamlandı
@@ -225,7 +225,7 @@ Index: `(status, categoryId, cityId, createdAt DESC)`, `(customerId, status)`.
 
 **Adres gizliliği:** `Address` tam alanlarıyla saklanır ama API katmanı, işi kabul edilmemiş
 ustalara yalnızca `district + neighborhood` döndürür. Tam adres `MASTER_SELECTED`
-durumundan itibaren yalnızca seçilen ustaya açılır.
+durumundan itibaren yalnızca seçilen satıcıya açılır.
 
 ### Offer
 
@@ -233,7 +233,7 @@ durumundan itibaren yalnızca seçilen ustaya açılır.
 availableFrom, description, materialsIncluded, validUntil, status, revisionCount,
 createdAt, respondedAt`
 
-- Benzersiz kısıt: `(jobRequestId, masterId)` — bir usta bir işe tek aktif teklif verir;
+- Benzersiz kısıt: `(jobRequestId, masterId)` — bir satıcı bir işe tek aktif teklif verir;
   güncelleme `OfferRevision` olarak arşivlenir.
 - Teklif kabulü **tek transaction**: seçilen teklif `ACCEPTED`, diğerleri `REJECTED`,
   iş `MASTER_SELECTED`, `Conversation` açılır, `Payment` kaydı oluşur.
@@ -303,10 +303,10 @@ CREATE UNIQUE INDEX ON "User" (email) WHERE "deletedAt" IS NULL;
 CREATE UNIQUE INDEX ON "User" (phone) WHERE "deletedAt" IS NULL;
 ```
 
-Liste sorgularında Prisma `include` yerine seçilmiş `select` kullanılır; usta kartı için
+Liste sorgularında Prisma `include` yerine seçilmiş `select` kullanılır; satıcı kartı için
 gereken alanlar tek sorguda çekilir.
 
-## 7. Usta Eşleştirme Sorgusu
+## 7. Satıcı Eşleştirme Sorgusu
 
 Bir talep yayınlandığında uygun ustalar şu koşullarla bulunur:
 
@@ -314,7 +314,7 @@ Bir talep yayınlandığında uygun ustalar şu koşullarla bulunur:
 2. `MasterServiceArea` talebin ilçesini (veya tüm şehri) kapsıyor.
 3. `MasterProfile.verificationState = VERIFIED` ve `User.status = ACTIVE`.
 4. Acil talepse `worksUrgent = true`.
-5. Usta askıya alınmamış ve abonelik limiti dolmamış.
+5. Satıcı askıya alınmamış ve abonelik limiti dolmamış.
 
 Sonuç `job-matching` kuyruğuna verilir; bildirimler toplu (batch) gönderilir.
 

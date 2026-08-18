@@ -1,14 +1,14 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ApiError } from '@ustapilot/api-client';
-import { JobSize, JobTimeSlot } from '@ustapilot/types';
-import { Button, Card, CardContent, CardHeader, CardTitle, Field, Input, Select, Textarea } from '@ustapilot/ui';
+import { ApiError } from '@talpio/api-client';
+import { JobSize, JobTimeSlot } from '@talpio/types';
+import { Button, Card, CardContent, CardHeader, CardTitle, Field, Input, Select, Textarea } from '@talpio/ui';
 import {
   createJobRequestSchema,
   type CreateJobRequestInput,
   type CreateJobRequestPayload,
-} from '@ustapilot/validation';
+} from '@talpio/validation';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { useCategories } from '@/features/catalog/use-categories';
@@ -271,7 +271,7 @@ export function CreateJobForm() {
 
           <Field
             label="Açık adres"
-            hint="İsteğe bağlı. Yalnızca teklifini kabul ettiğiniz ustayla paylaşılır."
+            hint="İsteğe bağlı. Yalnızca teklifini kabul ettiğiniz satıcıyla paylaşılır."
             error={errors.address?.addressLine?.message}
           >
             {(props) => (
@@ -317,7 +317,7 @@ export function CreateJobForm() {
       </Card>
 
       <Button type="submit" size="lg" disabled={createJob.isPending}>
-        {createJob.isPending ? 'Talebiniz yayınlanıyor…' : t('job.publish')}
+        {createJob.isPending ? t('job.publishing') : t('job.publish')}
       </Button>
     </form>
   );

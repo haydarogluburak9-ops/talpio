@@ -4,10 +4,14 @@ import {
   type ExceptionFilter,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
 } from '@nestjs/common';
 import { ThrottlerException } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
+
+import { AppConfigService } from '@config/app-config.service';
+import { MetricsService } from '@infra/metrics/metrics.service';
 
 import { type ApiErrorResponse } from '../dto/api-response.dto';
 import { AppException, type AppErrorDetail } from '../errors/app.exception';
@@ -26,10 +30,14 @@ interface NormalizedError {
  * Beklenmeyen hatalarda iç detaylar log'da kalır, istemciye sızmaz.
  */
 @Catch()
+@Injectable()
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  constructor(private readonly isProduction: boolean) {}
+  constructor(
+    private readonly config: AppConfigService,
+    private readonly metrics: MetricsService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -63,6 +71,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     } else {
       this.logger.warn(logPayload);
     }
+
+    this.metrics.increment('api_errors');
 
     response.status(normalized.status).json(body);
   }
@@ -99,7 +109,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       code: ERROR_CODES.INTERNAL_ERROR,
       message: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
-      ...(this.isProduction
+      ...(this.config.isProduction
         ? {}
         : {
             logContext: { raw: exception instanceof Error ? exception.message : String(exception) },

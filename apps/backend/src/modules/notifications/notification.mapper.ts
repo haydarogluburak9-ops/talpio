@@ -1,4 +1,4 @@
-import type { DeviceToken, Notification, NotificationParams } from '@ustapilot/types';
+import type { DeviceToken, Notification, NotificationParams } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 

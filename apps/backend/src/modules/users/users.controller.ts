@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { CurrentUser as CurrentUserPayload } from '@ustapilot/types';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { CurrentUser as CurrentUserPayload } from '@talpio/types';
 
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
@@ -29,5 +29,13 @@ export class UsersController {
     @Body() dto: UpdateUserProfileDto,
   ): Promise<CurrentUserPayload> {
     return this.users.updateMe(user, dto);
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Hesabı kalıcı olarak kapatır (mağaza silme)' })
+  @ApiNoContentResponse({ description: 'Hesap kapatıldı' })
+  async deleteMe(@CurrentUser() user: AuthenticatedUser): Promise<void> {
+    await this.users.deleteMe(user);
   }
 }

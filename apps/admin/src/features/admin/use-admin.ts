@@ -20,9 +20,9 @@ import type {
   UpdateAdminReviewBody,
   UpdateAdminSettingBody,
   UpdateAdminSupportTicketBody,
-} from '@ustapilot/api-client';
-import { queryKeys } from '@ustapilot/config';
-import type { UserStatus, VerificationStatus } from '@ustapilot/types';
+} from '@talpio/api-client';
+import { queryKeys } from '@talpio/config';
+import type { UserStatus, VerificationStatus } from '@talpio/types';
 
 import { apiClient } from '@/lib/api-client';
 

@@ -6,6 +6,8 @@ export const MessageType = {
   SYSTEM: 'SYSTEM',
   OFFER: 'OFFER',
   APPOINTMENT: 'APPOINTMENT',
+  /** Sesli mesaj (Instagram/WhatsApp tarzı). */
+  VOICE: 'VOICE',
 } as const;
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
@@ -43,6 +45,14 @@ export const NotificationType = {
   DOCUMENT_REJECTED: 'DOCUMENT_REJECTED',
   SUPPORT_REPLY: 'SUPPORT_REPLY',
   CAMPAIGN: 'CAMPAIGN',
+  REQUEST_MATCHED: 'REQUEST_MATCHED',
+  REQUEST_OFFER_RECEIVED: 'REQUEST_OFFER_RECEIVED',
+  REQUEST_OFFER_ACCEPTED: 'REQUEST_OFFER_ACCEPTED',
+  SOCIAL_FOLLOW: 'SOCIAL_FOLLOW',
+  SOCIAL_LIKE: 'SOCIAL_LIKE',
+  SOCIAL_COMMENT: 'SOCIAL_COMMENT',
+  SOCIAL_MENTION: 'SOCIAL_MENTION',
+  SOCIAL_SHARE: 'SOCIAL_SHARE',
 } as const;
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];

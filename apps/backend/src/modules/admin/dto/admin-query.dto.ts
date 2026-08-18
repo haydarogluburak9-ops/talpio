@@ -11,17 +11,24 @@ import {
   UserRole,
   UserStatus,
   VerificationStatus,
-} from '@ustapilot/types';
-import { Transform } from 'class-transformer';
+  ContentReportStatus,
+  ContentReportTarget,
+  FraudFlagStatus,
+  ModerationAction,
+} from '@talpio/types';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDefined,
   IsEnum,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
@@ -168,6 +175,73 @@ export class ListAuditLogsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   actorId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  action?: string;
+}
+
+export class ListContentReportsQueryDto {
+  @ApiPropertyOptional({ enum: ContentReportStatus })
+  @IsOptional()
+  @IsEnum(ContentReportStatus)
+  status?: (typeof ContentReportStatus)[keyof typeof ContentReportStatus];
+
+  @ApiPropertyOptional({ enum: ContentReportTarget })
+  @IsOptional()
+  @IsEnum(ContentReportTarget)
+  targetType?: (typeof ContentReportTarget)[keyof typeof ContentReportTarget];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  q?: string;
+}
+
+export class BulkContentReportDto {
+  @ApiProperty({ type: [String] })
+  @IsDefined()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  ids!: string[];
+
+  @ApiProperty({ enum: ContentReportStatus })
+  @IsEnum(ContentReportStatus)
+  status!: (typeof ContentReportStatus)[keyof typeof ContentReportStatus];
+
+  @ApiPropertyOptional({ enum: ModerationAction })
+  @IsOptional()
+  @IsEnum(ModerationAction)
+  action?: (typeof ModerationAction)[keyof typeof ModerationAction];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  actionNote?: string;
+}
+
+export class UpdateFraudFlagDto {
+  @ApiProperty({ enum: FraudFlagStatus })
+  @IsEnum(FraudFlagStatus)
+  status!: (typeof FraudFlagStatus)[keyof typeof FraudFlagStatus];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  note?: string;
+}
+
+export class VerifyBackupDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
 }
 
 export class ListAdminReviewsQueryDto extends PaginationQueryDto {
@@ -244,4 +318,85 @@ export class UpdateVerificationDto {
   @IsString()
   @MaxLength(500)
   reason?: string;
+}
+
+export class CreateAdminCategoryDto {
+  @ApiProperty()
+  @IsString()
+  @MaxLength(80)
+  name!: string;
+
+  @ApiProperty()
+  @IsString()
+  @MaxLength(80)
+  slug!: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  iconKey?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+}
+
+export class UpdateAdminCategoryDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  iconKey?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isActive?: boolean;
+}
+
+export class UpdateContentReportDto {
+  @ApiProperty({ enum: ContentReportStatus })
+  @IsEnum(ContentReportStatus)
+  status!: (typeof ContentReportStatus)[keyof typeof ContentReportStatus];
+
+  @ApiPropertyOptional({ enum: ModerationAction })
+  @IsOptional()
+  @IsEnum(ModerationAction)
+  action?: (typeof ModerationAction)[keyof typeof ModerationAction];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  actionNote?: string;
 }

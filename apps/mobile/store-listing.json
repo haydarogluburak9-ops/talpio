@@ -1,0 +1,32 @@
+{
+  "platform": "Talpio",
+  "version": "0.1.0",
+  "status": "placeholder",
+  "ios": {
+    "name": "Talpio",
+    "subtitle": "İste. Teklif al. Fırsatı yakala.",
+    "bundleId": "com.talpio.app",
+    "privacyPolicyUrl": "https://talpio.com/yasal/gizlilik",
+    "termsUrl": "https://talpio.com/yasal/kullanim-kosullari",
+    "supportUrl": "https://talpio.com/destek",
+    "accountDeletion": "In-app: Settings → Delete account"
+  },
+  "android": {
+    "name": "Talpio",
+    "package": "com.talpio.app",
+    "shortDescription": "Talep yayınla, teklif al, fırsatları takip et.",
+    "privacyPolicyUrl": "https://talpio.com/yasal/gizlilik",
+    "supportEmail": "destek@talpio.com"
+  },
+  "permissions": {
+    "camera": "İş talebine fotoğraf eklemek için",
+    "photos": "İş talebine galeriden görsel eklemek için",
+    "location": "Yakın satıcıları göstermek için",
+    "notifications": "Eşleşen talep ve mesaj bildirimleri için (isteğe bağlı)"
+  },
+  "notes": [
+    "Privacy Policy / Terms / KVKK metinleri TODO — lansman engeli.",
+    "EAS projectId placeholder. Gerçek store hesabı bağlanmadan submit edilmez.",
+    "Sahte indirme/puan iddiası kullanılmaz."
+  ]
+}

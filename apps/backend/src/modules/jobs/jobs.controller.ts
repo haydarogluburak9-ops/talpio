@@ -6,7 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserRole, type JobRequest } from '@ustapilot/types';
+import { MARKETPLACE_ROLES, type JobRequest } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
@@ -24,7 +24,7 @@ export class JobsController {
   constructor(private readonly jobs: JobsService) {}
 
   @Post()
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Yeni iş talebi oluşturur' })
   @ApiCreatedResponse({ description: 'Oluşturulan talep' })
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateJobDto): Promise<JobRequest> {
@@ -32,7 +32,7 @@ export class JobsController {
   }
 
   @Get()
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Oturum sahibinin iş taleplerini listeler' })
   @ApiOkResponse({ description: 'Sayfalı talep listesi' })
   listMine(
@@ -47,8 +47,8 @@ export class JobsController {
    * "available" bir kimlik sanılır.
    */
   @Get('available')
-  @Roles(UserRole.PROVIDER)
-  @ApiOperation({ summary: 'Ustaya açık iş havuzunu listeler' })
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Satıcıya açık iş havuzunu listeler' })
   listAvailable(
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: AvailableJobsQueryDto,
@@ -66,7 +66,7 @@ export class JobsController {
   }
 
   @Post(':id/publish')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Taslak talebi yayına alır' })
   publish(
     @CurrentUser() user: AuthenticatedUser,
@@ -76,7 +76,7 @@ export class JobsController {
   }
 
   @Post(':id/cancel')
-  @Roles(UserRole.CUSTOMER)
+  @Roles(...MARKETPLACE_ROLES)
   @ApiOperation({ summary: 'Talebi iptal eder' })
   cancel(
     @CurrentUser() user: AuthenticatedUser,

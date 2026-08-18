@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { ROLE_PERMISSIONS } from '@ustapilot/business-logic';
-import { deepLinks } from '@ustapilot/config';
+import { Injectable, Optional } from '@nestjs/common';
+import { ROLE_PERMISSIONS } from '@talpio/business-logic';
+import { deepLinks } from '@talpio/config';
 import {
   JobRequestStatus,
   NotificationType,
@@ -11,7 +11,12 @@ import {
   UserRole,
   UserStatus,
   VerificationStatus,
+  ContentReportStatus,
+  ContentReportTarget,
+  FraudFlagStatus,
+  ModerationAction,
   type AdminCommissionRuleSummary,
+  type ContentReport,
   type AdminDashboard,
   type AdminJobSummary,
   type AdminNotificationSummary,
@@ -24,12 +29,14 @@ import {
   type AdminSystemSetting,
   type AdminTransactionSummary,
   type AdminUserSummary,
-} from '@ustapilot/types';
+  type ServiceCategory,
+} from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
+import { QueueService } from '@infra/queue/queue.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 
@@ -75,9 +82,15 @@ import type {
   UpdateSystemSettingDto,
   UpdateUserStatusDto,
   UpdateVerificationDto,
+  UpdateContentReportDto,
+  ListContentReportsQueryDto,
+  BulkContentReportDto,
+  UpdateFraudFlagDto,
+  VerifyBackupDto,
 } from './dto/admin-query.dto';
+import { resolveAssetUrl } from '@modules/social/social.mapper';
 
-/** Panelde "açık" sayılan talep durumları: henüz bir usta üstlenmemiş işler. */
+/** Panelde "açık" sayılan talep durumları: henüz bir satıcı üstlenmemiş işler. */
 const OPEN_JOB_STATUSES = [JobRequestStatus.PUBLISHED, JobRequestStatus.OFFERS_RECEIVED] as const;
 
 /** Panelde "devam eden" sayılan sipariş durumları. */
@@ -101,7 +114,12 @@ export class AdminService {
     private readonly config: AppConfigService,
     private readonly audit: AuditLogService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly queues?: QueueService,
   ) {}
+
+  listDeadLetters() {
+    return this.queues?.listDeadLetters(50) ?? [];
+  }
 
   /**
    * Panelin özet kartları.
@@ -365,7 +383,7 @@ export class AdminService {
   }
 
   /**
-   * Usta doğrulama kararını uygular.
+   * Satıcı doğrulama kararını uygular.
    *
    * Karar belgelere de yansıtılır: onaylanan profilin bekleyen belgeleri
    * onaylanmış, reddedilenin belgeleri reddedilmiş sayılır. Aksi halde belge
@@ -387,7 +405,7 @@ export class AdminService {
       },
     });
 
-    if (!current) throw AppException.notFound('Usta profili', id);
+    if (!current) throw AppException.notFound('Satıcı profili', id);
 
     const approved = dto.verificationStatus === VerificationStatus.VERIFIED;
     const reviewedAt = new Date();
@@ -677,7 +695,7 @@ export class AdminService {
   /**
    * Değerlendirmeyi yayınlar veya gizler.
    *
-   * Yayın durumu değişince usta ortalama puanı yeniden hesaplanır; aksi halde
+   * Yayın durumu değişince satıcı ortalama puanı yeniden hesaplanır; aksi halde
    * gizlenen yorum profilde görünmeye devam ederdi.
    */
   async updateReviewModeration(
@@ -788,8 +806,440 @@ export class AdminService {
     };
   }
 
+  async listCategories(): Promise<ServiceCategory[]> {
+    const rows = await this.prisma.serviceCategory.findMany({
+      where: { deletedAt: null },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      include: {
+        subcategories: {
+          where: { deletedAt: null },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description,
+      iconKey: row.iconKey,
+      sortOrder: row.sortOrder,
+      isActive: row.isActive,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+      subcategories: row.subcategories.map((sub) => ({
+        id: sub.id,
+        categoryId: sub.categoryId,
+        slug: sub.slug,
+        name: sub.name,
+        sortOrder: sub.sortOrder,
+        isActive: sub.isActive,
+        createdAt: sub.createdAt.toISOString(),
+        updatedAt: sub.updatedAt.toISOString(),
+      })),
+    }));
+  }
+
+  async createCategory(
+    actor: AuthenticatedUser,
+    dto: { name: string; slug: string; description?: string; iconKey?: string; sortOrder?: number },
+    context: RequestContext,
+  ): Promise<ServiceCategory> {
+    const slug = dto.slug.trim().toLowerCase();
+    const existing = await this.prisma.serviceCategory.findFirst({
+      where: { slug, deletedAt: null },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new AppException('CONFLICT', {
+        message: 'Bu kısa ad zaten kullanılıyor.',
+        context: { slug },
+      });
+    }
+
+    const created = await this.prisma.serviceCategory.create({
+      data: {
+        name: dto.name.trim(),
+        slug,
+        description: dto.description?.trim() || null,
+        iconKey: dto.iconKey?.trim() || null,
+        sortOrder: dto.sortOrder ?? 0,
+        isActive: true,
+      },
+    });
+
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'category.created',
+        entityType: 'ServiceCategory',
+        entityId: created.id,
+        changes: { slug: created.slug, name: created.name },
+      }),
+    );
+
+    return {
+      id: created.id,
+      slug: created.slug,
+      name: created.name,
+      description: created.description,
+      iconKey: created.iconKey,
+      sortOrder: created.sortOrder,
+      isActive: created.isActive,
+      createdAt: created.createdAt.toISOString(),
+      updatedAt: created.updatedAt.toISOString(),
+      subcategories: [],
+    };
+  }
+
+  async updateCategory(
+    actor: AuthenticatedUser,
+    id: string,
+    dto: {
+      name?: string;
+      description?: string | null;
+      iconKey?: string | null;
+      sortOrder?: number;
+      isActive?: boolean;
+    },
+    context: RequestContext,
+  ): Promise<ServiceCategory> {
+    const current = await this.prisma.serviceCategory.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        subcategories: {
+          where: { deletedAt: null },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        },
+      },
+    });
+    if (!current) throw AppException.notFound('Kategori', id);
+
+    const updated = await this.prisma.serviceCategory.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+        ...(dto.description !== undefined ? { description: dto.description?.trim() || null } : {}),
+        ...(dto.iconKey !== undefined ? { iconKey: dto.iconKey?.trim() || null } : {}),
+        ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+        ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+      },
+      include: {
+        subcategories: {
+          where: { deletedAt: null },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        },
+      },
+    });
+
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'category.updated',
+        entityType: 'ServiceCategory',
+        entityId: id,
+        changes: {
+          before: { name: current.name, isActive: current.isActive },
+          after: { name: updated.name, isActive: updated.isActive },
+        },
+      }),
+    );
+
+    return {
+      id: updated.id,
+      slug: updated.slug,
+      name: updated.name,
+      description: updated.description,
+      iconKey: updated.iconKey,
+      sortOrder: updated.sortOrder,
+      isActive: updated.isActive,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+      subcategories: updated.subcategories.map((sub) => ({
+        id: sub.id,
+        categoryId: sub.categoryId,
+        slug: sub.slug,
+        name: sub.name,
+        sortOrder: sub.sortOrder,
+        isActive: sub.isActive,
+        createdAt: sub.createdAt.toISOString(),
+        updatedAt: sub.updatedAt.toISOString(),
+      })),
+    };
+  }
+
+  async listSubscriptions() {
+    const [plans, subscriptions, wallets] = await Promise.all([
+      this.prisma.subscriptionPlan.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        select: { id: true, code: true, name: true, monthlyCredits: true, isActive: true },
+      }),
+      this.prisma.subscription.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        select: {
+          id: true,
+          status: true,
+          currentPeriodEnd: true,
+          cancelAtPeriodEnd: true,
+          userId: true,
+          businessId: true,
+          plan: { select: { code: true, name: true } },
+        },
+      }),
+      this.prisma.aiCreditWallet.findMany({
+        orderBy: { updatedAt: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          userId: true,
+          businessId: true,
+          balanceCredits: true,
+          periodEnd: true,
+        },
+      }),
+    ]);
+    return { plans, subscriptions, wallets };
+  }
+
+  async listCommerceRequests() {
+    return this.prisma.commerceRequest.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        buyerUserId: true,
+        createdAt: true,
+        _count: { select: { offers: true, matches: true } },
+      },
+    });
+  }
+
+  async updateContentReport(
+    actor: AuthenticatedUser,
+    id: string,
+    dto: UpdateContentReportDto,
+    context: RequestContext,
+  ): Promise<ContentReport> {
+    const current = await this.prisma.contentReport.findUnique({ where: { id } });
+    if (!current) throw AppException.notFound('İçerik bildirimi', id);
+
+    const action = dto.action ?? ModerationAction.NONE;
+    const nextStatus = action === ModerationAction.NONE ? dto.status : ContentReportStatus.RESOLVED;
+
+    if (action !== ModerationAction.NONE) {
+      await this.applyModerationAction(actor, current.targetType, current.targetId, action);
+    }
+
+    const updated = await this.prisma.contentReport.update({
+      where: { id },
+      data: {
+        status: nextStatus,
+        actionNote: dto.actionNote?.trim() || current.actionNote,
+        reviewedAt: new Date(),
+      },
+    });
+
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'content.report.reviewed',
+        entityType: current.targetType,
+        entityId: current.targetId,
+        changes: {
+          reportId: id,
+          from: current.status,
+          to: nextStatus,
+          moderationAction: action,
+          actionNote: dto.actionNote ?? null,
+        },
+      }),
+    );
+
+    const [presented] = await this.presentContentReports([updated]);
+    if (!presented) throw AppException.notFound('İçerik bildirimi', id);
+    return presented;
+  }
+
+  async listAiUsage() {
+    return this.prisma.aiUsageRecord.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        userId: true,
+        businessId: true,
+        featureCode: true,
+        success: true,
+        creditsCharged: true,
+        provider: true,
+        model: true,
+        refundedAt: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async listCampaigns() {
+    return this.prisma.b2bCampaign.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        audience: true,
+        isActive: true,
+        impressionCount: true,
+        clickCount: true,
+        conversionCount: true,
+        business: { select: { id: true, name: true } },
+        createdAt: true,
+      },
+    });
+  }
+
+  async listContentReports(query?: ListContentReportsQueryDto): Promise<ContentReport[]> {
+    const q = query?.q?.trim();
+    const rows = await this.prisma.contentReport.findMany({
+      where: {
+        ...(query?.status ? { status: query.status } : {}),
+        ...(query?.targetType ? { targetType: query.targetType } : {}),
+        ...(q
+          ? {
+              OR: [
+                { reason: { contains: q, mode: 'insensitive' } },
+                { actionNote: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      include: { reporter: { select: { fullName: true } } },
+    });
+    return this.presentContentReports(rows);
+  }
+
+  async bulkUpdateContentReports(
+    actor: AuthenticatedUser,
+    dto: BulkContentReportDto,
+    context: RequestContext,
+  ): Promise<{ updated: number }> {
+    let updated = 0;
+    for (const id of dto.ids) {
+      await this.updateContentReport(
+        actor,
+        id,
+        { status: dto.status, action: dto.action, actionNote: dto.actionNote },
+        context,
+      );
+      updated += 1;
+    }
+    return { updated };
+  }
+
+  async listFraudFlags(status?: string) {
+    const statusFilter = Object.values(FraudFlagStatus).includes(status as FraudFlagStatus)
+      ? (status as FraudFlagStatus)
+      : undefined;
+    return this.prisma.fraudFlag.findMany({
+      where: statusFilter ? { status: statusFilter } : undefined,
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  async updateFraudFlag(
+    actor: AuthenticatedUser,
+    id: string,
+    dto: UpdateFraudFlagDto,
+    context: RequestContext,
+  ) {
+    const current = await this.prisma.fraudFlag.findUnique({ where: { id } });
+    if (!current) throw AppException.notFound('Dolandırıcılık bayrağı', id);
+    const updated = await this.prisma.fraudFlag.update({
+      where: { id },
+      data: {
+        status: dto.status,
+        ...(dto.note ? { note: dto.note } : {}),
+      },
+    });
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'fraud.flag.updated',
+        entityType: 'FraudFlag',
+        entityId: id,
+        changes: { from: current.status, to: dto.status, note: dto.note ?? null },
+      }),
+    );
+    return updated;
+  }
+
+  async getBackupStatus() {
+    const keys = [
+      'ops.backup.last_verified_at',
+      'ops.backup.last_verified_by',
+      'ops.backup.last_note',
+    ];
+    const rows = await this.prisma.systemSetting.findMany({ where: { key: { in: keys } } });
+    const map = new Map(rows.map((row) => [row.key, row.value]));
+    const lastVerifiedAt =
+      typeof map.get('ops.backup.last_verified_at') === 'string'
+        ? String(map.get('ops.backup.last_verified_at'))
+        : null;
+    return {
+      lastVerifiedAt,
+      lastVerifiedBy:
+        typeof map.get('ops.backup.last_verified_by') === 'string'
+          ? String(map.get('ops.backup.last_verified_by'))
+          : null,
+      lastNote:
+        typeof map.get('ops.backup.last_note') === 'string'
+          ? String(map.get('ops.backup.last_note'))
+          : null,
+      checklist: [
+        'PostgreSQL dump alındı ve dosya boyutu > 0',
+        'Dump ayrı bir ortamda restore denendi',
+        'MinIO / S3 kova yedeği doğrulandı',
+        'Geri yükleme sonrası migrate deploy çalıştı',
+      ],
+      runbook: 'docs/28-backup-runbook.md',
+      claimedAutomaticBackup: false,
+    };
+  }
+
+  async verifyBackup(actor: AuthenticatedUser, dto: VerifyBackupDto, context: RequestContext) {
+    const at = new Date().toISOString();
+    await Promise.all(
+      [
+        { key: 'ops.backup.last_verified_at', value: at },
+        { key: 'ops.backup.last_verified_by', value: actor.id },
+        { key: 'ops.backup.last_note', value: dto.note?.trim() || 'Runbook doğrulandı' },
+      ].map((item) =>
+        this.prisma.systemSetting.upsert({
+          where: { key: item.key },
+          create: { key: item.key, value: item.value, isSecret: false },
+          update: { value: item.value },
+        }),
+      ),
+    );
+    await this.audit.record(
+      this.entry(actor, context, {
+        action: 'backup.verified',
+        entityType: 'SystemSetting',
+        entityId: 'ops.backup',
+        changes: { at, note: dto.note ?? null },
+      }),
+    );
+    return this.getBackupStatus();
+  }
+
   /**
-   * Ustanın ortalama puanı yayınlanmış yorumlardan yeniden hesaplanır.
+   * Satıcının ortalama puanı yayınlanmış yorumlardan yeniden hesaplanır.
    * Sayaç körlemesine artırılmaz; gizlenen yorum profili şişirmez.
    */
   private async refreshProviderRating(
@@ -810,6 +1260,261 @@ export class AdminService {
         averageRating: average === null ? null : Math.round(Number(average) * 100) / 100,
         reviewCount: aggregate._count._all,
       },
+    });
+  }
+
+  private async applyModerationAction(
+    actor: AuthenticatedUser,
+    targetType: string,
+    targetId: string,
+    action: ModerationAction,
+  ): Promise<void> {
+    const subject = await this.loadModerationSubject(targetType, targetId);
+    if (!subject) throw AppException.notFound('Bildirilen içerik', targetId);
+
+    if (
+      action === ModerationAction.REMOVE_CONTENT ||
+      action === ModerationAction.SUSPEND_AUTHOR ||
+      action === ModerationAction.BAN_AUTHOR
+    ) {
+      if (subject.kind === 'POST' && !subject.removed) {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.post.update({ where: { id: subject.id }, data: { deletedAt: new Date() } });
+          await tx.feedItem.deleteMany({ where: { postId: subject.id } });
+          await tx.socialProfile.update({
+            where: { id: subject.authorProfileId },
+            data: { postCount: { decrement: 1 } },
+          });
+        });
+      }
+      if (subject.kind === 'COMMENT' && !subject.removed) {
+        await this.prisma.$transaction(async (tx) => {
+          await tx.postComment.update({
+            where: { id: subject.id },
+            data: { deletedAt: new Date() },
+          });
+          await tx.post.update({
+            where: { id: subject.postId },
+            data: { commentCount: { decrement: 1 } },
+          });
+        });
+      }
+    }
+
+    if (action === ModerationAction.SUSPEND_AUTHOR || action === ModerationAction.BAN_AUTHOR) {
+      if (!subject.authorUserId) {
+        throw new AppException('VALIDATION_ERROR', {
+          message: 'Bu içeriğin bağlı bir hesabı yok; yalnızca içerik kaldırılabilir.',
+        });
+      }
+      await this.updateUserStatus(
+        actor,
+        subject.authorUserId,
+        {
+          status: action === ModerationAction.BAN_AUTHOR ? UserStatus.BANNED : UserStatus.SUSPENDED,
+        },
+        { ipAddress: undefined, userAgent: undefined },
+      );
+    }
+  }
+
+  private async loadModerationSubject(targetType: string, targetId: string) {
+    if (targetType === ContentReportTarget.POST) {
+      const post = await this.prisma.post.findFirst({
+        where: { id: targetId },
+        select: {
+          id: true,
+          deletedAt: true,
+          authorProfileId: true,
+          author: { select: { userId: true, business: { select: { ownerUserId: true } } } },
+        },
+      });
+      if (!post) return null;
+      return {
+        kind: 'POST' as const,
+        id: post.id,
+        removed: Boolean(post.deletedAt),
+        authorProfileId: post.authorProfileId,
+        authorUserId: post.author.userId ?? post.author.business?.ownerUserId ?? null,
+        postId: post.id,
+      };
+    }
+    if (targetType === ContentReportTarget.COMMENT) {
+      const comment = await this.prisma.postComment.findFirst({
+        where: { id: targetId },
+        select: {
+          id: true,
+          postId: true,
+          deletedAt: true,
+          authorProfileId: true,
+          author: { select: { userId: true, business: { select: { ownerUserId: true } } } },
+        },
+      });
+      if (!comment) return null;
+      return {
+        kind: 'COMMENT' as const,
+        id: comment.id,
+        removed: Boolean(comment.deletedAt),
+        authorProfileId: comment.authorProfileId,
+        authorUserId: comment.author.userId ?? comment.author.business?.ownerUserId ?? null,
+        postId: comment.postId,
+      };
+    }
+    const profile = await this.prisma.socialProfile.findFirst({
+      where: { id: targetId },
+      select: {
+        id: true,
+        deletedAt: true,
+        userId: true,
+        business: { select: { ownerUserId: true } },
+      },
+    });
+    if (!profile) return null;
+    return {
+      kind: 'PROFILE' as const,
+      id: profile.id,
+      removed: Boolean(profile.deletedAt),
+      authorProfileId: profile.id,
+      authorUserId: profile.userId ?? profile.business?.ownerUserId ?? null,
+      postId: '',
+    };
+  }
+
+  private async presentContentReports(
+    rows: Array<{
+      id: string;
+      reporterUserId: string;
+      targetType: string;
+      targetId: string;
+      reason: string;
+      status: string;
+      actionNote: string | null;
+      reviewedAt: Date | null;
+      createdAt: Date;
+      reporter?: { fullName: string } | null;
+    }>,
+  ): Promise<ContentReport[]> {
+    const postIds = rows
+      .filter((row) => row.targetType === ContentReportTarget.POST)
+      .map((row) => row.targetId);
+    const commentIds = rows
+      .filter((row) => row.targetType === ContentReportTarget.COMMENT)
+      .map((row) => row.targetId);
+    const profileIds = rows
+      .filter((row) => row.targetType === ContentReportTarget.PROFILE)
+      .map((row) => row.targetId);
+
+    const [posts, comments, profiles] = await Promise.all([
+      postIds.length
+        ? this.prisma.post.findMany({
+            where: { id: { in: postIds } },
+            select: {
+              id: true,
+              body: true,
+              deletedAt: true,
+              author: {
+                select: {
+                  userId: true,
+                  username: true,
+                  displayName: true,
+                  business: { select: { ownerUserId: true } },
+                },
+              },
+              media: { take: 1, select: { file: { select: { storageKey: true } } } },
+            },
+          })
+        : [],
+      commentIds.length
+        ? this.prisma.postComment.findMany({
+            where: { id: { in: commentIds } },
+            select: {
+              id: true,
+              body: true,
+              deletedAt: true,
+              author: {
+                select: {
+                  userId: true,
+                  username: true,
+                  displayName: true,
+                  business: { select: { ownerUserId: true } },
+                },
+              },
+            },
+          })
+        : [],
+      profileIds.length
+        ? this.prisma.socialProfile.findMany({
+            where: { id: { in: profileIds } },
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              bio: true,
+              deletedAt: true,
+              userId: true,
+              business: { select: { ownerUserId: true } },
+            },
+          })
+        : [],
+    ]);
+
+    const postMap = new Map(posts.map((item) => [item.id, item]));
+    const commentMap = new Map(comments.map((item) => [item.id, item]));
+    const profileMap = new Map(profiles.map((item) => [item.id, item]));
+
+    return rows.map((row) => {
+      let target: ContentReport['target'] = null;
+      if (row.targetType === ContentReportTarget.POST) {
+        const post = postMap.get(row.targetId);
+        target = post
+          ? {
+              preview: post.body?.trim() || '(görsel / fırsat gönderisi)',
+              mediaUrl: post.media[0]?.file?.storageKey
+                ? resolveAssetUrl(this.config.fileBaseUrl, post.media[0].file.storageKey)
+                : null,
+              authorUserId: post.author.userId ?? post.author.business?.ownerUserId ?? null,
+              authorName: post.author.displayName,
+              authorUsername: post.author.username,
+              removed: Boolean(post.deletedAt),
+            }
+          : { preview: 'Gönderi bulunamadı', removed: true };
+      } else if (row.targetType === ContentReportTarget.COMMENT) {
+        const comment = commentMap.get(row.targetId);
+        target = comment
+          ? {
+              preview: comment.body,
+              authorUserId: comment.author.userId ?? comment.author.business?.ownerUserId ?? null,
+              authorName: comment.author.displayName,
+              authorUsername: comment.author.username,
+              removed: Boolean(comment.deletedAt),
+            }
+          : { preview: 'Yorum bulunamadı', removed: true };
+      } else {
+        const profile = profileMap.get(row.targetId);
+        target = profile
+          ? {
+              preview: profile.bio?.trim() || `@${profile.username}`,
+              authorUserId: profile.userId ?? profile.business?.ownerUserId ?? null,
+              authorName: profile.displayName,
+              authorUsername: profile.username,
+              removed: Boolean(profile.deletedAt),
+            }
+          : { preview: 'Profil bulunamadı', removed: true };
+      }
+
+      return {
+        id: row.id,
+        reporterUserId: row.reporterUserId,
+        reporterName: row.reporter?.fullName ?? null,
+        targetType: row.targetType as ContentReport['targetType'],
+        targetId: row.targetId,
+        reason: row.reason,
+        status: row.status as ContentReport['status'],
+        actionNote: row.actionNote,
+        reviewedAt: row.reviewedAt?.toISOString() ?? null,
+        createdAt: row.createdAt.toISOString(),
+        target,
+      };
     });
   }
 

@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, View } from 'react-native';
 
-import type { ProviderSummary } from '@ustapilot/types';
+import type { ProviderSummary } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
 import { Card } from '@/components/card';
@@ -15,7 +15,7 @@ import { Stars } from './star-rating';
 import { flattenReviewPages, useProvider, useProviderReviewsInfinite } from './use-reviews';
 
 /**
- * Ustanın herkese açık profili.
+ * Satıcının herkese açık profili.
  *
  * Kart ve yorumlar giriş yapmamış ziyaretçiye de açıktır; bu yüzden ekran
  * oturum durumuna hiç bakmaz.

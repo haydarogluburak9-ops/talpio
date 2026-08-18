@@ -1,4 +1,4 @@
-import type { AuthTokens } from '@ustapilot/types';
+import type { AuthTokens } from '@talpio/types';
 
 /**
  * Jeton saklama stratejisi. Platforma göre değişir:
@@ -57,9 +57,9 @@ export interface SecureStorageAdapter {
   removeItem(key: string): Promise<void>;
 }
 
-const ACCESS_TOKEN_KEY = 'ustapilot.accessToken';
-const REFRESH_TOKEN_KEY = 'ustapilot.refreshToken';
-const EXPIRES_IN_KEY = 'ustapilot.expiresIn';
+const ACCESS_TOKEN_KEY = 'talpio.accessToken';
+const REFRESH_TOKEN_KEY = 'talpio.refreshToken';
+const EXPIRES_IN_KEY = 'talpio.expiresIn';
 
 /**
  * Mobil için strateji. Bu paket platform bağımsız kaldığından depolama

@@ -1,4 +1,4 @@
-import { Container, Section, buttonVariants } from '@ustapilot/ui';
+import { Container, Section, buttonVariants } from '@talpio/ui';
 import Link from 'next/link';
 
 import { t } from '@/lib/i18n';

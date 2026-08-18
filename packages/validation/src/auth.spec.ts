@@ -1,14 +1,17 @@
-import { UserRole } from '@ustapilot/types';
-
 import { loginSchema, registerSchema } from './auth';
 
 const validRegistration = {
   fullName: 'Ayşe Yılmaz',
+  username: 'ayse.yilmaz',
   email: 'ayse@example.com',
   password: 'Guclu1Parola',
   passwordConfirmation: 'Guclu1Parola',
-  role: UserRole.CUSTOMER,
   acceptedTerms: true as const,
+  interestCategoryIds: [
+    '0194a1b2-c3d4-7000-8000-000000000001',
+    '0194a1b2-c3d4-7000-8000-000000000002',
+    '0194a1b2-c3d4-7000-8000-000000000003',
+  ],
 };
 
 describe('registerSchema', () => {
@@ -55,15 +58,9 @@ describe('registerSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('personel rollerinin kendi kendine seçilmesine izin vermez', () => {
-    for (const role of [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUPPORT]) {
-      expect(registerSchema.safeParse({ ...validRegistration, role }).success).toBe(false);
-    }
-  });
-
-  it('usta rolüne izin verir', () => {
-    const result = registerSchema.safeParse({ ...validRegistration, role: UserRole.PROVIDER });
-    expect(result.success).toBe(true);
+  it('geçersiz kullanıcı adını reddeder', () => {
+    const result = registerSchema.safeParse({ ...validRegistration, username: 'A' });
+    expect(result.success).toBe(false);
   });
 
   it('E.164 dışındaki telefon numarasını reddeder', () => {
@@ -90,6 +87,14 @@ describe('registerSchema', () => {
 
     expect(result.success).toBe(true);
     expect(result.data?.phone).toBeUndefined();
+  });
+
+  it('üçten az ilgi alanını reddeder', () => {
+    const result = registerSchema.safeParse({
+      ...validRegistration,
+      interestCategoryIds: validRegistration.interestCategoryIds.slice(0, 2),
+    });
+    expect(result.success).toBe(false);
   });
 });
 

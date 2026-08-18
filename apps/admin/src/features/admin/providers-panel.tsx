@@ -1,8 +1,8 @@
 'use client';
 
-import { formatRating } from '@ustapilot/localization';
-import { Input, StatusPill } from '@ustapilot/ui';
-import { VerificationStatus, type AdminProviderSummary } from '@ustapilot/types';
+import { formatRating } from '@talpio/localization';
+import { Input, StatusPill } from '@talpio/ui';
+import { VerificationStatus, type AdminProviderSummary } from '@talpio/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -59,7 +59,7 @@ export function ProvidersPanel({ title, description, lockedStatus }: ProvidersPa
   const columns: TableColumn<AdminProviderSummary>[] = [
     {
       key: 'provider',
-      header: 'Usta',
+      header: 'Satıcı',
       cell: (provider) => (
         <div className="min-w-0">
           <p className="truncate font-medium">{provider.displayName}</p>
@@ -192,10 +192,10 @@ export function ProvidersPanel({ title, description, lockedStatus }: ProvidersPa
           isError={providers.isError}
           emptyLabel={
             lockedStatus
-              ? 'İnceleme bekleyen usta yok.'
+              ? 'İnceleme bekleyen satıcı yok.'
               : hasFilter
-                ? 'Bu filtreye uyan usta yok.'
-                : 'Kayıtlı usta bulunamadı.'
+                ? 'Bu filtreye uyan satıcı yok.'
+                : 'Kayıtlı satıcı bulunamadı.'
           }
           onRetry={() => void providers.refetch()}
           minWidth={900}

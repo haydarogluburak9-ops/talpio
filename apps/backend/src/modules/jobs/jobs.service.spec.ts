@@ -1,4 +1,4 @@
-import { JobRequestStatus, JobSize, JobTimeSlot, UserRole } from '@ustapilot/types';
+import { JobRequestStatus, JobSize, JobTimeSlot, UserRole } from '@talpio/types';
 
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
@@ -55,6 +55,7 @@ function jobRow(overrides: Partial<JobRequestRow> = {}): JobRequestRow {
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
+    commerceRequestId: null,
     category: { id: 'cat-1', name: 'Tesisat' },
     subcategory: null,
     city: { name: 'İstanbul' },
@@ -98,7 +99,7 @@ function createPrismaMock(): PrismaMock {
       // Eşleşme bildirimi için; varsayılan boş liste sessizce geçer.
       findMany: jest.fn().mockResolvedValue([]),
     },
-    // İşi üstlenen usta kontrolü sipariş tablosuna bakar; varsayılan olarak usta atanmamıştır.
+    // İşi üstlenen satıcı kontrolü sipariş tablosuna bakar; varsayılan olarak satıcı atanmamıştır.
     order: { findFirst: jest.fn().mockResolvedValue(null) },
     serviceCategory: { findFirst: jest.fn().mockResolvedValue({ id: 'cat-1' }) },
     serviceSubcategory: { findFirst: jest.fn().mockResolvedValue({ id: 'sub-1' }) },
@@ -116,7 +117,7 @@ function createPrismaMock(): PrismaMock {
 
 function createService(prisma: PrismaMock, files: FilesMock = createFilesMock()): JobsService {
   const config = {
-    fileBaseUrl: 'http://localhost:9000/ustapilot',
+    fileBaseUrl: 'http://localhost:9000/talpio',
   } as unknown as AppConfigService;
 
   const notifications = {
@@ -174,7 +175,7 @@ describe('JobsService', () => {
       expect(result.address.location).toEqual({ latitude: 41.0082, longitude: 28.9784 });
     });
 
-    it('havuzdaki ustaya açık adresi ve konumu vermez', async () => {
+    it('havuzdaki satıcıya açık adresi ve konumu vermez', async () => {
       prisma.jobRequest.findFirst.mockResolvedValue(jobRow());
 
       const result = await service.getById(provider, jobRow().id);
@@ -185,8 +186,8 @@ describe('JobsService', () => {
       expect(result.address.districtName).toBe('Kadıköy');
     });
 
-    it('işi üstlenen ustaya açık adresi verir', async () => {
-      // İş bu adreste yapılacaktır; teklif kabul edildikten sonra usta adresi görmelidir.
+    it('işi üstlenen satıcıya açık adresi verir', async () => {
+      // İş bu adreste yapılacaktır; teklif kabul edildikten sonra satıcı adresi görmelidir.
       prisma.jobRequest.findFirst.mockResolvedValue(
         jobRow({ status: JobRequestStatus.PROVIDER_SELECTED }),
       );
@@ -208,7 +209,7 @@ describe('JobsService', () => {
       ).resolves.toBe('FORBIDDEN_RESOURCE');
     });
 
-    it('teklife kapalı talebi ustaya göstermez', async () => {
+    it('teklife kapalı talebi satıcıya göstermez', async () => {
       prisma.jobRequest.findFirst.mockResolvedValue(jobRow({ status: JobRequestStatus.COMPLETED }));
 
       await expect(codeOfRejection(() => service.getById(provider, jobRow().id))).resolves.toBe(
@@ -362,12 +363,12 @@ describe('JobsService', () => {
     });
   });
 
-  describe('usta havuzu', () => {
+  describe('satıcı havuzu', () => {
     function availableQuery(overrides: Record<string, unknown> = {}): AvailableJobsQueryDto {
       return listQuery({ matchMyServices: true, ...overrides }) as AvailableJobsQueryDto;
     }
 
-    it('usta profili yoksa hata verir', async () => {
+    it('satıcı profili yoksa hata verir', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -389,7 +390,7 @@ describe('JobsService', () => {
       expect(prisma.jobRequest.findMany).not.toHaveBeenCalled();
     });
 
-    it('ustanın kategori ve bölgeleriyle sınırlar, kendi teklif verdiklerini eler', async () => {
+    it('satıcının kategori ve bölgeleriyle sınırlar, kendi teklif verdiklerini eler', async () => {
       prisma.providerProfile.findFirst.mockResolvedValue({
         id: 'profile-1',
         services: [{ categoryId: 'cat-1' }, { categoryId: 'cat-2' }],

@@ -1,5 +1,5 @@
 {
-  "name": "@ustapilot/config",
+  "name": "@talpio/config",
   "version": "0.1.0",
   "private": true,
   "description": "Platform genelinde paylaşılan sabitler, limitler ve API yolları",

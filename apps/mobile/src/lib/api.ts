@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { createApiClient, createSecureTokenStore } from '@ustapilot/api-client';
+import { createApiClient, createSecureTokenStore } from '@talpio/api-client';
 
 import { env } from '@/lib/env';
 import { secureStorage } from '@/lib/secure-storage';
@@ -19,4 +19,4 @@ export const apiClient = createApiClient({
   defaultHeaders: { 'X-Client-Platform': Platform.OS === 'ios' ? 'IOS' : 'ANDROID' },
 });
 
-export { ApiError } from '@ustapilot/api-client';
+export { ApiError } from '@talpio/api-client';

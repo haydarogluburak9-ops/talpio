@@ -1,4 +1,4 @@
-import { UserRole, UserStatus } from '@ustapilot/types';
+import { UserRole, UserStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
@@ -10,14 +10,14 @@ import { UsersService } from './users.service';
 
 const USER_ID = 'user-1';
 const FILE_ID = '0194a1b2-c3d4-7000-8000-000000000001';
-const FILE_BASE_URL = 'http://localhost:9000/ustapilot';
+const FILE_BASE_URL = 'http://localhost:9000/talpio';
 
 const customer: AuthenticatedUser = { id: USER_ID, role: UserRole.CUSTOMER, sessionId: 's1' };
 
 function userRow(overrides: Record<string, unknown> = {}) {
   return {
     id: USER_ID,
-    email: 'musteri@ustapilot.com',
+    email: 'musteri@talpio.com',
     phone: '+905321234567',
     fullName: 'Ayşe Yılmaz',
     role: UserRole.CUSTOMER,
@@ -38,6 +38,9 @@ function userRow(overrides: Record<string, unknown> = {}) {
 type PrismaMock = {
   user: { findFirst: jest.Mock; update: jest.Mock };
   fileAsset: { findFirst: jest.Mock };
+  userSession: { updateMany: jest.Mock };
+  deviceToken: { updateMany: jest.Mock };
+  $transaction: jest.Mock;
 };
 
 type FilesMock = { assertOwnedBy: jest.Mock };
@@ -55,6 +58,9 @@ function createPrismaMock(): PrismaMock {
       update: jest.fn().mockResolvedValue(userRow()),
     },
     fileAsset: { findFirst: jest.fn().mockResolvedValue({ mimeType: 'image/jpeg' }) },
+    userSession: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    deviceToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   };
 }
 
@@ -182,6 +188,35 @@ describe('UsersService', () => {
 
       expect(files.assertOwnedBy).not.toHaveBeenCalled();
       expect(updateArgs(prisma).data).toEqual({ avatarFileId: null });
+    });
+  });
+
+  describe('hesap kapatma', () => {
+    it('e-postayı anonimleştirir ve oturumları iptal eder', async () => {
+      const prisma = createPrismaMock();
+
+      await createService(prisma).deleteMe(customer);
+
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: UserStatus.DEACTIVATED,
+            email: `deleted.${USER_ID}@deleted.invalid`,
+            phone: null,
+          }),
+        }),
+      );
+      expect(prisma.userSession.updateMany).toHaveBeenCalled();
+      expect(prisma.deviceToken.updateMany).toHaveBeenCalled();
+    });
+
+    it('zaten silinmiş hesabı kapatmaz', async () => {
+      const prisma = createPrismaMock();
+      prisma.user.findFirst.mockResolvedValue(null);
+
+      await expect(createService(prisma).deleteMe(customer)).rejects.toThrow(AppException);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
     });
   });
 });
