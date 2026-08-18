@@ -9,7 +9,7 @@ ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 
 # --- Bağımlılıklar -----------------------------------------------------------
 FROM base AS deps
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json turbo.json tsconfig.base.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
 COPY apps/web/package.json ./apps/web/

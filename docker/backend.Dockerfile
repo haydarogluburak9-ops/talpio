@@ -9,7 +9,7 @@ ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 
 # --- Bağımlılıklar -----------------------------------------------------------
 FROM base AS deps
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json turbo.json tsconfig.base.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
 COPY apps/web/package.json ./apps/web/
@@ -24,7 +24,7 @@ RUN npm run build:packages && npm run build --workspace @talpio/backend
 
 # --- Yalnızca üretim bağımlılıkları -------------------------------------------
 FROM base AS prod-deps
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json turbo.json tsconfig.base.json ./
 COPY apps/backend/package.json ./apps/backend/
 COPY apps/admin/package.json ./apps/admin/
 RUN npm ci --workspace @talpio/backend --include-workspace-root --omit=dev
