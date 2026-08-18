@@ -13,6 +13,9 @@
     }
   },
   "files": ["dist"],
+  "dependencies": {
+    "@talpio/types": "0.1.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
