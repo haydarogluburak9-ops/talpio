@@ -43,12 +43,17 @@ export function BrandLockup({
   alt?: string;
 }) {
   return (
-    <span className={cn('inline-flex shrink-0 items-center', className ?? 'h-10')}>
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center overflow-hidden',
+        className ?? 'h-8 max-w-[8.25rem] sm:h-9 sm:max-w-[9rem]',
+      )}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt}
-        className="block h-full w-auto object-contain object-left"
+        className="block max-h-full max-w-full object-contain object-left"
         draggable={false}
       />
     </span>
