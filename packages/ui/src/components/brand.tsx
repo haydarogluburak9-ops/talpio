@@ -6,8 +6,8 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=7';
-const LOCKUP_SRC = '/brand/talpio-lockup.png?v=7';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=8';
+const LOCKUP_SRC = '/brand/talpio-lockup.png?v=8';
 
 /** Kare / dikey app ikonu — koyu zemin, beyaz Talp + turuncu io. */
 export function BrandMark({
@@ -32,7 +32,7 @@ export function BrandMark({
   );
 }
 
-/** Yatay logo (T + Talpio) — açık zemin header. */
+/** Yatay logo (T + Talpio) — beyaz zemin header. */
 export function BrandLockup({
   className,
   src = LOCKUP_SRC,
@@ -43,12 +43,12 @@ export function BrandLockup({
   alt?: string;
 }) {
   return (
-    <span className={cn('relative inline-flex h-10 w-auto max-w-full shrink-0 items-center', className)}>
+    <span className={cn('inline-flex max-w-[10.5rem] shrink-0 items-center sm:max-w-[11.5rem]', className ?? 'h-10')}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt}
-        className="block h-full w-auto max-w-none object-contain object-left"
+        className="block h-full w-auto object-contain object-left"
         draggable={false}
       />
     </span>
