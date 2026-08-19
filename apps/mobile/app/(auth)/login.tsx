@@ -60,7 +60,6 @@ export default function LoginScreen() {
               autoComplete="username"
               textContentType="username"
               returnKeyType="next"
-              placeholder={t('auth.loginIdentifierPlaceholder')}
             />
           )}
         />

@@ -45,7 +45,6 @@ export function LoginForm() {
             {...register('identifier')}
             type="text"
             autoComplete="username"
-            placeholder={t('auth.loginIdentifierPlaceholder')}
           />
         )}
       </Field>
