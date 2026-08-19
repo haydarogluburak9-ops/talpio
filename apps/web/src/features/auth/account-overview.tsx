@@ -1,7 +1,18 @@
 'use client';
 
 import { isMarketplaceRole } from '@talpio/types';
-import { Button, buttonVariants, ErrorState, ListSkeleton, LoadingState } from '@talpio/ui';
+import { cn, ErrorState, ListSkeleton, LoadingState } from '@talpio/ui';
+import {
+  ClipboardPlus,
+  Compass,
+  Flag,
+  LifeBuoy,
+  LogOut,
+  MessageCircle,
+  Store,
+  Trash2,
+  UserRound,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -12,8 +23,9 @@ import { OrderCard } from '@/features/orders/order-card';
 import { useMyOrders } from '@/features/orders/use-orders';
 import { useMyCommerceRequests } from '@/features/requests/use-requests';
 import { PaymentHistory } from '@/features/payments/payment-history';
+import { useSocialMe } from '@/features/social/use-social';
 import { publicEnv } from '@/lib/env';
-import { t } from '@/lib/i18n';
+import { localeTag, t } from '@/lib/i18n';
 
 import { InterestsSettings } from './interests-settings';
 import { useLogout, useDeleteAccount, useSession } from './use-session';
@@ -24,6 +36,7 @@ import { useLogout, useDeleteAccount, useSession } from './use-session';
  */
 export function AccountOverview() {
   const session = useSession();
+  const me = useSocialMe(Boolean(session.data));
   const logout = useLogout();
   const deleteAccount = useDeleteAccount();
   const router = useRouter();
@@ -51,73 +64,157 @@ export function AccountOverview() {
 
   if (!user) return <LoadingState label="Hesap bilgileri yükleniyor" />;
 
+  const displayName = me.data?.displayName?.trim() || user.fullName?.trim() || user.email;
+  const username = me.data?.username;
+  const avatarUrl = me.data?.avatarUrl ?? user.avatarUrl ?? null;
+  const profileHref = username ? `/u/${username}` : '/profil';
+
+  const quickActions = [
+    {
+      key: 'request',
+      href: '/talep-olustur',
+      label: 'Talep oluştur',
+      icon: ClipboardPlus,
+      tone: 'bg-accent-500 text-white shadow-[0_6px_16px_rgb(255_106_0_/_0.35)]',
+      featured: true,
+    },
+    {
+      key: 'messages',
+      href: '/mesajlar',
+      label: t('messaging.listTitle'),
+      icon: MessageCircle,
+      tone: 'bg-violet-50 text-violet-600',
+    },
+    {
+      key: 'profile',
+      href: profileHref,
+      label: t('profile.title'),
+      icon: UserRound,
+      tone: 'bg-teal-50 text-teal-600',
+    },
+    {
+      key: 'categories',
+      href: '/kategoriler',
+      label: 'Keşfet',
+      icon: Compass,
+      tone: 'bg-sky-50 text-sky-600',
+    },
+    {
+      key: 'support',
+      href: '/destek',
+      label: t('nav.support'),
+      icon: LifeBuoy,
+      tone: 'bg-brand-50 text-brand-700',
+    },
+    {
+      key: 'complaint',
+      href: '/sikayet',
+      label: t('complaint.createTitle'),
+      icon: Flag,
+      tone: 'bg-amber-50 text-amber-700',
+    },
+    ...(isMarketplaceRole(user.role)
+      ? [
+          {
+            key: 'business',
+            href: '/satici/panel',
+            label: t('nav.myBusiness'),
+            icon: Store,
+            tone: 'bg-emerald-50 text-emerald-700',
+          },
+        ]
+      : []),
+  ] as const;
+
   return (
     <div className="flex flex-col gap-4 pb-20 lg:pb-6">
-      <section className="social-panel p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="font-display text-xs font-semibold tracking-[0.18em] text-accent-600 uppercase">
-              {t('nav.profile')}
-            </p>
-            <h1 className="mt-1 truncate font-display text-2xl font-semibold tracking-tight text-brand-900 dark:text-foreground">
-              {user.fullName}
-            </h1>
-            <p className="mt-1 truncate text-sm text-foreground-muted">{user.email}</p>
-          </div>
+      <section className="social-panel overflow-hidden">
+        <div
+          className="relative h-28 bg-gradient-to-br from-brand-900 via-brand-700 to-accent-500 sm:h-32"
+          aria-hidden
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgb(255_255_255_/_0.18),transparent_45%)]" />
         </div>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <Link
-            href="/talep-olustur"
-            className={`${buttonVariants({ size: 'sm' })} bg-accent-500 text-white hover:bg-accent-600`}
-          >
-            Talep oluştur
-          </Link>
-          <Link href="/kategoriler" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            Kategorilere göz at
-          </Link>
-          <Link href="/mesajlar" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            {t('messaging.listTitle')}
-          </Link>
-          <Link href="/destek" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            {t('nav.support')}
-          </Link>
-          <Link href="/sikayet" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            {t('complaint.createTitle')}
-          </Link>
-          <Link href="/profil" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            {t('profile.title')}
-          </Link>
-          {isMarketplaceRole(user.role) ? (
-            <Link
-              href="/satici/panel"
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+
+        <div className="relative px-5 pb-5 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex min-w-0 items-end gap-4">
+              <div className="-mt-10 shrink-0">
+                <AccountAvatar name={displayName} url={avatarUrl} />
+              </div>
+              <div className="min-w-0 pb-1 pt-3">
+                <p className="text-[11px] font-semibold tracking-[0.16em] text-accent-600 uppercase">
+                  {t('nav.settings')}
+                </p>
+                <h1 className="truncate font-display text-2xl font-semibold tracking-tight text-brand-900 dark:text-foreground sm:text-[1.65rem]">
+                  {displayName}
+                </h1>
+                {username ? (
+                  <p className="mt-0.5 truncate text-sm font-medium text-foreground-muted">
+                    @{username}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.key}
+                  href={action.href}
+                  className="group flex flex-col items-center gap-2 rounded-2xl px-1 py-2 transition-colors hover:bg-surface-muted/70"
+                >
+                  <span
+                    className={cn(
+                      'grid size-11 place-items-center rounded-2xl transition-transform group-hover:scale-[1.03]',
+                      action.tone,
+                      !('featured' in action && action.featured) && 'ring-1 ring-black/[0.04]',
+                    )}
+                  >
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <span className="line-clamp-2 text-center text-[11px] font-semibold leading-tight text-foreground">
+                    {action.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 overflow-hidden rounded-2xl border border-border/70 bg-surface-muted/35">
+            <button
+              type="button"
+              onClick={() => logout.mutate()}
+              disabled={logout.isPending}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface-muted disabled:opacity-60"
             >
-              {t('nav.myBusiness')}
-            </Link>
-          ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-          >
-            {logout.isPending ? 'Çıkış yapılıyor…' : 'Çıkış yap'}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-danger-600"
-            onClick={() => {
-              if (window.confirm(t('settings.deleteAccountConfirm'))) {
-                deleteAccount.mutate();
-              }
-            }}
-            disabled={deleteAccount.isPending}
-          >
-            {deleteAccount.isPending
-              ? t('settings.deleteAccountPending')
-              : t('settings.deleteAccount')}
-          </Button>
+              <span className="grid size-9 place-items-center rounded-xl bg-white text-foreground-muted shadow-sm">
+                <LogOut className="size-4" aria-hidden />
+              </span>
+              {logout.isPending ? 'Çıkış yapılıyor…' : t('nav.logout')}
+            </button>
+            <div className="h-px bg-border/70" />
+            <button
+              type="button"
+              disabled={deleteAccount.isPending}
+              onClick={() => {
+                if (window.confirm(t('settings.deleteAccountConfirm'))) {
+                  deleteAccount.mutate();
+                }
+              }}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-medium text-destructive transition-colors hover:bg-destructive/5 disabled:opacity-60"
+            >
+              <span className="grid size-9 place-items-center rounded-xl bg-destructive/10 text-destructive">
+                <Trash2 className="size-4" aria-hidden />
+              </span>
+              {deleteAccount.isPending
+                ? t('settings.deleteAccountPending')
+                : t('settings.deleteAccount')}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -128,7 +225,7 @@ export function AccountOverview() {
           <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
             Taleplerim
           </h2>
-          <Link href="/taleplerim" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          <Link href="/taleplerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
             Tümünü gör
           </Link>
         </div>
@@ -140,7 +237,7 @@ export function AccountOverview() {
           <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
             Ticaret taleplerim
           </h2>
-          <Link href="/tedariklerim" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          <Link href="/tedariklerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
             Tümünü gör
           </Link>
         </div>
@@ -152,7 +249,7 @@ export function AccountOverview() {
           <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
             {t('order.listTitle')}
           </h2>
-          <Link href="/siparislerim" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+          <Link href="/siparislerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
             Tümünü gör
           </Link>
         </div>
@@ -162,7 +259,7 @@ export function AccountOverview() {
       {publicEnv.featurePayments ? (
         <>
           <PaymentHistory />
-          <Link href="/odemeler" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+          <Link href="/odemeler" className="inline-flex text-sm font-semibold text-accent-600 hover:text-accent-700">
             {t('payments.pageTitle')}
           </Link>
         </>
@@ -170,6 +267,28 @@ export function AccountOverview() {
         <p className="text-sm text-foreground-muted">{t('payments.featureOff')}</p>
       )}
     </div>
+  );
+}
+
+function AccountAvatar({ name, url }: { name: string; url?: string | null }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt=""
+        className="size-20 rounded-2xl object-cover ring-4 ring-surface sm:size-[5.5rem]"
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden
+      className="grid size-20 place-items-center rounded-2xl bg-accent-500 font-display text-2xl font-bold text-white ring-4 ring-surface sm:size-[5.5rem]"
+    >
+      {name.slice(0, 1).toLocaleUpperCase(localeTag())}
+    </span>
   );
 }
 
