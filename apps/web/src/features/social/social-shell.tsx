@@ -126,8 +126,8 @@ export function SocialShell({
           <section className="min-w-0 pb-24">{children}</section>
 
           {showRail ? (
-            <aside className="hidden self-start xl:block">
-              <div className="sticky top-[4.75rem] z-10 max-h-[calc(100svh-5rem)] space-y-3 overflow-y-auto overscroll-y-contain pb-4 [scrollbar-width:thin]">
+            <aside className="hidden xl:block">
+              <div className="space-y-3 pb-4">
                 <div className="social-panel overflow-hidden p-5">
                   <div className="mb-3 flex items-center gap-2">
                     <span className="grid size-8 place-items-center rounded-lg bg-accent-500/15 text-accent-600">

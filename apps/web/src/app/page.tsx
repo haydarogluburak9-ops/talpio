@@ -74,18 +74,6 @@ const features = [
   },
 ] as const;
 
-/** Yetkilendirilmemiş marka logosu yerine sunum placeholder’ları. */
-const partnerPlaceholders = [
-  'Marka 01',
-  'Marka 02',
-  'Marka 03',
-  'Marka 04',
-  'Marka 05',
-  'Marka 06',
-  'Marka 07',
-  'Marka 08',
-] as const;
-
 const proofAvatars = [
   'https://i.pravatar.cc/72?img=5',
   'https://i.pravatar.cc/72?img=47',
@@ -248,23 +236,6 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
-        </Container>
-      </section>
-
-      <section className="border-t border-[#E6EAF0] bg-[#F1F3F5]">
-        <Container size="wide" className="py-8 sm:py-9">
-          <p className="text-center text-sm font-medium text-[#667085]">{t('home.partnersTitle')}</p>
-          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {partnerPlaceholders.map((name) => (
-              <li
-                key={name}
-                className="text-sm font-semibold tracking-[0.08em] text-[#98A2B3] uppercase"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-          <p className="sr-only">{t('home.partnersDisclaimer')}</p>
         </Container>
       </section>
     </>
