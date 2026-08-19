@@ -112,7 +112,7 @@ export default async function HomePage() {
 
             <div className="mt-7 flex flex-col gap-3.5 sm:flex-row sm:items-center sm:gap-3.5">
               <Link
-                href="/tedarik"
+                href="/kayit"
                 aria-label={t('home.ctaCreateRequest')}
                 className="inline-flex h-14 items-center justify-center gap-2 rounded-[10px] bg-[#FF5A0A] px-[26px] text-[15px] font-semibold text-white shadow-[0_12px_28px_rgb(255_90_10_/_0.38)] transition-colors hover:bg-[#EA4B00]"
               >
@@ -120,7 +120,7 @@ export default async function HomePage() {
                 <Plus className="size-4" aria-hidden />
               </Link>
               <Link
-                href="/kesfet"
+                href="/kayit"
                 aria-label={t('home.ctaExploreDeals')}
                 className="inline-flex h-14 items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/[0.04] px-[26px] text-[15px] font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255_/_0.08)] transition-colors hover:bg-white/10"
               >
