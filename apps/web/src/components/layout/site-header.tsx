@@ -48,7 +48,7 @@ export function SiteHeader() {
           socialMode
             ? 'max-w-none lg:px-5'
             : landingMode
-              ? 'h-[84px] max-w-[1500px] px-6 sm:px-10 lg:px-12'
+              ? 'h-[4.25rem] max-w-[1500px] px-6 sm:px-10 lg:px-12'
               : 'max-w-6xl sm:px-6 lg:px-8',
         )}
       >
@@ -57,17 +57,8 @@ export function SiteHeader() {
           className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
-          {socialMode ? (
+          {socialMode || landingMode ? (
             <BrandLockup className="h-11 sm:h-12" />
-          ) : landingMode ? (
-            // PNG doğrudan — paket derlemesine bağlı kalmadan boyut/cache kontrolü.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/brand/talpio-lockup-light.png?v=3"
-              alt="Talpio"
-              className="block h-14 w-auto sm:h-16 lg:h-[4.75rem]"
-              draggable={false}
-            />
           ) : (
             <BrandMark className="size-12 sm:size-[3.25rem]" />
           )}
