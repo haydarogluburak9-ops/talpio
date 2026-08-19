@@ -1,10 +1,8 @@
-import { BrandLockup } from '@talpio/ui';
+import { BrandMark } from '@talpio/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { t } from '@/lib/i18n';
-
-const LOCKUP_LIGHT_SRC = '/brand/talpio-lockup-light.png';
 
 /**
  * Giriş ve kayıt sayfalarının ortak kabuğu.
@@ -35,7 +33,7 @@ export function AuthShell({
       <aside className="relative hidden overflow-hidden bg-brand-900 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative z-10">
-          <BrandLockup className="h-11 sm:h-12" src={LOCKUP_LIGHT_SRC} />
+          <BrandMark className="size-[3.75rem] sm:size-16" />
         </div>
         <div className="relative z-10 flex max-w-sm flex-col gap-4">
           <p className="font-display text-4xl font-semibold leading-[1.1] tracking-tight">
@@ -50,7 +48,7 @@ export function AuthShell({
           </Link>
         </div>
         <div className="relative z-10">
-          <BrandLockup className="h-9 opacity-90 sm:h-10" src={LOCKUP_LIGHT_SRC} />
+          <BrandMark className="size-14 opacity-90" />
         </div>
       </aside>
 
@@ -58,7 +56,7 @@ export function AuthShell({
         <div className="relative mb-1 overflow-hidden rounded-2xl bg-brand-900 px-5 py-5 text-white lg:hidden">
           <div className="hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative z-10">
-            <BrandLockup className="h-10" src={LOCKUP_LIGHT_SRC} />
+            <BrandMark className="size-14" />
           </div>
         </div>
 
