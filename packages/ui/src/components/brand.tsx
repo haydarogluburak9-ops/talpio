@@ -2,8 +2,8 @@ import { cn } from '../lib/cn';
 
 /**
  * Talpio marka varlıkları (kullanıcı logoları).
- * - App ikon: `/brand/talpio-logo.png` — koyu zemin / auth paneli (BrandMark)
- * - Yatay lockup: `/brand/talpio-lockup.png` — açık zemin header (BrandLockup)
+ * - Birincil logo: `/brand/talpio-logo.png` — app ikonu (BrandMark)
+ * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
 const APP_ICON_SRC = '/brand/talpio-logo.png';

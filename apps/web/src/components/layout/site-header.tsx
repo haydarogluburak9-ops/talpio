@@ -1,13 +1,13 @@
 'use client';
 
-import { BrandLockup, BrandMark, cn } from '@talpio/ui';
+import { BrandMark, cn } from '@talpio/ui';
 import { ChevronDown, Menu, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { NotificationBell } from '@/features/notifications/notification-bell';
-import { isAppShellPath, isAuthPath } from '@/lib/app-shell-paths';
+import { isAppShellPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
 import { landingNav, primaryNav } from '@/lib/navigation';
 
@@ -20,7 +20,6 @@ export function SiteHeader() {
   const router = useRouter();
   const socialMode = isAppShellPath(pathname);
   const landingMode = pathname === '/';
-  const authMode = isAuthPath(pathname);
   const [menu, setMenu] = useState({ isOpen: false, path: pathname });
   const [query, setQuery] = useState('');
 
@@ -58,11 +57,7 @@ export function SiteHeader() {
           className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
-          {authMode ? (
-            <BrandMark className="size-11 sm:size-12" />
-          ) : (
-            <BrandLockup className="h-11 sm:h-12" />
-          )}
+          <BrandMark className="size-11 sm:size-12" />
         </Link>
 
         {socialMode ? (
