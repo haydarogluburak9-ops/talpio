@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 
 import { cn } from '../lib/cn';
@@ -8,9 +8,12 @@ const controlClasses =
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
-export function Input({ className, ...props }: InputProps) {
-  return <input className={cn(controlClasses, 'h-10', className)} {...props} />;
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, ...props },
+  ref,
+) {
+  return <input ref={ref} className={cn(controlClasses, 'h-10', className)} {...props} />;
+});
 
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
