@@ -7,6 +7,7 @@ import {
   Flame,
   Heart,
   MessageCircle,
+  Plus,
   Search,
   Send,
   Share2,
@@ -17,12 +18,21 @@ import Link from 'next/link';
 
 import { t } from '@/lib/i18n';
 
+/** Landing hikâye şeridi — gerçekçi profil görselleri (pravatar). */
+const STORY_AVATARS = [
+  { labelKey: 'home.heroStoryYou' as const, src: 'https://i.pravatar.cc/96?img=5', isOwn: true },
+  { labelKey: 'home.heroStoryLabel1' as const, src: 'https://i.pravatar.cc/96?img=47' },
+  { labelKey: 'home.heroStoryLabel2' as const, src: 'https://i.pravatar.cc/96?img=12' },
+  { labelKey: 'home.heroStoryLabel3' as const, src: 'https://i.pravatar.cc/96?img=32' },
+  { labelKey: 'home.heroStoryLabel4' as const, src: 'https://i.pravatar.cc/96?img=68' },
+] as const;
+
 /**
- * Landing hero sağ kompozisyonu — ölçekler korunur, yüzey kalitesi yükseltilir.
+ * Landing hero sağ kompozisyonu — mobilde taşma yapmaz, metin okunabilir kalır.
  */
 export function HeroVisual() {
   return (
-    <div className="hero-visual relative mx-auto h-[420px] w-full max-w-[34rem] overflow-visible sm:h-[480px] lg:mx-0 lg:h-[540px] lg:max-w-none xl:h-[560px]">
+    <div className="hero-visual relative mx-auto h-[300px] w-full max-w-[20rem] overflow-hidden sm:h-[380px] sm:max-w-[24rem] sm:overflow-visible md:h-[440px] lg:mx-0 lg:h-[540px] lg:max-w-none xl:h-[560px]">
       <div
         className="pointer-events-none absolute inset-[8%] rounded-full opacity-70 blur-3xl"
         aria-hidden
@@ -32,23 +42,21 @@ export function HeroVisual() {
         }}
       />
 
-      {/* Trend */}
-      <div className="landing-float landing-glass absolute top-2 right-0 z-[40] hidden w-[13rem] rounded-2xl px-3.5 py-3 sm:block lg:top-3 lg:right-[2%]">
+      {/* Trend — yalnızca geniş ekran */}
+      <div className="landing-float landing-glass absolute top-2 right-0 z-10 hidden w-[13rem] rounded-2xl px-3.5 py-3 md:block lg:top-3 lg:right-[2%]">
         <div className="flex items-start gap-2.5">
           <span className="mt-0.5 grid size-8 place-items-center rounded-lg bg-[#FF5A0A]/20 text-[#FF5A0A] shadow-[0_0_16px_rgb(255_90_10_/_0.25)]">
             <Flame className="size-4" aria-hidden />
           </span>
           <div>
             <p className="text-sm font-semibold text-white">{t('home.heroTrendTitle')}</p>
-            <p className="mt-0.5 text-xs leading-snug text-white/65">
-              {t('home.heroTrendBody')}
-            </p>
+            <p className="mt-0.5 text-xs leading-snug text-white/65">{t('home.heroTrendBody')}</p>
           </div>
         </div>
       </div>
 
-      {/* Reactions — phone sol üst */}
-      <div className="landing-float absolute top-[22%] left-[4%] z-[40] flex flex-col gap-2.5 lg:left-[8%] lg:top-[20%]">
+      {/* Reactions — tablet+ */}
+      <div className="landing-float absolute top-[22%] left-[4%] z-10 hidden flex-col gap-2.5 md:flex lg:left-[8%] lg:top-[20%]">
         <span className="landing-glass inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-white">
           <Heart className="size-4 fill-red-500 text-red-500" aria-hidden />
           124
@@ -59,8 +67,8 @@ export function HeroVisual() {
         </span>
       </div>
 
-      {/* Bookmark / Share — phone sağ */}
-      <div className="landing-float absolute top-[28%] right-[6%] z-[40] hidden flex-col gap-3 lg:flex xl:right-[8%]">
+      {/* Bookmark / Share — desktop */}
+      <div className="landing-float absolute top-[28%] right-[6%] z-10 hidden flex-col gap-3 lg:flex xl:right-[8%]">
         <span className="landing-glass grid size-14 place-items-center rounded-full text-white">
           <Bookmark className="size-5" aria-hidden />
         </span>
@@ -69,18 +77,17 @@ export function HeroVisual() {
         </span>
       </div>
 
-      {/* Phone — dominant */}
-      <div className="absolute top-3 left-1/2 z-20 w-[min(72%,280px)] -translate-x-1/2 rotate-[5deg] sm:w-[300px] lg:top-[14px] lg:left-[34%] lg:w-[390px] lg:max-w-none lg:translate-x-0 xl:left-[32%] xl:w-[420px]">
+      {/* Phone — mobilde daha küçük, düşük z-index */}
+      <div className="absolute top-0 left-1/2 z-[5] w-[min(88%,240px)] -translate-x-1/2 rotate-[2deg] sm:top-3 sm:w-[min(72%,280px)] sm:rotate-[4deg] md:w-[300px] lg:top-[14px] lg:left-[34%] lg:w-[390px] lg:max-w-none lg:translate-x-0 lg:rotate-[5deg] xl:left-[32%] xl:w-[420px]">
         <HeroPhonePreview />
       </div>
 
-      {/* Request — phone sol-alt overlap */}
-      <div className="absolute bottom-8 left-0 z-30 w-[min(58%,250px)] rotate-[4deg] sm:bottom-10 sm:w-[260px] lg:bottom-[48px] lg:left-[3%] lg:w-[270px] xl:left-[4%] xl:w-[280px]">
+      {/* Yan kartlar — mobilde gizli */}
+      <div className="absolute bottom-8 left-0 z-[6] hidden w-[260px] rotate-[4deg] sm:block lg:bottom-[48px] lg:left-[3%] lg:w-[270px] xl:left-[4%] xl:w-[280px]">
         <HeroRequestCard />
       </div>
 
-      {/* Campaign — phone sağ-alt overlap */}
-      <div className="absolute right-0 bottom-5 z-30 w-[min(56%,250px)] rotate-[4deg] sm:bottom-7 sm:w-[270px] lg:right-0 lg:bottom-[28px] lg:w-[290px] xl:w-[300px]">
+      <div className="absolute right-0 bottom-5 z-[6] hidden w-[270px] rotate-[4deg] sm:block lg:bottom-[28px] lg:w-[290px] xl:w-[300px]">
         <HeroCampaignCard />
       </div>
     </div>
@@ -88,14 +95,6 @@ export function HeroVisual() {
 }
 
 function HeroPhonePreview() {
-  const stories = [
-    { label: 'Sen', tone: 'from-[#FF8A3D] to-[#FF5A0A]' },
-    { label: 'ABC', tone: 'from-emerald-500 to-emerald-800' },
-    { label: 'Yılmaz', tone: 'from-slate-500 to-slate-800' },
-    { label: 'Metal', tone: 'from-amber-400 to-amber-700' },
-    { label: '+', tone: 'from-slate-400 to-slate-700' },
-  ];
-
   return (
     <div className="landing-phone-frame relative overflow-hidden rounded-[2.15rem] p-[7px]">
       <div className="pointer-events-none absolute top-3 left-1/2 z-10 h-[18px] w-[86px] -translate-x-1/2 rounded-full bg-[#0B1220]/90" />
@@ -109,17 +108,36 @@ function HeroPhonePreview() {
           </span>
         </div>
 
+        <p className="px-3.5 pb-1 text-[10px] font-semibold tracking-wide text-[#667085] uppercase">
+          {t('social.storiesTitle')}
+        </p>
         <div className="flex gap-2.5 overflow-hidden px-3.5 pb-2.5">
-          {stories.map((story, index) => (
-            <div key={story.label} className="flex w-12 shrink-0 flex-col items-center gap-1">
+          {STORY_AVATARS.map((story) => (
+            <div key={story.labelKey} className="flex w-12 shrink-0 flex-col items-center gap-1">
               <span
-                className={`grid size-11 place-items-center rounded-full bg-gradient-to-br ${story.tone} text-[11px] font-bold text-white ring-2 ring-offset-1 ${
-                  index === 0 ? 'ring-[#FF5A0A] ring-offset-white' : 'ring-[#FF5A0A]/55 ring-offset-white'
+                className={`relative size-11 overflow-hidden rounded-full ring-2 ring-offset-1 ${
+                  story.isOwn
+                    ? 'ring-[#FF5A0A] ring-offset-white'
+                    : 'ring-[#FF5A0A]/55 ring-offset-white'
                 }`}
               >
-                {story.label.slice(0, 1)}
+                <Image
+                  src={story.src}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                  unoptimized
+                />
+                {story.isOwn ? (
+                  <span className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full bg-[#FF5A0A] text-white ring-2 ring-white">
+                    <Plus className="size-2.5" aria-hidden />
+                  </span>
+                ) : null}
               </span>
-              <span className="truncate text-[10px] font-medium text-[#667085]">{story.label}</span>
+              <span className="max-w-[3rem] truncate text-[10px] font-medium text-[#667085]">
+                {t(story.labelKey)}
+              </span>
             </div>
           ))}
         </div>
@@ -166,8 +184,15 @@ function HeroPhonePreview() {
 
         <div className="space-y-2.5 p-3.5">
           <div className="flex items-center gap-2">
-            <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-800 text-[11px] font-bold text-white shadow-[0_2px_6px_rgb(16_185_129_/_0.35)]">
-              A
+            <span className="relative size-9 shrink-0 overflow-hidden rounded-full shadow-[0_2px_6px_rgb(16_185_129_/_0.35)]">
+              <Image
+                src="https://i.pravatar.cc/72?img=15"
+                alt=""
+                fill
+                sizes="36px"
+                className="object-cover"
+                unoptimized
+              />
             </span>
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-1 truncate text-[13px] font-semibold">
@@ -250,8 +275,15 @@ function HeroRequestCard() {
       className="landing-card-premium block rounded-2xl border border-[rgb(15_23_42_/_0.08)] bg-white p-4 transition-transform hover:-translate-y-0.5"
     >
       <div className="flex items-start gap-2.5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#3A4D66] to-[#1B263B] text-xs font-bold text-white shadow-[0_4px_10px_rgb(13_27_42_/_0.28)]">
-          BH
+        <span className="relative size-10 shrink-0 overflow-hidden rounded-full shadow-[0_4px_10px_rgb(13_27_42_/_0.28)]">
+          <Image
+            src="https://i.pravatar.cc/80?img=33"
+            alt=""
+            fill
+            sizes="40px"
+            className="object-cover"
+            unoptimized
+          />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-1">
@@ -282,14 +314,21 @@ function HeroRequestCard() {
       <div className="mt-3.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="flex -space-x-1.5">
-            {['from-[#FF8A3D] to-[#FF5A0A]', 'from-[#3A4D66] to-[#1B263B]', 'from-emerald-400 to-emerald-700'].map(
-              (tone) => (
-                <span
-                  key={tone}
-                  className={`size-6 rounded-full bg-gradient-to-br ${tone} ring-2 ring-white`}
+            {[33, 12, 68].map((img) => (
+              <span
+                key={img}
+                className="relative size-6 overflow-hidden rounded-full ring-2 ring-white"
+              >
+                <Image
+                  src={`https://i.pravatar.cc/48?img=${img}`}
+                  alt=""
+                  fill
+                  sizes="24px"
+                  className="object-cover"
+                  unoptimized
                 />
-              ),
-            )}
+              </span>
+            ))}
           </div>
           <p className="text-xs font-semibold text-[#344054]">{t('job.offerCount', { count: 12 })}</p>
         </div>
@@ -308,8 +347,15 @@ function HeroCampaignCard() {
       className="landing-card-premium block overflow-hidden rounded-2xl border border-[rgb(15_23_42_/_0.08)] bg-white transition-transform hover:-translate-y-0.5"
     >
       <div className="flex items-start gap-2.5 p-4 pb-2">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#2A2A2A] to-[#111827] text-xs font-bold text-white shadow-[0_4px_10px_rgb(13_27_42_/_0.28)]">
-          YC
+        <span className="relative size-10 shrink-0 overflow-hidden rounded-full shadow-[0_4px_10px_rgb(13_27_42_/_0.28)]">
+          <Image
+            src="https://i.pravatar.cc/80?img=52"
+            alt=""
+            fill
+            sizes="40px"
+            className="object-cover"
+            unoptimized
+          />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-1">

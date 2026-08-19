@@ -33,7 +33,7 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 border-b',
+        'sticky top-0 z-50 border-b',
         socialMode
           ? 'border-border/70 bg-white shadow-[0_1px_0_rgb(2_27_50_/_0.05)] dark:bg-white'
           : landingMode

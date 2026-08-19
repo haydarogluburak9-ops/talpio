@@ -93,10 +93,10 @@ export default async function HomePage() {
     <>
       <HomeFeedRedirect />
 
-      <section className="relative overflow-x-clip bg-[#07192D] text-white">
+      <section className="relative isolate overflow-hidden bg-[#07192D] text-white">
         <div className="landing-hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
-        <div className="relative z-10 mx-auto grid w-[calc(100%-3rem)] max-w-[1500px] items-center gap-6 py-8 sm:w-[calc(100%-4rem)] sm:py-10 lg:min-h-[560px] lg:grid-cols-[42%_58%] lg:gap-6 lg:py-6 xl:min-h-[580px]">
-          <div className="hero-copy order-2 flex max-w-[590px] flex-col lg:order-1 lg:justify-center">
+        <div className="relative z-0 mx-auto grid w-[calc(100%-3rem)] max-w-[1500px] items-center gap-8 py-8 sm:w-[calc(100%-4rem)] sm:py-10 lg:min-h-[560px] lg:grid-cols-[42%_58%] lg:gap-6 lg:py-6 xl:min-h-[580px]">
+          <div className="hero-copy order-1 flex max-w-[590px] flex-col lg:justify-center">
             <p className="landing-glass inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium text-white/90">
               <BadgeCheck className="size-3.5 text-[#FF5A0A]" aria-hidden />
               {t('home.heroBadge')}
@@ -161,7 +161,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="order-1 min-w-0 lg:order-2">
+          <div className="order-2 min-w-0 lg:order-2">
             <HeroVisual />
           </div>
         </div>
