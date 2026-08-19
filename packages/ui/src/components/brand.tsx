@@ -6,8 +6,8 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=4';
-const LOCKUP_SRC = '/brand/talpio-lockup.png';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=5';
+const LOCKUP_SRC = '/brand/talpio-lockup.png?v=5';
 
 /** Kare uygulama ikonu — koyu zemin, beyaz Talp + turuncu io. */
 export function BrandMark({
@@ -20,19 +20,19 @@ export function BrandMark({
   alt?: string;
 }) {
   return (
-    <span
-      className={cn(
-        'relative inline-block shrink-0 overflow-hidden rounded-[22%]',
-        className ?? 'size-10',
-      )}
-    >
+    <span className={cn('relative inline-block shrink-0', className ?? 'size-10')}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="block size-full object-contain" draggable={false} />
+      <img
+        src={src}
+        alt={alt}
+        className="block size-full rounded-2xl object-contain"
+        draggable={false}
+      />
     </span>
   );
 }
 
-/** Yatay logo (T + Talpio) — sol bar üstü için. */
+/** Yatay logo (T + Talpio) — açık zemin header. */
 export function BrandLockup({
   className,
   src = LOCKUP_SRC,

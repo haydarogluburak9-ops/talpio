@@ -57,7 +57,7 @@ export function SiteHeader() {
           className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
-          <BrandMark className="size-11 sm:size-12" />
+          <BrandMark className="size-12 sm:size-14" />
         </Link>
 
         {socialMode ? (

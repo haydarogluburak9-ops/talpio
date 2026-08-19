@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { t } from '@/lib/i18n';
 
-const brandLogoClass = 'size-11 sm:size-12';
+const brandLogoClass = 'size-16 sm:size-[4.5rem]';
 
 /**
  * Giriş ve kayıt sayfalarının ortak kabuğu.
