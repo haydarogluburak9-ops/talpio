@@ -20,11 +20,11 @@ import { t } from '@/lib/i18n';
 
 /** Landing hikâye şeridi — gerçekçi profil görselleri (pravatar). */
 const STORY_AVATARS = [
-  { labelKey: 'home.heroStoryYou' as const, src: 'https://i.pravatar.cc/96?img=5', isOwn: true },
-  { labelKey: 'home.heroStoryLabel1' as const, src: 'https://i.pravatar.cc/96?img=47' },
-  { labelKey: 'home.heroStoryLabel2' as const, src: 'https://i.pravatar.cc/96?img=12' },
-  { labelKey: 'home.heroStoryLabel3' as const, src: 'https://i.pravatar.cc/96?img=32' },
-  { labelKey: 'home.heroStoryLabel4' as const, src: 'https://i.pravatar.cc/96?img=68' },
+  { labelKey: 'home.heroStoryYou' as const, src: 'https://i.pravatar.cc/96?img=5', isOwn: true as const },
+  { labelKey: 'home.heroStoryLabel1' as const, src: 'https://i.pravatar.cc/96?img=47', isOwn: false as const },
+  { labelKey: 'home.heroStoryLabel2' as const, src: 'https://i.pravatar.cc/96?img=12', isOwn: false as const },
+  { labelKey: 'home.heroStoryLabel3' as const, src: 'https://i.pravatar.cc/96?img=32', isOwn: false as const },
+  { labelKey: 'home.heroStoryLabel4' as const, src: 'https://i.pravatar.cc/96?img=68', isOwn: false as const },
 ] as const;
 
 /**
