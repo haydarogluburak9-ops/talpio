@@ -20,7 +20,7 @@ export function SiteFooter() {
       <div className="hero-atmosphere pointer-events-none absolute inset-0 opacity-80" aria-hidden />
       <div className="relative z-10 mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div className="flex flex-col gap-3">
-          <BrandMark className="size-14" />
+          <BrandMark className="size-11 sm:size-12" />
           <p className="max-w-xs text-sm leading-relaxed text-brand-100/75 text-balance-safe">
             {t('common.tagline')}
           </p>

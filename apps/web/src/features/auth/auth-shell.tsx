@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { t } from '@/lib/i18n';
 
+const brandLogoClass = 'size-11 sm:size-12';
+
 /**
  * Giriş ve kayıt sayfalarının ortak kabuğu.
  *
@@ -33,7 +35,9 @@ export function AuthShell({
       <aside className="relative hidden overflow-hidden bg-brand-900 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative z-10">
-          <BrandMark className="size-[3.75rem] sm:size-16" />
+          <Link href="/" aria-label={t('common.appName')}>
+            <BrandMark className={brandLogoClass} />
+          </Link>
         </div>
         <div className="relative z-10 flex max-w-sm flex-col gap-4">
           <p className="font-display text-4xl font-semibold leading-[1.1] tracking-tight">
@@ -47,16 +51,15 @@ export function AuthShell({
             {t('nav.feed')}
           </Link>
         </div>
-        <div className="relative z-10">
-          <BrandMark className="size-14 opacity-90" />
-        </div>
       </aside>
 
       <div className="relative flex flex-col justify-center gap-7 px-4 py-10 sm:px-8 sm:py-14 lg:px-14">
         <div className="relative mb-1 overflow-hidden rounded-2xl bg-brand-900 px-5 py-5 text-white lg:hidden">
           <div className="hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative z-10">
-            <BrandMark className="size-14" />
+            <Link href="/" aria-label={t('common.appName')}>
+              <BrandMark className={brandLogoClass} />
+            </Link>
           </div>
         </div>
 
