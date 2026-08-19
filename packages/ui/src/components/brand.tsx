@@ -6,8 +6,8 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=6';
-const LOCKUP_SRC = '/brand/talpio-lockup.png?v=6';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=7';
+const LOCKUP_SRC = '/brand/talpio-lockup.png?v=7';
 
 /** Kare / dikey app ikonu — koyu zemin, beyaz Talp + turuncu io. */
 export function BrandMark({
