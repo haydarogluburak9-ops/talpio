@@ -72,6 +72,8 @@ function SocialBottomNav({
             );
           }
 
+          if (!('href' in item)) return null;
+
           return (
             <li key={item.href}>
               <Link
