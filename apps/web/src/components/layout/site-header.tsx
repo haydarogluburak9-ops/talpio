@@ -1,6 +1,6 @@
 'use client';
 
-import { BrandLockup, cn } from '@talpio/ui';
+import { BrandMark, cn } from '@talpio/ui';
 import { ChevronDown, Menu, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -57,7 +57,7 @@ export function SiteHeader() {
           className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
-          <BrandLockup className="h-11 sm:h-12" />
+          <BrandMark className="size-11 sm:size-12" />
         </Link>
 
         {socialMode ? (
