@@ -108,6 +108,8 @@ export const tr = {
       'Ücretsiz satıcı hesabıyla talepleri görün, teklif verin ve iş takibini yapın.',
     email: 'E-posta',
     password: 'Şifre',
+    showPassword: 'Şifreyi göster',
+    hidePassword: 'Şifreyi gizle',
     passwordConfirmation: 'Şifre tekrarı',
     fullName: 'Ad soyad',
     username: 'Kullanıcı adı',

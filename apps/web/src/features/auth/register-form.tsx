@@ -10,6 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { getLocale, t } from '@/lib/i18n';
 
 import { InterestPicker } from './interest-picker';
+import { PasswordInput } from './password-input';
 import { useRegister } from './use-session';
 import { UsernameField } from './username-field';
 
@@ -150,10 +151,9 @@ export function RegisterForm() {
             error={errors.password?.message}
           >
             {(props) => (
-              <Input
+              <PasswordInput
                 {...props}
                 {...register('password')}
-                type="password"
                 autoComplete="new-password"
                 className={inputClassName}
               />
@@ -161,10 +161,9 @@ export function RegisterForm() {
           </Field>
           <Field label={t('auth.passwordConfirmation')} required error={errors.passwordConfirmation?.message}>
             {(props) => (
-              <Input
+              <PasswordInput
                 {...props}
                 {...register('passwordConfirmation')}
-                type="password"
                 autoComplete="new-password"
                 className={inputClassName}
               />

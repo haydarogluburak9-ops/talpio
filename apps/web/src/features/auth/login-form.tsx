@@ -4,12 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '@talpio/api-client';
 import { Button, Field, Input } from '@talpio/ui';
 import { loginSchema, type LoginInput } from '@talpio/validation';
-import { useForm } from 'react-hook-form';
-
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
 
 import { t } from '@/lib/i18n';
 
+import { PasswordInput } from './password-input';
 import { useLogin } from './use-session';
 
 export function LoginForm() {
@@ -51,7 +51,9 @@ export function LoginForm() {
       </Field>
 
       <Field label={t('auth.password')} required error={errors.password?.message}>
-        {(props) => <Input {...props} {...register('password')} type="password" autoComplete="current-password" />}
+        {(props) => (
+          <PasswordInput {...props} {...register('password')} autoComplete="current-password" />
+        )}
       </Field>
 
       <Link href="/sifremi-unuttum" className="text-sm font-medium text-accent-600 hover:underline">

@@ -106,6 +106,8 @@ export const en: Messages = {
       'With a free seller account see requests, send offers and track your work.',
     email: 'Email',
     password: 'Password',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     passwordConfirmation: 'Confirm password',
     fullName: 'Full name',
     username: 'Username',
