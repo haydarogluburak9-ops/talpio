@@ -21,11 +21,11 @@ export default function LoginScreen() {
 
   const { control, handleSubmit, formState } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { identifier: '', password: '' },
   });
 
   const onSubmit = handleSubmit((values) => {
-    login.mutate({ email: values.email, password: values.password });
+    login.mutate({ identifier: values.identifier, password: values.password });
   });
 
   return (
@@ -48,19 +48,19 @@ export default function LoginScreen() {
       <View style={styles.form}>
         <Controller
           control={control}
-          name="email"
+          name="identifier"
           render={({ field, fieldState }) => (
             <FormField
-              label={t('auth.email')}
+              label={t('auth.loginIdentifier')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={fieldState.error?.message}
-              keyboardType="email-address"
               autoCapitalize="none"
-              autoComplete="email"
-              textContentType="emailAddress"
+              autoComplete="username"
+              textContentType="username"
               returnKeyType="next"
+              placeholder={t('auth.loginIdentifierPlaceholder')}
             />
           )}
         />

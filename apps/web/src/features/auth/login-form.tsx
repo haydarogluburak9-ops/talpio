@@ -21,11 +21,11 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { identifier: '', password: '' },
   });
 
   const onSubmit = handleSubmit((values) => {
-    login.mutate({ email: values.email, password: values.password });
+    login.mutate({ identifier: values.identifier, password: values.password });
   });
 
   return (
@@ -38,14 +38,14 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <Field label={t('auth.email')} required error={errors.email?.message}>
+      <Field label={t('auth.loginIdentifier')} required error={errors.identifier?.message}>
         {(props) => (
           <Input
             {...props}
-            {...register('email')}
-            type="email"
-            autoComplete="email"
-            placeholder="ornek@talpio.com"
+            {...register('identifier')}
+            type="text"
+            autoComplete="username"
+            placeholder={t('auth.loginIdentifierPlaceholder')}
           />
         )}
       </Field>

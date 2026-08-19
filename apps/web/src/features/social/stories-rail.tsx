@@ -3,20 +3,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@talpio/config';
 import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { apiClient } from '@/lib/api';
 import { t } from '@/lib/i18n';
 
+import { useCompose } from './compose-context';
 import { groupStories, StoryViewer } from './story-viewer';
 import { useSocialMe } from './use-social';
 
 export function StoriesRail() {
   const session = useSession();
   const me = useSocialMe(Boolean(session.data));
-  const router = useRouter();
+  const { openCompose } = useCompose();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const stories = useQuery({
@@ -46,7 +46,7 @@ export function StoriesRail() {
             onClick={() => {
               const mine = groups.findIndex((group) => group.author.id === me.data?.id);
               if (mine >= 0) setOpenIndex(mine);
-              else router.push('/akis?compose=story');
+              else openCompose('story');
             }}
             className="flex w-[4.6rem] shrink-0 flex-col items-center gap-1.5"
           >
@@ -73,7 +73,7 @@ export function StoriesRail() {
                 className="absolute right-0 bottom-0 grid size-6 place-items-center rounded-full bg-accent-500 text-white ring-2 ring-surface"
                 onClick={(event) => {
                   event.stopPropagation();
-                  router.push('/akis?compose=story');
+                  openCompose('story');
                 }}
               >
                 <Plus className="size-3.5" />

@@ -13,14 +13,13 @@ export const primaryNav: NavItem[] = [
   { href: '/satici/panel', labelKey: 'nav.myBusiness' },
 ];
 
-/** Giriş öncesi ana sayfa üst menüsü (mockup). */
+/** Giriş öncesi ana sayfa üst menüsü — sosyal ticaret odaklı. */
 export const landingNav: NavItem[] = [
+  { href: '/akis', labelKey: 'nav.feed' },
   { href: '/kesfet', labelKey: 'nav.discover' },
-  { href: '/kategoriler', labelKey: 'nav.deals' },
-  { href: '/tedarik', labelKey: 'nav.supplyRequests' },
-  { href: '/satici/panel', labelKey: 'nav.myBusiness' },
-  { href: '/akis', labelKey: 'nav.campaigns' },
-  { href: '/nasil-calisir', labelKey: 'nav.resources' },
+  { href: '/kategoriler', labelKey: 'nav.categories' },
+  { href: '/tedarik', labelKey: 'nav.newSupplyRequest' },
+  { href: '/nasil-calisir', labelKey: 'nav.howItWorks' },
 ];
 
 export const footerNav: { titleKey: string; items: NavItem[] }[] = [

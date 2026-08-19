@@ -99,20 +99,35 @@ describe('registerSchema', () => {
 });
 
 describe('loginSchema', () => {
-  it('geçerli girişi kabul eder', () => {
-    const result = loginSchema.safeParse({ email: 'ayse@example.com', password: 'x' });
+  it('e-posta ile geçerli girişi kabul eder', () => {
+    const result = loginSchema.safeParse({ identifier: 'ayse@example.com', password: 'x' });
     expect(result.success).toBe(true);
   });
 
+  it('kullanıcı adı ile geçerli girişi kabul eder', () => {
+    const result = loginSchema.safeParse({ identifier: '@ayse.yilmaz', password: 'x' });
+    expect(result.success).toBe(true);
+  });
+
+  it('telefon ile geçerli girişi kabul eder', () => {
+    const result = loginSchema.safeParse({ identifier: '+905321234567', password: 'x' });
+    expect(result.success).toBe(true);
+  });
+
+  it('boş giriş bilgisini reddeder', () => {
+    const result = loginSchema.safeParse({ identifier: '', password: 'x' });
+    expect(result.success).toBe(false);
+  });
+
   it('boş şifreyi reddeder', () => {
-    const result = loginSchema.safeParse({ email: 'ayse@example.com', password: '' });
+    const result = loginSchema.safeParse({ identifier: 'ayse@example.com', password: '' });
     expect(result.success).toBe(false);
   });
 
   // Girişte karmaşıklık kuralı uygulanmaz: eski parolalar farklı politikalarla
   // oluşturulmuş olabilir, doğrulama sunucudaki özetle karşılaştırma ile yapılır.
   it('basit şifreyle girişe izin verir', () => {
-    const result = loginSchema.safeParse({ email: 'ayse@example.com', password: 'abc' });
+    const result = loginSchema.safeParse({ identifier: 'ayse@example.com', password: 'abc' });
     expect(result.success).toBe(true);
   });
 });

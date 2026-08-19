@@ -64,7 +64,7 @@ export function DiscoverFeed() {
       </form>
 
       <TrendingRail compact />
-      <SuggestedBusinesses />
+      <SuggestedBusinesses withIntro />
 
       <div className="px-0.5">
         <h2 className="font-display text-sm font-semibold text-brand-900 dark:text-foreground">

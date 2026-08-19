@@ -2,16 +2,15 @@
 
 import { ApiError } from '@talpio/api-client';
 import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import { BadgePercent, ClipboardPlus, ImagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
 
+import { useCompose } from './compose-context';
 import { PostCard } from './post-card';
-import { PostComposer } from './post-composer';
 import { StoriesRail } from './stories-rail';
 import { TrendingRail } from './trending-rail';
 import { useSocialFeed } from './use-social';
@@ -45,59 +44,22 @@ function feedErrorDescription(error: unknown): string {
   return t('status.errorMessage');
 }
 
-function QuickActions() {
-  return (
-    <div className="grid grid-cols-3 gap-2">
-      {(
-        [
-          {
-            href: '/tedarik',
-            label: t('social.quickRequest'),
-            icon: ClipboardPlus,
-            tone: 'text-warning-700 bg-warning-50',
-          },
-          {
-            href: '/akis?compose=promo',
-            label: t('social.quickDeal'),
-            icon: BadgePercent,
-            tone: 'text-accent-600 bg-accent-50',
-          },
-          {
-            href: '/akis?compose=media',
-            label: t('social.quickMedia'),
-            icon: ImagePlus,
-            tone: 'text-success-700 bg-success-50',
-          },
-        ] as const
-      ).map((item) => {
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="social-panel flex items-center gap-2.5 px-3 py-3 text-sm font-semibold text-foreground hover:border-accent-500/30"
-          >
-            <span className={cn('grid size-9 place-items-center rounded-xl', item.tone)}>
-              <Icon className="size-4" aria-hidden />
-            </span>
-            <span className="leading-tight">{item.label}</span>
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
 export function FeedList() {
   const session = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const compose = searchParams.get('compose');
-  const expand =
-    compose === 'promo' || compose === 'media' || compose === 'story' ? compose : null;
+  const { openCompose } = useCompose();
   const loggedIn = Boolean(session.data);
   const feed = useSocialFeed(loggedIn);
   const [tab, setTab] = useState<FeedTab>('all');
+
+  useEffect(() => {
+    if (compose === 'promo' || compose === 'media' || compose === 'story') {
+      openCompose(compose);
+      router.replace('/akis', { scroll: false });
+    }
+  }, [compose, openCompose, router]);
 
   const allPosts = useMemo(() => {
     return (feed.data?.items ?? [])
@@ -151,10 +113,6 @@ export function FeedList() {
         <p className="mt-1 text-sm text-foreground-muted">{t('social.feedSubtitle')}</p>
       </div>
       <StoriesRail />
-      <PostComposer
-        expand={expand}
-        onExpandConsumed={() => router.replace('/akis', { scroll: false })}
-      />
       {feed.isPending ? <ListSkeleton rows={3} /> : null}
       {feed.isError ? (
         <div className="social-panel p-4">
@@ -170,7 +128,6 @@ export function FeedList() {
           <div className="xl:hidden">
             <TrendingRail compact />
           </div>
-          <QuickActions />
 
           <div className="social-panel overflow-x-auto px-2 py-1">
             <div className="flex min-w-max gap-1" role="tablist" aria-label={t('social.feedTitle')}>

@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { HeroVisual } from '@/components/home/hero-visual';
@@ -85,7 +86,13 @@ const partnerPlaceholders = [
   'Marka 08',
 ] as const;
 
-const proofAvatars = ['B', 'E', 'A', 'M', 'S'] as const;
+const proofAvatars = [
+  'https://i.pravatar.cc/72?img=5',
+  'https://i.pravatar.cc/72?img=47',
+  'https://i.pravatar.cc/72?img=12',
+  'https://i.pravatar.cc/72?img=32',
+  'https://i.pravatar.cc/72?img=68',
+] as const;
 
 export default async function HomePage() {
   await applyRequestLocale();
@@ -136,21 +143,19 @@ export default async function HomePage() {
 
             <div className="mt-6 flex items-center gap-3">
               <div className="flex -space-x-2">
-                {proofAvatars.map((initial, index) => (
+                {proofAvatars.map((src) => (
                   <span
-                    key={initial}
-                    className={cn(
-                      'grid size-9 place-items-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white ring-2 ring-[#07192D]',
-                      [
-                        'from-[#FF8A3D] to-[#C2410C]',
-                        'from-[#64748B] to-[#1E293B]',
-                        'from-emerald-400 to-emerald-800',
-                        'from-sky-400 to-sky-800',
-                        'from-amber-300 to-amber-700',
-                      ][index],
-                    )}
+                    key={src}
+                    className="relative size-9 overflow-hidden rounded-full ring-2 ring-[#07192D]"
                   >
-                    {initial}
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="36px"
+                      className="object-cover"
+                      unoptimized
+                    />
                   </span>
                 ))}
               </div>

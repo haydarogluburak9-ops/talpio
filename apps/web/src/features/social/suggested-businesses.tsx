@@ -1,13 +1,20 @@
 'use client';
 
 import { Button } from '@talpio/ui';
+import { Store } from 'lucide-react';
 import Link from 'next/link';
 
 import { localeTag, t } from '@/lib/i18n';
 
 import { useDiscoverFeed, useFollow } from './use-social';
 
-export function SuggestedBusinesses({ compact = false }: { compact?: boolean }) {
+export function SuggestedBusinesses({
+  compact = false,
+  withIntro = false,
+}: {
+  compact?: boolean;
+  withIntro?: boolean;
+}) {
   const feed = useDiscoverFeed(true);
   const posts = (feed.data?.items ?? [])
     .map((item) => item.post?.author)
@@ -33,6 +40,32 @@ export function SuggestedBusinesses({ compact = false }: { compact?: boolean }) 
 
   if (suggested.length === 0 && newest.length === 0) return null;
 
+  if (withIntro && suggested.length > 0) {
+    return (
+      <div className="social-panel p-5">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="grid size-8 place-items-center rounded-lg bg-violet-50 text-violet-600">
+            <Store className="size-4" aria-hidden />
+          </span>
+          <p className="text-sm font-semibold tracking-tight text-brand-900 dark:text-foreground">
+            {t('social.railBusinessTitle')}
+          </p>
+        </div>
+        <p className="text-sm leading-relaxed text-foreground-muted">{t('social.railBusinessBody')}</p>
+        <ul className="mt-4 space-y-3">
+          {suggested.map((author) => (
+            <SuggestedRow
+              key={author.id}
+              username={author.username}
+              name={author.displayName}
+              avatarUrl={author.avatarUrl}
+            />
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {suggested.length > 0 ? (
@@ -53,7 +86,7 @@ function BusinessBlock({
   authors,
 }: {
   title: string;
-  authors: Array<{ id: string; username: string; displayName: string }>;
+  authors: Array<{ id: string; username: string; displayName: string; avatarUrl?: string | null }>;
 }) {
   return (
     <div className="social-panel p-5">
@@ -62,7 +95,12 @@ function BusinessBlock({
       </p>
       <ul className="mt-3 space-y-3">
         {authors.map((author) => (
-          <SuggestedRow key={author.id} username={author.username} name={author.displayName} />
+          <SuggestedRow
+            key={author.id}
+            username={author.username}
+            name={author.displayName}
+            avatarUrl={author.avatarUrl}
+          />
         ))}
       </ul>
     </div>
@@ -82,16 +120,29 @@ function avatarTone(value: string) {
   return AVATAR_TONES[value.length % AVATAR_TONES.length];
 }
 
-function SuggestedRow({ username, name }: { username: string; name: string }) {
+function SuggestedRow({
+  username,
+  name,
+  avatarUrl,
+}: {
+  username: string;
+  name: string;
+  avatarUrl?: string | null;
+}) {
   const follow = useFollow(username);
 
   return (
     <li className="flex items-center gap-3">
       <Link
         href={`/u/${username}`}
-        className={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-bold text-white ${avatarTone(username)}`}
+        className={`relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full ${avatarUrl ? '' : `text-xs font-bold text-white ${avatarTone(username)}`}`}
       >
-        {name.slice(0, 1).toLocaleUpperCase(localeTag())}
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt="" className="size-full object-cover" />
+        ) : (
+          name.slice(0, 1).toLocaleUpperCase(localeTag())
+        )}
       </Link>
       <div className="min-w-0 flex-1">
         <Link href={`/u/${username}`} className="block truncate text-sm font-semibold hover:underline">

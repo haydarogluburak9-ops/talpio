@@ -36,7 +36,7 @@ export type RegisterInput = z.input<typeof registerSchema>;
 export type RegisterPayload = z.output<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  email: emailSchema,
+  identifier: z.string().trim().min(1, 'Giriş bilgisi zorunludur').max(254),
   password: z.string().min(1, 'Şifre zorunludur'),
   /** Cihaz bazlı oturum yönetimi için istemcinin ürettiği kalıcı kimlik. */
   deviceId: z.string().trim().max(128).optional(),

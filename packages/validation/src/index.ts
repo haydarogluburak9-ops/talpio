@@ -1,4 +1,5 @@
 export * from './primitives';
+export * from './login-identifier';
 export * from './auth';
 export * from './job';
 export * from './offer';

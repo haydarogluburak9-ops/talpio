@@ -33,11 +33,12 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 border-b',
+        'sticky top-0 z-50',
+        !landingMode && 'border-b',
         socialMode
           ? 'border-border/70 bg-white shadow-[0_1px_0_rgb(2_27_50_/_0.05)] dark:bg-white'
           : landingMode
-            ? 'border-[#E8EBF0] bg-white text-[#0D1B2A]'
+            ? 'bg-white text-[#0D1B2A]'
             : 'border-border/60 bg-surface/80 shadow-[0_1px_0_rgb(2_27_50_/_0.04)] backdrop-blur-xl',
       )}
     >
@@ -47,24 +48,28 @@ export function SiteHeader() {
           socialMode
             ? 'max-w-none lg:px-5'
             : landingMode
-              ? 'h-[76px] max-w-[1500px] px-6 sm:px-10 lg:px-12'
+              ? 'h-[84px] max-w-[1500px] px-6 sm:px-10 lg:px-12'
               : 'max-w-6xl sm:px-6 lg:px-8',
         )}
       >
         <Link
           href={socialMode ? '/akis' : '/'}
-          className="inline-flex items-center gap-2 overflow-visible"
+          className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
           {socialMode ? (
-            <BrandLockup className="h-8 max-w-[9.5rem]" />
+            <BrandLockup className="h-11 sm:h-12" />
           ) : landingMode ? (
-            <BrandLockup
-              src="/brand/talpio-lockup-light.png"
-              className="h-8 max-w-[11.5rem] sm:h-[34px]"
+            // PNG doğrudan — paket derlemesine bağlı kalmadan boyut/cache kontrolü.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/brand/talpio-lockup-light.png?v=3"
+              alt="Talpio"
+              className="block h-14 w-auto sm:h-16 lg:h-[4.75rem]"
+              draggable={false}
             />
           ) : (
-            <BrandMark className="size-10" />
+            <BrandMark className="size-12 sm:size-[3.25rem]" />
           )}
         </Link>
 

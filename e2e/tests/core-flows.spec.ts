@@ -4,9 +4,9 @@ const password = 'Demo1234!';
 
 type Envelope<T> = { data: T };
 
-async function login(request: APIRequestContext, email: string) {
+async function login(request: APIRequestContext, identifier: string) {
   const response = await request.post('/api/v1/auth/login', {
-    data: { email, password },
+    data: { identifier, password },
   });
   expect(response.ok(), await response.text()).toBeTruthy();
   const body = (await response.json()) as Envelope<{ tokens: { accessToken: string } }>;
@@ -159,7 +159,7 @@ test.describe('Talpio production hardening e2e', () => {
     expect([200, 204].includes(removed.status()), await removed.text()).toBeTruthy();
 
     const replay = await request.post('/api/v1/auth/login', {
-      data: { email, password },
+      data: { identifier: email, password },
     });
     expect(replay.ok()).toBeFalsy();
   });

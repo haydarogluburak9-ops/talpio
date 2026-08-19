@@ -107,6 +107,8 @@ export const tr = {
     registerProviderDescription:
       'Ücretsiz satıcı hesabıyla talepleri görün, teklif verin ve iş takibini yapın.',
     email: 'E-posta',
+    loginIdentifier: 'Kullanıcı adı, e-posta veya telefon',
+    loginIdentifierPlaceholder: '@kullanici, ornek@talpio.com veya +905321234567',
     password: 'Şifre',
     showPassword: 'Şifreyi göster',
     hidePassword: 'Şifreyi gizle',
@@ -855,6 +857,7 @@ export const tr = {
     analyticsDeals: 'Fırsat',
     composerPlaceholder: 'Ne paylaşmak istersiniz?',
     composerPrompt: 'Ne düşünüyorsunuz? Fiyat, kampanya veya fotoğraf paylaşın…',
+    composeSheetTitle: 'Paylaş veya oluştur',
     searchPlaceholder: 'İşletme, ürün veya kategori ara',
     publish: 'Paylaş',
     publishing: 'Paylaşılıyor…',

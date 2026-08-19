@@ -31,9 +31,11 @@ type BusinessRow = {
 export function PostComposer({
   expand,
   onExpandConsumed,
+  onPublished,
 }: {
   expand?: 'media' | 'promo' | 'story' | null;
   onExpandConsumed?: () => void;
+  onPublished?: () => void;
 } = {}) {
   const session = useSession();
   const me = useSocialMe(Boolean(session.data));
@@ -178,7 +180,10 @@ export function PostComposer({
                 }
               : {}),
           },
-          { onSuccess: reset },
+          { onSuccess: () => {
+              reset();
+              onPublished?.();
+            } },
         );
       }}
     >

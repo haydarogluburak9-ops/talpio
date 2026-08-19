@@ -105,6 +105,8 @@ export const en: Messages = {
     registerProviderDescription:
       'With a free seller account see requests, send offers and track your work.',
     email: 'Email',
+    loginIdentifier: 'Username, email, or phone',
+    loginIdentifierPlaceholder: '@username, you@example.com or +14155552671',
     password: 'Password',
     showPassword: 'Show password',
     hidePassword: 'Hide password',
@@ -844,6 +846,7 @@ export const en: Messages = {
     analyticsDeals: 'Deals',
     composerPlaceholder: 'What would you like to share?',
     composerPrompt: 'What’s on your mind? Share a price, deal, or photo…',
+    composeSheetTitle: 'Share or create',
     searchPlaceholder: 'Search businesses, products, or categories',
     publish: 'Post',
     publishing: 'Posting…',

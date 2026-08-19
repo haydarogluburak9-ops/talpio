@@ -11,6 +11,7 @@ import { ProfilesService } from '@modules/social/profiles.service';
 import { toCurrentUser, userInclude, type UserRow } from '@modules/users/user.mapper';
 import type { DevicePlatform, User } from '@/generated/prisma/client';
 import { PlatformRoleCode, isMarketplaceRole, type UserRole } from '@talpio/types';
+import { parseLoginIdentifier, type ParsedLoginIdentifier } from '@talpio/validation';
 import { SocialProfileKind } from '@/generated/prisma/client';
 
 import type { LoginDto } from './dto/login.dto';
@@ -113,14 +114,11 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, device: DeviceContext): Promise<AuthSession> {
-    const email = normalizeEmail(dto.email);
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-      include: userInclude,
-    });
+    const parsed = parseLoginIdentifier(dto.identifier);
+    const user = await this.findUserForLogin(parsed);
 
     // Kullanıcı yoksa da parola doğrulama maliyeti ödenir; aksi halde yanıt
-    // süresi farkı hangi e-postaların kayıtlı olduğunu ele verir.
+    // süresi farkı hangi hesapların kayıtlı olduğunu ele verir.
     if (!user || !user.passwordHash) {
       await this.passwords.verify(DUMMY_HASH, dto.password);
       throw invalidCredentials();
@@ -172,6 +170,29 @@ export class AuthService {
       userAgent: device.userAgent,
     });
     return session;
+  }
+
+  private async findUserForLogin(parsed: ParsedLoginIdentifier): Promise<UserRow | null> {
+    if (parsed.kind === 'email') {
+      return this.prisma.user.findUnique({
+        where: { email: parsed.value },
+        include: userInclude,
+      });
+    }
+
+    if (parsed.kind === 'phone') {
+      return this.prisma.user.findUnique({
+        where: { phone: parsed.value },
+        include: userInclude,
+      });
+    }
+
+    const profile = await this.prisma.socialProfile.findFirst({
+      where: { username: parsed.value, deletedAt: null },
+      include: { user: { include: userInclude } },
+    });
+
+    return profile?.user ?? null;
   }
 
   /**
@@ -334,7 +355,7 @@ function normalizeEmail(email: string): string {
 function invalidCredentials(): AppException {
   // Hangi alanın hatalı olduğu belirtilmez; hesap sayımını zorlaştırır.
   return new AppException('INVALID_CREDENTIALS', {
-    message: 'E-posta veya şifre hatalı.',
+    message: 'Giriş bilgisi veya şifre hatalı.',
   });
 }
 

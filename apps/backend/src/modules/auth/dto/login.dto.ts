@@ -1,14 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-
-import { normalizeEmail } from './register.dto';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @ApiProperty({ example: 'kullanici@talpio.com' })
-  @IsEmail({}, { message: 'Geçerli bir e-posta adresi girin.' })
-  @Transform(normalizeEmail)
-  email!: string;
+  @ApiProperty({
+    example: 'kullanici@talpio.com',
+    description: 'Kullanıcı adı (@handle), e-posta veya E.164 telefon numarası',
+  })
+  @IsString({ message: 'Giriş bilgisi zorunludur.' })
+  @MinLength(1, { message: 'Giriş bilgisi zorunludur.' })
+  @MaxLength(254)
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
+  identifier!: string;
 
   // Burada karmaşıklık kuralı uygulanmaz: mevcut parolalar farklı politikalarla
   // oluşturulmuş olabilir, tek sınır kaba kuvvet yükünü sınırlamaktır.
