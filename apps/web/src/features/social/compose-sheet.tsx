@@ -7,12 +7,12 @@ import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
 
 import { useCompose } from './compose-context';
+import { ComposeMenu } from './quick-actions';
 import { PostComposer } from './post-composer';
-import { QuickActions } from './quick-actions';
 
 export function ComposeSheet() {
   const session = useSession();
-  const { open, expand, closeCompose } = useCompose();
+  const { open, view, expand, showComposeMenu, closeCompose } = useCompose();
   const loggedIn = Boolean(session.data);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function ComposeSheet() {
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/70 bg-white/95 px-4 py-3 backdrop-blur dark:bg-[#0D1B2A]/95">
           <h2 id="compose-sheet-title" className="text-base font-semibold text-brand-900 dark:text-foreground">
-            {t('social.composeSheetTitle')}
+            {view === 'menu' ? t('social.composeMenuTitle') : t('social.composeSheetTitle')}
           </h2>
           <button
             type="button"
@@ -59,8 +59,20 @@ export function ComposeSheet() {
         </div>
 
         <div className="flex flex-col gap-4 p-4">
-          <PostComposer expand={expand} onPublished={closeCompose} />
-          <QuickActions onNavigate={closeCompose} />
+          {view === 'menu' ? (
+            <ComposeMenu onNavigate={closeCompose} />
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={showComposeMenu}
+                className="self-start text-sm font-medium text-accent-600 hover:underline"
+              >
+                ← {t('common.back')}
+              </button>
+              <PostComposer expand={expand} onPublished={closeCompose} />
+            </>
+          )}
         </div>
       </div>
     </div>

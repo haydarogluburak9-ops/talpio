@@ -61,12 +61,12 @@ function SocialBottomNav({
                 <button
                   type="button"
                   onClick={() => openCompose()}
-                  className="flex min-w-[4.25rem] flex-col items-center gap-0.5 rounded-lg px-2 py-1 text-[11px] font-medium -mt-4 text-accent-600"
+                  aria-label={t('social.composeMenuTitle')}
+                  className="-mt-4 flex min-w-[4.25rem] flex-col items-center rounded-lg px-2 py-1"
                 >
                   <span className="grid size-12 place-items-center rounded-2xl bg-accent-500 text-white shadow-[0_8px_20px_rgb(255_106_0_/_0.35)]">
                     <Icon className="size-6" aria-hidden />
                   </span>
-                  {t(item.labelKey)}
                 </button>
               </li>
             );

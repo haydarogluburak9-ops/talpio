@@ -43,7 +43,8 @@ export default function CustomerTabsLayout() {
       <Tabs.Screen
         name="create"
         options={{
-          title: t('nav.newRequest'),
+          title: '',
+          headerShown: false,
           tabBarIcon: () => (
             <View
               style={{
