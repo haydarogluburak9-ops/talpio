@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { t } from '@/lib/i18n';
 
-const brandLogoClass = 'h-14 w-14 sm:h-16 sm:w-16';
+const brandLogoClass = 'h-12 w-12 sm:h-14 sm:w-14';
 
 /**
  * Giriş ve kayıt sayfalarının ortak kabuğu.
@@ -54,13 +54,10 @@ export function AuthShell({
       </aside>
 
       <div className="relative flex flex-col justify-center gap-7 px-4 py-10 sm:px-8 sm:py-14 lg:px-14">
-        <div className="relative mb-1 overflow-hidden rounded-2xl bg-brand-900 px-5 py-5 text-white lg:hidden">
-          <div className="hero-atmosphere pointer-events-none absolute inset-0" aria-hidden />
-          <div className="relative z-10">
-            <Link href="/" aria-label={t('common.appName')}>
-              <BrandMark className={brandLogoClass} />
-            </Link>
-          </div>
+        <div className="lg:hidden">
+          <Link href="/" aria-label={t('common.appName')}>
+            <BrandMark className={brandLogoClass} />
+          </Link>
         </div>
 
         <div className="flex flex-col gap-2">

@@ -57,7 +57,7 @@ export function SiteHeader() {
           className="inline-flex shrink-0 items-center"
           aria-label={t('common.appName')}
         >
-          <BrandLockup className="h-6 sm:h-7" />
+          <BrandLockup className="h-7 sm:h-8" />
         </Link>
 
         {socialMode ? (
