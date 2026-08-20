@@ -9,12 +9,10 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { getLocale, t } from '@/lib/i18n';
 
+import { authCheckboxClassName, authCompactInputClassName } from './auth-form-styles';
 import { PasswordInput } from './password-input';
 import { useRegister } from './use-session';
 import { UsernameField } from './username-field';
-
-const inputClassName =
-  'h-9 rounded-lg border-border/70 px-3 text-sm shadow-soft transition-[border-color,box-shadow] focus:border-brand-400 focus:ring-2 focus:ring-brand-200/50 dark:focus:border-brand-500 dark:focus:ring-brand-800/50';
 
 export function RegisterForm() {
   const signUp = useRegister();
@@ -67,7 +65,7 @@ export function RegisterForm() {
               {...props}
               {...register('fullName')}
               autoComplete="name"
-              className={inputClassName}
+              className={authCompactInputClassName}
               onBlur={(event) => {
                 void register('fullName').onBlur(event);
                 if (!getValues('username')?.trim() && getValues('fullName')?.trim()) {
@@ -86,7 +84,7 @@ export function RegisterForm() {
               {...register('email')}
               type="email"
               autoComplete="email"
-              className={inputClassName}
+              className={authCompactInputClassName}
             />
           )}
         </Field>
@@ -110,6 +108,7 @@ export function RegisterForm() {
                 }}
                 error={fieldState.error?.message}
                 compact
+                inputClassName={authCompactInputClassName}
               />
             )}
           />
@@ -128,7 +127,7 @@ export function RegisterForm() {
               type="tel"
               autoComplete="tel"
               placeholder="+905321234567"
-              className={inputClassName}
+              className={authCompactInputClassName}
             />
           )}
         </Field>
@@ -139,7 +138,8 @@ export function RegisterForm() {
               {...props}
               {...register('password')}
               autoComplete="new-password"
-              className={inputClassName}
+              wrapperClassName="[&_button]:text-[#667085] [&_button:hover]:text-[#111827]"
+              className={authCompactInputClassName}
             />
           )}
         </Field>
@@ -154,21 +154,22 @@ export function RegisterForm() {
               {...props}
               {...register('passwordConfirmation')}
               autoComplete="new-password"
-              className={inputClassName}
+              wrapperClassName="[&_button]:text-[#667085] [&_button:hover]:text-[#111827]"
+              className={authCompactInputClassName}
             />
           )}
         </Field>
       </section>
 
       <section className="flex flex-col gap-2">
-        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/80 bg-surface px-3 py-2.5">
+        <label className={authCheckboxClassName}>
           <input
             {...register('acceptedTerms')}
             type="checkbox"
             aria-invalid={errors.acceptedTerms ? true : undefined}
             className="mt-0.5 size-4 shrink-0 accent-accent-500"
           />
-          <span className="text-xs leading-snug text-foreground">{t('auth.acceptTerms')}</span>
+          <span className="text-xs leading-snug text-[#344054]">{t('auth.acceptTerms')}</span>
         </label>
         {errors.acceptedTerms?.message ? (
           <p role="alert" className="text-xs font-medium text-danger-500">
@@ -176,13 +177,13 @@ export function RegisterForm() {
           </p>
         ) : null}
 
-        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border/80 bg-surface px-3 py-2.5">
+        <label className={authCheckboxClassName}>
           <input
             {...register('acceptedMarketing')}
             type="checkbox"
             className="mt-0.5 size-4 shrink-0 accent-accent-500"
           />
-          <span className="text-xs leading-snug text-foreground-muted">{t('auth.acceptMarketing')}</span>
+          <span className="text-xs leading-snug text-[#667085]">{t('auth.acceptMarketing')}</span>
         </label>
       </section>
 

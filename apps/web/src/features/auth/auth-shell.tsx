@@ -7,7 +7,7 @@ import { t } from '@/lib/i18n';
 
 import { AuthHeroVisual } from './auth-hero-visual';
 import { AuthLegalFooter } from './auth-legal-footer';
-import { authOutlineButtonClassName } from './auth-form-styles';
+import { authOutlineButtonClassName, authFormLightScopeClassName } from './auth-form-styles';
 
 const brandLockupClass = 'h-7 sm:h-8';
 
@@ -101,6 +101,7 @@ export function AuthShell({
             <div
               className={cn(
                 'flex w-full flex-col',
+                authFormLightScopeClassName,
                 compact ? 'max-w-[520px] gap-2.5' : 'max-w-[350px] gap-4',
               )}
             >
@@ -112,7 +113,7 @@ export function AuthShell({
                 {eyebrow ? (
                   <p className="text-[10px] font-semibold tracking-[0.14em] text-accent-600 uppercase">{eyebrow}</p>
                 ) : null}
-                <h1 className={cn('text-[#262626]', compact ? 'text-base font-semibold' : 'text-[17px] font-normal')}>
+                <h1 className={cn('font-semibold text-[#111827]', compact ? 'text-base' : 'text-[17px] font-normal text-[#262626]')}>
                   {title}
                 </h1>
                 {description && !compact ? (

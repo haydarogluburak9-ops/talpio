@@ -16,12 +16,14 @@ export function UsernameField({
   onBlur,
   error,
   compact = false,
+  inputClassName,
 }: {
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   error?: string;
   compact?: boolean;
+  inputClassName?: string;
 }) {
   const [debounced, setDebounced] = useState('');
 
@@ -54,7 +56,7 @@ export function UsernameField({
     >
       {(props) => (
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-muted">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[#667085]">
             @
           </span>
           <Input
@@ -68,10 +70,11 @@ export function UsernameField({
             spellCheck={false}
             aria-invalid={Boolean(error || showTaken) || undefined}
             className={cn(
-              compact
-                ? 'h-9 rounded-lg border-border/70 py-2 pl-7 pr-9 text-sm shadow-soft'
-                : 'h-12 rounded-xl border-border/70 py-2 pl-8 pr-10 text-[15px] shadow-soft',
-              'transition-[border-color,box-shadow] focus:border-brand-400 focus:ring-2 focus:ring-brand-200/50 dark:focus:border-brand-500 dark:focus:ring-brand-800/50',
+              inputClassName ??
+                (compact
+                  ? 'h-9 rounded-lg border-[#DBDBDB] bg-white py-2 pl-7 pr-9 text-sm text-[#111827] shadow-none'
+                  : 'h-12 rounded-xl border-border/70 bg-white py-2 pl-8 pr-10 text-[15px] text-[#111827] shadow-soft'),
+              'transition-[border-color,box-shadow] focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200/50',
               showTaken && 'border-danger-500 focus:border-danger-500 focus:ring-danger-500/20',
               showAvailable && 'border-success-500 focus:border-success-500 focus:ring-success-500/20',
             )}
