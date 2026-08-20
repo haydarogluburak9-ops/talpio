@@ -1,13 +1,21 @@
+'use client';
+
+import { useSyncExternalStore } from 'react';
+
+import { readIsDark, subscribeToTheme } from '../lib/theme-mode';
 import { cn } from '../lib/cn';
 
 /**
- * Talpio marka varlıkları (kullanıcı logoları).
- * - Birincil logo: `/brand/talpio-logo.png` — app ikonu (BrandMark)
- * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
+ * Talpio marka varlıkları.
+ * - Açık zemin: lacivert Talp + turuncu io
+ * - Koyu zemin / koyu tema: beyaz Talp + turuncu io
  */
 
 const APP_ICON_SRC = '/brand/talpio-logo.png?v=16';
-const LOCKUP_SRC = '/brand/talpio-lockup.png?v=11';
+const LOCKUP_LIGHT_SRC = '/brand/talpio-lockup-light.png?v=12';
+const LOCKUP_DARK_SRC = '/brand/talpio-lockup-dark.png?v=12';
+
+export type BrandLockupVariant = 'auto' | 'light' | 'dark';
 
 /** App ikonu — çerçevesiz PNG, şeffaf zemin. */
 export function BrandMark({
@@ -34,16 +42,21 @@ export function BrandMark({
   );
 }
 
-/** Yatay logo (T + Talpio) — beyaz zemin header. */
+/** Yatay logo (T + Talpio). */
 export function BrandLockup({
   className,
-  src = LOCKUP_SRC,
   alt = 'Talpio',
+  variant = 'auto',
 }: {
   className?: string;
-  src?: string;
   alt?: string;
+  /** auto: tema; light: lacivert metin; dark: beyaz metin (koyu zemin). */
+  variant?: BrandLockupVariant;
 }) {
+  const isDarkTheme = useSyncExternalStore(subscribeToTheme, readIsDark, () => false);
+  const useDarkAsset = variant === 'dark' || (variant === 'auto' && isDarkTheme);
+  const src = useDarkAsset ? LOCKUP_DARK_SRC : LOCKUP_LIGHT_SRC;
+
   return (
     <span className={cn('inline-flex shrink-0 items-center', className ?? 'h-7 sm:h-8')}>
       {/* eslint-disable-next-line @next/next/no-img-element */}

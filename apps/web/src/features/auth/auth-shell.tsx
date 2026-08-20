@@ -39,7 +39,7 @@ export function AuthShell({
         <aside className="relative hidden min-h-0 flex-1 flex-col justify-center py-10 lg:flex lg:max-w-[580px] lg:py-16">
           <div className="mb-10">
             <Link href="/" aria-label={t('common.appName')}>
-              <BrandLockup className={brandLockupClass} />
+              <BrandLockup className={brandLockupClass} variant="light" />
             </Link>
           </div>
 
@@ -58,7 +58,7 @@ export function AuthShell({
         <div className="relative flex w-full flex-col lg:w-[350px] lg:shrink-0">
           <div className="flex items-center justify-between px-4 py-4 lg:hidden">
             <Link href="/" aria-label={t('common.appName')}>
-              <BrandLockup className={brandLockupClass} />
+              <BrandLockup className={brandLockupClass} variant="light" />
             </Link>
             <LanguageSwitcher variant="landing" />
           </div>
