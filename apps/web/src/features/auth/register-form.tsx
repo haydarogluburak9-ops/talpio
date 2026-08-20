@@ -9,7 +9,6 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { getLocale, t } from '@/lib/i18n';
 
-import { InterestPicker } from './interest-picker';
 import { PasswordInput } from './password-input';
 import { useRegister } from './use-session';
 import { UsernameField } from './username-field';
@@ -37,7 +36,6 @@ export function RegisterForm() {
       password: '',
       passwordConfirmation: '',
       locale: getLocale(),
-      interestCategoryIds: [],
       acceptedMarketing: false,
     },
   });
@@ -49,7 +47,6 @@ export function RegisterForm() {
       fullName: values.fullName,
       username: values.username,
       locale: getLocale(),
-      interestCategoryIds: values.interestCategoryIds,
       acceptedMarketing: values.acceptedMarketing === true,
       ...(values.phone ? { phone: values.phone } : {}),
     });
@@ -171,18 +168,6 @@ export function RegisterForm() {
           </Field>
         </div>
       </section>
-
-      <Controller
-        control={control}
-        name="interestCategoryIds"
-        render={({ field }) => (
-          <InterestPicker
-            selected={field.value ?? []}
-            onChange={field.onChange}
-            error={errors.interestCategoryIds?.message}
-          />
-        )}
-      />
 
       <section className="flex flex-col gap-3">
         <p className="font-display text-xs font-semibold tracking-[0.16em] text-accent-600 uppercase">

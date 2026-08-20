@@ -21,9 +21,9 @@ export function isAppShellPath(pathname: string): boolean {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
-/** Giriş, kayıt ve şifre akışı — koyu panelde dikey app logosu kullanılır. */
+/** Giriş, kayıt, şifre ve ilgi alanı onboarding. */
 export function isAuthPath(pathname: string): boolean {
-  const roots = ['/giris', '/kayit', '/sifremi-unuttum', '/sifre-sifirla', '/dogrula-eposta'];
+  const roots = ['/giris', '/kayit', '/sifremi-unuttum', '/sifre-sifirla', '/dogrula-eposta', '/ilgi-alanlari'];
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 

@@ -89,12 +89,12 @@ describe('registerSchema', () => {
     expect(result.data?.phone).toBeUndefined();
   });
 
-  it('üçten az ilgi alanını reddeder', () => {
+  it('ilgi alanı olmadan kaydı kabul eder', () => {
     const result = registerSchema.safeParse({
       ...validRegistration,
-      interestCategoryIds: validRegistration.interestCategoryIds.slice(0, 2),
+      interestCategoryIds: [],
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
   });
 });
 

@@ -20,10 +20,7 @@ export const registerSchema = z
     password: passwordSchema,
     passwordConfirmation: z.string(),
     locale: z.string().min(2).max(5).default('en'),
-    interestCategoryIds: z
-      .array(z.string().uuid())
-      .min(3, 'En az 3 ilgi alanı seçin')
-      .max(12),
+    interestCategoryIds: z.array(z.string().uuid()).max(12).optional().default([]),
     acceptedTerms: z.literal(true, { message: 'Kullanım koşullarını kabul etmelisiniz' }),
     acceptedMarketing: z.boolean().optional(),
   })

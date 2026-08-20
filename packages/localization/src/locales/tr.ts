@@ -157,6 +157,10 @@ export const tr = {
     interestsCount: '{count} seçildi (en az {min})',
     interestsSave: 'İlgi alanlarını kaydet',
     interestsSaved: 'İlgi alanları güncellendi',
+    interestsOnboardingTitle: 'Nelerle ilgileniyorsunuz?',
+    interestsOnboardingDescription:
+      'En az 3 kategori seçin. Seçiminizden sonra kişiselleştirilmiş akışınıza geçersiniz.',
+    interestsContinueToFeed: 'Akışa geç',
     loginPageTitle: 'Giriş yap',
     loginFormHeading: "Talpio'a giriş yap",
     loginPageDescription: 'Taleplerinizi, tekliflerinizi ve mesajlarınızı görmek için hesabınıza girin.',

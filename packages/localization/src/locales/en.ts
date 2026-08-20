@@ -154,6 +154,10 @@ export const en: Messages = {
     interestsCount: '{count} selected (min {min})',
     interestsSave: 'Save interests',
     interestsSaved: 'Interests updated',
+    interestsOnboardingTitle: 'What are you interested in?',
+    interestsOnboardingDescription:
+      'Pick at least 3 categories. Then you will continue to your personalized feed.',
+    interestsContinueToFeed: 'Continue to feed',
     loginPageTitle: 'Log in',
     loginFormHeading: 'Log in to Talpio',
     loginPageDescription: 'Sign in to see your requests, offers, and messages.',

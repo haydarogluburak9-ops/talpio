@@ -7,6 +7,7 @@ import type { CurrentUser } from '@talpio/types';
 import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/lib/api';
+import { INTEREST_ONBOARDING_PATH, needsInterestOnboarding } from '@/lib/interest-onboarding';
 
 /**
  * Oturum durumu. Jetonlar HTTP-only çerezde olduğu için istemci "giriş yapılmış
@@ -34,10 +35,20 @@ function useAfterAuth() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  return (user: CurrentUser) => {
+  return async (user: CurrentUser, options?: { fromRegister?: boolean }) => {
     queryClient.setQueryData(queryKeys.auth.session(), user);
-    // Herkes sosyal akışa düşer; işletme paneli ikinci plandadır.
-    router.push('/akis');
+
+    if (options?.fromRegister) {
+      router.push(INTEREST_ONBOARDING_PATH);
+      return;
+    }
+
+    try {
+      const follows = await apiClient.social.listCategoryFollows();
+      router.push(needsInterestOnboarding(follows.length) ? INTEREST_ONBOARDING_PATH : '/akis');
+    } catch {
+      router.push(INTEREST_ONBOARDING_PATH);
+    }
   };
 }
 
@@ -46,7 +57,7 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (payload: LoginPayload) => apiClient.auth.login(payload),
-    onSuccess: (session) => afterAuth(session.user),
+    onSuccess: (session) => void afterAuth(session.user),
   });
 }
 
@@ -55,7 +66,7 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: (payload: RegisterPayload) => apiClient.auth.register(payload),
-    onSuccess: (session) => afterAuth(session.user),
+    onSuccess: (session) => void afterAuth(session.user, { fromRegister: true }),
   });
 }
 

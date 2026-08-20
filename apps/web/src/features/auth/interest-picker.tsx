@@ -7,7 +7,7 @@ import { CategoryIcon } from '@/features/catalog/category-icon';
 import { useCategories } from '@/features/catalog/use-categories';
 import { categoryLabel, t } from '@/lib/i18n';
 
-const MIN_INTERESTS = 3;
+import { MIN_INTERESTS } from '@/lib/interest-onboarding';
 const MAX_INTERESTS = 12;
 
 export function InterestPicker({

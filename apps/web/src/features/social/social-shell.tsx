@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { useSession } from '@/features/auth/use-session';
+import { InterestOnboardingGate } from '@/features/auth/interest-onboarding-gate';
 import { t } from '@/lib/i18n';
 
 import { ComposeProvider, useCompose } from './compose-context';
@@ -115,6 +116,7 @@ export function SocialShell({
 
   return (
     <ComposeProvider>
+      <InterestOnboardingGate>
       <div className="social-app relative min-h-[calc(100svh-4.25rem)]">
       <div className={cn('w-full px-3 py-4 lg:px-5', showRail && 'xl:pr-5')}>
         <div
@@ -177,6 +179,7 @@ export function SocialShell({
       <SocialBottomNav profileHref={profileHref} profileActive={profileActive} />
       <ComposeSheet />
     </div>
+      </InterestOnboardingGate>
     </ComposeProvider>
   );
 }
