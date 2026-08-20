@@ -26,3 +26,8 @@ export function isAuthPath(pathname: string): boolean {
   const roots = ['/giris', '/kayit', '/sifremi-unuttum', '/sifre-sifirla', '/dogrula-eposta'];
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
+
+/** Ana sayfa + auth — üstte SaaS tarzı nav yok, yalnızca logo ve CTA. */
+export function isMinimalHeaderPath(pathname: string): boolean {
+  return pathname === '/' || isAuthPath(pathname);
+}

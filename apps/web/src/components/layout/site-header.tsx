@@ -1,15 +1,15 @@
 'use client';
 
 import { BrandLockup, cn } from '@talpio/ui';
-import { ChevronDown, Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { NotificationBell } from '@/features/notifications/notification-bell';
-import { isAppShellPath } from '@/lib/app-shell-paths';
+import { isAppShellPath, isMinimalHeaderPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
-import { landingNav, primaryNav } from '@/lib/navigation';
+import { primaryNav } from '@/lib/navigation';
 
 import { HeaderAccount } from './header-account';
 import { LanguageSwitcher } from './language-switcher';
@@ -20,6 +20,7 @@ export function SiteHeader() {
   const router = useRouter();
   const socialMode = isAppShellPath(pathname);
   const landingMode = pathname === '/';
+  const minimalHeader = isMinimalHeaderPath(pathname);
   const [menu, setMenu] = useState({ isOpen: false, path: pathname });
   const [query, setQuery] = useState('');
 
@@ -28,7 +29,8 @@ export function SiteHeader() {
 
   const isMenuOpen = menu.isOpen;
   const toggleMenu = () => setMenu((current) => ({ ...current, isOpen: !current.isOpen }));
-  const navItems = landingMode ? landingNav : primaryNav;
+  const navItems = primaryNav;
+  const showTopNav = !socialMode && !minimalHeader;
 
   return (
     <header
@@ -83,13 +85,10 @@ export function SiteHeader() {
               />
             </label>
           </form>
-        ) : (
+        ) : showTopNav ? (
           <nav
             aria-label={t('nav.mainMenu')}
-            className={cn(
-              'ml-4 hidden items-center gap-0.5 lg:flex',
-              landingMode && 'ml-8 flex-1 justify-center',
-            )}
+            className="ml-4 hidden items-center gap-0.5 lg:flex"
           >
             {navItems.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -99,23 +98,18 @@ export function SiteHeader() {
                   href={item.href}
                   className={cn(
                     'inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    landingMode
-                      ? active
-                        ? 'font-semibold text-[#0D1B2A]'
-                        : 'text-[#475467] hover:bg-[#F4F6F8] hover:text-[#0D1B2A]'
-                      : active
-                        ? 'nav-link-active font-semibold'
-                        : 'text-foreground-muted hover:bg-brand-50 hover:text-brand-900 dark:hover:bg-white/5 dark:hover:text-foreground',
+                    active
+                      ? 'nav-link-active font-semibold'
+                      : 'text-foreground-muted hover:bg-brand-50 hover:text-brand-900 dark:hover:bg-white/5 dark:hover:text-foreground',
                   )}
                 >
                   {t(item.labelKey)}
-                  {landingMode && item.labelKey === 'nav.resources' ? (
-                    <ChevronDown className="size-3.5 opacity-70" aria-hidden />
-                  ) : null}
                 </Link>
               );
             })}
           </nav>
+        ) : (
+          <div className="flex-1" aria-hidden />
         )}
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -126,26 +120,38 @@ export function SiteHeader() {
               <NotificationBell />
               <HeaderAccount variant="avatar" />
             </>
-          ) : landingMode ? (
+          ) : landingMode || minimalHeader ? (
             <>
-              <button
-                type="button"
-                className="hidden size-10 place-items-center rounded-xl text-[#475467] hover:bg-[#F4F6F8] hover:text-[#0D1B2A] sm:grid"
-                aria-label={t('common.search')}
-                onClick={() => router.push('/kategoriler')}
-              >
-                <Search className="size-5" />
-              </button>
-              <LanguageSwitcher variant="landing" />
+              {landingMode ? (
+                <button
+                  type="button"
+                  className="hidden size-10 place-items-center rounded-xl text-[#475467] hover:bg-[#F4F6F8] hover:text-[#0D1B2A] sm:grid"
+                  aria-label={t('common.search')}
+                  onClick={() => router.push('/kategoriler')}
+                >
+                  <Search className="size-5" />
+                </button>
+              ) : null}
+              <LanguageSwitcher variant={landingMode ? 'landing' : 'default'} />
               <Link
                 href="/giris"
-                className="hidden rounded-lg px-3 py-2 text-sm font-medium text-[#0D1B2A] hover:bg-[#F4F6F8] sm:inline-flex"
+                className={cn(
+                  'rounded-lg px-3 py-2 text-sm font-medium hover:bg-[#F4F6F8]',
+                  landingMode
+                    ? 'text-[#0D1B2A]'
+                    : 'text-foreground-muted hover:text-foreground',
+                )}
               >
                 {t('nav.login')}
               </Link>
               <Link
                 href="/kayit"
-                className="inline-flex h-[46px] min-w-[150px] items-center justify-center rounded-[10px] bg-[#FF5A0A] px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgb(255_90_10_/_0.28)] hover:bg-[#EA4B00]"
+                className={cn(
+                  'inline-flex h-[46px] min-w-[150px] items-center justify-center rounded-[10px] px-4 text-sm font-semibold text-white',
+                  landingMode
+                    ? 'bg-[#FF5A0A] shadow-[0_8px_18px_rgb(255_90_10_/_0.28)] hover:bg-[#EA4B00]'
+                    : 'bg-accent-500 hover:bg-accent-600',
+                )}
               >
                 {t('nav.freeRegister')}
               </Link>
@@ -165,6 +171,7 @@ export function SiteHeader() {
             className={cn(
               'grid size-10 place-items-center rounded-xl md:hidden',
               socialMode && 'hidden',
+              minimalHeader && 'hidden',
               landingMode ? 'text-[#0D1B2A] hover:bg-[#F4F6F8]' : 'hover:bg-surface-muted',
             )}
             aria-expanded={isMenuOpen}
@@ -177,7 +184,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {isMenuOpen ? (
+      {isMenuOpen && showTopNav ? (
         <div
           id="mobile-nav"
           className={cn(
@@ -196,19 +203,15 @@ export function SiteHeader() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'rounded-xl px-3 py-3 text-sm font-medium',
-                    landingMode
-                      ? active
-                        ? 'bg-[#F4F6F8] font-semibold text-[#0D1B2A]'
-                        : 'text-[#475467] hover:bg-[#F4F6F8]'
-                      : cn('hover:bg-surface-muted', active && 'nav-link-active font-semibold'),
+                    'rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted',
+                    active && 'nav-link-active font-semibold',
                   )}
                 >
                   {t(item.labelKey)}
                 </Link>
               );
             })}
-            {!landingMode && !socialMode ? (
+            {!socialMode ? (
               <div className="mt-2 flex items-center gap-2 sm:hidden">
                 <ThemeToggle variant="labeled" />
                 <HeaderAccount variant="mobile" />
