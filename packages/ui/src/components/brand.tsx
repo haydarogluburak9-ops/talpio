@@ -6,13 +6,10 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=12';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=13';
 const LOCKUP_SRC = '/brand/talpio-lockup.png?v=11';
 
-/** iOS app ikonu squircle — köşeler şeffaf, koyu panelde düzgün oturur. */
-const BRAND_MARK_RADIUS = 'rounded-[22.37%]';
-
-/** Kare app ikonu — koyu zemin, turuncu T (marka kimliği). */
+/** Kare app ikonu — arka plan brand-900 (#0D1B2A), panel ile aynı renk. */
 export function BrandMark({
   className,
   src = APP_ICON_SRC,
@@ -25,8 +22,7 @@ export function BrandMark({
   return (
     <span
       className={cn(
-        'relative inline-flex shrink-0 overflow-hidden',
-        BRAND_MARK_RADIUS,
+        'relative inline-flex shrink-0 items-center bg-brand-900',
         className ?? 'h-10 w-10',
       )}
     >
@@ -34,7 +30,7 @@ export function BrandMark({
       <img
         src={src}
         alt={alt}
-        className="block h-full w-full object-cover"
+        className="block h-full w-full object-contain"
         draggable={false}
       />
     </span>
