@@ -6,7 +6,7 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=13';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=14';
 const LOCKUP_SRC = '/brand/talpio-lockup.png?v=11';
 
 /** Kare app ikonu — arka plan brand-900 (#0D1B2A), panel ile aynı renk. */
