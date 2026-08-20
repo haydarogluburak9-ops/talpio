@@ -1,20 +1,33 @@
 import fs from 'node:fs/promises';
 import sharp from 'sharp';
 
-/** @talpio/ui theme.css — brand-900 / auth panel arka planı */
-const PANEL_BG = { r: 13, g: 27, b: 42, alpha: 1 };
-
-const src =
-  process.argv[2] ??
-  'apps/web/public/brand/talpio-logo-source.png';
+const src = process.argv[2] ?? 'apps/web/public/brand/talpio-logo-source.png';
 const out = 'apps/web/public/brand/talpio-logo.png';
-const size = 512;
+const maxSize = 512;
+/** Siyah dış zemin → şeffaf (çerçevesiz kullanım). */
+const BLACK_THRESHOLD = 28;
 
-const flattened = await sharp(src)
-  .resize(size, size, { fit: 'contain', background: PANEL_BG })
+const resized = await sharp(src)
+  .resize(maxSize, maxSize, { fit: 'inside', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+  .ensureAlpha()
+  .raw()
+  .toBuffer({ resolveWithObject: true });
+
+const { data, info } = resized;
+for (let i = 0; i < data.length; i += 4) {
+  const r = data[i];
+  const g = data[i + 1];
+  const b = data[i + 2];
+  if (r <= BLACK_THRESHOLD && g <= BLACK_THRESHOLD && b <= BLACK_THRESHOLD) {
+    data[i + 3] = 0;
+  }
+}
+
+await sharp(data, {
+  raw: { width: info.width, height: info.height, channels: 4 },
+})
   .png({ compressionLevel: 9 })
-  .toBuffer();
+  .toFile(out);
 
-await fs.writeFile(out, flattened);
-const meta = await sharp(flattened).metadata();
-console.log('wrote', out, meta.width, meta.height);
+const meta = await sharp(out).metadata();
+console.log('wrote', out, meta.width, meta.height, 'alpha=', meta.hasAlpha);

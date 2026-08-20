@@ -6,10 +6,10 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=14';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=15';
 const LOCKUP_SRC = '/brand/talpio-lockup.png?v=11';
 
-/** Kare app ikonu — arka plan brand-900 (#0D1B2A), panel ile aynı renk. */
+/** App ikonu — çerçevesiz PNG, şeffaf zemin. */
 export function BrandMark({
   className,
   src = APP_ICON_SRC,
@@ -20,12 +20,7 @@ export function BrandMark({
   alt?: string;
 }) {
   return (
-    <span
-      className={cn(
-        'relative inline-flex shrink-0 items-center bg-brand-900',
-        className ?? 'h-10 w-10',
-      )}
-    >
+    <span className={cn('relative inline-flex shrink-0 items-center', className ?? 'h-10 w-10')}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
