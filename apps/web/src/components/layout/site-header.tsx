@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { NotificationBell } from '@/features/notifications/notification-bell';
-import { isAppShellPath, isMinimalHeaderPath } from '@/lib/app-shell-paths';
+import { isAppShellPath, isAuthPath, isMinimalHeaderPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
 import { primaryNav } from '@/lib/navigation';
 
@@ -21,6 +21,9 @@ export function SiteHeader() {
   const socialMode = isAppShellPath(pathname);
   const landingMode = pathname === '/';
   const minimalHeader = isMinimalHeaderPath(pathname);
+  const authPage = isAuthPath(pathname);
+
+  if (authPage) return null;
   const [menu, setMenu] = useState({ isOpen: false, path: pathname });
   const [query, setQuery] = useState('');
 

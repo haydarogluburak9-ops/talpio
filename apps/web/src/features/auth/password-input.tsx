@@ -6,14 +6,12 @@ import { forwardRef, useState } from 'react';
 
 import { t } from '@/lib/i18n';
 
-export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(function PasswordInput(
-  { className, ...props },
-  ref,
-) {
+export const PasswordInput = forwardRef<HTMLInputElement, InputProps & { wrapperClassName?: string }>(
+  function PasswordInput({ className, wrapperClassName, ...props }, ref) {
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="relative">
+    <div className={cn('relative', wrapperClassName)}>
       <Input
         ref={ref}
         type={visible ? 'text' : 'password'}

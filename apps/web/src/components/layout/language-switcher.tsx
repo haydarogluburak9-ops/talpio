@@ -13,7 +13,7 @@ import { persistLocale } from '@/lib/locale';
 export function LanguageSwitcher({
   variant = 'default',
 }: {
-  variant?: 'default' | 'landing' | 'social';
+  variant?: 'default' | 'landing' | 'social' | 'auth';
 }) {
   const [locale, setLocaleState] = useState<SupportedLocale>(getLocale);
   const [open, setOpen] = useState(false);
@@ -48,7 +48,9 @@ export function LanguageSwitcher({
           'inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-medium',
           variant === 'landing'
             ? 'text-[#475467] hover:bg-[#F4F6F8] hover:text-[#0D1B2A]'
-            : 'text-foreground-muted hover:bg-surface-muted hover:text-foreground',
+            : variant === 'auth'
+              ? 'text-[#A8A8A8] hover:text-white'
+              : 'text-foreground-muted hover:bg-surface-muted hover:text-foreground',
         )}
         aria-haspopup="listbox"
         aria-expanded={open}

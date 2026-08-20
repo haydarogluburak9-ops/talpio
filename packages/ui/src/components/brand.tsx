@@ -6,7 +6,7 @@ import { cn } from '../lib/cn';
  * - Yatay lockup: `/brand/talpio-lockup.png` — yalnızca gerektiğinde (BrandLockup)
  */
 
-const APP_ICON_SRC = '/brand/talpio-logo.png?v=15';
+const APP_ICON_SRC = '/brand/talpio-logo.png?v=16';
 const LOCKUP_SRC = '/brand/talpio-lockup.png?v=11';
 
 /** App ikonu — çerçevesiz PNG, şeffaf zemin. */
@@ -25,6 +25,8 @@ export function BrandMark({
       <img
         src={src}
         alt={alt}
+        width={1024}
+        height={985}
         className="block h-full w-full object-contain"
         draggable={false}
       />

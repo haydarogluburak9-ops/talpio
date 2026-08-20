@@ -158,6 +158,7 @@ export const tr = {
     interestsSave: 'İlgi alanlarını kaydet',
     interestsSaved: 'İlgi alanları güncellendi',
     loginPageTitle: 'Giriş yap',
+    loginFormHeading: "Talpio'a giriş yap",
     loginPageDescription: 'Taleplerinizi, tekliflerinizi ve mesajlarınızı görmek için hesabınıza girin.',
     createNow: 'Hemen oluşturun',
   },

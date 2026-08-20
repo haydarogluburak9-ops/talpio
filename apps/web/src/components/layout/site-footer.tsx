@@ -4,7 +4,7 @@ import { BrandMark } from '@talpio/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { isAppShellPath } from '@/lib/app-shell-paths';
+import { isAppShellPath, isAuthPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
 import { footerNav } from '@/lib/navigation';
 
@@ -13,7 +13,7 @@ const COPYRIGHT_YEAR = 2026;
 export function SiteFooter() {
   const pathname = usePathname();
   // Public landing referans kompozisyonunda büyük footer yok; app shell'de de gizli.
-  if (pathname === '/' || isAppShellPath(pathname)) return null;
+  if (pathname === '/' || isAppShellPath(pathname) || isAuthPath(pathname)) return null;
 
   return (
     <footer className="relative mt-auto overflow-hidden bg-brand-900 text-brand-100">

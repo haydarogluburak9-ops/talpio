@@ -3,12 +3,10 @@ import sharp from 'sharp';
 
 const src = process.argv[2] ?? 'apps/web/public/brand/talpio-logo-source.png';
 const out = 'apps/web/public/brand/talpio-logo.png';
-const maxSize = 512;
-/** Siyah dış zemin → şeffaf (çerçevesiz kullanım). */
+/** Siyah dış zemin → şeffaf. */
 const BLACK_THRESHOLD = 28;
 
 const resized = await sharp(src)
-  .resize(maxSize, maxSize, { fit: 'inside', background: { r: 0, g: 0, b: 0, alpha: 0 } })
   .ensureAlpha()
   .raw()
   .toBuffer({ resolveWithObject: true });
@@ -26,7 +24,7 @@ for (let i = 0; i < data.length; i += 4) {
 await sharp(data, {
   raw: { width: info.width, height: info.height, channels: 4 },
 })
-  .png({ compressionLevel: 9 })
+  .png({ compressionLevel: 6, adaptiveFiltering: false })
   .toFile(out);
 
 const meta = await sharp(out).metadata();

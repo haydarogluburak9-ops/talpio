@@ -13,11 +13,9 @@ export default async function LoginPage() {
   await applyRequestLocale();
   return (
     <AuthShell
-      title={t('auth.loginPageTitle')}
-      description={t('auth.loginPageDescription')}
-      footerText={t('auth.noAccount')}
+      title={t('auth.loginFormHeading')}
       footerHref="/kayit"
-      footerLinkLabel={t('auth.createNow')}
+      footerLinkLabel={t('auth.createAccount')}
     >
       <LoginForm />
     </AuthShell>

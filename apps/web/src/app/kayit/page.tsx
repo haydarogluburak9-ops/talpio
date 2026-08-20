@@ -16,7 +16,6 @@ export default async function RegisterPage() {
       eyebrow={t('auth.registerEyebrow')}
       title={t('auth.registerTitle')}
       description={t('auth.registerDescription')}
-      footerText={t('auth.alreadyHaveAccount')}
       footerHref="/giris"
       footerLinkLabel={t('nav.login')}
     >

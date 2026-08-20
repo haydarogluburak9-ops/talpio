@@ -155,6 +155,7 @@ export const en: Messages = {
     interestsSave: 'Save interests',
     interestsSaved: 'Interests updated',
     loginPageTitle: 'Log in',
+    loginFormHeading: 'Log in to Talpio',
     loginPageDescription: 'Sign in to see your requests, offers, and messages.',
     createNow: 'Create one now',
   },
