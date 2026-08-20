@@ -84,7 +84,7 @@ log "Veritabanı migrate (backend başlamadan önce)"
 docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend npx prisma migrate deploy
 
 log "Stack başlatılıyor"
-docker compose --env-file .env -f docker-compose.prod.yml up -d
+docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate web admin backend worker
 
 log "Seed"
 docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend sh -c \
