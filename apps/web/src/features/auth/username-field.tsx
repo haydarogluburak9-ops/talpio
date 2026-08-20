@@ -15,11 +15,13 @@ export function UsernameField({
   onChange,
   onBlur,
   error,
+  compact = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   error?: string;
+  compact?: boolean;
 }) {
   const [debounced, setDebounced] = useState('');
 
@@ -46,12 +48,13 @@ export function UsernameField({
     <Field
       label={t('auth.username')}
       required
-      hint={t('auth.usernameHint')}
+      hint={compact ? undefined : t('auth.usernameHint')}
       error={error ?? (showTaken ? t('auth.usernameTaken') : undefined)}
+      className={compact ? 'gap-1' : undefined}
     >
       {(props) => (
         <div className="relative">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-muted">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-muted">
             @
           </span>
           <Input
@@ -65,7 +68,10 @@ export function UsernameField({
             spellCheck={false}
             aria-invalid={Boolean(error || showTaken) || undefined}
             className={cn(
-              'h-12 rounded-xl border-border/70 py-2 pl-8 pr-10 text-[15px] shadow-soft transition-[border-color,box-shadow] focus:border-brand-400 focus:ring-2 focus:ring-brand-200/50 dark:focus:border-brand-500 dark:focus:ring-brand-800/50',
+              compact
+                ? 'h-9 rounded-lg border-border/70 py-2 pl-7 pr-9 text-sm shadow-soft'
+                : 'h-12 rounded-xl border-border/70 py-2 pl-8 pr-10 text-[15px] shadow-soft',
+              'transition-[border-color,box-shadow] focus:border-brand-400 focus:ring-2 focus:ring-brand-200/50 dark:focus:border-brand-500 dark:focus:ring-brand-800/50',
               showTaken && 'border-danger-500 focus:border-danger-500 focus:ring-danger-500/20',
               showAvailable && 'border-success-500 focus:border-success-500 focus:ring-success-500/20',
             )}
@@ -77,10 +83,10 @@ export function UsernameField({
             {showAvailable ? <Check className="size-4 text-success-500" aria-hidden /> : null}
             {showTaken ? <X className="size-4 text-danger-500" aria-hidden /> : null}
           </span>
-          {showAvailable ? (
+          {showAvailable && !compact ? (
             <p className="mt-1.5 text-xs font-medium text-success-700">{t('auth.usernameAvailable')}</p>
           ) : null}
-          {canCheck && availability.isFetching ? (
+          {canCheck && availability.isFetching && !compact ? (
             <p className="mt-1.5 text-xs text-foreground-muted">{t('auth.usernameChecking')}</p>
           ) : null}
         </div>

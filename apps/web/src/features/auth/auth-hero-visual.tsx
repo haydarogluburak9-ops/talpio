@@ -67,7 +67,7 @@ function StoryFrame({
  */
 export function AuthHeroVisual() {
   return (
-    <div className="relative mx-auto h-[280px] w-full max-w-[420px] sm:h-[320px]">
+    <div className="relative mx-auto h-[220px] w-full max-w-[420px] sm:h-[240px] lg:h-[260px]">
       <div
         className="pointer-events-none absolute inset-[8%] rounded-full blur-3xl"
         aria-hidden

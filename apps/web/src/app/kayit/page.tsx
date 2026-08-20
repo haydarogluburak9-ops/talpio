@@ -13,9 +13,9 @@ export default async function RegisterPage() {
   await applyRequestLocale();
   return (
     <AuthShell
+      compact
       eyebrow={t('auth.registerEyebrow')}
       title={t('auth.registerTitle')}
-      description={t('auth.registerDescription')}
       footerHref="/giris"
       footerLinkLabel={t('nav.login')}
     >

@@ -54,7 +54,7 @@ export function InterestOnboardingPage() {
     <div className="min-h-svh bg-white dark:bg-background">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-12">
         <Link href="/" className="inline-flex w-fit" aria-label={t('common.appName')}>
-          <BrandLockup className="h-8 sm:h-9" variant="light" />
+          <BrandLockup className="h-8 sm:h-9" />
         </Link>
 
         <div className="flex flex-col gap-2">
