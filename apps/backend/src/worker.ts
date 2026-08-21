@@ -117,9 +117,6 @@ async function bootstrap(): Promise<void> {
         case 'story_cleanup':
           await socialMaintenance.cleanupExpiredStoryMedia();
           break;
-        case 'demo_story_refresh':
-          await socialMaintenance.refreshDemoStoriesIfEnabled();
-          break;
         case 'orphan_files':
           await socialMaintenance.purgeOrphanFiles();
           break;
@@ -160,16 +157,13 @@ async function bootstrap(): Promise<void> {
       return;
     }
     const intervalMs = config.demoStoryRefreshIntervalMs;
-    const enqueue = () => {
-      void queues.enqueue(QUEUE_NAMES.SOCIAL_MAINTENANCE, {
-        idempotencyKey: `demo-story-refresh-${Math.floor(Date.now() / intervalMs)}`,
-        tenantId: 'system',
-        payload: { task: 'demo_story_refresh' },
-        enqueuedAt: new Date().toISOString(),
+    const run = () => {
+      void socialMaintenance.refreshDemoStoriesIfEnabled().catch((error: unknown) => {
+        logger.error({ error }, 'Demo hikâye yenileme başarısız');
       });
     };
-    enqueue();
-    setInterval(enqueue, intervalMs);
+    run();
+    setInterval(run, intervalMs);
     logger.log(`Demo hikâye yenileme zamanlayıcısı aktif (${Math.round(intervalMs / 3_600_000)} saat)`);
   };
   scheduleDemoStoryRefresh();
