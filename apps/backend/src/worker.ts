@@ -162,7 +162,7 @@ async function bootstrap(): Promise<void> {
     const intervalMs = config.demoStoryRefreshIntervalMs;
     const enqueue = () => {
       void queues.enqueue(QUEUE_NAMES.SOCIAL_MAINTENANCE, {
-        idempotencyKey: `demo-story-refresh:${Math.floor(Date.now() / intervalMs)}`,
+        idempotencyKey: `demo-story-refresh-${Math.floor(Date.now() / intervalMs)}`,
         tenantId: 'system',
         payload: { task: 'demo_story_refresh' },
         enqueuedAt: new Date().toISOString(),

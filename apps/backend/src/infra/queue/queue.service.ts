@@ -60,8 +60,9 @@ export class QueueService implements OnModuleDestroy {
     options?: JobsOptions,
   ): Promise<string> {
     const queue = this.getQueue(queueName);
+    const jobId = envelope.idempotencyKey.replace(/:/g, '-');
     const job = await queue.add(queueName, envelope, {
-      jobId: envelope.idempotencyKey,
+      jobId,
       ...options,
     });
     this.logger.debug(
