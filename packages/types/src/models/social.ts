@@ -36,6 +36,7 @@ export interface SocialProfile extends BaseEntity {
   businessId?: string | null;
   username: string;
   displayName: string;
+  headline?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
   coverUrl?: string | null;
@@ -47,8 +48,38 @@ export interface SocialProfile extends BaseEntity {
   /** Güven rozeti; premium abonelikten bağımsızdır. */
   isVerifiedDisplay: boolean;
   isFollowing?: boolean;
+  experiences?: SocialProfileExperience[];
+  education?: SocialProfileEducation[];
   /** Mağaza / işletme vitrini; yalnızca BUSINESS profillerde dolu. */
   business?: SocialBusinessCard | null;
+}
+
+export interface SocialProfileExperience extends BaseEntity {
+  profileId: string;
+  company: string;
+  title: string;
+  locationText?: string | null;
+  description?: string | null;
+  startYear: number;
+  startMonth?: number | null;
+  endYear?: number | null;
+  endMonth?: number | null;
+  isCurrent: boolean;
+  sortOrder: number;
+}
+
+export interface SocialProfileEducation extends BaseEntity {
+  profileId: string;
+  school: string;
+  degree?: string | null;
+  fieldOfStudy?: string | null;
+  description?: string | null;
+  startYear: number;
+  startMonth?: number | null;
+  endYear?: number | null;
+  endMonth?: number | null;
+  isCurrent: boolean;
+  sortOrder: number;
 }
 
 /** Gönderiye bağlı indirim / özel fiyat bilgisi (opsiyonel, legacy). */

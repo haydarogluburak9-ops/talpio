@@ -32,6 +32,86 @@ export function useUpdateSocialProfile() {
   });
 }
 
+export function useCreateExperience(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof apiClient.social.createExperience>[0]) =>
+      apiClient.social.createExperience(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useUpdateExperience(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof apiClient.social.updateExperience>[1];
+    }) => apiClient.social.updateExperience(id, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useDeleteExperience(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.social.deleteExperience(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useCreateEducation(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof apiClient.social.createEducation>[0]) =>
+      apiClient.social.createEducation(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useUpdateEducation(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: Parameters<typeof apiClient.social.updateEducation>[1];
+    }) => apiClient.social.updateEducation(id, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useDeleteEducation(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.social.deleteEducation(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
 export function useSocialProfile(username: string) {
   return useQuery({
     queryKey: queryKeys.social.profile(username),

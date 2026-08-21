@@ -7,6 +7,8 @@ import type {
   SocialPostComment,
   SocialPostPromo,
   SocialProfile,
+  SocialProfileEducation,
+  SocialProfileExperience,
   StoryHighlight,
 } from '@talpio/types';
 
@@ -17,6 +19,7 @@ export const socialProfileSelect = {
   businessId: true,
   username: true,
   displayName: true,
+  headline: true,
   bio: true,
   avatarFileId: true,
   coverFileId: true,
@@ -34,6 +37,89 @@ export const socialProfileSelect = {
 } satisfies Prisma.SocialProfileSelect;
 
 export type SocialProfileRow = Prisma.SocialProfileGetPayload<{ select: typeof socialProfileSelect }>;
+
+export const profileCareerOrder = {
+  experiences: {
+    orderBy: [{ isCurrent: 'desc' as const }, { startYear: 'desc' as const }, { sortOrder: 'asc' as const }],
+  },
+  education: {
+    orderBy: [{ isCurrent: 'desc' as const }, { startYear: 'desc' as const }, { sortOrder: 'asc' as const }],
+  },
+} satisfies Pick<Prisma.SocialProfileInclude, 'experiences' | 'education'>;
+
+export type SocialProfileExperienceRow = {
+  id: string;
+  profileId: string;
+  company: string;
+  title: string;
+  locationText: string | null;
+  description: string | null;
+  startYear: number;
+  startMonth: number | null;
+  endYear: number | null;
+  endMonth: number | null;
+  isCurrent: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type SocialProfileEducationRow = {
+  id: string;
+  profileId: string;
+  school: string;
+  degree: string | null;
+  fieldOfStudy: string | null;
+  description: string | null;
+  startYear: number;
+  startMonth: number | null;
+  endYear: number | null;
+  endMonth: number | null;
+  isCurrent: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export function toSocialProfileExperience(row: SocialProfileExperienceRow): SocialProfileExperience {
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    company: row.company,
+    title: row.title,
+    locationText: row.locationText,
+    description: row.description,
+    startYear: row.startYear,
+    startMonth: row.startMonth,
+    endYear: row.endYear,
+    endMonth: row.endMonth,
+    isCurrent: row.isCurrent,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    deletedAt: null,
+  };
+}
+
+export function toSocialProfileEducation(row: SocialProfileEducationRow): SocialProfileEducation {
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    school: row.school,
+    degree: row.degree,
+    fieldOfStudy: row.fieldOfStudy,
+    description: row.description,
+    startYear: row.startYear,
+    startMonth: row.startMonth,
+    endYear: row.endYear,
+    endMonth: row.endMonth,
+    isCurrent: row.isCurrent,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    deletedAt: null,
+  };
+}
 
 export const dealMetadataSelect = {
   id: true,
@@ -155,7 +241,12 @@ export function toFileAsset(
 export function toSocialProfile(
   row: SocialProfileRow,
   fileBaseUrl: string,
-  extras: { isFollowing?: boolean; business?: SocialProfile['business'] } = {},
+  extras: {
+    isFollowing?: boolean;
+    business?: SocialProfile['business'];
+    experiences?: SocialProfileExperience[];
+    education?: SocialProfileEducation[];
+  } = {},
 ): SocialProfile {
   return {
     id: row.id,
@@ -164,6 +255,7 @@ export function toSocialProfile(
     businessId: row.businessId,
     username: row.username,
     displayName: row.displayName,
+    headline: row.headline,
     bio: row.bio,
     avatarUrl: row.avatar ? resolveAssetUrl(fileBaseUrl, row.avatar.storageKey) : null,
     coverUrl: row.cover ? resolveAssetUrl(fileBaseUrl, row.cover.storageKey) : null,
@@ -178,6 +270,8 @@ export function toSocialProfile(
     deletedAt: row.deletedAt?.toISOString() ?? null,
     ...(extras.isFollowing !== undefined ? { isFollowing: extras.isFollowing } : {}),
     ...(extras.business !== undefined ? { business: extras.business } : {}),
+    ...(extras.experiences !== undefined ? { experiences: extras.experiences } : {}),
+    ...(extras.education !== undefined ? { education: extras.education } : {}),
   };
 }
 

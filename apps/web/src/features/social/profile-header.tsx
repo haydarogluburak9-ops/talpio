@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, SOCIAL } from '@talpio/config';
 import type { SocialProfile } from '@talpio/types';
+import { SocialProfileKind } from '@talpio/types';
 import { Button, cn } from '@talpio/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -13,7 +14,8 @@ import { localeTag, t } from '@/lib/i18n';
 
 import { ReportDialog } from './report-dialog';
 import { ProfileAvatarEditor, ProfileCoverEditor } from './profile-media-editor';
-import { useFollow, useMessageProfile, useSocialMe, useUnfollow } from './use-social';
+import { ProfileCareerSection } from './profile-career-section';
+import { useFollow, useMessageProfile, useSocialMe, useUnfollow, useUpdateSocialProfile } from './use-social';
 
 export function ProfileHeader({
   profile,
@@ -97,6 +99,11 @@ export function ProfileHeader({
               ) : null}
             </div>
             <p className="mt-1 text-foreground-muted">@{profile.username}</p>
+            {profile.kind === SocialProfileKind.PERSONAL ? (
+              <ProfileHeadline profile={profile} isOwn={isOwnProfile} />
+            ) : profile.headline ? (
+              <p className="mt-1 text-sm text-foreground">{profile.headline}</p>
+            ) : null}
             {profile.locationText ? (
               <p className="mt-1 text-sm text-foreground-muted">{profile.locationText}</p>
             ) : null}
@@ -214,6 +221,11 @@ export function ProfileHeader({
           </>
         ) : null}
       </div>
+
+      {profile.kind === SocialProfileKind.PERSONAL ? (
+        <ProfileCareerSection profile={profile} isOwn={isOwnProfile} />
+      ) : null}
+
       {reportOpen ? (
         <ReportDialog
           targetType="PROFILE"
@@ -222,6 +234,58 @@ export function ProfileHeader({
         />
       ) : null}
     </header>
+  );
+}
+
+function ProfileHeadline({ profile, isOwn }: { profile: SocialProfile; isOwn: boolean }) {
+  const update = useUpdateSocialProfile();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(profile.headline ?? '');
+
+  if (!isOwn) {
+    if (!profile.headline) return null;
+    return <p className="mt-1 text-sm font-medium text-foreground">{profile.headline}</p>;
+  }
+
+  if (editing) {
+    return (
+      <form
+        className="mt-2 flex max-w-md flex-col gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          update.mutate(
+            { headline: value.trim() || null },
+            { onSuccess: () => setEditing(false) },
+          );
+        }}
+      >
+        <input
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          placeholder={t('social.headlinePlaceholder')}
+          maxLength={120}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+        />
+        <div className="flex gap-2">
+          <Button type="submit" size="sm" isLoading={update.isPending}>
+            {t('common.save')}
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            {t('common.cancel')}
+          </Button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="mt-1 text-left text-sm font-medium text-foreground hover:underline"
+    >
+      {profile.headline?.trim() || t('social.headlinePlaceholder')}
+    </button>
   );
 }
 

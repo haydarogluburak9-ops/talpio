@@ -12,6 +12,8 @@ import type {
   SocialPost,
   SocialPostComment,
   SocialProfile,
+  SocialProfileEducation,
+  SocialProfileExperience,
   StoryHighlight,
   StoryHighlightDetail,
   TrendingTopic,
@@ -53,11 +55,39 @@ export interface UpdateSocialProfileBody {
   displayName?: string;
   bio?: string | null;
   username?: string;
+  headline?: string | null;
   locationCityId?: string | null;
   locationText?: string | null;
   avatarFileId?: string | null;
   coverFileId?: string | null;
 }
+
+export interface ProfileCareerDatesBody {
+  startYear: number;
+  startMonth?: number | null;
+  endYear?: number | null;
+  endMonth?: number | null;
+  isCurrent?: boolean;
+  sortOrder?: number;
+}
+
+export interface CreateProfileExperienceBody extends ProfileCareerDatesBody {
+  company: string;
+  title: string;
+  locationText?: string;
+  description?: string;
+}
+
+export type UpdateProfileExperienceBody = Partial<CreateProfileExperienceBody>;
+
+export interface CreateProfileEducationBody extends ProfileCareerDatesBody {
+  school: string;
+  degree?: string;
+  fieldOfStudy?: string;
+  description?: string;
+}
+
+export type UpdateProfileEducationBody = Partial<CreateProfileEducationBody>;
 
 export interface CreateCommentBody {
   body: string;
@@ -104,6 +134,30 @@ export function createSocialResource(http: HttpClient) {
 
     updateMe(body: UpdateSocialProfileBody): Promise<SocialProfile> {
       return http.patch<SocialProfile>(API_ROUTES.social.me, body);
+    },
+
+    createExperience(body: CreateProfileExperienceBody): Promise<SocialProfileExperience> {
+      return http.post<SocialProfileExperience>(API_ROUTES.social.profileExperiences, body);
+    },
+
+    updateExperience(id: string, body: UpdateProfileExperienceBody): Promise<SocialProfileExperience> {
+      return http.patch<SocialProfileExperience>(API_ROUTES.social.profileExperience(id), body);
+    },
+
+    deleteExperience(id: string): Promise<void> {
+      return http.delete<void>(API_ROUTES.social.profileExperience(id));
+    },
+
+    createEducation(body: CreateProfileEducationBody): Promise<SocialProfileEducation> {
+      return http.post<SocialProfileEducation>(API_ROUTES.social.profileEducation, body);
+    },
+
+    updateEducation(id: string, body: UpdateProfileEducationBody): Promise<SocialProfileEducation> {
+      return http.patch<SocialProfileEducation>(API_ROUTES.social.profileEducationItem(id), body);
+    },
+
+    deleteEducation(id: string): Promise<void> {
+      return http.delete<void>(API_ROUTES.social.profileEducationItem(id));
     },
 
     checkUsernameAvailability(

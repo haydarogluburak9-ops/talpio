@@ -18,7 +18,7 @@ import { FilesService } from '@modules/files/files.service';
 import { ratioPercent, toFiniteNumber } from './business-profile.stats';
 import type { UpdateSocialProfileDto } from './dto/social.dto';
 import { CAMPAIGN_POST_TYPES, DEAL_POST_TYPES, PORTFOLIO_POST_TYPES } from './post-tabs';
-import { socialProfileSelect, toSocialProfile } from './social.mapper';
+import { postInclude, socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, type SocialProfileRow } from './social.mapper';
 import {
   isValidUsernameFormat,
   normalizeUsername,
@@ -98,7 +98,13 @@ export class ProfilesService {
   }
 
   async getMe(user: AuthenticatedUser): Promise<SocialProfile> {
-    return this.ensurePersonalProfile(user.id);
+    const base = await this.ensurePersonalProfile(user.id);
+    const row = await this.prisma.socialProfile.findFirst({
+      where: { id: base.id },
+      select: socialProfileSelect,
+    });
+    if (!row) return base;
+    return this.toProfileWithCareer(row);
   }
 
   async updateMe(user: AuthenticatedUser, dto: UpdateSocialProfileDto): Promise<SocialProfile> {
@@ -117,6 +123,7 @@ export class ProfilesService {
       where: { id: profile.id },
       data: {
         ...(dto.displayName !== undefined ? { displayName: dto.displayName } : {}),
+        ...(dto.headline !== undefined ? { headline: dto.headline } : {}),
         ...(dto.bio !== undefined ? { bio: dto.bio } : {}),
         ...(dto.username !== undefined ? { username: dto.username } : {}),
         ...(dto.locationCityId !== undefined ? { locationCityId: dto.locationCityId } : {}),
@@ -127,7 +134,7 @@ export class ProfilesService {
       select: socialProfileSelect,
     });
 
-    return toSocialProfile(updated, this.fileBaseUrl);
+    return this.toProfileWithCareer(updated);
   }
 
   async getByUsername(username: string, viewerUserId?: string): Promise<SocialProfile> {
@@ -162,7 +169,7 @@ export class ProfilesService {
         ? await this.loadBusinessCard(row.id, row.businessId, row.bio)
         : null;
 
-    return toSocialProfile(row, this.fileBaseUrl, {
+    return this.toProfileWithCareer(row, {
       isFollowing,
       ...(business ? { business } : {}),
     });
@@ -355,6 +362,36 @@ export class ProfilesService {
             computedAt: business.trustScore.computedAt.toISOString(),
           }
         : null,
+    };
+  }
+
+  private async toProfileWithCareer(
+    row: SocialProfileRow,
+    extras: { isFollowing?: boolean; business?: SocialProfile['business'] } = {},
+  ): Promise<SocialProfile> {
+    const career = await this.loadCareer(row.id, row.kind);
+    return toSocialProfile(row, this.fileBaseUrl, { ...extras, ...career });
+  }
+
+  private async loadCareer(profileId: string, kind: SocialProfileKind) {
+    if (kind !== SocialProfileKind.PERSONAL) {
+      return { experiences: [], education: [] };
+    }
+
+    const [experiences, education] = await Promise.all([
+      this.prisma.socialProfileExperience.findMany({
+        where: { profileId },
+        orderBy: [{ isCurrent: 'desc' }, { startYear: 'desc' }, { sortOrder: 'asc' }],
+      }),
+      this.prisma.socialProfileEducation.findMany({
+        where: { profileId },
+        orderBy: [{ isCurrent: 'desc' }, { startYear: 'desc' }, { sortOrder: 'asc' }],
+      }),
+    ]);
+
+    return {
+      experiences: experiences.map(toSocialProfileExperience),
+      education: education.map(toSocialProfileEducation),
     };
   }
 

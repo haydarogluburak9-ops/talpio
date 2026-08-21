@@ -96,11 +96,44 @@ export const updateSocialProfileSchema = z.object({
   username: usernameSchema.optional(),
   locationCityId: uuidSchema.optional().nullable(),
   locationText: z.string().trim().max(120).optional().nullable(),
+  headline: z.string().trim().max(120).optional().nullable(),
   avatarFileId: uuidSchema.optional().nullable(),
   coverFileId: uuidSchema.optional().nullable(),
 });
 
 export type UpdateSocialProfileInput = z.input<typeof updateSocialProfileSchema>;
+
+const careerDatesSchema = z.object({
+  startYear: z.number().int().min(1950).max(2100),
+  startMonth: z.number().int().min(1).max(12).optional().nullable(),
+  endYear: z.number().int().min(1950).max(2100).optional().nullable(),
+  endMonth: z.number().int().min(1).max(12).optional().nullable(),
+  isCurrent: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+});
+
+export const createProfileExperienceSchema = careerDatesSchema.extend({
+  company: z.string().trim().min(1).max(160),
+  title: z.string().trim().min(1).max(160),
+  locationText: z.string().trim().max(120).optional(),
+  description: z.string().trim().max(2000).optional(),
+});
+
+export const updateProfileExperienceSchema = createProfileExperienceSchema.partial();
+
+export const createProfileEducationSchema = careerDatesSchema.extend({
+  school: z.string().trim().min(1).max(160),
+  degree: z.string().trim().max(120).optional(),
+  fieldOfStudy: z.string().trim().max(120).optional(),
+  description: z.string().trim().max(2000).optional(),
+});
+
+export const updateProfileEducationSchema = createProfileEducationSchema.partial();
+
+export type CreateProfileExperienceInput = z.input<typeof createProfileExperienceSchema>;
+export type UpdateProfileExperienceInput = z.input<typeof updateProfileExperienceSchema>;
+export type CreateProfileEducationInput = z.input<typeof createProfileEducationSchema>;
+export type UpdateProfileEducationInput = z.input<typeof updateProfileEducationSchema>;
 
 export const createCommentSchema = z.object({
   body: z.string().trim().min(1, 'Yorum boş olamaz').max(2000, 'Yorum çok uzun'),

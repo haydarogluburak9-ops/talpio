@@ -14,6 +14,7 @@ import { radius, spacing } from '@/theme/tokens';
 
 import { useFollow, useProfilePosts, useReportContent, useSocialMe, useSocialProfile } from './use-social';
 import { ProfileHighlightsSection } from './profile-highlights';
+import { ProfileCareerSection } from './profile-career-section';
 import { EditableProfileAvatar, EditableProfileCover } from './profile-media-editor';
 
 export function PublicProfileScreen({
@@ -74,6 +75,9 @@ export function PublicProfileScreen({
                 @{row.username}
                 {row.kind === 'BUSINESS' ? ` · ${t('social.storeBadge')}` : ''}
               </Text>
+              {row.headline ? (
+                <Text variant="caption">{row.headline}</Text>
+              ) : null}
               <Text variant="caption" tone="muted">
                 {t('social.analyticsFollowers')}: {row.followerCount} · {t('social.analyticsPosts')}:{' '}
                 {row.postCount}
@@ -110,6 +114,8 @@ export function PublicProfileScreen({
           ) : null}
         </View>
       </Card>
+
+      <ProfileCareerSection profile={row} />
 
       <ProfileHighlightsSection profile={row} />
 

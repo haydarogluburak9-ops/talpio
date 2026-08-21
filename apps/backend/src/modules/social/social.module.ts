@@ -14,6 +14,7 @@ import { SocialGraphService } from './graph.service';
 import { InteractionsService } from './interactions.service';
 import { ModerationService } from './moderation.service';
 import { PostsService } from './posts.service';
+import { ProfileCareerService } from './profile-career.service';
 import { ProfilesService } from './profiles.service';
 import { SocialBridgeService } from './social-bridge.service';
 import { SocialController } from './social.controller';
@@ -40,7 +41,8 @@ import { TrendingService } from './trending.service';
     SocialRealtimeService,
     SocialMaintenanceService,
     StoryHighlightsService,
+    ProfileCareerService,
   ],
-  exports: [ProfilesService, PostsService, FeedService, SocialBridgeService, CategoryFollowsService, SocialRealtimeService, StoryHighlightsService],
+  exports: [ProfilesService, PostsService, FeedService, SocialBridgeService, CategoryFollowsService, SocialRealtimeService, StoryHighlightsService, ProfileCareerService],
 })
 export class SocialModule {}

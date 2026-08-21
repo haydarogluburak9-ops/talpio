@@ -2477,6 +2477,8 @@ model SocialProfile {
   businessId       String?           @unique @map("business_id")
   username         String            @unique
   displayName      String            @map("display_name")
+  /// LinkedIn tarzı tek satır özet (ör. "Satış Müdürü · ABC Ltd.")
+  headline         String?
   bio              String?
   avatarFileId     String?           @map("avatar_file_id")
   coverFileId      String?           @map("cover_file_id")
@@ -2510,10 +2512,58 @@ model SocialProfile {
   views             PostView[]
   hides             PostHide[]
   storyHighlights   StoryHighlight[]
+  experiences       SocialProfileExperience[]
+  education         SocialProfileEducation[]
 
   @@index([kind, deletedAt])
   @@index([locationCityId])
   @@map("social_profiles")
+}
+
+/// İş deneyimi (LinkedIn tarzı).
+model SocialProfileExperience {
+  id           String   @id @default(uuid(7))
+  profileId    String   @map("profile_id")
+  company      String
+  title        String
+  locationText String?  @map("location_text")
+  description  String?
+  startYear    Int      @map("start_year")
+  startMonth   Int?     @map("start_month")
+  endYear      Int?     @map("end_year")
+  endMonth     Int?     @map("end_month")
+  isCurrent    Boolean  @default(false) @map("is_current")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, sortOrder])
+  @@map("social_profile_experiences")
+}
+
+/// Eğitim geçmişi (LinkedIn tarzı).
+model SocialProfileEducation {
+  id           String   @id @default(uuid(7))
+  profileId    String   @map("profile_id")
+  school       String
+  degree       String?
+  fieldOfStudy String?  @map("field_of_study")
+  description  String?
+  startYear    Int      @map("start_year")
+  startMonth   Int?     @map("start_month")
+  endYear      Int?     @map("end_year")
+  endMonth     Int?     @map("end_month")
+  isCurrent    Boolean  @default(false) @map("is_current")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, sortOrder])
+  @@map("social_profile_education")
 }
 
 /// Kayıtta seçilen ilgi alanları; keşfet sıralamasında sinyal olarak kullanılır.

@@ -25,6 +25,8 @@ import {
   type SocialPost,
   type SocialPostComment,
   type SocialProfile,
+  type SocialProfileEducation,
+  type SocialProfileExperience,
   type StoryHighlight,
   type StoryHighlightDetail,
   type TrendingTopic,
@@ -43,6 +45,8 @@ import { type SocialAnalyticsSummary, SocialAnalyticsService } from './analytics
 import {
   CreateCommentDto,
   CreateContentReportDto,
+  CreateProfileEducationDto,
+  CreateProfileExperienceDto,
   CreatePostDto,
   CreateRequestFromPostDto,
   CreateStoryHighlightDto,
@@ -53,6 +57,8 @@ import {
   ReplaceInterestsDto,
   ShareRequestToFeedDto,
   TrendingQueryDto,
+  UpdateProfileEducationDto,
+  UpdateProfileExperienceDto,
   UpdateSocialProfileDto,
   UpdateStoryHighlightDto,
 } from './dto/social.dto';
@@ -62,6 +68,7 @@ import { FollowsService } from './follows.service';
 import { InteractionsService } from './interactions.service';
 import { ModerationService } from './moderation.service';
 import { PostsService } from './posts.service';
+import { ProfileCareerService } from './profile-career.service';
 import { ProfilesService } from './profiles.service';
 import { SocialBridgeService } from './social-bridge.service';
 import { StoryHighlightsService } from './story-highlights.service';
@@ -83,6 +90,7 @@ export class SocialController {
     private readonly bridge: SocialBridgeService,
     private readonly trending: TrendingService,
     private readonly storyHighlights: StoryHighlightsService,
+    private readonly profileCareer: ProfileCareerService,
     private readonly messages: MessagesService,
   ) {}
 
@@ -101,6 +109,68 @@ export class SocialController {
     @Body() dto: UpdateSocialProfileDto,
   ): Promise<SocialProfile> {
     return this.profiles.updateMe(user, dto);
+  }
+
+  @Post('profiles/me/experiences')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'İş deneyimi ekler' })
+  createExperience(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateProfileExperienceDto,
+  ): Promise<SocialProfileExperience> {
+    return this.profileCareer.createExperience(user, dto);
+  }
+
+  @Patch('profiles/me/experiences/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'İş deneyimini günceller' })
+  updateExperience(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProfileExperienceDto,
+  ): Promise<SocialProfileExperience> {
+    return this.profileCareer.updateExperience(user, id, dto);
+  }
+
+  @Delete('profiles/me/experiences/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'İş deneyimini siler' })
+  deleteExperience(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.profileCareer.deleteExperience(user, id);
+  }
+
+  @Post('profiles/me/education')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Eğitim kaydı ekler' })
+  createEducation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateProfileEducationDto,
+  ): Promise<SocialProfileEducation> {
+    return this.profileCareer.createEducation(user, dto);
+  }
+
+  @Patch('profiles/me/education/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Eğitim kaydını günceller' })
+  updateEducation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProfileEducationDto,
+  ): Promise<SocialProfileEducation> {
+    return this.profileCareer.updateEducation(user, id, dto);
+  }
+
+  @Delete('profiles/me/education/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Eğitim kaydını siler' })
+  deleteEducation(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.profileCareer.deleteEducation(user, id);
   }
 
   @Public()

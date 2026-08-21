@@ -134,6 +134,10 @@ export const API_ROUTES = {
   },
   social: {
     me: '/social/profiles/me',
+    profileExperiences: '/social/profiles/me/experiences',
+    profileExperience: (id: string) => `/social/profiles/me/experiences/${id}`,
+    profileEducation: '/social/profiles/me/education',
+    profileEducationItem: (id: string) => `/social/profiles/me/education/${id}`,
     usernameAvailability: (username: string) =>
       `/social/profiles/availability/${encodeURIComponent(username)}`,
     profileByUsername: (username: string) => `/social/profiles/${username}`,
