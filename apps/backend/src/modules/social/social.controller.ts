@@ -25,6 +25,8 @@ import {
   type SocialPost,
   type SocialPostComment,
   type SocialProfile,
+  type StoryHighlight,
+  type StoryHighlightDetail,
   type TrendingTopic,
 } from '@talpio/types';
 
@@ -43,6 +45,8 @@ import {
   CreateContentReportDto,
   CreatePostDto,
   CreateRequestFromPostDto,
+  CreateStoryHighlightDto,
+  AddStoryHighlightItemDto,
   DiscoverFeedQueryDto,
   FeedQueryDto,
   ListSocialQueryDto,
@@ -50,6 +54,7 @@ import {
   ShareRequestToFeedDto,
   TrendingQueryDto,
   UpdateSocialProfileDto,
+  UpdateStoryHighlightDto,
 } from './dto/social.dto';
 import type { FeedPage } from './feed.service';
 import { FeedService } from './feed.service';
@@ -59,6 +64,7 @@ import { ModerationService } from './moderation.service';
 import { PostsService } from './posts.service';
 import { ProfilesService } from './profiles.service';
 import { SocialBridgeService } from './social-bridge.service';
+import { StoryHighlightsService } from './story-highlights.service';
 import { TrendingService } from './trending.service';
 
 @ApiTags('Social')
@@ -76,6 +82,7 @@ export class SocialController {
     private readonly moderation: ModerationService,
     private readonly bridge: SocialBridgeService,
     private readonly trending: TrendingService,
+    private readonly storyHighlights: StoryHighlightsService,
     private readonly messages: MessagesService,
   ) {}
 
@@ -108,6 +115,83 @@ export class SocialController {
   @ApiOperation({ summary: 'Kullanıcı adına göre sosyal profil' })
   getByUsername(@Param('username') username: string): Promise<SocialProfile> {
     return this.profiles.getByUsername(username);
+  }
+
+  @Public()
+  @Get('profiles/:username/stories')
+  @ApiOperation({ summary: 'Profilin aktif (24 saat) hikâyeleri' })
+  listProfileStories(@Param('username') username: string): Promise<{ items: SocialPost[] }> {
+    return this.storyHighlights.listActiveStories(username).then((items) => ({ items }));
+  }
+
+  @Public()
+  @Get('profiles/:username/highlights')
+  @ApiOperation({ summary: 'Profilin öne çıkan hikâye koleksiyonları' })
+  listProfileHighlights(@Param('username') username: string): Promise<{ items: StoryHighlight[] }> {
+    return this.storyHighlights.listByUsername(username).then((items) => ({ items }));
+  }
+
+  @Public()
+  @Get('profiles/:username/highlights/:highlightId')
+  @ApiOperation({ summary: 'Öne çıkan hikâye koleksiyonu detayı' })
+  getProfileHighlight(
+    @Param('username') username: string,
+    @Param('highlightId', ParseUUIDPipe) highlightId: string,
+  ): Promise<StoryHighlightDetail> {
+    return this.storyHighlights.getDetail(username, highlightId);
+  }
+
+  @Post('highlights')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Yeni öne çıkan hikâye koleksiyonu oluştur' })
+  createHighlight(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateStoryHighlightDto,
+  ): Promise<StoryHighlightDetail> {
+    return this.storyHighlights.create(user, dto);
+  }
+
+  @Patch('highlights/:highlightId')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Öne çıkan hikâye koleksiyonunu güncelle' })
+  updateHighlight(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('highlightId', ParseUUIDPipe) highlightId: string,
+    @Body() dto: UpdateStoryHighlightDto,
+  ): Promise<StoryHighlightDetail> {
+    return this.storyHighlights.update(user, highlightId, dto);
+  }
+
+  @Delete('highlights/:highlightId')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Öne çıkan hikâye koleksiyonunu sil' })
+  deleteHighlight(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('highlightId', ParseUUIDPipe) highlightId: string,
+  ): Promise<void> {
+    return this.storyHighlights.delete(user, highlightId);
+  }
+
+  @Post('highlights/:highlightId/items')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Öne çıkana hikâye ekle' })
+  addHighlightItem(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('highlightId', ParseUUIDPipe) highlightId: string,
+    @Body() dto: AddStoryHighlightItemDto,
+  ): Promise<StoryHighlightDetail> {
+    return this.storyHighlights.addItem(user, highlightId, dto);
+  }
+
+  @Delete('highlights/:highlightId/items/:postId')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Öne çıkandan hikâye kaldır' })
+  removeHighlightItem(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('highlightId', ParseUUIDPipe) highlightId: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ): Promise<StoryHighlightDetail> {
+    return this.storyHighlights.removeItem(user, highlightId, postId);
   }
 
   @Public()

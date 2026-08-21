@@ -10,6 +10,7 @@ import { apiClient } from '@/lib/api';
 import { t } from '@/lib/i18n';
 
 import { useCompose } from './compose-context';
+import { useHighlightPicker } from './profile-highlights';
 import { groupStories, StoryViewer } from './story-viewer';
 import { useSocialMe } from './use-social';
 
@@ -30,6 +31,8 @@ export function StoriesRail() {
     () => groupStories(stories.data?.items ?? [], me.data?.id),
     [stories.data?.items, me.data?.id],
   );
+  const ownUsername = me.data?.username ?? '';
+  const highlightPicker = useHighlightPicker(ownUsername);
 
   if (!session.data) return null;
 
@@ -135,6 +138,28 @@ export function StoriesRail() {
           groups={groups}
           startGroup={openIndex}
           onClose={() => setOpenIndex(null)}
+          onAddToHighlight={
+            groups[openIndex]?.author.id === me.data?.id
+              ? (postId) => {
+                  void highlightPicker.create.mutateAsync({
+                    title: t('social.newHighlight'),
+                    postId,
+                  });
+                }
+              : undefined
+          }
+          highlights={
+            groups[openIndex]?.author.id === me.data?.id
+              ? highlightPicker.highlights.data?.items
+              : undefined
+          }
+          onPickHighlight={
+            groups[openIndex]?.author.id === me.data?.id
+              ? (highlightId, postId) => {
+                  void highlightPicker.addItem.mutateAsync({ highlightId, postId });
+                }
+              : undefined
+          }
         />
       ) : null}
     </>

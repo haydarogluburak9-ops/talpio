@@ -49,6 +49,7 @@ export class SocialMaintenanceService {
         saveCount: 0,
         shareCount: 0,
         media: { some: {} },
+        highlightItems: { none: {} },
       },
       select: {
         id: true,

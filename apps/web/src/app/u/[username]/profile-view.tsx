@@ -11,6 +11,7 @@ import { useSession } from '@/features/auth/use-session';
 import { ReviewList } from '@/features/reviews/review-list';
 import { useProviderReviews } from '@/features/reviews/use-reviews';
 import { PostCard } from '@/features/social/post-card';
+import { ProfileHighlightsSection } from '@/features/social/profile-highlights';
 import { ProfileHeader } from '@/features/social/profile-header';
 import { SocialShell } from '@/features/social/social-shell';
 import {
@@ -107,6 +108,7 @@ export function SocialProfileView() {
           onOpenFollowers={() => setTab('followers')}
           onOpenFollowing={() => setTab('following')}
         />
+        <ProfileHighlightsSection profile={profile.data} isOwn={isOwn} />
       </div>
 
       {tabs.length > 0 ? (

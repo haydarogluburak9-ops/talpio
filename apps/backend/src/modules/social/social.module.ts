@@ -19,6 +19,7 @@ import { SocialBridgeService } from './social-bridge.service';
 import { SocialController } from './social.controller';
 import { SocialMaintenanceService } from './social-maintenance.service';
 import { SocialRealtimeService } from './social-realtime.service';
+import { StoryHighlightsService } from './story-highlights.service';
 import { TrendingService } from './trending.service';
 
 @Module({
@@ -38,7 +39,8 @@ import { TrendingService } from './trending.service';
     SocialBridgeService,
     SocialRealtimeService,
     SocialMaintenanceService,
+    StoryHighlightsService,
   ],
-  exports: [ProfilesService, PostsService, FeedService, SocialBridgeService, CategoryFollowsService, SocialRealtimeService],
+  exports: [ProfilesService, PostsService, FeedService, SocialBridgeService, CategoryFollowsService, SocialRealtimeService, StoryHighlightsService],
 })
 export class SocialModule {}

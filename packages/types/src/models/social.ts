@@ -119,6 +119,23 @@ export interface SocialPostComment extends BaseEntity {
   author?: SocialProfile | null;
 }
 
+/** Profilde kalıcı hikâye koleksiyonu (Instagram öne çıkanlar). */
+export interface StoryHighlight {
+  id: string;
+  profileId: string;
+  title: string;
+  coverUrl?: string | null;
+  itemCount: number;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Öne çıkan hikâye koleksiyonu ve içindeki gönderiler. */
+export interface StoryHighlightDetail extends StoryHighlight {
+  items: SocialPost[];
+}
+
 export interface FeedItem {
   id: string;
   kind: FeedItemKind;

@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
 import { useFollow, useProfilePosts, useReportContent, useSocialProfile } from './use-social';
+import { ProfileHighlightsSection } from './profile-highlights';
 
 export function PublicProfileScreen({
   username,
@@ -94,6 +95,8 @@ export function PublicProfileScreen({
           style={{ marginTop: spacing.sm }}
         />
       </Card>
+
+      <ProfileHighlightsSection profile={row} />
 
       {items.length === 0 ? <EmptyState title={t('social.feedEmpty')} /> : null}
       {items.map((post) => (

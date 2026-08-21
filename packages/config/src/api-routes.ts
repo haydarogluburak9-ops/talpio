@@ -166,6 +166,15 @@ export const API_ROUTES = {
     /** Story / reel omurgası (iskelet) */
     saved: '/social/saved',
     stories: '/social/stories',
+    highlights: '/social/highlights',
+    highlightById: (id: string) => `/social/highlights/${id}`,
+    highlightItems: (id: string) => `/social/highlights/${id}/items`,
+    highlightItem: (highlightId: string, postId: string) =>
+      `/social/highlights/${highlightId}/items/${postId}`,
+    profileStories: (username: string) => `/social/profiles/${username}/stories`,
+    profileHighlights: (username: string) => `/social/profiles/${username}/highlights`,
+    profileHighlight: (username: string, highlightId: string) =>
+      `/social/profiles/${username}/highlights/${highlightId}`,
     groupConversations: '/social/group-conversations',
   },
   notifications: {

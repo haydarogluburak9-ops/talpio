@@ -1,7 +1,7 @@
 'use client';
 
-import type { SocialPost, SocialProfile } from '@talpio/types';
-import { X } from 'lucide-react';
+import type { SocialPost, SocialProfile, StoryHighlight } from '@talpio/types';
+import { Bookmark, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -36,13 +36,23 @@ export function StoryViewer({
   groups,
   startGroup,
   onClose,
+  persistTimer = false,
+  onAddToHighlight,
+  highlights,
+  onPickHighlight,
 }: {
   groups: StoryGroup[];
   startGroup: number;
   onClose: () => void;
+  /** Öne çıkan hikâyelerde otomatik ilerleme kapalı kalabilir. */
+  persistTimer?: boolean;
+  onAddToHighlight?: (postId: string) => void;
+  highlights?: StoryHighlight[];
+  onPickHighlight?: (highlightId: string, postId: string) => void;
 }) {
   const [groupIndex, setGroupIndex] = useState(startGroup);
   const [itemIndex, setItemIndex] = useState(0);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const group = groups[groupIndex];
   const post = group?.posts[itemIndex];
   const media = post?.media[0];
@@ -74,11 +84,11 @@ export function StoryViewer({
   });
 
   useEffect(() => {
-    if (!post) return;
+    if (!post || persistTimer) return;
     const timer = window.setTimeout(() => goNext(), STORY_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupIndex, itemIndex, post?.id]);
+  }, [groupIndex, itemIndex, post?.id, persistTimer]);
 
   function goNext() {
     if (!group) return;
@@ -124,6 +134,56 @@ export function StoryViewer({
       >
         <X className="size-5" />
       </button>
+
+      {onAddToHighlight && post ? (
+        <button
+          type="button"
+          className="absolute top-4 right-16 z-10 grid size-10 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+          aria-label={t('social.addToHighlight')}
+          onClick={() => {
+            if (highlights?.length && onPickHighlight) setPickerOpen(true);
+            else onAddToHighlight(post.id);
+          }}
+        >
+          <Bookmark className="size-5" />
+        </button>
+      ) : null}
+
+      {pickerOpen && post && highlights && onPickHighlight ? (
+        <div className="absolute inset-x-4 bottom-24 z-20 max-h-48 overflow-y-auto rounded-2xl bg-black/85 p-2">
+          {highlights.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-white hover:bg-white/10"
+              onClick={() => {
+                onPickHighlight(item.id, post.id);
+                setPickerOpen(false);
+              }}
+            >
+              {item.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.coverUrl} alt="" className="size-9 rounded-full object-cover" />
+              ) : (
+                <span className="grid size-9 place-items-center rounded-full bg-brand-700 text-xs font-bold">
+                  {item.title.slice(0, 1)}
+                </span>
+              )}
+              <span className="text-sm font-medium">{item.title}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm font-semibold text-accent-300 hover:bg-white/10"
+            onClick={() => {
+              setPickerOpen(false);
+              onAddToHighlight(post.id);
+            }}
+          >
+            + {t('social.newHighlight')}
+          </button>
+        </div>
+      ) : null}
 
       <div className="relative h-[min(92svh,820px)] w-full max-w-[420px] overflow-hidden rounded-[1.5rem] bg-brand-950 shadow-2xl">
         <div className="absolute inset-x-3 top-3 z-10 flex gap-1">

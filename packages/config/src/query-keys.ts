@@ -95,6 +95,10 @@ export const queryKeys = {
       ['social', 'hashtag', slug, params ?? {}] as const,
     saved: () => ['social', 'saved'] as const,
     stories: () => ['social', 'stories'] as const,
+    profileStories: (username: string) => ['social', 'profile-stories', username] as const,
+    profileHighlights: (username: string) => ['social', 'profile-highlights', username] as const,
+    profileHighlight: (username: string, highlightId: string) =>
+      ['social', 'profile-highlight', username, highlightId] as const,
     groups: () => ['social', 'groups'] as const,
   },
   payments: {

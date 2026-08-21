@@ -7,6 +7,7 @@ import type {
   SocialPostComment,
   SocialPostPromo,
   SocialProfile,
+  StoryHighlight,
 } from '@talpio/types';
 
 export const socialProfileSelect = {
@@ -306,5 +307,44 @@ export function toFeedItem(
     score: extras.score ?? row.score,
     createdAt: row.createdAt.toISOString(),
     post: row.post && !row.post.deletedAt ? toSocialPost(row.post, fileBaseUrl, extras) : null,
+  };
+}
+
+type HighlightRow = {
+  id: string;
+  profileId: string;
+  title: string;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+  cover?: { storageKey: string; isPublic: boolean } | null;
+  _count: { items: number };
+  items?: Array<{
+    post?: {
+      media?: Array<{ file: { storageKey: string; isPublic: boolean } }>;
+    };
+  }>;
+};
+
+export function toStoryHighlight(row: HighlightRow, fileBaseUrl: string): StoryHighlight {
+  let coverUrl: string | null = null;
+  if (row.cover?.isPublic) {
+    coverUrl = resolveAssetUrl(fileBaseUrl, row.cover.storageKey);
+  } else {
+    const firstMedia = row.items?.[0]?.post?.media?.[0]?.file;
+    if (firstMedia?.isPublic) {
+      coverUrl = resolveAssetUrl(fileBaseUrl, firstMedia.storageKey);
+    }
+  }
+
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    title: row.title,
+    coverUrl,
+    itemCount: row._count.items,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }

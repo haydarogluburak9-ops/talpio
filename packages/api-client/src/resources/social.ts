@@ -12,6 +12,8 @@ import type {
   SocialPost,
   SocialPostComment,
   SocialProfile,
+  StoryHighlight,
+  StoryHighlightDetail,
   TrendingTopic,
 } from '@talpio/types';
 
@@ -76,6 +78,22 @@ export interface FeedCursorMeta {
 export interface SocialFeedPage {
   items: FeedItem[];
   meta: FeedCursorMeta;
+}
+
+export interface CreateStoryHighlightBody {
+  title: string;
+  postId?: string;
+  coverFileId?: string;
+}
+
+export interface UpdateStoryHighlightBody {
+  title?: string;
+  coverFileId?: string | null;
+  sortOrder?: number;
+}
+
+export interface AddStoryHighlightItemBody {
+  postId: string;
 }
 
 export function createSocialResource(http: HttpClient) {
@@ -323,6 +341,64 @@ export function createSocialResource(http: HttpClient) {
       return http.get<{ items: SocialPost[]; comingSoon?: boolean }>(API_ROUTES.social.stories, {
         ...(signal ? { signal } : {}),
       });
+    },
+
+    listProfileStories(
+      username: string,
+      signal?: AbortSignal,
+    ): Promise<{ items: SocialPost[] }> {
+      return http.get<{ items: SocialPost[] }>(API_ROUTES.social.profileStories(username), {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    listProfileHighlights(
+      username: string,
+      signal?: AbortSignal,
+    ): Promise<{ items: StoryHighlight[] }> {
+      return http.get<{ items: StoryHighlight[] }>(API_ROUTES.social.profileHighlights(username), {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    getProfileHighlight(
+      username: string,
+      highlightId: string,
+      signal?: AbortSignal,
+    ): Promise<StoryHighlightDetail> {
+      return http.get<StoryHighlightDetail>(
+        API_ROUTES.social.profileHighlight(username, highlightId),
+        { ...(signal ? { signal } : {}),
+        },
+      );
+    },
+
+    createHighlight(body: CreateStoryHighlightBody): Promise<StoryHighlightDetail> {
+      return http.post<StoryHighlightDetail>(API_ROUTES.social.highlights, body);
+    },
+
+    updateHighlight(
+      highlightId: string,
+      body: UpdateStoryHighlightBody,
+    ): Promise<StoryHighlightDetail> {
+      return http.patch<StoryHighlightDetail>(API_ROUTES.social.highlightById(highlightId), body);
+    },
+
+    deleteHighlight(highlightId: string): Promise<void> {
+      return http.delete<void>(API_ROUTES.social.highlightById(highlightId));
+    },
+
+    addHighlightItem(
+      highlightId: string,
+      body: AddStoryHighlightItemBody,
+    ): Promise<StoryHighlightDetail> {
+      return http.post<StoryHighlightDetail>(API_ROUTES.social.highlightItems(highlightId), body);
+    },
+
+    removeHighlightItem(highlightId: string, postId: string): Promise<StoryHighlightDetail> {
+      return http.delete<StoryHighlightDetail>(
+        API_ROUTES.social.highlightItem(highlightId, postId),
+      );
     },
 
     listGroupConversations(

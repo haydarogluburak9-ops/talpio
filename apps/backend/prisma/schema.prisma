@@ -1068,6 +1068,7 @@ model FileAsset {
   postMedia          PostMedia[]
   socialAvatars      SocialProfile[]     @relation("SocialAvatar")
   socialCovers       SocialProfile[]     @relation("SocialCover")
+  storyHighlightCovers StoryHighlight[]  @relation("HighlightCover")
   crmNotes           CrmCustomerNote[]
 
   @@index([ownerUserId])
@@ -2508,6 +2509,7 @@ model SocialProfile {
   shares            PostShare[]
   views             PostView[]
   hides             PostHide[]
+  storyHighlights   StoryHighlight[]
 
   @@index([kind, deletedAt])
   @@index([locationCityId])
@@ -2542,6 +2544,40 @@ model Follow {
   @@index([followingProfileId, createdAt])
   @@index([followerProfileId, createdAt])
   @@map("follows")
+}
+
+/// Profilde kalıcı hikâye koleksiyonları (Instagram öne çıkanlar).
+model StoryHighlight {
+  id          String   @id @default(uuid(7))
+  profileId   String   @map("profile_id")
+  title       String
+  coverFileId String?  @map("cover_file_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  profile SocialProfile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  cover   FileAsset?           @relation("HighlightCover", fields: [coverFileId], references: [id], onDelete: SetNull)
+  items   StoryHighlightItem[]
+
+  @@index([profileId, sortOrder])
+  @@map("story_highlights")
+}
+
+model StoryHighlightItem {
+  id          String   @id @default(uuid(7))
+  highlightId String   @map("highlight_id")
+  postId      String   @map("post_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  highlight StoryHighlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+  post      Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([highlightId, postId])
+  @@index([highlightId, sortOrder])
+  @@index([postId])
+  @@map("story_highlight_items")
 }
 
 model Post {
@@ -2589,6 +2625,7 @@ model Post {
   views           PostView[]
   hides           PostHide[]
   campaignLinks   CampaignPost[]
+  highlightItems  StoryHighlightItem[]
 
   @@index([authorProfileId, createdAt])
   @@index([createdAt])

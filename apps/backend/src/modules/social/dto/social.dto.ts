@@ -207,6 +207,51 @@ export class CreatePostDto {
   originalPostId?: string;
 }
 
+export class CreateStoryHighlightDto {
+  @ApiProperty({ description: 'Öne çıkan koleksiyon adı' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  title!: string;
+
+  @ApiPropertyOptional({ description: 'İlk hikâye gönderisi' })
+  @IsOptional()
+  @IsUUID()
+  postId?: string;
+
+  @ApiPropertyOptional({ description: 'Kapak görseli dosya kimliği' })
+  @IsOptional()
+  @IsUUID()
+  coverFileId?: string;
+}
+
+export class UpdateStoryHighlightDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  title?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  coverFileId?: string | null;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+}
+
+export class AddStoryHighlightItemDto {
+  @ApiProperty({ description: 'Öne çıkana eklenecek gönderi' })
+  @IsUUID()
+  postId!: string;
+}
+
 export class CreateRequestFromPostDto {
   @ApiPropertyOptional({ description: 'true ise draft yerine yayınlar' })
   @IsOptional()
