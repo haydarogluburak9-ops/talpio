@@ -3,16 +3,6 @@ export interface NavItem {
   labelKey: string;
 }
 
-/** Üst menü (giriş sonrası / genel). */
-export const primaryNav: NavItem[] = [
-  { href: '/akis', labelKey: 'nav.feed' },
-  { href: '/kesfet', labelKey: 'nav.discover' },
-  { href: '/kategoriler', labelKey: 'nav.categories' },
-  { href: '/tedarik', labelKey: 'nav.newSupplyRequest' },
-  { href: '/nasil-calisir', labelKey: 'nav.howItWorks' },
-  { href: '/satici/panel', labelKey: 'nav.myBusiness' },
-];
-
 export const footerNav: { titleKey: string; items: NavItem[] }[] = [
   {
     titleKey: 'nav.categories',

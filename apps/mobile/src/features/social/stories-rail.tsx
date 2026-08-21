@@ -99,7 +99,12 @@ export function StoriesRail() {
       ) : null}
       {composing ? <StoryComposer onDone={() => setComposing(false)} /> : null}
       {openIndex != null && groups[openIndex] ? (
-        <StoryViewer groups={groups} startGroup={openIndex} onClose={() => setOpenIndex(null)} />
+        <StoryViewer
+          groups={groups}
+          startGroup={openIndex}
+          meId={me.data?.id}
+          onClose={() => setOpenIndex(null)}
+        />
       ) : null}
     </View>
   );

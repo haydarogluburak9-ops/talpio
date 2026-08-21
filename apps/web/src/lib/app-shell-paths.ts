@@ -27,7 +27,7 @@ export function isAuthPath(pathname: string): boolean {
   return roots.some((root) => pathname === root || pathname.startsWith(`${root}/`));
 }
 
-/** Ana sayfa + auth — üstte SaaS tarzı nav yok, yalnızca logo ve CTA. */
+/** Ana sayfa, yasal ve diğer public sayfalar — SaaS tarzı üst menü yok. */
 export function isMinimalHeaderPath(pathname: string): boolean {
-  return pathname === '/' || isAuthPath(pathname);
+  return !isAppShellPath(pathname);
 }

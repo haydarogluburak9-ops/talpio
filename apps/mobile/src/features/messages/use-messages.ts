@@ -83,6 +83,19 @@ export function useOpenConversation() {
   });
 }
 
+/** Profil sahibiyle doğrudan sohbet açar. */
+export function useMessageProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (username: string) => apiClient.social.messageProfile(username),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.conversations() });
+    },
+  });
+}
+
 export function flattenConversationPages(
   pages: { items: Conversation[] }[] | undefined,
 ): Conversation[] {

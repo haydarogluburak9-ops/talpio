@@ -1,6 +1,5 @@
 'use client';
 
-import { BrandMark } from '@talpio/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -8,61 +7,28 @@ import { isAppShellPath, isAuthPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
 import { footerNav } from '@/lib/navigation';
 
-const COPYRIGHT_YEAR = 2026;
+const publicFooterLinks = footerNav.flatMap((group) => group.items);
 
 export function SiteFooter() {
   const pathname = usePathname();
-  // Public landing referans kompozisyonunda büyük footer yok; app shell'de de gizli.
+
   if (pathname === '/' || isAppShellPath(pathname) || isAuthPath(pathname)) return null;
 
   return (
-    <footer className="relative mt-auto overflow-hidden bg-brand-900 text-brand-100">
-      <div className="hero-atmosphere pointer-events-none absolute inset-0 opacity-80" aria-hidden />
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
-        <div className="flex flex-col gap-3">
-          <BrandMark className="h-12 w-12 sm:h-14 sm:w-14" />
-          <p className="max-w-xs text-sm leading-relaxed text-brand-100/75 text-balance-safe">
-            {t('common.tagline')}
-          </p>
-        </div>
-
-        {footerNav.map((group) => (
-          <nav key={group.titleKey} className="flex flex-col gap-2.5">
-            <span className="font-display text-sm font-semibold tracking-wide text-white">
-              {t(group.titleKey)}
-            </span>
-            {group.items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm text-brand-200/80 transition-colors hover:text-accent-400"
-              >
-                {t(item.labelKey)}
-              </Link>
-            ))}
-          </nav>
-        ))}
-
-        <nav className="flex flex-col gap-2.5">
-          <span className="font-display text-sm font-semibold tracking-wide text-white">
-            {t('system.statusTitle')}
-          </span>
-          <Link
-            href="/sistem-durumu"
-            className="text-sm text-brand-200/80 transition-colors hover:text-accent-400"
-          >
-            {t('system.statusTitle')}
+    <footer className="mt-auto border-t border-[#E8EBF0] bg-white px-4 py-6">
+      <nav
+        aria-label={t('nav.legal')}
+        className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-xs text-[#8E8E8E]"
+      >
+        {publicFooterLinks.map((item) => (
+          <Link key={`${item.href}-${item.labelKey}`} href={item.href} className="hover:underline">
+            {t(item.labelKey)}
           </Link>
-        </nav>
-      </div>
-
-      <div className="relative z-10 border-t border-white/10">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-xs text-brand-300/70 sm:px-6 lg:px-8">
-          <span>
-            © {COPYRIGHT_YEAR} {t('common.appName')}
-          </span>
-        </div>
-      </div>
+        ))}
+        <span>
+          © {new Date().getFullYear()} {t('common.appName')}
+        </span>
+      </nav>
     </footer>
   );
 }

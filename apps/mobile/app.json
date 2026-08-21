@@ -3,7 +3,7 @@
     "name": "Talpio",
     "slug": "talpio",
     "scheme": "talpio",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -11,9 +11,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.talpio.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "İş talebinize fotoğraf eklemek için kameraya erişim gerekir.",
-        "NSPhotoLibraryUsageDescription": "İş talebinize fotoğraf eklemek için galeriye erişim gerekir.",
-        "NSLocationWhenInUseUsageDescription": "Size en yakın satıcıları gösterebilmek için konumunuza erişim gerekir.",
+        "NSCameraUsageDescription": "Hikâye, gönderi ve iş talebine fotoğraf eklemek için kameraya erişim gerekir.",
+        "NSPhotoLibraryUsageDescription": "Hikâye, gönderi ve iş talebine fotoğraf eklemek için galeriye erişim gerekir.",
+        "NSLocationWhenInUseUsageDescription": "Size en yakın mağaza ve satıcıları gösterebilmek için konumunuza erişim gerekir.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -51,14 +51,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "İş talebinize fotoğraf eklemek için galeriye erişim gerekir.",
-          "cameraPermission": "İş talebinize fotoğraf eklemek için kameraya erişim gerekir."
+          "photosPermission": "Hikâye, gönderi ve iş talebine fotoğraf eklemek için galeriye erişim gerekir.",
+          "cameraPermission": "Hikâye, gönderi ve iş talebine fotoğraf eklemek için kameraya erişim gerekir."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Size en yakın satıcıları gösterebilmek için konumunuza erişim gerekir."
+          "locationWhenInUsePermission": "Size en yakın mağaza ve satıcıları gösterebilmek için konumunuza erişim gerekir."
         }
       ],
       "expo-localization"

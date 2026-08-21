@@ -1,7 +1,7 @@
 'use client';
 
 import { BrandLockup, cn } from '@talpio/ui';
-import { Menu, Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { NotificationBell } from '@/features/notifications/notification-bell';
 import { isAppShellPath, isAuthPath, isMinimalHeaderPath } from '@/lib/app-shell-paths';
 import { t } from '@/lib/i18n';
-import { primaryNav } from '@/lib/navigation';
 
 import { HeaderAccount } from './header-account';
 import { LanguageSwitcher } from './language-switcher';
@@ -24,16 +23,8 @@ export function SiteHeader() {
   const authPage = isAuthPath(pathname);
 
   if (authPage) return null;
-  const [menu, setMenu] = useState({ isOpen: false, path: pathname });
+
   const [query, setQuery] = useState('');
-
-  // Yönlendirmeden sonra açık kalan menü mobilde içeriğin üstünü kapatır.
-  if (menu.path !== pathname) setMenu({ isOpen: false, path: pathname });
-
-  const isMenuOpen = menu.isOpen;
-  const toggleMenu = () => setMenu((current) => ({ ...current, isOpen: !current.isOpen }));
-  const navItems = primaryNav;
-  const showTopNav = !socialMode && !minimalHeader;
 
   return (
     <header
@@ -44,7 +35,7 @@ export function SiteHeader() {
           ? 'border-border/70 bg-white shadow-[0_1px_0_rgb(2_27_50_/_0.05)] dark:bg-white'
           : landingMode
             ? 'bg-white text-[#0D1B2A]'
-            : 'border-border/60 bg-surface/80 shadow-[0_1px_0_rgb(2_27_50_/_0.04)] backdrop-blur-xl',
+            : 'border-[#E8EBF0] bg-white text-[#0D1B2A]',
       )}
     >
       <div
@@ -88,29 +79,6 @@ export function SiteHeader() {
               />
             </label>
           </form>
-        ) : showTopNav ? (
-          <nav
-            aria-label={t('nav.mainMenu')}
-            className="ml-4 hidden items-center gap-0.5 lg:flex"
-          >
-            {navItems.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    active
-                      ? 'nav-link-active font-semibold'
-                      : 'text-foreground-muted hover:bg-brand-50 hover:text-brand-900 dark:hover:bg-white/5 dark:hover:text-foreground',
-                  )}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-          </nav>
         ) : (
           <div className="flex-1" aria-hidden />
         )}
@@ -123,7 +91,7 @@ export function SiteHeader() {
               <NotificationBell />
               <HeaderAccount variant="avatar" />
             </>
-          ) : landingMode || minimalHeader ? (
+          ) : minimalHeader ? (
             <>
               {landingMode ? (
                 <button
@@ -140,9 +108,7 @@ export function SiteHeader() {
                 href="/giris"
                 className={cn(
                   'rounded-lg px-3 py-2 text-sm font-medium hover:bg-[#F4F6F8]',
-                  landingMode
-                    ? 'text-[#0D1B2A]'
-                    : 'text-foreground-muted hover:text-foreground',
+                  landingMode ? 'text-[#0D1B2A]' : 'text-[#475467] hover:text-[#0D1B2A]',
                 )}
               >
                 {t('nav.login')}
@@ -159,86 +125,9 @@ export function SiteHeader() {
                 {t('nav.freeRegister')}
               </Link>
             </>
-          ) : (
-            <>
-              <LanguageSwitcher />
-              <ThemeToggle variant="labeled" />
-              <div className="hidden sm:block">
-                <HeaderAccount />
-              </div>
-            </>
-          )}
-
-          <button
-            type="button"
-            className={cn(
-              'grid size-10 place-items-center rounded-xl md:hidden',
-              socialMode && 'hidden',
-              minimalHeader && 'hidden',
-              landingMode ? 'text-[#0D1B2A] hover:bg-[#F4F6F8]' : 'hover:bg-surface-muted',
-            )}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav"
-            aria-label={isMenuOpen ? t('common.close') : t('nav.openMenu')}
-            onClick={toggleMenu}
-          >
-            {isMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
+          ) : null}
         </div>
       </div>
-
-      {isMenuOpen && showTopNav ? (
-        <div
-          id="mobile-nav"
-          className={cn(
-            'border-t md:hidden',
-            landingMode ? 'border-[#E8EBF0] bg-white' : 'border-border bg-surface/98',
-          )}
-        >
-          <nav
-            aria-label={t('nav.mainMenu')}
-            className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6"
-          >
-            {navItems.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'rounded-xl px-3 py-3 text-sm font-medium hover:bg-surface-muted',
-                    active && 'nav-link-active font-semibold',
-                  )}
-                >
-                  {t(item.labelKey)}
-                </Link>
-              );
-            })}
-            {!socialMode ? (
-              <div className="mt-2 flex items-center gap-2 sm:hidden">
-                <ThemeToggle variant="labeled" />
-                <HeaderAccount variant="mobile" />
-              </div>
-            ) : null}
-            {landingMode ? (
-              <div className="mt-2 flex flex-col gap-2 sm:hidden">
-                <Link
-                  href="/giris"
-                  className="rounded-xl px-3 py-3 text-center text-sm font-medium text-[#0D1B2A] ring-1 ring-[#E8EBF0]"
-                >
-                  {t('nav.login')}
-                </Link>
-                <Link
-                  href="/kayit"
-                  className="rounded-xl bg-accent-500 px-3 py-3 text-center text-sm font-semibold text-white"
-                >
-                  {t('nav.freeRegister')}
-                </Link>
-              </div>
-            ) : null}
-          </nav>
-        </div>
-      ) : null}
     </header>
   );
 }

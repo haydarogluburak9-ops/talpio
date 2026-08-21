@@ -1,32 +1,41 @@
 {
   "platform": "Talpio",
-  "version": "0.1.0",
-  "status": "placeholder",
+  "version": "0.2.0",
+  "status": "ready-for-review",
   "ios": {
     "name": "Talpio",
     "subtitle": "İste. Teklif al. Fırsatı yakala.",
+    "promotionalText": "Mağazaları takip et, hikâyeleri izle, talep yayınla ve teklif al.",
+    "description": "Talpio; alıcılar, satıcılar ve işletmeleri bir araya getiren sosyal ticaret uygulamasıdır.\n\n• Akış ve Keşfet — Takip ettiğin mağazaların paylaşımlarını gör, ilgi alanlarına göre fırsat keşfet.\n• Hikâyeler — Mağazaların günlük kampanya ve vitrin paylaşımlarını izle; mesaj gönder.\n• Talep ve teklif — Ürün veya tedarik talebi oluştur, teklifleri karşılaştır, güvenli şekilde ilerle.\n• Mesajlaşma — Satıcılarla doğrudan veya sipariş üzerinden yazış.\n• Giriş — Kullanıcı adı, e-posta veya telefon ile oturum aç.\n\nKayıt sonrası ilgi alanlarını seç; akış ve keşfet deneyimin sana göre şekillensin.\n\nDestek: destek@talpio.com\nGizlilik: https://talpio.app/yasal/gizlilik",
+    "keywords": "talep,teklif,tedarik,mağaza,sosyal,alışveriş,hikaye,mesaj,fırsat",
     "bundleId": "com.talpio.app",
-    "privacyPolicyUrl": "https://talpio.com/yasal/gizlilik",
-    "termsUrl": "https://talpio.com/yasal/kullanim-kosullari",
-    "supportUrl": "https://talpio.com/destek",
-    "accountDeletion": "In-app: Settings → Delete account"
+    "privacyPolicyUrl": "https://talpio.app/yasal/gizlilik",
+    "termsUrl": "https://talpio.app/yasal/kullanim-kosullari",
+    "supportUrl": "https://talpio.app/destek",
+    "marketingUrl": "https://talpio.app",
+    "accountDeletion": "Uygulama içi: Hesabım → Hesabı sil"
   },
   "android": {
     "name": "Talpio",
     "package": "com.talpio.app",
-    "shortDescription": "Talep yayınla, teklif al, fırsatları takip et.",
-    "privacyPolicyUrl": "https://talpio.com/yasal/gizlilik",
+    "shortDescription": "Mağaza takip et, hikâye izle, talep yayınla ve teklif al.",
+    "fullDescription": "Talpio; alıcılar, satıcılar ve işletmeleri bir araya getiren sosyal ticaret uygulamasıdır.\n\nAkış ve Keşfet\nTakip ettiğin mağazaların paylaşımlarını gör. İlgi alanlarına, beğenilere ve takiplere göre yeni fırsatlar keşfet.\n\nHikâyeler\nMağazaların 24 saatlik kampanya ve vitrin paylaşımlarını izle. Yukarı kaydırarak doğrudan mesaj gönder.\n\nTalep ve teklif\nÜrün veya tedarik talebi oluştur, gelen teklifleri karşılaştır, işini güvenle ilerlet.\n\nMesajlaşma\nSatıcılarla birebir veya sipariş üzerinden yazış.\n\nKolay giriş\nKullanıcı adı, e-posta veya telefon numarası ile oturum aç.\n\nKayıt sonrası ilgi alanlarını seç; akış sana özel dolsun.\n\nDestek: destek@talpio.com\nGizlilik politikası: https://talpio.app/yasal/gizlilik",
+    "privacyPolicyUrl": "https://talpio.app/yasal/gizlilik",
     "supportEmail": "destek@talpio.com"
   },
   "permissions": {
-    "camera": "İş talebine fotoğraf eklemek için",
-    "photos": "İş talebine galeriden görsel eklemek için",
-    "location": "Yakın satıcıları göstermek için",
-    "notifications": "Eşleşen talep ve mesaj bildirimleri için (isteğe bağlı)"
+    "camera": "Hikâye, gönderi ve iş talebine fotoğraf eklemek için",
+    "photos": "Hikâye, gönderi ve iş talebine galeriden görsel eklemek için",
+    "location": "Yakın mağaza ve satıcıları göstermek için",
+    "notifications": "Mesaj, teklif ve eşleşen talep bildirimleri için (isteğe bağlı)"
+  },
+  "releaseNotes": {
+    "tr": "• Instagram tarzı hikâye jestleri: kaydır, dokun, mesaj gönder\n• Kayıt sonrası ilgi alanı seçimi\n• Kullanıcı adı, e-posta veya telefon ile giriş\n• Sosyal akış, keşfet ve mağaza takibi",
+    "en": "• Instagram-style story gestures: swipe, tap, reply\n• Interest onboarding after sign-up\n• Sign in with username, email, or phone\n• Social feed, discover, and store follows"
   },
   "notes": [
-    "Privacy Policy / Terms / KVKK metinleri TODO — lansman engeli.",
-    "EAS projectId placeholder. Gerçek store hesabı bağlanmadan submit edilmez.",
-    "Sahte indirme/puan iddiası kullanılmaz."
+    "Store metinleri sosyal ticaret + hikâye + ilgi alanı onboarding akışına göre güncellendi.",
+    "Sahte indirme/puan iddiası kullanılmaz.",
+    "Yasal metinler https://talpio.app/yasal/* altında."
   ]
 }
