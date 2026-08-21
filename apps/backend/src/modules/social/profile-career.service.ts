@@ -35,7 +35,7 @@ export class ProfileCareerService {
   ): Promise<SocialProfileExperience> {
     const profile = await this.profiles.ensurePersonalProfile(user.id);
     await this.assertExperienceLimit(profile.id);
-    this.assertDateRange(dto.startYear, dto.endYear, dto.isCurrent);
+    this.assertDateRange(dto.startYear, dto.endYear, dto.isCurrent ?? false);
 
     const row = await this.prisma.socialProfileExperience.create({
       data: {
@@ -106,7 +106,7 @@ export class ProfileCareerService {
   ): Promise<SocialProfileEducation> {
     const profile = await this.profiles.ensurePersonalProfile(user.id);
     await this.assertEducationLimit(profile.id);
-    this.assertDateRange(dto.startYear, dto.endYear, dto.isCurrent);
+    this.assertDateRange(dto.startYear, dto.endYear, dto.isCurrent ?? false);
 
     const row = await this.prisma.socialProfileEducation.create({
       data: {
@@ -190,24 +190,30 @@ export class ProfileCareerService {
   private async assertExperienceLimit(profileId: string): Promise<void> {
     const count = await this.prisma.socialProfileExperience.count({ where: { profileId } });
     if (count >= MAX_EXPERIENCES) {
-      throw AppException.badRequest('En fazla 20 iş deneyimi ekleyebilirsiniz.');
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'En fazla 20 iş deneyimi ekleyebilirsiniz.',
+      });
     }
   }
 
   private async assertEducationLimit(profileId: string): Promise<void> {
     const count = await this.prisma.socialProfileEducation.count({ where: { profileId } });
     if (count >= MAX_EDUCATION) {
-      throw AppException.badRequest('En fazla 20 eğitim kaydı ekleyebilirsiniz.');
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'En fazla 20 eğitim kaydı ekleyebilirsiniz.',
+      });
     }
   }
 
   private assertDateRange(startYear: number, endYear: number | null | undefined, isCurrent: boolean): void {
     const now = new Date().getFullYear();
     if (startYear < 1950 || startYear > now + 1) {
-      throw AppException.badRequest('Başlangıç yılı geçersiz.');
+      throw new AppException('VALIDATION_ERROR', { message: 'Başlangıç yılı geçersiz.' });
     }
     if (!isCurrent && endYear != null && endYear < startYear) {
-      throw AppException.badRequest('Bitiş yılı başlangıçtan önce olamaz.');
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Bitiş yılı başlangıçtan önce olamaz.',
+      });
     }
   }
 }

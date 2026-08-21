@@ -18,7 +18,7 @@ import { FilesService } from '@modules/files/files.service';
 import { ratioPercent, toFiniteNumber } from './business-profile.stats';
 import type { UpdateSocialProfileDto } from './dto/social.dto';
 import { CAMPAIGN_POST_TYPES, DEAL_POST_TYPES, PORTFOLIO_POST_TYPES } from './post-tabs';
-import { postInclude, socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, type SocialProfileRow } from './social.mapper';
+import { socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, type SocialProfileRow } from './social.mapper';
 import {
   isValidUsernameFormat,
   normalizeUsername,
