@@ -58,6 +58,10 @@ export const envSchema = z
     FEED_CACHE_TTL_SECONDS: z.coerce.number().int().min(0).max(600).default(45),
     STORY_TTL_HOURS: z.coerce.number().int().min(12).max(72).default(24),
     SOCIAL_MAINTENANCE_INTERVAL_MS: z.coerce.number().int().positive().default(3_600_000),
+    /** Lansman öncesi demo hikâyeleri otomatik yeniler; lansman sonrası false yapın. */
+    DEMO_STORY_REFRESH_ENABLED: booleanFromString.default(true),
+    /** Demo hikâye yenileme aralığı (ms). Varsayılan 12 saat. */
+    DEMO_STORY_REFRESH_INTERVAL_MS: z.coerce.number().int().positive().default(43_200_000),
     REALTIME_ENABLED: booleanFromString.default(true),
     /** Video küçük resmi için ffmpeg yolu; yoksa yalnızca görsel sıkıştırma yapılır. */
     FFMPEG_PATH: z.string().optional(),

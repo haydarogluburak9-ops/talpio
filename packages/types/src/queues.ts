@@ -56,7 +56,7 @@ export interface MediaAnalysisJobPayload {
 }
 
 export interface SocialMaintenanceJobPayload {
-  task: 'story_cleanup' | 'orphan_files' | 'purge_deleted_posts';
+  task: 'story_cleanup' | 'orphan_files' | 'purge_deleted_posts' | 'demo_story_refresh';
 }
 
 /** Son denemesi tükenen iş; ayrı kuyrukta incelenir, otomatik yeniden işlenmez. */

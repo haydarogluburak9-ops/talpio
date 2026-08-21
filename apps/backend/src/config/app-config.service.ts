@@ -219,6 +219,15 @@ export class AppConfigService {
     return this.get('STORY_TTL_HOURS');
   }
 
+  /** Lansman öncesi demo hikâye otomatik yenileme. */
+  get demoStoryRefreshEnabled(): boolean {
+    return this.get('DEMO_STORY_REFRESH_ENABLED');
+  }
+
+  get demoStoryRefreshIntervalMs(): number {
+    return this.get('DEMO_STORY_REFRESH_INTERVAL_MS');
+  }
+
   get realtimeEnabled(): boolean {
     return this.get('REALTIME_ENABLED');
   }

@@ -1,6 +1,7 @@
 import type { PrismaClient } from '../../../src/generated/prisma/client';
 import { PostType, PostVisibility } from '../../../src/generated/prisma/enums';
 
+import { refreshDemoStories } from '../../../src/modules/social/demo-story-refresh';
 import { DEMO_ACCOUNTS } from './demo-accounts';
 
 const IMG = {
@@ -738,59 +739,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
 
 /** Mevcut demo verisini silmeden 24 saatlik hikâye rayını yeniler. */
 export async function refreshStories(prisma: PrismaClient): Promise<number> {
-  const expired = await prisma.post.findMany({
-    where: { body: { contains: '#hikaye' }, deletedAt: null },
-    select: { id: true, authorProfileId: true },
-  });
-  if (expired.length) {
-    const ids = expired.map((row) => row.id);
-    await prisma.post.updateMany({
-      where: { id: { in: ids } },
-      data: { deletedAt: new Date() },
-    });
-    await prisma.feedItem.deleteMany({ where: { postId: { in: ids } } });
-  }
-
-  const usernames = [...new Set(STORY_POSTS.map((item) => item.author))];
-  const profiles = await prisma.socialProfile.findMany({
-    where: { username: { in: usernames }, deletedAt: null },
-    select: { id: true, username: true },
-  });
-  const byUsername = new Map(profiles.map((profile) => [profile.username, profile.id]));
-  let created = 0;
-
-  for (const item of STORY_POSTS) {
-    const authorId = byUsername.get(item.author);
-    if (!authorId || !item.image) continue;
-
-    const post = await prisma.post.create({
-      data: {
-        authorProfileId: authorId,
-        type: item.type,
-        body: item.body,
-        visibility: PostVisibility.PUBLIC,
-        createdAt: hoursAgo(item.hoursAgo),
-      },
-    });
-    await prisma.feedItem.create({
-      data: {
-        kind: 'POST',
-        postId: post.id,
-        authorProfileId: authorId,
-        createdAt: hoursAgo(item.hoursAgo),
-      },
-    });
-    const file = await upsertPublicImage(prisma, item.image, `${item.author}-story-${post.id}.jpg`);
-    await prisma.postMedia.create({
-      data: { postId: post.id, fileId: file.id, sortOrder: 0 },
-    });
-    await prisma.socialProfile.update({
-      where: { id: authorId },
-      data: { postCount: { increment: 1 } },
-    });
-    created += 1;
-  }
-
-  console.log(`  Hikâyeler yenilendi: ${created} yeni, ${expired.length} eski kapatıldı`);
+  const created = await refreshDemoStories(prisma);
+  console.log(`  Hikâyeler yenilendi: ${created} yeni demo hikâye`);
   return created;
 }

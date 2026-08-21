@@ -117,6 +117,9 @@ async function bootstrap(): Promise<void> {
         case 'story_cleanup':
           await socialMaintenance.cleanupExpiredStoryMedia();
           break;
+        case 'demo_story_refresh':
+          await socialMaintenance.refreshDemoStoriesIfEnabled();
+          break;
         case 'orphan_files':
           await socialMaintenance.purgeOrphanFiles();
           break;
@@ -150,6 +153,26 @@ async function bootstrap(): Promise<void> {
     setInterval(enqueueAll, intervalMs);
   };
   scheduleMaintenance();
+
+  const scheduleDemoStoryRefresh = () => {
+    if (!config.demoStoryRefreshEnabled) {
+      logger.log('Demo hikâye otomatik yenileme kapalı (DEMO_STORY_REFRESH_ENABLED=false)');
+      return;
+    }
+    const intervalMs = config.demoStoryRefreshIntervalMs;
+    const enqueue = () => {
+      void queues.enqueue(QUEUE_NAMES.SOCIAL_MAINTENANCE, {
+        idempotencyKey: `demo-story-refresh:${Math.floor(Date.now() / intervalMs)}`,
+        tenantId: 'system',
+        payload: { task: 'demo_story_refresh' },
+        enqueuedAt: new Date().toISOString(),
+      });
+    };
+    enqueue();
+    setInterval(enqueue, intervalMs);
+    logger.log(`Demo hikâye yenileme zamanlayıcısı aktif (${Math.round(intervalMs / 3_600_000)} saat)`);
+  };
+  scheduleDemoStoryRefresh();
 
   const shutdown = async () => {
     logger.log('Worker kapanıyor…');

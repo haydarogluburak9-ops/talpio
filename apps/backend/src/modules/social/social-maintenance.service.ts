@@ -5,6 +5,8 @@ import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { StorageService } from '@infra/storage/storage.service';
 
+import { refreshDemoStories } from './demo-story-refresh';
+
 @Injectable()
 export class SocialMaintenanceService {
   private readonly logger = new Logger(SocialMaintenanceService.name);
@@ -16,9 +18,20 @@ export class SocialMaintenanceService {
   ) {}
 
   async runAll(): Promise<void> {
+    await this.refreshDemoStoriesIfEnabled();
     await this.cleanupExpiredStoryMedia();
     await this.purgeOrphanFiles();
     await this.purgeSoftDeletedPosts();
+  }
+
+  /** Lansman öncesi: seed demo hikâyelerini periyodik yeniler. */
+  async refreshDemoStoriesIfEnabled(): Promise<number> {
+    if (!this.config.demoStoryRefreshEnabled) return 0;
+    const created = await refreshDemoStories(this.prisma);
+    if (created > 0) {
+      this.logger.log(`Demo hikâyeler yenilendi: ${created} yeni`);
+    }
+    return created;
   }
 
   /** 24 saatten eski, etkileşimsiz hikâye medyasını depodan kaldırır (gönderi kalır). */
