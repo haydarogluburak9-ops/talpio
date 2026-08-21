@@ -12,6 +12,7 @@ import { AdminModule } from '@modules/admin/admin.module';
 import { AgentModule } from '@modules/agent/agent.module';
 import { BillingModule } from '@modules/billing/billing.module';
 import { NotificationsModule } from '@modules/notifications/notifications.module';
+import { RbacModule } from '@modules/rbac/rbac.module';
 import { SocialModule } from '@modules/social/social.module';
 
 /**
@@ -32,6 +33,7 @@ import { SocialModule } from '@modules/social/social.module';
     AdminModule,
     AgentModule,
     MediaModule,
+    RbacModule,
     SocialModule,
   ],
 })
