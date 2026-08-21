@@ -69,7 +69,7 @@ export class QueueService implements OnModuleDestroy {
       { queueName, jobId: job.id, tenantId: envelope.tenantId },
       'İş kuyruğa alındı',
     );
-    return job.id ?? envelope.idempotencyKey;
+    return job.id ?? jobId;
   }
 
   async getJobCounts(): Promise<QueueCounts> {
