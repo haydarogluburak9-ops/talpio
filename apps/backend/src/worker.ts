@@ -137,13 +137,13 @@ async function bootstrap(): Promise<void> {
     const enqueueAll = () => {
       const at = new Date().toISOString();
       void queues.enqueue(QUEUE_NAMES.SOCIAL_MAINTENANCE, {
-        idempotencyKey: `social-maintenance:all:${Math.floor(Date.now() / intervalMs)}`,
+        idempotencyKey: `social-maintenance-all-${Math.floor(Date.now() / intervalMs)}`,
         tenantId: 'system',
         payload: { task: 'story_cleanup' },
         enqueuedAt: at,
       });
       void queues.enqueue(QUEUE_NAMES.SOCIAL_MAINTENANCE, {
-        idempotencyKey: `social-maintenance:orphan:${Math.floor(Date.now() / intervalMs)}`,
+        idempotencyKey: `social-maintenance-orphan-${Math.floor(Date.now() / intervalMs)}`,
         tenantId: 'system',
         payload: { task: 'orphan_files' },
         enqueuedAt: at,
