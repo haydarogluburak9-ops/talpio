@@ -867,6 +867,8 @@ export const de: Messages = {
     searchPlaceholder: 'Unternehmen, Produkte oder Kategorien suchen',
     publish: 'Posten',
     publishing: 'Wird gepostet…',
+    publishFailed: 'Veröffentlichung fehlgeschlagen. Verbindung prüfen und erneut versuchen.',
+    composeLoginRequired: 'Zum Posten bitte anmelden.',
     like: 'Gefällt mir',
     unlike: 'Gefällt mir nicht mehr',
     comment: 'Kommentieren',

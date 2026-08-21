@@ -856,6 +856,8 @@ export const es: Messages = {
     searchPlaceholder: 'Buscar empresas, productos o categorías',
     publish: 'Publicar',
     publishing: 'Publicando…',
+    publishFailed: 'No se pudo publicar. Comprueba la conexión e inténtalo de nuevo.',
+    composeLoginRequired: 'Inicia sesión para publicar.',
     like: 'Me gusta',
     unlike: 'Ya no me gusta',
     comment: 'Comentar',

@@ -859,6 +859,8 @@ export const en: Messages = {
     searchPlaceholder: 'Search businesses, products, or categories',
     publish: 'Post',
     publishing: 'Posting…',
+    publishFailed: 'Could not publish. Check your connection and try again.',
+    composeLoginRequired: 'Sign in to create a post.',
     like: 'Like',
     unlike: 'Unlike',
     comment: 'Comment',

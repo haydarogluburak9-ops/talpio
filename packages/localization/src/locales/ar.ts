@@ -843,6 +843,8 @@ export const ar: Messages = {
     searchPlaceholder: 'ابحث عن شركات أو منتجات أو فئات',
     publish: 'نشر',
     publishing: 'جارٍ النشر…',
+    publishFailed: 'تعذر النشر. تحقق من الاتصال وحاول مرة أخرى.',
+    composeLoginRequired: 'سجّل الدخول للنشر.',
     like: 'إعجاب',
     unlike: 'إلغاء الإعجاب',
     comment: 'تعليق',

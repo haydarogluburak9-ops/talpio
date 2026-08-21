@@ -858,6 +858,8 @@ export const fr: Messages = {
     searchPlaceholder: 'Rechercher des entreprises, produits ou catégories',
     publish: 'Publier',
     publishing: 'Publication…',
+    publishFailed: 'Impossible de publier. Vérifiez votre connexion et réessayez.',
+    composeLoginRequired: 'Connectez-vous pour publier.',
     like: 'J’aime',
     unlike: 'Je n’aime plus',
     comment: 'Commenter',

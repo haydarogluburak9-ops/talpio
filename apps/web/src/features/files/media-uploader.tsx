@@ -3,7 +3,7 @@
 import { UPLOAD } from '@talpio/config';
 import { FilePurpose, type FileAsset } from '@talpio/types';
 import { Button } from '@talpio/ui';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';
 import { t } from '@/lib/i18n';
@@ -15,6 +15,8 @@ export interface MediaUploaderProps {
   onAssetsChange?: (assets: FileAsset[]) => void;
   purpose?: FilePurpose;
   max?: number;
+  /** Artırıldığında dosya seçiciyi açar (mobilde tek dokunuş). */
+  openPickerNonce?: number;
 }
 
 /** Akış için fotoğraf + video yükleyici. */
@@ -25,6 +27,7 @@ export function MediaUploader({
   onAssetsChange,
   purpose = FilePurpose.POST_MEDIA,
   max = UPLOAD.maxPostMedia,
+  openPickerNonce = 0,
 }: MediaUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [localAssets, setLocalAssets] = useState<FileAsset[]>([]);
@@ -39,6 +42,12 @@ export function MediaUploader({
   };
 
   const remaining = max - value.length - pendingCount;
+
+  useEffect(() => {
+    if (openPickerNonce > 0 && remaining > 0 && pendingCount === 0) {
+      inputRef.current?.click();
+    }
+  }, [openPickerNonce, remaining, pendingCount]);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -75,7 +84,7 @@ export function MediaUploader({
       <input
         ref={inputRef}
         type="file"
-        accept={UPLOAD.allowedPostMediaMimeTypes.join(',')}
+        accept={`${UPLOAD.allowedPostMediaMimeTypes.join(',')},image/*,video/*`}
         multiple
         className="sr-only"
         onChange={(event) => {

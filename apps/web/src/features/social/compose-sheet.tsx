@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react';
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
@@ -12,6 +13,7 @@ import { PostComposer } from './post-composer';
 
 export function ComposeSheet() {
   const session = useSession();
+  const pathname = usePathname();
   const { open, view, expand, showComposeMenu, closeCompose } = useCompose();
   const loggedIn = Boolean(session.data);
 
@@ -28,7 +30,29 @@ export function ComposeSheet() {
     };
   }, [open, closeCompose]);
 
-  if (!open || !loggedIn) return null;
+  if (!open) return null;
+
+  if (!loggedIn) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <button
+          type="button"
+          aria-label={t('common.close')}
+          className="absolute inset-0 bg-black/45"
+          onClick={closeCompose}
+        />
+        <div className="relative rounded-t-[1.35rem] bg-white p-6 pb-[max(1rem,env(safe-area-inset-bottom))] text-center dark:bg-[#0D1B2A]">
+          <p className="text-sm text-foreground-muted">{t('social.composeLoginRequired')}</p>
+          <a
+            href={`/giris?next=${encodeURIComponent(pathname)}`}
+            className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-accent-500 px-6 text-sm font-semibold text-white"
+          >
+            {t('nav.login')}
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">

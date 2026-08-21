@@ -1,6 +1,7 @@
 'use client';
 
 import { DEFAULT_CURRENCY, UPLOAD, minorUnitFactor } from '@talpio/config';
+import { ApiError } from '@talpio/api-client';
 import { Button, cn } from '@talpio/ui';
 import { BadgePercent, ImagePlus, SendHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -56,6 +57,7 @@ export function PostComposer({
   const [locationText, setLocationText] = useState('');
   const [shippingIncluded, setShippingIncluded] = useState<boolean | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [mediaPickerNonce, setMediaPickerNonce] = useState(0);
   const createPost = useCreatePost();
 
   const selectedBusiness =
@@ -180,10 +182,17 @@ export function PostComposer({
                 }
               : {}),
           },
-          { onSuccess: () => {
+          {
+            onSuccess: () => {
               reset();
               onPublished?.();
-            } },
+            },
+            onError: (error) => {
+              setFormError(
+                error instanceof ApiError ? error.message : t('social.publishFailed'),
+              );
+            },
+          },
         );
       }}
     >
@@ -246,6 +255,7 @@ export function PostComposer({
             value={mediaFileIds}
             onChange={setMediaFileIds}
             max={UPLOAD.maxPostMedia}
+            openPickerNonce={mediaPickerNonce}
           />
         </div>
       ) : null}
@@ -358,7 +368,10 @@ export function PostComposer({
         <div className="flex flex-wrap gap-1">
           <button
             type="button"
-            onClick={() => setShowMedia((value) => !value)}
+            onClick={() => {
+              setShowMedia(true);
+              setMediaPickerNonce((value) => value + 1);
+            }}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-lg bg-success-50 px-3 py-2 text-sm font-semibold text-success-700 hover:bg-success-50/80',
               showMedia && 'ring-2 ring-success-500/30',

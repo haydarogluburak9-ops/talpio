@@ -40,49 +40,50 @@ export function StoriesRail() {
           {t('social.storiesTitle')}
         </p>
         <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
-          <button
-            type="button"
-            aria-label={t('social.addStory')}
-            onClick={() => {
-              const mine = groups.findIndex((group) => group.author.id === me.data?.id);
-              if (mine >= 0) setOpenIndex(mine);
-              else openCompose('story');
-            }}
-            className="flex w-[4.6rem] shrink-0 flex-col items-center gap-1.5"
-          >
-            <span
-              className={
-                groups.some((group) => group.author.id === me.data?.id)
-                  ? 'story-ring story-ring-hot relative grid size-[4.25rem] place-items-center rounded-full'
-                  : 'relative grid size-[4.25rem] place-items-center rounded-full bg-surface-muted'
-              }
+          <div className="relative flex w-[4.6rem] shrink-0 flex-col items-center gap-1.5">
+            <button
+              type="button"
+              aria-label={t('social.yourStory')}
+              onClick={() => {
+                const mine = groups.findIndex((group) => group.author.id === me.data?.id);
+                if (mine >= 0) setOpenIndex(mine);
+                else openCompose('story');
+              }}
+              className="flex w-full flex-col items-center gap-1.5"
             >
-              {me.data?.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={me.data.avatarUrl}
-                  alt=""
-                  className="size-[3.55rem] rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-sm font-bold text-brand-800">
-                  {(me.data?.displayName ?? 'T').slice(0, 1)}
-                </span>
-              )}
               <span
-                className="absolute right-0 bottom-0 grid size-6 place-items-center rounded-full bg-accent-500 text-white ring-2 ring-surface"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  openCompose('story');
-                }}
+                className={
+                  groups.some((group) => group.author.id === me.data?.id)
+                    ? 'story-ring story-ring-hot relative grid size-[4.25rem] place-items-center rounded-full'
+                    : 'relative grid size-[4.25rem] place-items-center rounded-full bg-surface-muted'
+                }
               >
-                <Plus className="size-3.5" />
+                {me.data?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={me.data.avatarUrl}
+                    alt=""
+                    className="size-[3.55rem] rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sm font-bold text-brand-800">
+                    {(me.data?.displayName ?? 'T').slice(0, 1)}
+                  </span>
+                )}
               </span>
-            </span>
-            <span className="line-clamp-2 text-center text-[11px] leading-tight font-semibold text-foreground">
-              {t('social.yourStory')}
-            </span>
-          </button>
+              <span className="line-clamp-2 text-center text-[11px] leading-tight font-semibold text-foreground">
+                {t('social.yourStory')}
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-label={t('social.addStory')}
+              onClick={() => openCompose('story')}
+              className="absolute right-0 bottom-[1.35rem] grid size-6 place-items-center rounded-full bg-accent-500 text-white ring-2 ring-surface"
+            >
+              <Plus className="size-3.5" />
+            </button>
+          </div>
 
           {groups
             .map((group, index) => ({ group, index }))

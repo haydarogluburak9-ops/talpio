@@ -12,7 +12,7 @@ export const UPLOAD = {
   maxJobAttachments: 10,
   maxReviewPhotos: 5,
   maxPostMedia: 6,
-  allowedImageMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic'] as const,
+  allowedImageMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'] as const,
   allowedVideoMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime'] as const,
   allowedAudioMimeTypes: [
     'audio/webm',
@@ -29,6 +29,7 @@ export const UPLOAD = {
     'image/png',
     'image/webp',
     'image/heic',
+    'image/heif',
     'video/mp4',
     'video/webm',
     'video/quicktime',

@@ -1,6 +1,9 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+
+import { useSession } from '@/features/auth/use-session';
 
 export type ComposeExpand = 'media' | 'promo' | 'story';
 export type ComposeView = 'menu' | 'composer';
@@ -18,26 +21,47 @@ type ComposeContextValue = {
 const ComposeContext = createContext<ComposeContextValue | null>(null);
 
 export function ComposeProvider({ children }: { children: React.ReactNode }) {
+  const session = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ComposeView>('menu');
   const [expand, setExpand] = useState<ComposeExpand | null>(null);
 
-  const openCompose = useCallback((mode?: ComposeExpand) => {
-    if (mode) {
-      setExpand(mode);
-      setView('composer');
-    } else {
-      setExpand(null);
-      setView('menu');
-    }
-    setOpen(true);
-  }, []);
+  const requireAuth = useCallback(
+    (mode?: ComposeExpand) => {
+      if (session.data) return true;
+      const next = mode ? `${pathname}?compose=${mode}` : pathname;
+      router.push(`/giris?next=${encodeURIComponent(next)}`);
+      return false;
+    },
+    [pathname, router, session.data],
+  );
 
-  const openComposer = useCallback((mode?: ComposeExpand | null) => {
-    setExpand(mode ?? null);
-    setView('composer');
-    setOpen(true);
-  }, []);
+  const openCompose = useCallback(
+    (mode?: ComposeExpand) => {
+      if (!requireAuth(mode)) return;
+      if (mode) {
+        setExpand(mode);
+        setView('composer');
+      } else {
+        setExpand(null);
+        setView('menu');
+      }
+      setOpen(true);
+    },
+    [requireAuth],
+  );
+
+  const openComposer = useCallback(
+    (mode?: ComposeExpand | null) => {
+      if (!requireAuth(mode ?? undefined)) return;
+      setExpand(mode ?? null);
+      setView('composer');
+      setOpen(true);
+    },
+    [requireAuth],
+  );
 
   const showComposeMenu = useCallback(() => {
     setView('menu');

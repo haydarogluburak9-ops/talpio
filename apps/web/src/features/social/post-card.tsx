@@ -430,74 +430,74 @@ export function PostCard({
       </div>
 
       {interactive ? (
-        <div className="mt-1 flex flex-col gap-2 border-t border-border/70 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 items-center justify-around gap-1 sm:justify-start sm:gap-1">
+        <div className="mt-1 flex flex-col gap-2 border-t border-border/70 px-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-3">
+          <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-1 sm:items-center sm:justify-start sm:gap-1">
             <button
               type="button"
               disabled={like.isPending || unlike.isPending}
               onClick={() => (post.likedByMe ? unlike.mutate(post.id) : like.mutate(post.id))}
               className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-danger-500 hover:bg-danger-50',
+                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-danger-500 hover:bg-danger-50 sm:px-3',
                 post.likedByMe && 'bg-danger-50 text-danger-600',
               )}
             >
-              <Heart className={cn('size-4', post.likedByMe && 'fill-current')} />
-              {t('social.like')}
+              <Heart className={cn('size-4 shrink-0', post.likedByMe && 'fill-current')} />
+              <span className="max-sm:sr-only">{t('social.like')}</span>
             </button>
             <button
               type="button"
               onClick={() => setShowComments((value) => !value)}
               className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-info-500 hover:bg-info-50',
+                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-info-500 hover:bg-info-50 sm:px-3',
                 showComments && 'bg-info-50 text-info-700',
               )}
             >
-              <MessageCircle className="size-4" />
-              {t('social.comment')}
+              <MessageCircle className="size-4 shrink-0" />
+              <span className="max-sm:sr-only">{t('social.comment')}</span>
             </button>
             <button
               type="button"
               disabled={share.isPending}
               onClick={() => share.mutate(post.id)}
               className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-success-500 hover:bg-success-50',
+                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-success-500 hover:bg-success-50 sm:px-3',
                 post.sharedByMe && 'bg-success-50 text-success-700',
               )}
             >
-              <Share2 className="size-4" />
-              {t('social.share')}
+              <Share2 className="size-4 shrink-0" />
+              <span className="max-sm:sr-only">{t('social.share')}</span>
             </button>
             <button
               type="button"
               disabled={createPost.isPending}
               onClick={() => createPost.mutate({ originalPostId: post.originalPostId ?? post.id })}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-violet-500 hover:bg-violet-50"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-violet-500 hover:bg-violet-50 sm:px-3"
             >
-              <Repeat2 className="size-4" />
-              {t('social.repost')}
+              <Repeat2 className="size-4 shrink-0" />
+              <span className="max-sm:sr-only">{t('social.repost')}</span>
             </button>
             <button
               type="button"
               onClick={() => setQuoteOpen((open) => !open)}
               className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-warning-500 hover:bg-warning-50',
+                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-warning-500 hover:bg-warning-50 sm:px-3',
                 quoteOpen && 'bg-warning-50 text-warning-700',
               )}
             >
-              <Quote className="size-4" />
-              {t('social.quote')}
+              <Quote className="size-4 shrink-0" />
+              <span className="max-sm:sr-only">{t('social.quote')}</span>
             </button>
             <button
               type="button"
               disabled={save.isPending || unsave.isPending}
               onClick={() => (post.savedByMe ? unsave.mutate(post.id) : save.mutate(post.id))}
               className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-accent-500 hover:bg-accent-50',
+                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-accent-500 hover:bg-accent-50 sm:px-3',
                 post.savedByMe && 'bg-accent-50 text-accent-700',
               )}
             >
-              <Bookmark className={cn('size-4', post.savedByMe && 'fill-current')} />
-              {t('social.save')}
+              <Bookmark className={cn('size-4 shrink-0', post.savedByMe && 'fill-current')} />
+              <span className="max-sm:sr-only">{t('social.save')}</span>
             </button>
           </div>
           {showDealCta ? (

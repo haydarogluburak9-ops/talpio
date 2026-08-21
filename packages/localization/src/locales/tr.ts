@@ -870,6 +870,8 @@ export const tr = {
     searchPlaceholder: 'İşletme, ürün veya kategori ara',
     publish: 'Paylaş',
     publishing: 'Paylaşılıyor…',
+    publishFailed: 'Paylaşım gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin.',
+    composeLoginRequired: 'Paylaşım yapmak için giriş yapmanız gerekir.',
     like: 'Beğen',
     unlike: 'Beğeniyi kaldır',
     comment: 'Yorum',
