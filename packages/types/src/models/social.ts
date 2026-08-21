@@ -50,8 +50,15 @@ export interface SocialProfile extends BaseEntity {
   isFollowing?: boolean;
   experiences?: SocialProfileExperience[];
   education?: SocialProfileEducation[];
+  skills?: SocialProfileSkill[];
   /** Mağaza / işletme vitrini; yalnızca BUSINESS profillerde dolu. */
   business?: SocialBusinessCard | null;
+}
+
+export interface SocialProfileSkill extends BaseEntity {
+  profileId: string;
+  name: string;
+  sortOrder: number;
 }
 
 export interface SocialProfileExperience extends BaseEntity {

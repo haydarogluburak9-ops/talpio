@@ -18,7 +18,7 @@ import { FilesService } from '@modules/files/files.service';
 import { ratioPercent, toFiniteNumber } from './business-profile.stats';
 import type { UpdateSocialProfileDto } from './dto/social.dto';
 import { CAMPAIGN_POST_TYPES, DEAL_POST_TYPES, PORTFOLIO_POST_TYPES } from './post-tabs';
-import { socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, type SocialProfileRow } from './social.mapper';
+import { socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, toSocialProfileSkill, type SocialProfileRow } from './social.mapper';
 import {
   isValidUsernameFormat,
   normalizeUsername,
@@ -375,10 +375,10 @@ export class ProfilesService {
 
   private async loadCareer(profileId: string, kind: SocialProfileKind) {
     if (kind !== SocialProfileKind.PERSONAL) {
-      return { experiences: [], education: [] };
+      return { experiences: [], education: [], skills: [] };
     }
 
-    const [experiences, education] = await Promise.all([
+    const [experiences, education, skills] = await Promise.all([
       this.prisma.socialProfileExperience.findMany({
         where: { profileId },
         orderBy: [{ isCurrent: 'desc' }, { startYear: 'desc' }, { sortOrder: 'asc' }],
@@ -387,11 +387,16 @@ export class ProfilesService {
         where: { profileId },
         orderBy: [{ isCurrent: 'desc' }, { startYear: 'desc' }, { sortOrder: 'asc' }],
       }),
+      this.prisma.socialProfileSkill.findMany({
+        where: { profileId },
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      }),
     ]);
 
     return {
       experiences: experiences.map(toSocialProfileExperience),
       education: education.map(toSocialProfileEducation),
+      skills: skills.map(toSocialProfileSkill),
     };
   }
 

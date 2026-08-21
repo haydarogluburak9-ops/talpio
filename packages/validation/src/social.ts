@@ -130,10 +130,19 @@ export const createProfileEducationSchema = careerDatesSchema.extend({
 
 export const updateProfileEducationSchema = createProfileEducationSchema.partial();
 
+export const createProfileSkillSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  sortOrder: z.number().int().optional(),
+});
+
+export const updateProfileSkillSchema = createProfileSkillSchema.partial();
+
 export type CreateProfileExperienceInput = z.input<typeof createProfileExperienceSchema>;
 export type UpdateProfileExperienceInput = z.input<typeof updateProfileExperienceSchema>;
 export type CreateProfileEducationInput = z.input<typeof createProfileEducationSchema>;
 export type UpdateProfileEducationInput = z.input<typeof updateProfileEducationSchema>;
+export type CreateProfileSkillInput = z.input<typeof createProfileSkillSchema>;
+export type UpdateProfileSkillInput = z.input<typeof updateProfileSkillSchema>;
 
 export const createCommentSchema = z.object({
   body: z.string().trim().min(1, 'Yorum boş olamaz').max(2000, 'Yorum çok uzun'),

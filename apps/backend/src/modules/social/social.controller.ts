@@ -27,6 +27,7 @@ import {
   type SocialProfile,
   type SocialProfileEducation,
   type SocialProfileExperience,
+  type SocialProfileSkill,
   type StoryHighlight,
   type StoryHighlightDetail,
   type TrendingTopic,
@@ -47,6 +48,7 @@ import {
   CreateContentReportDto,
   CreateProfileEducationDto,
   CreateProfileExperienceDto,
+  CreateProfileSkillDto,
   CreatePostDto,
   CreateRequestFromPostDto,
   CreateStoryHighlightDto,
@@ -59,6 +61,7 @@ import {
   TrendingQueryDto,
   UpdateProfileEducationDto,
   UpdateProfileExperienceDto,
+  UpdateProfileSkillDto,
   UpdateSocialProfileDto,
   UpdateStoryHighlightDto,
 } from './dto/social.dto';
@@ -171,6 +174,37 @@ export class SocialController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.profileCareer.deleteEducation(user, id);
+  }
+
+  @Post('profiles/me/skills')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Yetkinlik ekler' })
+  createSkill(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: CreateProfileSkillDto,
+  ): Promise<SocialProfileSkill> {
+    return this.profileCareer.createSkill(user, dto);
+  }
+
+  @Patch('profiles/me/skills/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Yetkinliği günceller' })
+  updateSkill(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProfileSkillDto,
+  ): Promise<SocialProfileSkill> {
+    return this.profileCareer.updateSkill(user, id, dto);
+  }
+
+  @Delete('profiles/me/skills/:id')
+  @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Yetkinliği siler' })
+  deleteSkill(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.profileCareer.deleteSkill(user, id);
   }
 
   @Public()

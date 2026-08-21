@@ -27,7 +27,6 @@ import { useSocialMe } from '@/features/social/use-social';
 import { publicEnv } from '@/lib/env';
 import { localeTag, t } from '@/lib/i18n';
 
-import { InterestsSettings } from './interests-settings';
 import { useLogout, useDeleteAccount, useSession } from './use-session';
 
 /**
@@ -217,8 +216,6 @@ export function AccountOverview() {
           </div>
         </div>
       </section>
-
-      <InterestsSettings />
 
       <section className="social-panel p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-4">

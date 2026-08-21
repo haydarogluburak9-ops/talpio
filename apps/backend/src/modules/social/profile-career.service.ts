@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { SocialProfileEducation, SocialProfileExperience } from '@talpio/types';
+import type { SocialProfileEducation, SocialProfileExperience, SocialProfileSkill } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -8,19 +8,24 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import type {
   CreateProfileEducationDto,
   CreateProfileExperienceDto,
+  CreateProfileSkillDto,
   UpdateProfileEducationDto,
   UpdateProfileExperienceDto,
+  UpdateProfileSkillDto,
 } from './dto/social.dto';
 import { ProfilesService } from './profiles.service';
 import {
   toSocialProfileEducation,
   toSocialProfileExperience,
+  toSocialProfileSkill,
   type SocialProfileEducationRow,
   type SocialProfileExperienceRow,
+  type SocialProfileSkillRow,
 } from './social.mapper';
 
 const MAX_EXPERIENCES = 20;
 const MAX_EDUCATION = 20;
+const MAX_SKILLS = 50;
 
 @Injectable()
 export class ProfileCareerService {
@@ -171,6 +176,54 @@ export class ProfileCareerService {
     await this.prisma.socialProfileEducation.delete({ where: { id } });
   }
 
+  async createSkill(user: AuthenticatedUser, dto: CreateProfileSkillDto): Promise<SocialProfileSkill> {
+    const profile = await this.profiles.ensurePersonalProfile(user.id);
+    await this.assertSkillLimit(profile.id);
+    const name = dto.name.trim();
+    if (!name) {
+      throw new AppException('VALIDATION_ERROR', { message: 'Yetkinlik adı gerekli.' });
+    }
+
+    const row = await this.prisma.socialProfileSkill.create({
+      data: {
+        profileId: profile.id,
+        name,
+        sortOrder: dto.sortOrder ?? 0,
+      },
+    });
+
+    return toSocialProfileSkill(row);
+  }
+
+  async updateSkill(
+    user: AuthenticatedUser,
+    id: string,
+    dto: UpdateProfileSkillDto,
+  ): Promise<SocialProfileSkill> {
+    const profile = await this.profiles.ensurePersonalProfile(user.id);
+    const existing = await this.findOwnedSkill(profile.id, id);
+    const name = dto.name !== undefined ? dto.name.trim() : existing.name;
+    if (!name) {
+      throw new AppException('VALIDATION_ERROR', { message: 'Yetkinlik adı gerekli.' });
+    }
+
+    const row = await this.prisma.socialProfileSkill.update({
+      where: { id },
+      data: {
+        name,
+        ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+      },
+    });
+
+    return toSocialProfileSkill(row);
+  }
+
+  async deleteSkill(user: AuthenticatedUser, id: string): Promise<void> {
+    const profile = await this.profiles.ensurePersonalProfile(user.id);
+    await this.findOwnedSkill(profile.id, id);
+    await this.prisma.socialProfileSkill.delete({ where: { id } });
+  }
+
   private async findOwnedExperience(profileId: string, id: string): Promise<SocialProfileExperienceRow> {
     const row = await this.prisma.socialProfileExperience.findFirst({
       where: { id, profileId },
@@ -184,6 +237,14 @@ export class ProfileCareerService {
       where: { id, profileId },
     });
     if (!row) throw AppException.notFound('Eğitim', id);
+    return row;
+  }
+
+  private async findOwnedSkill(profileId: string, id: string): Promise<SocialProfileSkillRow> {
+    const row = await this.prisma.socialProfileSkill.findFirst({
+      where: { id, profileId },
+    });
+    if (!row) throw AppException.notFound('Yetkinlik', id);
     return row;
   }
 
@@ -201,6 +262,15 @@ export class ProfileCareerService {
     if (count >= MAX_EDUCATION) {
       throw new AppException('VALIDATION_ERROR', {
         message: 'En fazla 20 eğitim kaydı ekleyebilirsiniz.',
+      });
+    }
+  }
+
+  private async assertSkillLimit(profileId: string): Promise<void> {
+    const count = await this.prisma.socialProfileSkill.count({ where: { profileId } });
+    if (count >= MAX_SKILLS) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'En fazla 50 yetkinlik ekleyebilirsiniz.',
       });
     }
   }

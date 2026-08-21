@@ -14,7 +14,7 @@ import { radius, spacing } from '@/theme/tokens';
 
 import { useFollow, useProfilePosts, useReportContent, useSocialMe, useSocialProfile } from './use-social';
 import { ProfileHighlightsSection } from './profile-highlights';
-import { ProfileCareerSection } from './profile-career-section';
+import { ProfileSidebar } from './profile-career-section';
 import { EditableProfileAvatar, EditableProfileCover } from './profile-media-editor';
 
 export function PublicProfileScreen({
@@ -85,8 +85,6 @@ export function PublicProfileScreen({
             </View>
           </View>
 
-          {row.bio ? <Text style={styles.bio}>{row.bio}</Text> : null}
-
           {!isOwn ? (
             <>
               {!row.isFollowing ? (
@@ -115,7 +113,7 @@ export function PublicProfileScreen({
         </View>
       </Card>
 
-      <ProfileCareerSection profile={row} />
+      <ProfileSidebar profile={row} isOwn={isOwn} />
 
       <ProfileHighlightsSection profile={row} />
 
@@ -205,7 +203,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6A00',
   },
   copy: { flex: 1, gap: 4, paddingBottom: spacing.xs },
-  bio: { marginTop: spacing.md },
   action: { marginTop: spacing.md },
   report: { marginTop: spacing.sm },
   media: { width: '100%', height: 180, borderRadius: 12, marginTop: spacing.sm },

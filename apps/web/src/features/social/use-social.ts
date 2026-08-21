@@ -112,6 +112,29 @@ export function useDeleteEducation(username: string) {
   });
 }
 
+export function useCreateSkill(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof apiClient.social.createSkill>[0]) =>
+      apiClient.social.createSkill(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
+export function useDeleteSkill(username: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.social.deleteSkill(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+    },
+  });
+}
+
 export function useSocialProfile(username: string) {
   return useQuery({
     queryKey: queryKeys.social.profile(username),

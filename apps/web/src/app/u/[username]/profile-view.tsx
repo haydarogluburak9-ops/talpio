@@ -6,13 +6,13 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
-import { AccountOverview } from '@/features/auth/account-overview';
 import { useSession } from '@/features/auth/use-session';
 import { ReviewList } from '@/features/reviews/review-list';
 import { useProviderReviews } from '@/features/reviews/use-reviews';
 import { PostCard } from '@/features/social/post-card';
 import { ProfileHighlightsSection } from '@/features/social/profile-highlights';
 import { ProfileHeader } from '@/features/social/profile-header';
+import { ProfileSidebar } from '@/features/social/profile-career-section';
 import { SocialShell } from '@/features/social/social-shell';
 import {
   useFollowers,
@@ -33,8 +33,7 @@ type ProfileTab =
   | 'about'
   | 'followers'
   | 'following'
-  | 'saved'
-  | 'settings';
+  | 'saved';
 
 export function SocialProfileView() {
   const params = useParams<{ username: string }>();
@@ -75,10 +74,7 @@ export function SocialProfileView() {
 
   const store = profile.data.business;
   const ownTabs: { id: ProfileTab; label: string }[] = isOwn
-    ? [
-        { id: 'saved', label: t('nav.saved') },
-        { id: 'settings', label: t('nav.settings') },
-      ]
+    ? [{ id: 'saved', label: t('nav.saved') }]
     : [];
   const tabs: { id: ProfileTab; label: string }[] = isStore
     ? [
@@ -99,6 +95,8 @@ export function SocialProfileView() {
         ...ownTabs,
       ];
 
+  const isPersonal = profile.data.kind === 'PERSONAL';
+
   return (
     <SocialShell>
       <div className="social-panel mb-3 overflow-hidden p-4">
@@ -112,98 +110,161 @@ export function SocialProfileView() {
         <ProfileHighlightsSection profile={profile.data} isOwn={isOwn} />
       </div>
 
-      {tabs.length > 0 ? (
-        <div className="social-panel mb-3 overflow-x-auto px-2 py-1">
-          <div className="flex min-w-max gap-1" role="tablist">
-            {tabs.map((item) => {
-              const active = tab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setTab(item.id)}
-                  className={cn(
-                    'relative rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors',
-                    active
-                      ? 'text-accent-600'
-                      : 'text-foreground-muted hover:bg-surface-muted hover:text-foreground',
-                  )}
-                >
-                  {item.label}
-                  {active ? (
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent-500"
-                    />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+      <div
+        className={cn(
+          'grid gap-3',
+          isPersonal && 'lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]',
+        )}
+      >
+        {isPersonal ? <ProfileSidebar profile={profile.data} isOwn={isOwn} /> : null}
 
-      {tab === 'settings' && isOwn ? (
-        <AccountOverview />
-      ) : tab === 'saved' && isOwn ? (
-        <div className="flex flex-col gap-3 pb-20">
-          {saved.isPending ? (
-            <ListSkeleton rows={3} />
-          ) : saved.data?.items.length ? (
-            saved.data.items.map((post) => (
-              <PostCard key={post.id} post={post} interactive />
-            ))
-          ) : (
-            <div className="social-panel px-6 py-10">
-              <EmptyState title={t('social.savedEmpty')} />
+        <div className="min-w-0">
+          {tabs.length > 0 ? (
+            <div className="social-panel mb-3 overflow-x-auto px-2 py-1">
+              <div className="flex min-w-max gap-1" role="tablist">
+                {tabs.map((item) => {
+                  const active = tab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setTab(item.id)}
+                      className={cn(
+                        'relative rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors',
+                        active
+                          ? 'text-accent-600'
+                          : 'text-foreground-muted hover:bg-surface-muted hover:text-foreground',
+                      )}
+                    >
+                      {item.label}
+                      {active ? (
+                        <span
+                          aria-hidden
+                          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent-500"
+                        />
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          )}
+          ) : null}
+
+          <ProfileTabContent
+            tab={tab}
+            isOwn={isOwn}
+            store={store}
+            profile={profile.data}
+            sessionActive={Boolean(session.data)}
+            saved={saved}
+            followers={followers}
+            following={following}
+            posts={posts}
+            reviews={reviews}
+            providerId={providerId}
+          />
         </div>
-      ) : tab === 'about' && store ? (
-        <AboutPanel
-          about={store.about ?? profile.data.bio}
-          regions={store.serviceRegions}
-          credentials={store.credentials}
-        />
-      ) : tab === 'reviews' ? (
-        <div className="social-panel p-4">
-          {!providerId ? (
-            <EmptyState title={t('social.emptyReviews')} />
-          ) : (
-            <ReviewList
-              page={reviews.data}
-              isPending={reviews.isPending}
-              isError={reviews.isError}
-              onRetry={() => void reviews.refetch()}
-              onPageChange={() => undefined}
-              emptyTitle={t('social.emptyReviews')}
-              emptyDescription={t('social.emptyReviews')}
-            />
-          )}
-        </div>
-      ) : tab === 'followers' || tab === 'following' ? (
-        <GraphList
-          pending={tab === 'followers' ? followers.isPending : following.isPending}
-          items={(tab === 'followers' ? followers.data?.items : following.data?.items) ?? []}
-        />
+      </div>
+    </SocialShell>
+  );
+}
+
+function ProfileTabContent({
+  tab,
+  isOwn,
+  store,
+  profile,
+  sessionActive,
+  saved,
+  followers,
+  following,
+  posts,
+  reviews,
+  providerId,
+}: {
+  tab: ProfileTab;
+  isOwn: boolean;
+  store: SocialProfile['business'];
+  profile: SocialProfile;
+  sessionActive: boolean;
+  saved: ReturnType<typeof useSavedPosts>;
+  followers: ReturnType<typeof useFollowers>;
+  following: ReturnType<typeof useFollowingList>;
+  posts: ReturnType<typeof useProfilePosts>;
+  reviews: ReturnType<typeof useProviderReviews>;
+  providerId: string;
+}) {
+  if (tab === 'saved' && isOwn) {
+    return (
+      <div className="flex flex-col gap-3 pb-20 lg:pb-6">
+        {saved.isPending ? (
+          <ListSkeleton rows={3} />
+        ) : saved.data?.items.length ? (
+          saved.data.items.map((post) => <PostCard key={post.id} post={post} interactive />)
+        ) : (
+          <div className="social-panel px-6 py-10">
+            <EmptyState title={t('social.savedEmpty')} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (tab === 'about' && store) {
+    return (
+      <AboutPanel
+        about={store.about ?? profile.bio}
+        regions={store.serviceRegions}
+        credentials={store.credentials}
+      />
+    );
+  }
+
+  if (tab === 'reviews') {
+    return (
+      <div className="social-panel p-4">
+        {!providerId ? (
+          <EmptyState title={t('social.emptyReviews')} />
+        ) : (
+          <ReviewList
+            page={reviews.data}
+            isPending={reviews.isPending}
+            isError={reviews.isError}
+            onRetry={() => void reviews.refetch()}
+            onPageChange={() => undefined}
+            emptyTitle={t('social.emptyReviews')}
+            emptyDescription={t('social.emptyReviews')}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (tab === 'followers' || tab === 'following') {
+    return (
+      <GraphList
+        pending={tab === 'followers' ? followers.isPending : following.isPending}
+        items={(tab === 'followers' ? followers.data?.items : following.data?.items) ?? []}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 pb-20 lg:pb-6">
+      {posts.isPending ? (
+        <ListSkeleton rows={3} />
+      ) : posts.data?.items.length ? (
+        posts.data.items.map((post) => (
+          <PostCard key={post.id} post={post} interactive={sessionActive} />
+        ))
       ) : (
-        <div className="flex flex-col gap-3 pb-20 lg:pb-6">
-          {posts.isPending ? (
-            <ListSkeleton rows={3} />
-          ) : posts.data?.items.length ? (
-            posts.data.items.map((post) => (
-              <PostCard key={post.id} post={post} interactive={Boolean(session.data)} />
-            ))
-          ) : (
-            <div className="social-panel px-6 py-10">
-              <EmptyState title={t('social.feedEmpty')} />
-            </div>
-          )}
+        <div className="social-panel px-6 py-10">
+          <EmptyState title={t('social.feedEmpty')} />
         </div>
       )}
-    </SocialShell>
+    </div>
   );
 }
 

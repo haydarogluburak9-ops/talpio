@@ -9,6 +9,7 @@ import type {
   SocialProfile,
   SocialProfileEducation,
   SocialProfileExperience,
+  SocialProfileSkill,
   StoryHighlight,
 } from '@talpio/types';
 
@@ -81,6 +82,15 @@ export type SocialProfileEducationRow = {
   updatedAt: Date;
 };
 
+export type SocialProfileSkillRow = {
+  id: string;
+  profileId: string;
+  name: string;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export function toSocialProfileExperience(row: SocialProfileExperienceRow): SocialProfileExperience {
   return {
     id: row.id,
@@ -118,6 +128,17 @@ export function toSocialProfileEducation(row: SocialProfileEducationRow): Social
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     deletedAt: null,
+  };
+}
+
+export function toSocialProfileSkill(row: SocialProfileSkillRow): SocialProfileSkill {
+  return {
+    id: row.id,
+    profileId: row.profileId,
+    name: row.name,
+    sortOrder: row.sortOrder,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -246,6 +267,7 @@ export function toSocialProfile(
     business?: SocialProfile['business'];
     experiences?: SocialProfileExperience[];
     education?: SocialProfileEducation[];
+    skills?: SocialProfileSkill[];
   } = {},
 ): SocialProfile {
   return {
@@ -272,6 +294,7 @@ export function toSocialProfile(
     ...(extras.business !== undefined ? { business: extras.business } : {}),
     ...(extras.experiences !== undefined ? { experiences: extras.experiences } : {}),
     ...(extras.education !== undefined ? { education: extras.education } : {}),
+    ...(extras.skills !== undefined ? { skills: extras.skills } : {}),
   };
 }
 

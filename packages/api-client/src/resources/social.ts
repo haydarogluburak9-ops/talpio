@@ -14,6 +14,7 @@ import type {
   SocialProfile,
   SocialProfileEducation,
   SocialProfileExperience,
+  SocialProfileSkill,
   StoryHighlight,
   StoryHighlightDetail,
   TrendingTopic,
@@ -89,6 +90,13 @@ export interface CreateProfileEducationBody extends ProfileCareerDatesBody {
 
 export type UpdateProfileEducationBody = Partial<CreateProfileEducationBody>;
 
+export interface CreateProfileSkillBody {
+  name: string;
+  sortOrder?: number;
+}
+
+export type UpdateProfileSkillBody = Partial<CreateProfileSkillBody>;
+
 export interface CreateCommentBody {
   body: string;
   parentId?: string;
@@ -158,6 +166,18 @@ export function createSocialResource(http: HttpClient) {
 
     deleteEducation(id: string): Promise<void> {
       return http.delete<void>(API_ROUTES.social.profileEducationItem(id));
+    },
+
+    createSkill(body: CreateProfileSkillBody): Promise<SocialProfileSkill> {
+      return http.post<SocialProfileSkill>(API_ROUTES.social.profileSkills, body);
+    },
+
+    updateSkill(id: string, body: UpdateProfileSkillBody): Promise<SocialProfileSkill> {
+      return http.patch<SocialProfileSkill>(API_ROUTES.social.profileSkill(id), body);
+    },
+
+    deleteSkill(id: string): Promise<void> {
+      return http.delete<void>(API_ROUTES.social.profileSkill(id));
     },
 
     checkUsernameAvailability(

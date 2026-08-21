@@ -4,9 +4,11 @@ import type {
   SocialProfile,
   SocialProfileEducation,
   SocialProfileExperience,
+  SocialProfileSkill,
 } from '@talpio/types';
-import { Button, Input } from '@talpio/ui';
-import { Briefcase, GraduationCap, Pencil, Plus, Trash2 } from 'lucide-react';
+import { SocialProfileKind } from '@talpio/types';
+import { Button, Input, cn } from '@talpio/ui';
+import { Briefcase, GraduationCap, Pencil, Plus, Sparkles, Trash2, UserRound } from 'lucide-react';
 import { useState } from 'react';
 
 import { getLocale, t } from '@/lib/i18n';
@@ -15,31 +17,145 @@ import { formatCareerPeriod } from './career-format';
 import {
   useCreateEducation,
   useCreateExperience,
+  useCreateSkill,
   useDeleteEducation,
   useDeleteExperience,
+  useDeleteSkill,
   useUpdateEducation,
   useUpdateExperience,
+  useUpdateSocialProfile,
 } from './use-social';
 
-export function ProfileCareerSection({
+export function ProfileSidebar({
   profile,
   isOwn,
 }: {
   profile: SocialProfile;
   isOwn: boolean;
 }) {
+  if (profile.kind !== SocialProfileKind.PERSONAL) return null;
+
   const experiences = profile.experiences ?? [];
   const education = profile.education ?? [];
+  const skills = profile.skills ?? [];
+  const hasBio = Boolean(profile.bio?.trim());
+  const hasContent =
+    hasBio || experiences.length > 0 || education.length > 0 || skills.length > 0;
 
-  if (!isOwn && experiences.length === 0 && education.length === 0) {
-    return null;
-  }
+  if (!isOwn && !hasContent) return null;
 
   return (
-    <div className="mt-5 space-y-6 border-t border-border/70 px-1 pt-5 sm:px-2">
+    <aside className="flex flex-col gap-3">
+      <AboutCard profile={profile} isOwn={isOwn} />
       <ExperienceSection profile={profile} items={experiences} isOwn={isOwn} />
       <EducationSection profile={profile} items={education} isOwn={isOwn} />
-    </div>
+      <SkillsSection profile={profile} items={skills} isOwn={isOwn} />
+    </aside>
+  );
+}
+
+/** @deprecated Use ProfileSidebar */
+export const ProfileCareerSection = ProfileSidebar;
+
+function SidebarCard({
+  title,
+  icon,
+  action,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="social-panel overflow-hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <span className="text-foreground-muted">{icon}</span>
+          {title}
+        </h2>
+        {action}
+      </div>
+      <div className="px-4 py-3">{children}</div>
+    </section>
+  );
+}
+
+function SidebarAddButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-foreground-muted transition-colors hover:bg-surface-muted hover:text-accent-600"
+    >
+      <Plus className="size-3.5" aria-hidden />
+      {label}
+    </button>
+  );
+}
+
+function AboutCard({ profile, isOwn }: { profile: SocialProfile; isOwn: boolean }) {
+  const update = useUpdateSocialProfile();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(profile.bio ?? '');
+
+  if (!isOwn && !profile.bio?.trim()) return null;
+
+  return (
+    <SidebarCard
+      title={t('social.aboutTab')}
+      icon={<UserRound className="size-4" aria-hidden />}
+      action={
+        isOwn ? (
+          <button
+            type="button"
+            onClick={() => {
+              setValue(profile.bio ?? '');
+              setEditing((open) => !open);
+            }}
+            className="grid size-8 place-items-center rounded-lg text-foreground-muted hover:bg-surface-muted"
+            aria-label={t('social.editAbout')}
+          >
+            <Pencil className="size-4" />
+          </button>
+        ) : null
+      }
+    >
+      {editing ? (
+        <div className="space-y-3">
+          <textarea
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            rows={4}
+            className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent-500"
+            placeholder={t('social.personalAboutEmpty')}
+          />
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={update.isPending}
+              onClick={() =>
+                update.mutate(
+                  { bio: value.trim() || null },
+                  { onSuccess: () => setEditing(false) },
+                )
+              }
+            >
+              {t('common.save')}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
+              {t('common.cancel')}
+            </Button>
+          </div>
+        </div>
+      ) : profile.bio?.trim() ? (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{profile.bio}</p>
+      ) : (
+        <p className="text-sm text-foreground-muted">{t('social.personalAboutEmpty')}</p>
+      )}
+    </SidebarCard>
   );
 }
 
@@ -60,27 +176,19 @@ function ExperienceSection({
   if (!isOwn && items.length === 0) return null;
 
   return (
-    <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <Briefcase className="size-4 text-foreground-muted" aria-hidden />
-          {t('social.experienceTitle')}
-        </h2>
-        {isOwn ? (
-          <Button type="button" size="sm" variant="outline" onClick={() => setEditing('new')}>
-            <Plus className="size-4" aria-hidden />
-            {t('social.addExperience')}
-          </Button>
-        ) : null}
-      </div>
-
+    <SidebarCard
+      title={t('social.experienceTitle')}
+      icon={<Briefcase className="size-4" aria-hidden />}
+      action={isOwn ? <SidebarAddButton label={t('social.addExperience')} onClick={() => setEditing('new')} /> : null}
+    >
       {items.length === 0 ? (
         <p className="text-sm text-foreground-muted">{t('social.experienceEmpty')}</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="divide-y divide-border/60">
           {items.map((item) => (
-            <li key={item.id} className="group relative rounded-xl border border-border/60 p-4">
-              <CareerItemBody
+            <li key={item.id} className="group relative py-3 first:pt-0 last:pb-0">
+              <LinkedInCareerItem
+                icon={<Briefcase className="size-4" aria-hidden />}
                 title={item.title}
                 subtitle={[item.company, item.locationText].filter(Boolean).join(' · ')}
                 period={formatCareerPeriod(
@@ -93,27 +201,10 @@ function ExperienceSection({
                   t('social.present'),
                 )}
                 description={item.description}
+                isOwn={isOwn}
+                onEdit={() => setEditing(item)}
+                onDelete={() => void remove.mutate(item.id)}
               />
-              {isOwn ? (
-                <div className="absolute right-3 top-3 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                  <button
-                    type="button"
-                    className="grid size-8 place-items-center rounded-lg text-foreground-muted hover:bg-surface-muted"
-                    aria-label={t('common.edit')}
-                    onClick={() => setEditing(item)}
-                  >
-                    <Pencil className="size-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className="grid size-8 place-items-center rounded-lg text-danger-on-surface hover:bg-danger-surface"
-                    aria-label={t('common.delete')}
-                    onClick={() => void remove.mutate(item.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-              ) : null}
             </li>
           ))}
         </ul>
@@ -133,7 +224,7 @@ function ExperienceSection({
           }}
         />
       ) : null}
-    </section>
+    </SidebarCard>
   );
 }
 
@@ -154,27 +245,19 @@ function EducationSection({
   if (!isOwn && items.length === 0) return null;
 
   return (
-    <section>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <GraduationCap className="size-4 text-foreground-muted" aria-hidden />
-          {t('social.educationTitle')}
-        </h2>
-        {isOwn ? (
-          <Button type="button" size="sm" variant="outline" onClick={() => setEditing('new')}>
-            <Plus className="size-4" aria-hidden />
-            {t('social.addEducation')}
-          </Button>
-        ) : null}
-      </div>
-
+    <SidebarCard
+      title={t('social.educationTitle')}
+      icon={<GraduationCap className="size-4" aria-hidden />}
+      action={isOwn ? <SidebarAddButton label={t('social.addEducation')} onClick={() => setEditing('new')} /> : null}
+    >
       {items.length === 0 ? (
         <p className="text-sm text-foreground-muted">{t('social.educationEmpty')}</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="divide-y divide-border/60">
           {items.map((item) => (
-            <li key={item.id} className="group relative rounded-xl border border-border/60 p-4">
-              <CareerItemBody
+            <li key={item.id} className="group relative py-3 first:pt-0 last:pb-0">
+              <LinkedInCareerItem
+                icon={<GraduationCap className="size-4" aria-hidden />}
                 title={item.school}
                 subtitle={[item.degree, item.fieldOfStudy].filter(Boolean).join(' · ')}
                 period={formatCareerPeriod(
@@ -187,27 +270,10 @@ function EducationSection({
                   t('social.present'),
                 )}
                 description={item.description}
+                isOwn={isOwn}
+                onEdit={() => setEditing(item)}
+                onDelete={() => void remove.mutate(item.id)}
               />
-              {isOwn ? (
-                <div className="absolute right-3 top-3 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
-                  <button
-                    type="button"
-                    className="grid size-8 place-items-center rounded-lg text-foreground-muted hover:bg-surface-muted"
-                    aria-label={t('common.edit')}
-                    onClick={() => setEditing(item)}
-                  >
-                    <Pencil className="size-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className="grid size-8 place-items-center rounded-lg text-danger-on-surface hover:bg-danger-surface"
-                    aria-label={t('common.delete')}
-                    onClick={() => void remove.mutate(item.id)}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-              ) : null}
             </li>
           ))}
         </ul>
@@ -227,28 +293,148 @@ function EducationSection({
           }}
         />
       ) : null}
-    </section>
+    </SidebarCard>
   );
 }
 
-function CareerItemBody({
+function SkillsSection({
+  profile,
+  items,
+  isOwn,
+}: {
+  profile: SocialProfile;
+  items: SocialProfileSkill[];
+  isOwn: boolean;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState('');
+  const create = useCreateSkill(profile.username);
+  const remove = useDeleteSkill(profile.username);
+
+  if (!isOwn && items.length === 0) return null;
+
+  return (
+    <SidebarCard
+      title={t('social.skillsTitle')}
+      icon={<Sparkles className="size-4" aria-hidden />}
+      action={
+        isOwn ? <SidebarAddButton label={t('social.addSkill')} onClick={() => setAdding(true)} /> : null
+      }
+    >
+      {items.length === 0 && !adding ? (
+        <p className="text-sm text-foreground-muted">{t('social.skillsEmpty')}</p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {items.map((item) => (
+            <li key={item.id}>
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full border border-border bg-surface-muted px-3 py-1 text-sm font-medium text-foreground',
+                  isOwn && 'pr-1.5',
+                )}
+              >
+                {item.name}
+                {isOwn ? (
+                  <button
+                    type="button"
+                    className="grid size-5 place-items-center rounded-full text-foreground-muted hover:bg-surface hover:text-danger-on-surface"
+                    aria-label={t('common.delete')}
+                    onClick={() => void remove.mutate(item.id)}
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                ) : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {adding ? (
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const trimmed = name.trim();
+            if (!trimmed) return;
+            create.mutate({ name: trimmed }, { onSuccess: () => {
+              setName('');
+              setAdding(false);
+            } });
+          }}
+        >
+          <Input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder={t('social.skillPlaceholder')}
+            aria-label={t('social.skillName')}
+            className="h-9 flex-1"
+          />
+          <Button type="submit" size="sm" disabled={create.isPending || !name.trim()}>
+            {t('common.save')}
+          </Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setAdding(false)}>
+            {t('common.cancel')}
+          </Button>
+        </form>
+      ) : null}
+    </SidebarCard>
+  );
+}
+
+function LinkedInCareerItem({
+  icon,
   title,
   subtitle,
   period,
   description,
+  isOwn,
+  onEdit,
+  onDelete,
 }: {
+  icon: React.ReactNode;
   title: string;
   subtitle: string;
   period: string;
   description?: string | null;
+  isOwn: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   return (
-    <div className="pr-16">
-      <p className="font-semibold text-foreground">{title}</p>
-      {subtitle ? <p className="mt-0.5 text-sm text-foreground">{subtitle}</p> : null}
-      <p className="mt-1 text-sm text-foreground-muted">{period}</p>
-      {description ? (
-        <p className="mt-2 whitespace-pre-wrap text-sm text-foreground-muted">{description}</p>
+    <div className="flex gap-3">
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-surface-muted text-foreground-muted">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1 pr-12">
+        <p className="font-semibold text-foreground">{title}</p>
+        {subtitle ? <p className="mt-0.5 text-sm text-foreground">{subtitle}</p> : null}
+        <p className="mt-1 text-xs text-foreground-muted">{period}</p>
+        {description ? (
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground-muted">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      {isOwn ? (
+        <div className="absolute right-0 top-2 flex gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+          <button
+            type="button"
+            className="grid size-8 place-items-center rounded-lg text-foreground-muted hover:bg-surface-muted"
+            aria-label={t('common.edit')}
+            onClick={onEdit}
+          >
+            <Pencil className="size-4" />
+          </button>
+          <button
+            type="button"
+            className="grid size-8 place-items-center rounded-lg text-danger-on-surface hover:bg-danger-surface"
+            aria-label={t('common.delete')}
+            onClick={onDelete}
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </div>
       ) : null}
     </div>
   );

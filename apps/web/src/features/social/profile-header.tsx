@@ -14,7 +14,6 @@ import { localeTag, t } from '@/lib/i18n';
 
 import { ReportDialog } from './report-dialog';
 import { ProfileAvatarEditor, ProfileCoverEditor } from './profile-media-editor';
-import { ProfileCareerSection } from './profile-career-section';
 import { useFollow, useMessageProfile, useSocialMe, useUnfollow, useUpdateSocialProfile } from './use-social';
 
 export function ProfileHeader({
@@ -221,10 +220,6 @@ export function ProfileHeader({
           </>
         ) : null}
       </div>
-
-      {profile.kind === SocialProfileKind.PERSONAL ? (
-        <ProfileCareerSection profile={profile} isOwn={isOwnProfile} />
-      ) : null}
 
       {reportOpen ? (
         <ReportDialog
