@@ -35,7 +35,7 @@ export default function CustomerLayout() {
       <Stack.Screen name="orders/[id]/review" options={{ title: t('review.createTitle') }} />
       <Stack.Screen name="reviews/index" options={{ title: t('review.writtenTitle') }} />
       <Stack.Screen name="payments/index" options={{ title: t('payment.historyTitle') }} />
-      <Stack.Screen name="chat/[id]" options={{ title: t('messaging.chatTitle') }} />
+      <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="providers/index" options={{ title: t('provider.discoverTitle') }} />
       <Stack.Screen name="providers/[id]" options={{ title: t('provider.profileTitle') }} />
       <Stack.Screen name="profile/edit" options={{ title: t('profile.title') }} />

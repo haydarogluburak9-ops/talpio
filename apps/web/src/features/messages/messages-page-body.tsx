@@ -1,8 +1,10 @@
 'use client';
 
 import { LoadingState } from '@talpio/ui';
+import { MessageSquarePlus } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
@@ -11,24 +13,34 @@ import { ChatThread } from './chat-thread';
 import { ConversationList } from './conversation-list';
 import { NewGroupForm } from './new-group-form';
 
-/**
- * Sohbetlerde "ben" kimin olduğu her satırda gerekir; bu yüzden sayfa gövdeleri
- * oturumu okuyan istemci bileşenleridir.
- */
 export function MessagesPageBody() {
   const user = useAuthenticatedUser();
+  const [showNewGroup, setShowNewGroup] = useState(false);
+
   if (!user) return <LoadingState label="Mesajlar yükleniyor" />;
 
   return (
-    <div className="flex flex-col gap-3 pb-20 lg:pb-6">
-      <div className="social-panel p-5 sm:p-6">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-brand-900 dark:text-foreground">
-          {t('messaging.listTitle')}
-        </h1>
-        <p className="mt-1 text-sm text-foreground-muted">{t('messaging.emptyDescription')}</p>
+    <div className="flex h-[calc(100dvh-5.5rem)] flex-col overflow-hidden pb-16 lg:pb-0">
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:rounded-xl lg:border lg:border-border/70 lg:bg-surface lg:shadow-sm">
+        <aside className="flex min-h-0 flex-col border-border/70 lg:border-r">
+          <MessagesInboxHeader onCompose={() => setShowNewGroup((value) => !value)} />
+          {showNewGroup ? (
+            <div className="border-b border-border/70 px-4 py-3">
+              <NewGroupForm />
+            </div>
+          ) : null}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <ConversationList currentUserId={user.id} compact />
+          </div>
+        </aside>
+
+        <div className="hidden min-h-0 flex-col items-center justify-center gap-3 px-8 text-center lg:flex">
+          <div className="grid size-24 place-items-center rounded-full border border-border">
+            <MessageSquarePlus className="size-10 text-foreground-muted" aria-hidden />
+          </div>
+          <p className="max-w-xs text-sm text-foreground-muted">{t('messaging.selectConversation')}</p>
+        </div>
       </div>
-      <NewGroupForm />
-      <ConversationList currentUserId={user.id} />
     </div>
   );
 }
@@ -38,16 +50,49 @@ export function ChatPageBody({ conversationId }: { conversationId: string }) {
   if (!user) return <LoadingState label="Sohbet yükleniyor" />;
 
   return (
-    <div className="grid gap-3 pb-20 lg:grid-cols-[280px_minmax(0,1fr)] lg:pb-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <div className="hidden lg:block">
-        <ConversationList currentUserId={user.id} />
+    <div className="flex h-[calc(100dvh-5.5rem)] flex-col overflow-hidden pb-16 lg:pb-0">
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:rounded-xl lg:border lg:border-border/70 lg:bg-surface lg:shadow-sm">
+        <aside className="hidden min-h-0 flex-col border-border/70 lg:flex lg:border-r">
+          <MessagesInboxHeader />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <ConversationList currentUserId={user.id} compact />
+          </div>
+        </aside>
+        <div className="min-h-0 flex-1">
+          <ChatThread conversationId={conversationId} currentUserId={user.id} />
+        </div>
       </div>
-      <ChatThread conversationId={conversationId} currentUserId={user.id} />
     </div>
   );
 }
 
-/** Oturum yoksa girişe yönlendirir; yönlendirme tamamlanana kadar `null` döner. */
+function MessagesInboxHeader({ onCompose }: { onCompose?: () => void }) {
+  return (
+    <div className="flex shrink-0 items-center justify-between border-b border-border/70 px-4 py-3.5">
+      <h1 className="text-xl font-semibold tracking-tight text-foreground">{t('messaging.listTitle')}</h1>
+      {onCompose ? (
+        <button
+          type="button"
+          onClick={onCompose}
+          className="grid size-9 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-muted"
+          aria-label={t('messaging.newGroup')}
+          title={t('messaging.newGroup')}
+        >
+          <MessageSquarePlus className="size-6" aria-hidden />
+        </button>
+      ) : (
+        <Link
+          href="/mesajlar"
+          className="grid size-9 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-muted lg:hidden"
+          aria-label={t('messaging.listTitle')}
+        >
+          <MessageSquarePlus className="size-6" aria-hidden />
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function useAuthenticatedUser() {
   const session = useSession();
   const router = useRouter();

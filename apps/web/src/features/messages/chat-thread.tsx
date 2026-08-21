@@ -3,8 +3,9 @@
 import { MESSAGE } from '@talpio/config';
 import { formatDate, formatTime } from '@talpio/localization';
 import { FilePurpose, MessageType, type Message } from '@talpio/types';
-import { Button, ErrorState, ListSkeleton } from '@talpio/ui';
-import { Mic } from 'lucide-react';
+import { ErrorState, ListSkeleton, cn } from '@talpio/ui';
+import { ArrowLeft, Camera, Mic, SendHorizontal } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';
@@ -29,8 +30,6 @@ export function ChatThread({
   const markRead = useMarkConversationRead(conversationId);
   const { mutate: markAsRead } = markRead;
 
-  // Sohbet açıldığında bir kez okundu işaretlenir; sonraki mesajlar yenileme
-  // döngüsüyle geldiğinde tekrar çağırmak gereksiz yazma üretirdi.
   useEffect(() => {
     if (conversationId.length > 0) markAsRead();
   }, [conversationId, markAsRead]);
@@ -49,19 +48,18 @@ export function ChatThread({
 
   const other = conversation.data.participants.find((item) => item.userId !== currentUserId);
   const isClosed = conversation.data.status !== 'ACTIVE';
+  const title = conversation.data.isGroup
+    ? conversation.data.title || t('messaging.newGroup')
+    : (other?.displayName ?? t('messaging.chatTitle'));
 
   return (
-    <div className="social-panel flex h-[calc(100dvh-14rem)] min-h-[26rem] flex-col overflow-hidden">
-      <header className="border-b border-border/70 bg-brand-900 px-4 py-3 text-white">
-        <p className="font-semibold tracking-tight">
-          {other?.displayName ?? t('messaging.chatTitle')}
-        </p>
-      </header>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <ChatHeader title={title} avatarUrl={other?.avatarUrl ?? null} />
 
       <MessageScroller messages={thread.data} currentUserId={currentUserId} />
 
       {isClosed ? (
-        <p className="border-t border-border px-4 py-4 text-sm text-foreground-muted">
+        <p className="border-t border-border px-4 py-3 text-center text-sm text-foreground-muted">
           {t('messaging.closed')}
         </p>
       ) : (
@@ -71,7 +69,34 @@ export function ChatThread({
   );
 }
 
-/** Yeni mesaj geldikçe listeyi en alta kaydırır. */
+function ChatHeader({ title, avatarUrl }: { title: string; avatarUrl: string | null }) {
+  return (
+    <header className="flex shrink-0 items-center gap-3 border-b border-border/70 px-3 py-2.5">
+      <Link
+        href="/mesajlar"
+        className="grid size-9 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-muted lg:hidden"
+        aria-label={t('messaging.listTitle')}
+      >
+        <ArrowLeft className="size-5" aria-hidden />
+      </Link>
+
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={avatarUrl} alt="" className="size-9 rounded-full object-cover" />
+      ) : (
+        <span
+          aria-hidden
+          className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 text-sm font-semibold text-white"
+        >
+          {title.slice(0, 1).toLocaleUpperCase()}
+        </span>
+      )}
+
+      <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">{title}</p>
+    </header>
+  );
+}
+
 function MessageScroller({
   messages,
   currentUserId,
@@ -95,7 +120,7 @@ function MessageScroller({
   }
 
   return (
-    <ol className="flex flex-1 flex-col gap-2 overflow-y-auto p-4">
+    <ol className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-3">
       {messages.map((message, index) => (
         <MessageRow
           key={message.id}
@@ -123,27 +148,28 @@ function MessageRow({
 
   if (message.type === MessageType.SYSTEM) {
     return (
-      <li className="my-2 text-center text-xs text-foreground-muted">{message.body}</li>
+      <li className="my-3 text-center text-xs font-medium text-foreground-muted">{message.body}</li>
     );
   }
 
   return (
     <>
       {showDay ? (
-        <li className="my-2 text-center text-xs text-foreground-muted">
+        <li className="my-3 text-center text-xs font-medium text-foreground-muted">
           {formatDate(message.createdAt, locale)}
         </li>
       ) : null}
 
-      <li className={isMine ? 'flex justify-end' : 'flex justify-start'}>
+      <li className={cn('flex', isMine ? 'justify-end' : 'justify-start')}>
         <div
-          className={
+          className={cn(
+            'max-w-[75%] px-3.5 py-2 text-[15px] leading-snug',
             isMine
-              ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-brand-600 px-3 py-2 text-white'
-              : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-surface-muted px-3 py-2 text-foreground'
-          }
+              ? 'rounded-[22px] rounded-br-md bg-[#3797F0] text-white'
+              : 'rounded-[22px] rounded-bl-md bg-[#EFEFEF] text-foreground dark:bg-surface-muted',
+          )}
         >
-          {message.body ? <p className="whitespace-pre-wrap text-sm">{message.body}</p> : null}
+          {message.body ? <p className="whitespace-pre-wrap">{message.body}</p> : null}
 
           {message.type === MessageType.VOICE ||
           message.attachments.some((item) => item.mimeType.startsWith('audio/')) ? (
@@ -166,18 +192,19 @@ function MessageRow({
           ) : null}
 
           <span
-            className={isMine ? 'block text-right text-[11px] text-white/70' : 'block text-right text-[11px] text-foreground-muted'}
+            className={cn(
+              'mt-0.5 block text-right text-[10px]',
+              isMine ? 'text-white/75' : 'text-foreground-muted',
+            )}
           >
             {formatTime(message.createdAt, locale)}
           </span>
         </div>
       </li>
 
-      {/* Uyarı yalnızca kendi mesajında gösterilir: karşı tarafı şüpheli göstermek
-          yerine kullanıcıyı kendi paylaşımı konusunda uyarmak amaçlanır. */}
       {message.isFlagged && isMine ? (
         <li className="flex justify-end">
-          <p className="max-w-[80%] rounded-lg bg-warning-surface px-3 py-2 text-xs text-warning-on-surface">
+          <p className="max-w-[75%] rounded-lg bg-warning-surface px-3 py-2 text-xs text-warning-on-surface">
             {t('messaging.flaggedHint')}
           </p>
         </li>
@@ -197,12 +224,11 @@ function Composer({ conversationId }: { conversationId: string }) {
   const trimmed = body.trim();
   const canSend = trimmed.length > 0 && trimmed.length <= MESSAGE.maxBodyLength && !send.isPending;
 
-  function submit(event: React.FormEvent) {
-    event.preventDefault();
+  function submit(event?: React.FormEvent) {
+    event?.preventDefault();
     if (!canSend) return;
 
     send.mutate(
-      // İstemci anahtarı ağ tekrarında aynı mesajın iki kez yazılmasını önler.
       { body: trimmed, clientMessageId: crypto.randomUUID() },
       { onSuccess: () => setBody('') },
     );
@@ -261,7 +287,10 @@ function Composer({ conversationId }: { conversationId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-2 border-t border-border p-3">
+    <form
+      onSubmit={submit}
+      className="flex shrink-0 flex-col gap-2 border-t border-border/70 bg-surface px-3 py-2.5"
+    >
       {send.isError || voiceError ? (
         <p role="alert" className="rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger-on-surface">
           {voiceError ?? t('messaging.sendFailed')}
@@ -269,31 +298,19 @@ function Composer({ conversationId }: { conversationId: string }) {
       ) : null}
 
       {recording ? (
-        <p className="text-xs font-medium text-accent-600">{t('messaging.recording')}</p>
+        <p className="text-center text-xs font-medium text-[#0095F6]">{t('messaging.recording')}</p>
       ) : null}
 
       <div className="flex items-end gap-2">
         <button
           type="button"
-          aria-label={t('messaging.holdToRecord')}
-          title={t('messaging.holdToRecord')}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            void startRecording();
-          }}
-          onPointerUp={() => stopRecording()}
-          onPointerLeave={() => {
-            if (recording) stopRecording();
-          }}
-          onPointerCancel={() => stopRecording()}
-          className={
-            recording
-              ? 'grid size-11 place-items-center rounded-full bg-accent-500 text-white'
-              : 'grid size-11 place-items-center rounded-full border border-border bg-surface text-foreground-muted hover:bg-surface-muted'
-          }
+          className="grid size-9 shrink-0 place-items-center text-foreground-muted"
+          aria-label={t('messaging.previewPhoto')}
+          disabled
         >
-          <Mic className="size-5" aria-hidden />
+          <Camera className="size-6" aria-hidden />
         </button>
+
         <label htmlFor="message-body" className="sr-only">
           {t('messaging.inputPlaceholder')}
         </label>
@@ -302,20 +319,49 @@ function Composer({ conversationId }: { conversationId: string }) {
           value={body}
           onChange={(event) => setBody(event.target.value)}
           onKeyDown={(event) => {
-            // Enter gönderir, Shift+Enter satır atlar: sohbet ekranlarında beklenen davranış.
             if (event.key === 'Enter' && !event.shiftKey) {
               event.preventDefault();
-              event.currentTarget.form?.requestSubmit();
+              submit();
             }
           }}
           rows={1}
           maxLength={MESSAGE.maxBodyLength}
           placeholder={t('messaging.inputPlaceholder')}
-          className="max-h-32 min-h-11 flex-1 resize-y rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-brand-600 focus:outline-none"
+          className="max-h-28 min-h-10 flex-1 resize-none rounded-full border border-border bg-surface-muted/50 px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[#0095F6] focus:outline-none"
         />
-        <Button type="submit" disabled={!canSend}>
-          {t('messaging.send')}
-        </Button>
+
+        {canSend ? (
+          <button
+            type="submit"
+            className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0095F6] text-white transition-opacity hover:opacity-90"
+            aria-label={t('messaging.send')}
+          >
+            <SendHorizontal className="size-5" aria-hidden />
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label={t('messaging.holdToRecord')}
+            title={t('messaging.holdToRecord')}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              void startRecording();
+            }}
+            onPointerUp={() => stopRecording()}
+            onPointerLeave={() => {
+              if (recording) stopRecording();
+            }}
+            onPointerCancel={() => stopRecording()}
+            className={cn(
+              'grid size-9 shrink-0 place-items-center rounded-full',
+              recording
+                ? 'bg-[#0095F6] text-white'
+                : 'text-foreground-muted hover:bg-surface-muted',
+            )}
+          >
+            <Mic className="size-5" aria-hidden />
+          </button>
+        )}
       </div>
     </form>
   );
