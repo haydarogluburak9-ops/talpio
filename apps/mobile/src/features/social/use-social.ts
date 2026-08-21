@@ -154,6 +154,19 @@ export function useSocialMe(enabled = true) {
   });
 }
 
+export function useUpdateSocialProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Parameters<typeof apiClient.social.updateMe>[0]) =>
+      apiClient.social.updateMe(body),
+    onSuccess: (profile) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(profile.username) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.all() });
+    },
+  });
+}
+
 export function useSocialProfile(username: string) {
   return useQuery({
     queryKey: queryKeys.social.profile(username),

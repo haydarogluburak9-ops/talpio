@@ -41,6 +41,11 @@ export const SOCIAL = {
   maxPostBodyLength: 4000,
   maxCommentLength: 2000,
   feedDefaultLimit: 20,
+  /** Profil kapak alanı genişlik:yükseklik (3:1 — tüm ekranlarda sabit). */
+  coverAspectRatio: 3,
+  /** Önerilen kapak boyutu (px); yükleme zorunlu değil, kırpma `object-cover` ile yapılır. */
+  recommendedCoverWidth: 1500,
+  recommendedCoverHeight: 500,
 } as const;
 
 export const JOB = {

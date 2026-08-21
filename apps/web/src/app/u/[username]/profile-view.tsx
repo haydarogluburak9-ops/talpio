@@ -104,6 +104,7 @@ export function SocialProfileView() {
       <div className="social-panel mb-3 overflow-hidden p-4">
         <ProfileHeader
           profile={profile.data}
+          isOwn={isOwn}
           onOpenPosts={() => setTab('posts')}
           onOpenFollowers={() => setTab('followers')}
           onOpenFollowing={() => setTab('following')}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@talpio/config';
+import { queryKeys, SOCIAL } from '@talpio/config';
 import type { SocialProfile } from '@talpio/types';
 import { Button, cn } from '@talpio/ui';
 import { useRouter } from 'next/navigation';
@@ -12,15 +12,18 @@ import { apiClient } from '@/lib/api';
 import { localeTag, t } from '@/lib/i18n';
 
 import { ReportDialog } from './report-dialog';
+import { ProfileAvatarEditor, ProfileCoverEditor } from './profile-media-editor';
 import { useFollow, useMessageProfile, useSocialMe, useUnfollow } from './use-social';
 
 export function ProfileHeader({
   profile,
+  isOwn = false,
   onOpenFollowers,
   onOpenFollowing,
   onOpenPosts,
 }: {
   profile: SocialProfile;
+  isOwn?: boolean;
   onOpenFollowers?: () => void;
   onOpenFollowing?: () => void;
   onOpenPosts?: () => void;
@@ -31,7 +34,7 @@ export function ProfileHeader({
   const follow = useFollow(profile.username);
   const unfollow = useUnfollow(profile.username);
   const message = useMessageProfile(profile.username);
-  const isOwn = me.data?.id === profile.id;
+  const isOwnProfile = isOwn || me.data?.id === profile.id;
   const [reportOpen, setReportOpen] = useState(false);
   const store = profile.kind === 'BUSINESS' ? profile.business : null;
 
@@ -39,7 +42,7 @@ export function ProfileHeader({
     queryKey: queryKeys.social.following(me.data?.username ?? '', { target: profile.id }),
     queryFn: ({ signal }) =>
       apiClient.social.listFollowing(me.data!.username, { limit: 100 }, signal),
-    enabled: Boolean(me.data && !isOwn),
+    enabled: Boolean(me.data && !isOwnProfile),
   });
 
   const isFollowing =
@@ -51,10 +54,15 @@ export function ProfileHeader({
 
   return (
     <header className="relative overflow-hidden">
-      <div className="relative h-28 sm:h-36">
-        {profile.coverUrl ? (
+      <div
+        className="relative -mx-4 -mt-4 w-[calc(100%+2rem)] overflow-hidden rounded-t-[1.25rem]"
+        style={{ aspectRatio: `${SOCIAL.coverAspectRatio} / 1` }}
+      >
+        {isOwnProfile ? (
+          <ProfileCoverEditor coverUrl={profile.coverUrl} />
+        ) : profile.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.coverUrl} alt="" className="size-full object-cover" />
+          <img src={profile.coverUrl} alt="" className="size-full object-cover object-center" />
         ) : (
           <div
             className="size-full bg-gradient-to-br from-brand-900 via-brand-700 to-accent-500"
@@ -65,8 +73,12 @@ export function ProfileHeader({
 
       <div className="relative z-10 flex flex-wrap items-end justify-between gap-4 px-1 sm:px-2">
         <div className="flex min-w-0 items-end gap-4">
-          <div className="-mt-10">
-            <ProfileAvatar name={displayName} url={profile.avatarUrl} />
+          <div className="-mt-10 sm:-mt-12">
+            {isOwnProfile ? (
+              <ProfileAvatarEditor name={displayName} avatarUrl={profile.avatarUrl} />
+            ) : (
+              <ProfileAvatar name={displayName} url={profile.avatarUrl} />
+            )}
           </div>
           <div className="min-w-0 pt-3 pb-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -91,7 +103,7 @@ export function ProfileHeader({
           </div>
         </div>
 
-        {session.data && !isOwn ? (
+        {session.data && !isOwnProfile ? (
           <div className="flex flex-wrap gap-2">
             <Button
               className={
