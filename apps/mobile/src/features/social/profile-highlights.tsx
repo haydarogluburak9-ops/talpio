@@ -40,8 +40,12 @@ export function ProfileHighlightsSection({
       viewer?.kind === 'highlight'
         ? queryKeys.social.profileHighlight(profile.username, viewer.highlightId)
         : ['social', 'profile-highlight', 'idle'],
-    queryFn: ({ signal }) =>
-      apiClient.social.getProfileHighlight(profile.username, viewer!.highlightId, signal),
+    queryFn: ({ signal }) => {
+      if (viewer?.kind !== 'highlight') {
+        throw new Error('Highlight viewer inactive');
+      }
+      return apiClient.social.getProfileHighlight(profile.username, viewer.highlightId, signal);
+    },
     enabled: viewer?.kind === 'highlight',
   });
 
