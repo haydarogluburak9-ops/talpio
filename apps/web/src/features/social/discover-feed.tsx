@@ -1,6 +1,7 @@
 'use client';
 
 import { ApiError } from '@talpio/api-client';
+import type { SocialPost } from '@talpio/types';
 import { EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 import { Search } from 'lucide-react';
 import Link from 'next/link';
@@ -12,7 +13,8 @@ import { t } from '@/lib/i18n';
 
 import { TrendingRail } from './trending-rail';
 import { SuggestedBusinesses } from './suggested-businesses';
-import { PostCard } from './post-card';
+import { DiscoverGrid } from './discover-grid';
+import { DiscoverViewer } from './discover-viewer';
 import { useDiscoverFeed } from './use-social';
 
 export function DiscoverFeed() {
@@ -20,6 +22,7 @@ export function DiscoverFeed() {
   const router = useRouter();
   const loggedIn = Boolean(session.data);
   const [query, setQuery] = useState('');
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const feed = useDiscoverFeed(loggedIn);
 
   if (!loggedIn) {
@@ -35,6 +38,13 @@ export function DiscoverFeed() {
       </div>
     );
   }
+
+  const posts = filterPosts(
+    (feed.data?.items ?? [])
+      .map((item) => item.post)
+      .filter((post): post is NonNullable<typeof post> => Boolean(post)),
+    query,
+  );
 
   return (
     <div className="flex flex-col gap-3 pb-20 lg:pb-6">
@@ -85,47 +95,41 @@ export function DiscoverFeed() {
             action={{ label: t('common.retry'), onClick: () => void feed.refetch() }}
           />
         </div>
+      ) : posts.length === 0 ? (
+        <div className="social-panel px-6 py-12">
+          <EmptyState title={t('social.discoverEmpty')} description={t('social.feedEmptyHint')} />
+        </div>
       ) : (
-        (() => {
-          const needle = query.trim().replace(/^#/, '').toLocaleLowerCase('en-US');
-          const posts = (feed.data?.items ?? [])
-            .map((item) => item.post)
-            .filter((post): post is NonNullable<typeof post> => Boolean(post))
-            .filter((post) => {
-              if (!needle) return true;
-              const haystack = [
-                post.body ?? '',
-                ...(post.hashtags ?? []),
-                post.author?.displayName ?? '',
-                post.author?.username ?? '',
-                post.deal?.title ?? '',
-                post.promo?.label ?? '',
-              ]
-                .join(' ')
-                .toLocaleLowerCase('en-US');
-              return haystack.includes(needle);
-            });
-          if (posts.length === 0) {
-            return (
-              <div className="social-panel px-6 py-12">
-                <EmptyState
-                  title={t('social.discoverEmpty')}
-                  description={t('social.feedEmptyHint')}
-                />
-              </div>
-            );
-          }
-          return posts.map((post, index) => (
-            <div
-              key={post.id}
-              className="social-feed-item"
-              style={{ animationDelay: `${Math.min(index, 6) * 40}ms` }}
-            >
-              <PostCard post={post} interactive />
-            </div>
-          ));
-        })()
+        <DiscoverGrid posts={posts} onSelect={setViewerIndex} />
       )}
+
+      {viewerIndex !== null ? (
+        <DiscoverViewer
+          posts={posts}
+          startIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      ) : null}
     </div>
+  );
+}
+
+/** Arama kutusu hem metni hem de #etiketleri süzer. */
+function filterPosts(posts: SocialPost[], query: string): SocialPost[] {
+  const needle = query.trim().replace(/^#/, '').toLocaleLowerCase('en-US');
+  if (!needle) return posts;
+
+  return posts.filter((post) =>
+    [
+      post.body ?? '',
+      ...(post.hashtags ?? []),
+      post.author?.displayName ?? '',
+      post.author?.username ?? '',
+      post.deal?.title ?? '',
+      post.promo?.label ?? '',
+    ]
+      .join(' ')
+      .toLocaleLowerCase('en-US')
+      .includes(needle),
   );
 }
