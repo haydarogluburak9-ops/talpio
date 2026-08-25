@@ -10,13 +10,12 @@ import {
   Heart,
   MessageCircle,
   MoreHorizontal,
-  Quote,
   Repeat2,
-  Share2,
+  Send,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { localeTag, t } from '@/lib/i18n';
 
@@ -50,6 +49,9 @@ const DEALISH_TYPES = new Set([
   'NEW_PRODUCT',
 ]);
 
+const DOUBLE_TAP_MS = 300;
+const CAPTION_LIMIT = 180;
+
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.max(1, Math.floor(diff / 60_000));
@@ -60,10 +62,11 @@ function timeAgo(iso: string): string {
   return `${days}g`;
 }
 
+/** Etiket ve bahsetmeleri bağlantıya çevirir, satır sonlarını korur. */
 function PostBody({ body }: { body: string }) {
   const parts = body.split(/(#[\p{L}\p{N}_]{2,40}|@[a-z0-9._]{2,32})/gu);
   return (
-    <p className="whitespace-pre-wrap px-5 pt-3 text-[16px] leading-relaxed text-foreground">
+    <span className="whitespace-pre-line text-foreground">
       {parts.map((part, index) => {
         if (part.startsWith('#')) {
           const slug = part.slice(1).toLocaleLowerCase(localeTag());
@@ -71,7 +74,7 @@ function PostBody({ body }: { body: string }) {
             <Link
               key={`${slug}-${index}`}
               href={`/gundem/${encodeURIComponent(slug)}`}
-              className="font-semibold text-accent-600 hover:underline"
+              className="text-info-500 hover:underline"
             >
               {part}
             </Link>
@@ -83,7 +86,7 @@ function PostBody({ body }: { body: string }) {
             <Link
               key={`${username}-${index}`}
               href={`/u/${username}`}
-              className="font-semibold text-brand-800 hover:underline dark:text-brand-200"
+              className="text-info-500 hover:underline"
             >
               {part}
             </Link>
@@ -91,7 +94,40 @@ function PostBody({ body }: { body: string }) {
         }
         return <span key={index}>{part}</span>;
       })}
-    </p>
+    </span>
+  );
+}
+
+function IconAction({
+  label,
+  active,
+  disabled,
+  onClick,
+  className,
+  children,
+}: {
+  label: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        'grid size-10 place-items-center rounded-full text-foreground transition-transform hover:scale-110 disabled:opacity-50',
+        className,
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -143,6 +179,10 @@ export function PostCard({
   const me = useSocialMe(interactive);
   const follow = useFollow(post.author?.username ?? '');
   const [commentBody, setCommentBody] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const [burst, setBurst] = useState(0);
+  const lastTapRef = useRef(0);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!interactive) return;
@@ -166,11 +206,29 @@ export function PostCard({
     .slice(0, 2)
     .toUpperCase();
 
-  const shareCount = post.shareCount ?? 0;
-  const repostCount = post.repostCount ?? 0;
   const tags = post.hashtags ?? [];
   const isOwn = Boolean(me.data && author && me.data.id === author.id);
   const showFollow = interactive && Boolean(author) && !isOwn && !author?.isFollowing;
+  const body = post.body ?? '';
+  const longBody = body.length > CAPTION_LIMIT;
+  const caption = expanded || !longBody ? body : `${body.slice(0, CAPTION_LIMIT).trimEnd()}… `;
+
+  function likeNow() {
+    setBurst((value) => value + 1);
+    if (!post.likedByMe && !like.isPending) like.mutate(post.id);
+  }
+
+  /** Çift tıklama beğenir; tek tıklama görseli olduğu gibi bırakır. */
+  function onMediaTap() {
+    if (!interactive) return;
+    const now = Date.now();
+    if (now - lastTapRef.current < DOUBLE_TAP_MS) {
+      lastTapRef.current = 0;
+      likeNow();
+      return;
+    }
+    lastTapRef.current = now;
+  }
 
   return (
     <article className="social-panel social-post overflow-hidden">
@@ -303,8 +361,9 @@ export function PostCard({
 
       {post.media.length > 0 ? (
         <div
+          onPointerUp={onMediaTap}
           className={cn(
-            'mt-3 grid gap-0.5 bg-brand-950/5',
+            'relative mt-3 grid select-none gap-0.5 bg-brand-950/5',
             post.media.length > 1 ? 'grid-cols-2' : 'grid-cols-1',
           )}
         >
@@ -327,23 +386,16 @@ export function PostCard({
               />
             ),
           )}
+          {burst > 0 ? (
+            <Heart
+              key={burst}
+              aria-hidden
+              className="ig-heart-burst pointer-events-none absolute top-1/2 left-1/2 size-24 -translate-x-1/2 -translate-y-1/2 fill-white text-white drop-shadow-[0_2px_12px_rgb(0_0_0_/_0.45)]"
+            />
+          ) : null}
         </div>
       ) : null}
 
-      {post.body ? <PostBody body={post.body} /> : null}
-      {tags.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5 px-5 pt-2">
-          {tags.map((tag) => (
-            <Link
-              key={tag}
-              href={`/gundem/${encodeURIComponent(tag)}`}
-              className="rounded-full bg-accent-500/10 px-2.5 py-1 text-xs font-semibold text-accent-700 hover:bg-accent-500/20 dark:text-accent-300"
-            >
-              #{tag}
-            </Link>
-          ))}
-        </div>
-      ) : null}
       {original ? <NestedOriginal post={original} /> : null}
 
       {promo || deal ? (
@@ -419,108 +471,126 @@ export function PostCard({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 pt-3 text-xs font-medium text-foreground-muted">
-        <span>{t('social.likesCount', { count: post.likeCount })}</span>
-        <span>{t('social.commentsCount', { count: post.commentCount })}</span>
-        <span>{t('social.sharesCount', { count: shareCount })}</span>
-        <span>{t('social.savesCount', { count: post.saveCount })}</span>
-        {repostCount > 0 ? (
-          <span>{t('social.repostsCount', { count: repostCount })}</span>
-        ) : null}
-      </div>
+      {showDealCta ? (
+        <div className="px-4 pt-3">
+          <button
+            type="button"
+            disabled={createRequest.isPending}
+            onClick={() =>
+              createRequest.mutate(
+                { postId: post.id },
+                {
+                  onSuccess: (request) => {
+                    router.push(`/tedarik/${request.id}`);
+                  },
+                },
+              )
+            }
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 text-sm font-semibold text-white hover:bg-accent-600"
+          >
+            <ClipboardPlus className="size-4" />
+            {createRequest.isPending ? t('social.creatingRequest') : t('social.askOffer')}
+          </button>
+        </div>
+      ) : null}
 
       {interactive ? (
-        <div className="mt-1 flex flex-col gap-2 border-t border-border/70 px-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-3">
-          <div className="grid grid-cols-3 gap-1 sm:flex sm:flex-1 sm:items-center sm:justify-start sm:gap-1">
+        <div className="flex items-center gap-1 px-3 pt-2">
+          <IconAction
+            label={t('social.like')}
+            active={post.likedByMe}
+            disabled={like.isPending || unlike.isPending}
+            onClick={() => (post.likedByMe ? unlike.mutate(post.id) : likeNow())}
+          >
+            <Heart className={cn('size-6', post.likedByMe && 'fill-danger-500 text-danger-500')} />
+          </IconAction>
+          <IconAction
+            label={t('social.comment')}
+            active={showComments}
+            onClick={() => {
+              setShowComments(true);
+              commentInputRef.current?.focus();
+            }}
+          >
+            <MessageCircle className="size-6" />
+          </IconAction>
+          <IconAction
+            label={t('social.share')}
+            active={post.sharedByMe}
+            disabled={share.isPending}
+            onClick={() => share.mutate(post.id)}
+          >
+            <Send className={cn('size-6', post.sharedByMe && 'text-info-500')} />
+          </IconAction>
+          <IconAction
+            label={t('social.repost')}
+            disabled={createPost.isPending}
+            onClick={() => createPost.mutate({ originalPostId: post.originalPostId ?? post.id })}
+          >
+            <Repeat2 className="size-6" />
+          </IconAction>
+          <IconAction
+            label={t('social.save')}
+            active={post.savedByMe}
+            disabled={save.isPending || unsave.isPending}
+            onClick={() => (post.savedByMe ? unsave.mutate(post.id) : save.mutate(post.id))}
+            className="ml-auto"
+          >
+            <Bookmark className={cn('size-6', post.savedByMe && 'fill-current')} />
+          </IconAction>
+        </div>
+      ) : null}
+
+      {post.likeCount > 0 ? (
+        <p className="px-4 pt-1 text-[15px] font-semibold text-foreground">
+          {t('social.likesCount', { count: post.likeCount })}
+        </p>
+      ) : null}
+
+      {body || tags.length > 0 ? (
+        <div className="px-4 pt-1 text-[15px] leading-relaxed">
+          {author ? (
+            <Link
+              href={`/u/${author.username}`}
+              className="mr-1.5 font-semibold text-foreground hover:underline"
+            >
+              {author.username}
+            </Link>
+          ) : null}
+          <PostBody body={caption} />
+          {longBody && !expanded ? (
             <button
               type="button"
-              disabled={like.isPending || unlike.isPending}
-              onClick={() => (post.likedByMe ? unlike.mutate(post.id) : like.mutate(post.id))}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-danger-500 hover:bg-danger-50 sm:px-3',
-                post.likedByMe && 'bg-danger-50 text-danger-600',
-              )}
+              onClick={() => setExpanded(true)}
+              className="text-foreground-muted hover:underline"
             >
-              <Heart className={cn('size-4 shrink-0', post.likedByMe && 'fill-current')} />
-              <span className="max-sm:sr-only">{t('social.like')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowComments((value) => !value)}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-info-500 hover:bg-info-50 sm:px-3',
-                showComments && 'bg-info-50 text-info-700',
-              )}
-            >
-              <MessageCircle className="size-4 shrink-0" />
-              <span className="max-sm:sr-only">{t('social.comment')}</span>
-            </button>
-            <button
-              type="button"
-              disabled={share.isPending}
-              onClick={() => share.mutate(post.id)}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-success-500 hover:bg-success-50 sm:px-3',
-                post.sharedByMe && 'bg-success-50 text-success-700',
-              )}
-            >
-              <Share2 className="size-4 shrink-0" />
-              <span className="max-sm:sr-only">{t('social.share')}</span>
-            </button>
-            <button
-              type="button"
-              disabled={createPost.isPending}
-              onClick={() => createPost.mutate({ originalPostId: post.originalPostId ?? post.id })}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-violet-500 hover:bg-violet-50 sm:px-3"
-            >
-              <Repeat2 className="size-4 shrink-0" />
-              <span className="max-sm:sr-only">{t('social.repost')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setQuoteOpen((open) => !open)}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-warning-500 hover:bg-warning-50 sm:px-3',
-                quoteOpen && 'bg-warning-50 text-warning-700',
-              )}
-            >
-              <Quote className="size-4 shrink-0" />
-              <span className="max-sm:sr-only">{t('social.quote')}</span>
-            </button>
-            <button
-              type="button"
-              disabled={save.isPending || unsave.isPending}
-              onClick={() => (post.savedByMe ? unsave.mutate(post.id) : save.mutate(post.id))}
-              className={cn(
-                'inline-flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-sm font-semibold text-accent-500 hover:bg-accent-50 sm:px-3',
-                post.savedByMe && 'bg-accent-50 text-accent-700',
-              )}
-            >
-              <Bookmark className={cn('size-4 shrink-0', post.savedByMe && 'fill-current')} />
-              <span className="max-sm:sr-only">{t('social.save')}</span>
-            </button>
-          </div>
-          {showDealCta ? (
-            <button
-              type="button"
-              disabled={createRequest.isPending}
-              onClick={() =>
-                createRequest.mutate(
-                  { postId: post.id },
-                  {
-                    onSuccess: (request) => {
-                      router.push(`/tedarik/${request.id}`);
-                    },
-                  },
-                )
-              }
-              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-accent-500 px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgb(255_106_0_/_0.28)] hover:bg-accent-600"
-            >
-              <ClipboardPlus className="size-4" />
-              {createRequest.isPending ? t('social.creatingRequest') : t('social.askOffer')}
+              {t('social.captionMore')}
             </button>
           ) : null}
+          {tags.length > 0 ? (
+            <span className="block pt-0.5">
+              {tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/gundem/${encodeURIComponent(tag)}`}
+                  className="mr-1.5 text-info-500 hover:underline"
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </span>
+          ) : null}
         </div>
+      ) : null}
+
+      {interactive && post.commentCount > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowComments((value) => !value)}
+          className="block px-4 pt-1 text-sm text-foreground-muted hover:underline"
+        >
+          {t('social.viewAllComments', { count: post.commentCount })}
+        </button>
       ) : null}
 
       {interactive && quoteOpen ? (
@@ -553,60 +623,83 @@ export function PostCard({
       ) : null}
 
       {interactive && showComments ? (
-        <div className="space-y-3 border-t border-border/70 bg-surface-muted/40 px-4 py-3">
+        <ul className="space-y-2.5 px-4 pt-2">
           {comments.isPending ? (
-            <p className="text-sm text-foreground-muted">…</p>
+            <li className="text-sm text-foreground-muted">…</li>
           ) : comments.data?.items.length ? (
-            <ul className="space-y-3">
-              {comments.data.items.map((comment) => (
-                <li key={comment.id} className="flex gap-2 text-sm">
-                  <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-brand-700 text-[10px] font-bold text-white">
-                    {(comment.author?.displayName ?? '?').slice(0, 1)}
-                  </span>
-                  <div className="min-w-0 rounded-2xl bg-surface px-3 py-2 shadow-soft">
-                    <span className="font-semibold text-brand-800">
-                      {comment.author?.displayName ?? '—'}
-                    </span>
-                    <p className="text-foreground">{comment.body}</p>
-                    {interactive ? (
-                      <button
-                        type="button"
-                        className="mt-1 text-xs text-danger-600 hover:underline"
-                        onClick={() => setReportTarget({ type: 'COMMENT', id: comment.id })}
-                      >
-                        {t('social.report')}
-                      </button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            comments.data.items.map((comment) => (
+              <li
+                key={comment.id}
+                className="group/comment flex items-start gap-2.5 text-sm leading-relaxed"
+              >
+                <span className="mt-0.5 grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-700 text-[10px] font-bold text-white">
+                  {comment.author?.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={comment.author.avatarUrl} alt="" className="size-full object-cover" />
+                  ) : (
+                    (comment.author?.displayName ?? '?').slice(0, 1).toUpperCase()
+                  )}
+                </span>
+                <p className="min-w-0 flex-1">
+                  <Link
+                    href={comment.author ? `/u/${comment.author.username}` : '#'}
+                    className="mr-1.5 font-semibold text-foreground hover:underline"
+                  >
+                    {comment.author?.username ?? comment.author?.displayName ?? '—'}
+                  </Link>
+                  <span className="whitespace-pre-line text-foreground">{comment.body}</span>
+                </p>
+                <button
+                  type="button"
+                  className="shrink-0 text-xs text-foreground-muted opacity-0 transition-opacity hover:underline group-hover/comment:opacity-100"
+                  onClick={() => setReportTarget({ type: 'COMMENT', id: comment.id })}
+                >
+                  {t('social.report')}
+                </button>
+              </li>
+            ))
           ) : (
-            <p className="text-sm text-foreground-muted">{t('social.commentEmpty')}</p>
+            <li className="text-sm text-foreground-muted">{t('social.commentEmpty')}</li>
           )}
-          <form
-            className="flex gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!commentBody.trim()) return;
-              createComment.mutate(
-                { body: commentBody.trim() },
-                { onSuccess: () => setCommentBody('') },
-              );
-            }}
-          >
-            <input
-              value={commentBody}
-              onChange={(event) => setCommentBody(event.target.value)}
-              placeholder={t('social.commentPlaceholder')}
-              className="min-w-0 flex-1 rounded-full border border-border bg-surface px-4 py-2 text-sm outline-none focus:border-brand-500"
-            />
-            <Button type="submit" size="sm" disabled={createComment.isPending}>
-              {t('social.comment')}
-            </Button>
-          </form>
-        </div>
+        </ul>
       ) : null}
+
+      {interactive ? (
+        <form
+          className="mt-2 flex items-center gap-2 border-t border-border/70 px-4 py-2.5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const value = commentBody.trim();
+            if (!value) return;
+            createComment.mutate(
+              { body: value },
+              {
+                onSuccess: () => {
+                  setCommentBody('');
+                  setShowComments(true);
+                },
+              },
+            );
+          }}
+        >
+          <input
+            ref={commentInputRef}
+            value={commentBody}
+            onChange={(event) => setCommentBody(event.target.value)}
+            placeholder={t('social.addComment')}
+            className="min-w-0 flex-1 bg-transparent py-1 text-sm outline-none placeholder:text-foreground-muted"
+          />
+          <button
+            type="submit"
+            disabled={createComment.isPending || commentBody.trim().length === 0}
+            className="shrink-0 text-sm font-semibold text-info-500 disabled:opacity-40"
+          >
+            {t('social.sendComment')}
+          </button>
+        </form>
+      ) : (
+        <div className="h-4" />
+      )}
       {reportTarget ? (
         <ReportDialog
           targetType={reportTarget.type}

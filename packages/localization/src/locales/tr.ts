@@ -1016,6 +1016,7 @@ export const tr = {
     commentEmpty: 'Henüz yorum yok.',
     addComment: 'Yorum ekle…',
     sendComment: 'Paylaş',
+    viewAllComments: '{count} yorumun tümünü gör',
     captionMore: 'devamı',
     previousPost: 'Önceki gönderi',
     nextPost: 'Sonraki gönderi',

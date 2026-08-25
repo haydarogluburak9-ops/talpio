@@ -1005,6 +1005,7 @@ export const en: Messages = {
     commentEmpty: 'No comments yet.',
     addComment: 'Add a comment…',
     sendComment: 'Post',
+    viewAllComments: 'View all {count} comments',
     captionMore: 'more',
     previousPost: 'Previous post',
     nextPost: 'Next post',
