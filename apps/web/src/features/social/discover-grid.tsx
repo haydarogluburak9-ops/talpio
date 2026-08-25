@@ -2,7 +2,7 @@
 
 import type { SocialPost } from '@talpio/types';
 import { cn } from '@talpio/ui';
-import { Clapperboard, Layers3 } from 'lucide-react';
+import { Clapperboard, Heart, Layers3, MessageCircle } from 'lucide-react';
 
 import {
   getDiscoverPostPreview,
@@ -71,7 +71,16 @@ function DiscoverGridTile({ post, onClick }: { post: SocialPost; onClick: () => 
         </span>
       )}
 
-      <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10 group-active:bg-black/20" />
+      <span className="pointer-events-none absolute inset-0 flex items-center justify-center gap-5 bg-black/40 text-sm font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100">
+        <span className="flex items-center gap-1.5">
+          <Heart className="size-4 fill-current" aria-hidden />
+          {post.likeCount}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <MessageCircle className="size-4 fill-current" aria-hidden />
+          {post.commentCount}
+        </span>
+      </span>
     </button>
   );
 }

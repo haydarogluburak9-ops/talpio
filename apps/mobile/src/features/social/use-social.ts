@@ -111,6 +111,26 @@ export function useFollow() {
   });
 }
 
+export function usePostComments(postId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.social.comments(postId),
+    queryFn: ({ signal }) => apiClient.social.listComments(postId, { limit: 50 }, signal),
+    enabled: enabled && postId.length > 0,
+  });
+}
+
+export function useCreateComment(postId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { body: string; parentId?: string }) =>
+      apiClient.social.comment(postId, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.comments(postId) });
+      invalidateFeed(queryClient);
+    },
+  });
+}
+
 export function useReportContent() {
   const queryClient = useQueryClient();
   return useMutation({

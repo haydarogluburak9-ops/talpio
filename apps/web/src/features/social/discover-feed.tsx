@@ -11,8 +11,6 @@ import { useState } from 'react';
 import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
 
-import { TrendingRail } from './trending-rail';
-import { SuggestedBusinesses } from './suggested-businesses';
 import { DiscoverGrid } from './discover-grid';
 import { DiscoverViewer } from './discover-viewer';
 import { useDiscoverFeed } from './use-social';
@@ -72,16 +70,6 @@ export function DiscoverFeed() {
           />
         </label>
       </form>
-
-      <TrendingRail compact />
-      <SuggestedBusinesses withIntro />
-
-      <div className="px-0.5">
-        <h2 className="font-display text-sm font-semibold text-brand-900 dark:text-foreground">
-          {t('social.railDealsTitle')}
-        </h2>
-        <p className="mt-0.5 text-xs text-foreground-muted">{t('social.discoverSubtitle')}</p>
-      </div>
 
       {feed.isPending ? (
         <ListSkeleton rows={3} />

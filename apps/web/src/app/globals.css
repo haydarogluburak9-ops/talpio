@@ -286,6 +286,32 @@
   animation: social-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.ig-heart-burst {
+  animation: ig-heart-burst 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes ig-heart-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  25% {
+    opacity: 0.95;
+    transform: scale(1.15);
+  }
+  45% {
+    transform: scale(0.95);
+  }
+  70% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
 .page-intro {
   animation: hero-rise 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -322,5 +348,8 @@
   .social-feed-item,
   .page-intro {
     animation: none;
+  }
+  .ig-heart-burst {
+    display: none;
   }
 }
