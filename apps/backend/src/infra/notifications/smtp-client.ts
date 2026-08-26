@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { connect as tlsConnect } from 'node:tls';
 import { Socket } from 'node:net';
 
@@ -16,6 +17,19 @@ export interface SmtpMailRequest {
 function extractAddress(value: string): string {
   const match = value.match(/<([^>]+)>/);
   return (match?.[1] ?? value).trim();
+}
+
+function senderDomain(from: string): string {
+  return extractAddress(from).split('@')[1] ?? 'talpio.app';
+}
+
+/**
+ * Başlıklar yalnızca ASCII taşıyabilir; Türkçe karakterli bir konu ham
+ * gönderilirse alıcının istemcisinde bozuk görünür (RFC 2047).
+ */
+function encodeHeader(value: string): string {
+  if (!/[^\x20-\x7E]/.test(value)) return value;
+  return `=?UTF-8?B?${Buffer.from(value, 'utf8').toString('base64')}?=`;
 }
 
 class SmtpSession {
@@ -120,7 +134,10 @@ export async function sendSmtpMail(request: SmtpMailRequest): Promise<void> {
   const payload = [
     `From: ${request.from}`,
     `To: ${request.to}`,
-    `Subject: ${request.subject}`,
+    `Subject: ${encodeHeader(request.subject)}`,
+    // Date ve Message-ID eksikse spam filtreleri iletiyi otomatik puanla düşürür.
+    `Date: ${new Date().toUTCString()}`,
+    `Message-ID: <${randomUUID()}@${senderDomain(request.from)}>`,
     'MIME-Version: 1.0',
     'Content-Type: text/plain; charset=utf-8',
     '',
