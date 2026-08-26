@@ -6,6 +6,7 @@ import { config as loadEnv } from 'dotenv';
 
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { UserRole, UserStatus, VerificationStatus } from '../../src/generated/prisma/enums';
+import { ATTRIBUTE_SCHEMA_SEEDS } from './data/attribute-schemas';
 import {
   AI_FEATURE_SEEDS,
   ALL_AI_FEATURES,
@@ -17,11 +18,7 @@ import { COMMISSION_RULES } from './data/commission';
 import { DEMO_ACCOUNTS, LEGACY_DEMO_EMAILS } from './data/demo-accounts';
 import { seedSocialNetwork } from './data/social-feed';
 import { COUNTRIES } from './data/locations';
-import {
-  LEGACY_ROLE_PLATFORM_MAP,
-  MADENI_YAG_ATTRIBUTE_SCHEMA,
-  PLATFORM_ROLE_SEEDS,
-} from './data/platform-roles';
+import { LEGACY_ROLE_PLATFORM_MAP, PLATFORM_ROLE_SEEDS } from './data/platform-roles';
 import { SYSTEM_SETTINGS } from './data/system-settings';
 
 loadEnv({ path: path.resolve(__dirname, '../../../../.env'), quiet: true });
@@ -274,28 +271,29 @@ async function seedBilling(): Promise<void> {
 }
 
 async function seedAttributeSchemas(): Promise<void> {
-  const category = await prisma.serviceCategory.findUnique({
-    where: { slug: 'madeni-yag' },
-    select: { id: true },
-  });
-  if (!category) {
-    console.log('  madeni-yag kategorisi bulunamadı; attribute schema atlandı');
-    return;
+  let loaded = 0;
+
+  for (const seed of ATTRIBUTE_SCHEMA_SEEDS) {
+    const category = await prisma.serviceCategory.findUnique({
+      where: { slug: seed.categorySlug },
+      select: { id: true },
+    });
+    if (!category) {
+      console.warn(`  ${seed.categorySlug} kategorisi bulunamadı; alan şeması atlandı`);
+      continue;
+    }
+
+    const schema = { version: seed.version, fields: seed.fields };
+
+    await prisma.attributeSchema.upsert({
+      where: { categoryId_version: { categoryId: category.id, version: seed.version } },
+      update: { schema, isActive: true },
+      create: { categoryId: category.id, version: seed.version, schema, isActive: true },
+    });
+    loaded += 1;
   }
 
-  await prisma.attributeSchema.upsert({
-    where: {
-      categoryId_version: { categoryId: category.id, version: MADENI_YAG_ATTRIBUTE_SCHEMA.version },
-    },
-    update: { schema: MADENI_YAG_ATTRIBUTE_SCHEMA, isActive: true },
-    create: {
-      categoryId: category.id,
-      version: MADENI_YAG_ATTRIBUTE_SCHEMA.version,
-      schema: MADENI_YAG_ATTRIBUTE_SCHEMA,
-      isActive: true,
-    },
-  });
-  console.log('  madeni-yag attribute schema yüklendi');
+  console.log(`  ${loaded}/${ATTRIBUTE_SCHEMA_SEEDS.length} kategori alan şeması yüklendi`);
 }
 
 async function assignPlatformRolesForUser(userId: string, legacyRole: string): Promise<void> {

@@ -1,5 +1,11 @@
 import { API_ROUTES } from '@talpio/config';
-import type { City, Country, District, ServiceCategory } from '@talpio/types';
+import type {
+  CategoryAttributeSchema,
+  City,
+  Country,
+  District,
+  ServiceCategory,
+} from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 
@@ -18,6 +24,17 @@ export function createCatalogResource(http: HttpClient) {
       return http.get<ServiceCategory>(API_ROUTES.catalog.categoryById(slug), {
         ...(signal ? { signal } : {}),
       });
+    },
+
+    /** Şema tanımlı değilse alan listesi boş döner; bu bir hata değildir. */
+    getCategoryAttributeSchema(
+      idOrSlug: string,
+      signal?: AbortSignal,
+    ): Promise<CategoryAttributeSchema> {
+      return http.get<CategoryAttributeSchema>(
+        API_ROUTES.catalog.categoryAttributeSchema(idOrSlug),
+        { ...(signal ? { signal } : {}) },
+      );
     },
 
     listCountries(signal?: AbortSignal): Promise<Country[]> {

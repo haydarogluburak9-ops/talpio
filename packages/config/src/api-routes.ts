@@ -45,6 +45,9 @@ export const API_ROUTES = {
   catalog: {
     categories: '/categories',
     categoryById: (id: string) => `/categories/${id}`,
+    /** Kategoriye özel talep alanları; `id` veya `slug` kabul eder. */
+    categoryAttributeSchema: (idOrSlug: string) =>
+      `/categories/${encodeURIComponent(idOrSlug)}/attribute-schema`,
     countries: '/locations/countries',
     cities: '/locations/cities',
     districts: '/locations/districts',

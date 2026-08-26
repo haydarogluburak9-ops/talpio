@@ -32,3 +32,15 @@ export interface AttributeSchemaRecord {
   schema: AttributeSchemaDefinition;
   isActive: boolean;
 }
+
+/**
+ * Kategori alan şeması okuma yanıtı.
+ *
+ * Kategorilerin çoğunda şema yoktur; bu normaldir ve hata değildir. O durumda
+ * `version` null, `fields` boş döner ve form yalnızca ortak alanlarını gösterir.
+ */
+export interface CategoryAttributeSchema {
+  categoryId: string;
+  version: number | null;
+  fields: AttributeFieldDefinition[];
+}

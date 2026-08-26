@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { ServiceCategory } from '@talpio/types';
+import type { CategoryAttributeSchema, ServiceCategory } from '@talpio/types';
 
 import { Public } from '@modules/auth/decorators/public.decorator';
 
@@ -21,6 +21,13 @@ export class CatalogController {
     return this.catalog.listCategories({
       withSubcategories: query.withSubcategories,
     });
+  }
+
+  @Get(':idOrSlug/attribute-schema')
+  @ApiOperation({ summary: 'Kategoriye özel talep alanlarını getirir' })
+  @ApiOkResponse({ description: 'Alan listesi; şema tanımlı değilse boş döner' })
+  getAttributeSchema(@Param('idOrSlug') idOrSlug: string): Promise<CategoryAttributeSchema> {
+    return this.catalog.getCategoryAttributeSchema(idOrSlug);
   }
 
   @Get(':slug')

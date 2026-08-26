@@ -23,6 +23,8 @@ export const queryKeys = {
   catalog: {
     categories: (params?: Record<string, unknown>) => ['catalog', 'categories', params ?? {}] as const,
     category: (slug: string) => ['catalog', 'categories', 'detail', slug] as const,
+    categoryAttributeSchema: (idOrSlug: string) =>
+      ['catalog', 'categories', 'attribute-schema', idOrSlug] as const,
     cities: (countryId?: string) => ['catalog', 'cities', countryId ?? 'all'] as const,
     districts: (cityId: string) => ['catalog', 'districts', cityId] as const,
   },

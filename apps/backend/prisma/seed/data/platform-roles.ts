@@ -119,46 +119,6 @@ export const PLATFORM_ROLE_SEEDS: PlatformRoleSeed[] = [
   },
 ];
 
-export const MADENI_YAG_ATTRIBUTE_SCHEMA = {
-  version: 1,
-  fields: [
-    {
-      key: 'productType',
-      label: 'Ürün tipi',
-      type: 'enum',
-      required: true,
-      options: ['motor-yagi', 'hidrolik-yag', 'disli-yagi', 'endustriyel-yag', 'transmisyon-yagi'],
-    },
-    { key: 'brandPreference', label: 'Marka tercihi', type: 'string', required: false },
-    { key: 'viscosity', label: 'Viskozite', type: 'string', required: true },
-    { key: 'standard', label: 'Standart / spesifikasyon', type: 'string', required: false },
-    {
-      key: 'packagingType',
-      label: 'Ambalaj',
-      type: 'enum',
-      required: true,
-      options: ['varil', 'bidon', 'ibc', 'dokme'],
-    },
-    { key: 'quantity', label: 'Miktar', type: 'decimal', required: true },
-    {
-      key: 'unit',
-      label: 'Birim',
-      type: 'enum',
-      required: true,
-      options: ['litre', 'kg', 'varil', 'adet'],
-    },
-    { key: 'deliveryLocation', label: 'Teslimat konumu', type: 'string', required: true },
-    { key: 'deliveryDeadline', label: 'Teslim tarihi', type: 'date', required: false },
-    { key: 'invoiceRequired', label: 'Fatura gerekli', type: 'boolean', required: true },
-    {
-      key: 'alternativeBrandAllowed',
-      label: 'Alternatif marka kabul',
-      type: 'boolean',
-      required: false,
-    },
-  ],
-};
-
 export const LEGACY_ROLE_PLATFORM_MAP: Record<string, string> = {
   CUSTOMER: 'buyer',
   PROVIDER: 'service_provider',
