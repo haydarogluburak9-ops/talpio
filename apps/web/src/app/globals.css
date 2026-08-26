@@ -233,6 +233,221 @@
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
 }
 
+/* -------------------------------------------------------------------------
+   Profil kariyer barı — .social-panel'in daha zengin varyantı.
+
+   Her bölüm `--panel-tint` / `--panel-ink` çiftini kendi tonuna ayarlar,
+   alttaki tüm parçalar (ikon karesi, boş durum, zaman çizelgesi, hap) bu iki
+   belirteçten türetilir. Böylece yeni renk uydurmadan bölüm kimliği doğar.
+   ------------------------------------------------------------------------- */
+
+.profile-panel {
+  --panel-tint: var(--color-brand-500);
+  --panel-ink: var(--color-brand-600);
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 1.25rem;
+  background: var(--surface);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 1px 2px rgb(13 27 42 / 0.04),
+    0 10px 30px rgb(13 27 42 / 0.07);
+  transition: box-shadow 220ms ease;
+}
+
+/* Üstteki ince ışık çizgisi bölümün rengini sessizce duyurur. */
+.profile-panel::before {
+  content: '';
+  position: absolute;
+  inset-inline: 1.5rem;
+  top: 0;
+  height: 2px;
+  border-radius: 0 0 999px 999px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--panel-tint) 60%, transparent),
+    transparent
+  );
+}
+
+.profile-panel:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.95) inset,
+    0 2px 4px rgb(13 27 42 / 0.05),
+    0 16px 42px rgb(13 27 42 / 0.11);
+}
+
+.dark .profile-panel {
+  border-color: var(--border);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.04) inset,
+    0 10px 30px rgb(0 0 0 / 0.32);
+}
+
+.dark .profile-panel:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 16px 40px rgb(0 0 0 / 0.4);
+}
+
+.profile-tint-accent {
+  --panel-tint: var(--color-accent-500);
+  --panel-ink: var(--color-accent-700);
+}
+
+.profile-tint-info {
+  --panel-tint: var(--color-info-500);
+  --panel-ink: var(--color-info-700);
+}
+
+.profile-tint-success {
+  --panel-tint: var(--color-success-500);
+  --panel-ink: var(--color-success-700);
+}
+
+.profile-tint-warning {
+  --panel-tint: var(--color-warning-500);
+  --panel-ink: var(--color-warning-700);
+}
+
+.profile-section-icon {
+  color: var(--panel-ink);
+  background: color-mix(in srgb, var(--panel-tint) 13%, var(--surface));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--panel-tint) 24%, transparent),
+    0 1px 2px color-mix(in srgb, var(--panel-tint) 16%, transparent);
+}
+
+.dark .profile-section-icon {
+  color: color-mix(in srgb, var(--panel-tint) 55%, #ffffff);
+  background: color-mix(in srgb, var(--panel-tint) 20%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--panel-tint) 34%, transparent);
+}
+
+/* 11px kalın metin; AA için --panel-ink'ten bir tık daha koyu ton gerekir. */
+.profile-count-chip {
+  color: color-mix(in srgb, var(--panel-ink) 78%, #000000);
+  background: color-mix(in srgb, var(--panel-tint) 11%, var(--surface));
+}
+
+.dark .profile-count-chip {
+  color: color-mix(in srgb, var(--panel-tint) 55%, #ffffff);
+  background: color-mix(in srgb, var(--panel-tint) 18%, var(--surface));
+}
+
+.profile-empty-cta {
+  border: 1px dashed color-mix(in srgb, var(--panel-tint) 34%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 5%, transparent);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.profile-empty-cta:hover {
+  border-color: color-mix(in srgb, var(--panel-tint) 62%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 10%, transparent);
+}
+
+.dark .profile-empty-cta {
+  border-color: color-mix(in srgb, var(--panel-tint) 30%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 7%, transparent);
+}
+
+.dark .profile-empty-cta:hover {
+  border-color: color-mix(in srgb, var(--panel-tint) 55%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 13%, transparent);
+}
+
+.profile-empty-action {
+  color: color-mix(in srgb, var(--panel-ink) 92%, #000000);
+}
+
+.dark .profile-empty-action {
+  color: color-mix(in srgb, var(--panel-tint) 55%, #ffffff);
+}
+
+.profile-timeline-badge {
+  color: var(--panel-ink);
+  background: color-mix(in srgb, var(--panel-tint) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--panel-tint) 20%, transparent);
+}
+
+.dark .profile-timeline-badge {
+  color: color-mix(in srgb, var(--panel-tint) 55%, #ffffff);
+  background: color-mix(in srgb, var(--panel-tint) 16%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--panel-tint) 28%, transparent);
+}
+
+.profile-timeline-line {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--panel-tint) 34%, var(--border)),
+    var(--border) 55%,
+    transparent
+  );
+}
+
+.profile-skill-chip {
+  border: 1px solid color-mix(in srgb, var(--panel-tint) 26%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 7%, var(--surface));
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.profile-skill-chip:hover {
+  border-color: color-mix(in srgb, var(--panel-tint) 55%, var(--border));
+  background: color-mix(in srgb, var(--panel-tint) 14%, var(--surface));
+  transform: translateY(-1px);
+}
+
+.dark .profile-skill-chip {
+  background: color-mix(in srgb, var(--panel-tint) 12%, var(--surface));
+}
+
+.dark .profile-skill-chip:hover {
+  background: color-mix(in srgb, var(--panel-tint) 20%, var(--surface));
+}
+
+.profile-tab-active {
+  background: color-mix(in srgb, var(--color-accent-500) 12%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent-500) 26%, transparent);
+}
+
+.dark .profile-tab-active {
+  background: color-mix(in srgb, var(--color-accent-500) 20%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent-500) 34%, transparent);
+}
+
+.profile-meter-track {
+  background: color-mix(in srgb, var(--panel-tint) 14%, var(--surface-muted));
+}
+
+.profile-meter-fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-400),
+    var(--color-accent-500) 65%,
+    var(--color-accent-600)
+  );
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-accent-500) 45%, transparent);
+  transition: width 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-meter-fill,
+  .profile-skill-chip {
+    transition: none;
+  }
+
+  .profile-skill-chip:hover {
+    transform: none;
+  }
+}
+
 .story-ring {
   background:
     linear-gradient(var(--surface), var(--surface)) padding-box,

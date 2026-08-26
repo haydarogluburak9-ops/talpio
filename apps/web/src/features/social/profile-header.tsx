@@ -293,11 +293,15 @@ function Stat({
   value: string | number;
   onClick?: () => void;
 }) {
-  const className = onClick ? 'text-left hover:opacity-80' : undefined;
+  const className = onClick
+    ? '-mx-2 rounded-xl px-2 py-1 text-left transition-colors hover:bg-surface-muted'
+    : undefined;
   const inner = (
     <>
-      <span className="block text-foreground-muted">{label}</span>
-      <span className="mt-0.5 block font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+      <span className="block text-[0.6875rem] font-semibold tracking-[0.06em] text-foreground-muted uppercase">
+        {label}
+      </span>
+      <span className="mt-0.5 block font-display text-lg font-semibold tabular-nums text-brand-900 dark:text-foreground">
         {value}
       </span>
     </>

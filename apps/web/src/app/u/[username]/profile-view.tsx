@@ -125,7 +125,7 @@ export function SocialProfileView() {
           </div>
 
           {tabs.length > 0 ? (
-            <div className="social-panel mb-3 overflow-x-auto px-2 py-1">
+            <div className="social-panel mb-3 overflow-x-auto p-1.5">
               <div className="flex min-w-max gap-1" role="tablist">
                 {tabs.map((item) => {
                   const active = tab === item.id;
@@ -137,19 +137,13 @@ export function SocialProfileView() {
                       aria-selected={active}
                       onClick={() => setTab(item.id)}
                       className={cn(
-                        'relative rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors',
+                        'rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors',
                         active
-                          ? 'text-accent-600'
+                          ? 'profile-tab-active text-accent-700 dark:text-accent-300'
                           : 'text-foreground-muted hover:bg-surface-muted hover:text-foreground',
                       )}
                     >
                       {item.label}
-                      {active ? (
-                        <span
-                          aria-hidden
-                          className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent-500"
-                        />
-                      ) : null}
                     </button>
                   );
                 })}
