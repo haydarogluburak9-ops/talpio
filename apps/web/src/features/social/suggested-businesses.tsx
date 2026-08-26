@@ -3,10 +3,18 @@
 import { Button } from '@talpio/ui';
 import { Store } from 'lucide-react';
 import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { localeTag, t } from '@/lib/i18n';
 
 import { useDiscoverFeed, useFollow, useUnfollow } from './use-social';
+
+/**
+ * Takip edilen işletme listeden hemen düşerse onay görülmeden kaybolur; satır
+ * bu süre boyunca "takip ediyorsun" halinde bekletilir, sonra yerini yeni bir
+ * öneriye bırakır.
+ */
+const FOLLOWED_HOLD_MS = 2500;
 
 export function SuggestedBusinesses({
   compact = false,
@@ -16,6 +24,8 @@ export function SuggestedBusinesses({
   withIntro?: boolean;
 }) {
   const feed = useDiscoverFeed(true);
+  const { heldIds, hold, release } = useFollowedHold();
+
   const posts = (feed.data?.items ?? [])
     .map((item) => item.post?.author)
     .filter((author): author is NonNullable<typeof author> => Boolean(author));
@@ -24,7 +34,9 @@ export function SuggestedBusinesses({
     .filter((author, index, list) => list.findIndex((item) => item.id === author.id) === index)
     .filter((author) => author.kind === 'BUSINESS');
 
-  const suggested = businesses.filter((author) => !author.isFollowing).slice(0, compact ? 4 : 6);
+  const suggested = businesses
+    .filter((author) => !author.isFollowing || heldIds.includes(author.id))
+    .slice(0, compact ? 4 : 6);
   const newest = [...businesses]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .filter((author) => !suggested.some((item) => item.id === author.id))
@@ -60,6 +72,9 @@ export function SuggestedBusinesses({
               name={author.displayName}
               avatarUrl={author.avatarUrl}
               isFollowing={author.isFollowing}
+              held={heldIds.includes(author.id)}
+              onFollowed={() => hold(author.id)}
+              onUnfollowed={() => release(author.id)}
             />
           ))}
         </ul>
@@ -70,21 +85,79 @@ export function SuggestedBusinesses({
   return (
     <div className="space-y-3">
       {suggested.length > 0 ? (
-        <BusinessBlock title={t('social.suggestedBusinesses')} authors={suggested} />
+        <BusinessBlock
+          title={t('social.suggestedBusinesses')}
+          authors={suggested}
+          heldIds={heldIds}
+          onFollowed={hold}
+          onUnfollowed={release}
+        />
       ) : null}
       {newest.length > 0 ? (
-        <BusinessBlock title={t('social.newBusinesses')} authors={newest} />
+        <BusinessBlock
+          title={t('social.newBusinesses')}
+          authors={newest}
+          heldIds={heldIds}
+          onFollowed={hold}
+          onUnfollowed={release}
+        />
       ) : null}
       {growing.length > 0 ? (
-        <BusinessBlock title={t('social.growingBusinesses')} authors={growing} />
+        <BusinessBlock
+          title={t('social.growingBusinesses')}
+          authors={growing}
+          heldIds={heldIds}
+          onFollowed={hold}
+          onUnfollowed={release}
+        />
       ) : null}
     </div>
   );
 }
 
+/** Takip edilen satırların listede kısa süre daha kalmasını yöneten sayaçlar. */
+function useFollowedHold() {
+  const [heldIds, setHeldIds] = useState<string[]>([]);
+  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      pending.forEach((timer) => clearTimeout(timer));
+      pending.clear();
+    };
+  }, []);
+
+  const release = useCallback((id: string) => {
+    const timer = timers.current.get(id);
+    if (timer) clearTimeout(timer);
+    timers.current.delete(id);
+    setHeldIds((current) => current.filter((item) => item !== id));
+  }, []);
+
+  const hold = useCallback(
+    (id: string) => {
+      const timer = timers.current.get(id);
+      if (timer) clearTimeout(timer);
+
+      setHeldIds((current) => (current.includes(id) ? current : [...current, id]));
+      timers.current.set(
+        id,
+        setTimeout(() => release(id), FOLLOWED_HOLD_MS),
+      );
+    },
+    [release],
+  );
+
+  return { heldIds, hold, release };
+}
+
 function BusinessBlock({
   title,
   authors,
+  heldIds,
+  onFollowed,
+  onUnfollowed,
 }: {
   title: string;
   authors: Array<{
@@ -94,6 +167,9 @@ function BusinessBlock({
     avatarUrl?: string | null;
     isFollowing?: boolean;
   }>;
+  heldIds: string[];
+  onFollowed: (id: string) => void;
+  onUnfollowed: (id: string) => void;
 }) {
   return (
     <div className="social-panel p-5">
@@ -108,6 +184,9 @@ function BusinessBlock({
             name={author.displayName}
             avatarUrl={author.avatarUrl}
             isFollowing={author.isFollowing}
+            held={heldIds.includes(author.id)}
+            onFollowed={() => onFollowed(author.id)}
+            onUnfollowed={() => onUnfollowed(author.id)}
           />
         ))}
       </ul>
@@ -133,17 +212,25 @@ function SuggestedRow({
   name,
   avatarUrl,
   isFollowing = false,
+  held = false,
+  onFollowed,
+  onUnfollowed,
 }: {
   username: string;
   name: string;
   avatarUrl?: string | null;
   isFollowing?: boolean;
+  /** Takip edildikten sonra satırın bekletildiği kısa süre. */
+  held?: boolean;
+  onFollowed: () => void;
+  onUnfollowed: () => void;
 }) {
   const follow = useFollow(username);
   const unfollow = useUnfollow(username);
   const pending = follow.isPending || unfollow.isPending;
-  // Sunucu bayrağı tazelenene kadar mutasyonun hedef durumu gösterilir.
-  const followed = pending ? follow.isPending : isFollowing;
+  // Sunucu bayrağı tazelenene kadar mutasyonun hedef durumu gösterilir; bekleme
+  // süresi boyunca da onay görünür kalsın diye `held` üstünlük taşır.
+  const followed = pending ? follow.isPending : held || isFollowing;
 
   return (
     <li className="flex items-center gap-3">
@@ -173,7 +260,11 @@ function SuggestedRow({
             : 'bg-accent-500 text-white hover:bg-accent-600'
         }
         disabled={pending}
-        onClick={() => (followed ? unfollow.mutate() : follow.mutate())}
+        onClick={() =>
+          followed
+            ? unfollow.mutate(undefined, { onSuccess: onUnfollowed })
+            : follow.mutate(undefined, { onSuccess: onFollowed })
+        }
       >
         {followed ? t('social.followingCta') : t('social.followCta')}
       </Button>
