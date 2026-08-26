@@ -440,7 +440,8 @@ export function useHashtagPosts(slug: string) {
 export function useFollowers(username: string, enabled = false) {
   return useQuery({
     queryKey: queryKeys.social.followers(username),
-    queryFn: ({ signal }) => apiClient.social.listFollowers(username, { limit: 40 }, signal),
+    // Arama yüklü kayıtlar üzerinde çalıştığı için sayfa boyu geniş tutulur.
+    queryFn: ({ signal }) => apiClient.social.listFollowers(username, { limit: 100 }, signal),
     enabled: enabled && username.length > 0,
   });
 }
@@ -448,7 +449,7 @@ export function useFollowers(username: string, enabled = false) {
 export function useFollowingList(username: string, enabled = false) {
   return useQuery({
     queryKey: queryKeys.social.following(username),
-    queryFn: ({ signal }) => apiClient.social.listFollowing(username, { limit: 40 }, signal),
+    queryFn: ({ signal }) => apiClient.social.listFollowing(username, { limit: 100 }, signal),
     enabled: enabled && username.length > 0,
   });
 }

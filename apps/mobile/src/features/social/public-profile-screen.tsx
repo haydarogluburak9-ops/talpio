@@ -1,7 +1,8 @@
-import { useRouter } from 'expo-router';
-import { Image, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { SOCIAL } from '@talpio/config';
+import type { SocialPost } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -12,10 +13,24 @@ import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
 
-import { useFollow, useProfilePosts, useReportContent, useSocialMe, useSocialProfile } from './use-social';
+import { DiscoverGrid } from './discover-grid';
+import { DiscoverViewer } from './discover-viewer';
+import {
+  useFollow,
+  useFollowers,
+  useFollowingList,
+  useProfilePosts,
+  useReportContent,
+  useSavedPosts,
+  useSocialMe,
+  useSocialProfile,
+} from './use-social';
+import { ProfileGraphList } from './profile-graph-list';
 import { ProfileHighlightsSection } from './profile-highlights';
 import { ProfileSidebar } from './profile-career-section';
 import { EditableProfileAvatar, EditableProfileCover } from './profile-media-editor';
+
+type ProfileTab = 'posts' | 'followers' | 'following' | 'saved';
 
 export function PublicProfileScreen({
   username,
@@ -25,12 +40,17 @@ export function PublicProfileScreen({
   variant: 'customer' | 'provider';
 }) {
   const { t } = useI18n();
-  const router = useRouter();
+  const colors = useColors();
   const profile = useSocialProfile(username);
   const me = useSocialMe();
   const posts = useProfilePosts(username);
   const follow = useFollow();
   const report = useReportContent();
+  const [tab, setTab] = useState<ProfileTab>('posts');
+  const isOwnProfile = me.data?.username === username;
+  const followers = useFollowers(username, tab === 'followers');
+  const following = useFollowingList(username, tab === 'following');
+  const saved = useSavedPosts(isOwnProfile && tab === 'saved');
 
   if (profile.isPending) {
     return (
@@ -55,6 +75,12 @@ export function PublicProfileScreen({
   const row = profile.data;
   const items = posts.data?.items ?? [];
   const isOwn = me.data?.username === row.username;
+  const tabs: { id: ProfileTab; label: string }[] = [
+    { id: 'posts', label: t('social.posts') },
+    { id: 'followers', label: t('social.followersTab') },
+    { id: 'following', label: t('social.followingTab') },
+    ...(isOwn ? [{ id: 'saved' as const, label: t('nav.saved') }] : []),
+  ];
 
   return (
     <Screen onRefresh={() => void profile.refetch()} refreshing={profile.isRefetching}>
@@ -78,11 +104,25 @@ export function PublicProfileScreen({
               {row.headline ? (
                 <Text variant="caption">{row.headline}</Text>
               ) : null}
-              <Text variant="caption" tone="muted">
-                {t('social.analyticsFollowers')}: {row.followerCount} · {t('social.analyticsPosts')}:{' '}
-                {row.postCount}
-              </Text>
             </View>
+          </View>
+
+          <View style={styles.statRow}>
+            <Stat
+              label={t('social.posts')}
+              value={row.postCount}
+              onPress={() => setTab('posts')}
+            />
+            <Stat
+              label={t('social.followers')}
+              value={row.followerCount}
+              onPress={() => setTab('followers')}
+            />
+            <Stat
+              label={t('social.following')}
+              value={row.followingCount}
+              onPress={() => setTab('following')}
+            />
           </View>
 
           {!isOwn ? (
@@ -117,23 +157,112 @@ export function PublicProfileScreen({
 
       <ProfileHighlightsSection profile={row} />
 
-      {items.length === 0 ? <EmptyState title={t('social.feedEmpty')} /> : null}
-      {items.map((post) => (
-        <Card
-          key={post.id}
-          onPress={() =>
-            post.author?.username
-              ? router.push(`/${variant}/u/${post.author.username}` as never)
-              : undefined
-          }
-        >
-          {post.body ? <Text>{post.body}</Text> : null}
-          {post.media[0]?.url ? (
-            <Image source={{ uri: post.media[0].url }} style={styles.media} />
-          ) : null}
-        </Card>
-      ))}
+      <View style={styles.tabRow}>
+        {tabs.map((item) => {
+          const active = tab === item.id;
+          return (
+            <Pressable
+              key={item.id}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+              onPress={() => setTab(item.id)}
+              style={[
+                styles.tab,
+                active && { borderBottomColor: colors.accent, borderBottomWidth: 2 },
+              ]}
+            >
+              <Text
+                variant="caption"
+                tone={active ? 'default' : 'muted'}
+                style={active ? styles.tabLabelActive : undefined}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {tab === 'followers' ? (
+        <ProfileGraphList
+          pending={followers.isPending}
+          items={followers.data?.items ?? []}
+          totalCount={row.followerCount}
+          countLabel={t('social.followersCountLabel', { count: row.followerCount })}
+          searchLabel={t('social.searchFollowers')}
+          variant={variant}
+        />
+      ) : tab === 'following' ? (
+        <ProfileGraphList
+          pending={following.isPending}
+          items={following.data?.items ?? []}
+          totalCount={row.followingCount}
+          countLabel={t('social.followingCountLabel', { count: row.followingCount })}
+          searchLabel={t('social.searchFollowing')}
+          variant={variant}
+        />
+      ) : tab === 'saved' ? (
+        <PostGrid
+          pending={saved.isPending}
+          posts={saved.data?.items ?? []}
+          emptyTitle={t('social.savedEmpty')}
+        />
+      ) : (
+        <PostGrid
+          pending={posts.isPending}
+          posts={items}
+          emptyTitle={t('social.feedEmpty')}
+        />
+      )}
     </Screen>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  onPress,
+}: {
+  label: string;
+  value: number;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={styles.stat} hitSlop={4}>
+      <Text variant="bodyStrong">{value}</Text>
+      <Text variant="caption" tone="muted">
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** Profil gönderileri; keşfetteki kare ızgara ve tam ekran görüntüleyiciyi kullanır. */
+function PostGrid({
+  pending,
+  posts,
+  emptyTitle,
+}: {
+  pending: boolean;
+  posts: SocialPost[];
+  emptyTitle: string;
+}) {
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+
+  if (pending) return <ListSkeleton rows={3} />;
+  if (posts.length === 0) return <EmptyState title={emptyTitle} />;
+
+  return (
+    <>
+      <DiscoverGrid posts={posts} onSelect={setViewerIndex} />
+      {viewerIndex !== null ? (
+        <DiscoverViewer
+          posts={posts}
+          startIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -205,5 +334,15 @@ const styles = StyleSheet.create({
   copy: { flex: 1, gap: 4, paddingBottom: spacing.xs },
   action: { marginTop: spacing.md },
   report: { marginTop: spacing.sm },
-  media: { width: '100%', height: 180, borderRadius: 12, marginTop: spacing.sm },
+  statRow: { flexDirection: 'row', gap: spacing.xl, marginTop: spacing.md },
+  stat: { alignItems: 'center', gap: 2 },
+  tabRow: { flexDirection: 'row', gap: spacing.xs },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabLabelActive: { fontWeight: '700' },
 });

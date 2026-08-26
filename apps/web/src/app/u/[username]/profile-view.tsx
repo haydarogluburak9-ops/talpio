@@ -1,15 +1,16 @@
 'use client';
 
 import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import type { SocialProfile } from '@talpio/types';
-import Link from 'next/link';
+import type { SocialPost, SocialProfile } from '@talpio/types';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { ReviewList } from '@/features/reviews/review-list';
 import { useProviderReviews } from '@/features/reviews/use-reviews';
-import { PostCard } from '@/features/social/post-card';
+import { DiscoverGrid } from '@/features/social/discover-grid';
+import { DiscoverViewer } from '@/features/social/discover-viewer';
+import { ProfileGraphList } from '@/features/social/profile-graph-list';
 import { ProfileHighlightsSection } from '@/features/social/profile-highlights';
 import { ProfileHeader } from '@/features/social/profile-header';
 import { ProfileSidebar } from '@/features/social/profile-career-section';
@@ -22,7 +23,7 @@ import {
   useSocialMe,
   useSocialProfile,
 } from '@/features/social/use-social';
-import { localeTag, t } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 
 type ProfileTab =
   | 'posts'
@@ -98,7 +99,7 @@ export function SocialProfileView() {
   const isPersonal = profile.data.kind === 'PERSONAL';
 
   return (
-    <SocialShell>
+    <SocialShell showRail={false}>
       <div className="social-panel mb-3 overflow-hidden p-4">
         <ProfileHeader
           profile={profile.data}
@@ -112,11 +113,15 @@ export function SocialProfileView() {
 
       <div
         className={cn(
-          'grid gap-3',
-          isPersonal && 'lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]',
+          'grid items-start gap-3',
+          isPersonal && 'md:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]',
         )}
       >
-        {isPersonal ? <ProfileSidebar profile={profile.data} isOwn={isOwn} /> : null}
+        {isPersonal ? (
+          <div className="md:sticky md:top-20">
+            <ProfileSidebar profile={profile.data} isOwn={isOwn} />
+          </div>
+        ) : null}
 
         <div className="min-w-0">
           {tabs.length > 0 ? (
@@ -157,7 +162,6 @@ export function SocialProfileView() {
             isOwn={isOwn}
             store={store}
             profile={profile.data}
-            sessionActive={Boolean(session.data)}
             saved={saved}
             followers={followers}
             following={following}
@@ -176,7 +180,6 @@ function ProfileTabContent({
   isOwn,
   store,
   profile,
-  sessionActive,
   saved,
   followers,
   following,
@@ -188,7 +191,6 @@ function ProfileTabContent({
   isOwn: boolean;
   store: SocialProfile['business'];
   profile: SocialProfile;
-  sessionActive: boolean;
   saved: ReturnType<typeof useSavedPosts>;
   followers: ReturnType<typeof useFollowers>;
   following: ReturnType<typeof useFollowingList>;
@@ -198,17 +200,11 @@ function ProfileTabContent({
 }) {
   if (tab === 'saved' && isOwn) {
     return (
-      <div className="flex flex-col gap-3 pb-20 lg:pb-6">
-        {saved.isPending ? (
-          <ListSkeleton rows={3} />
-        ) : saved.data?.items.length ? (
-          saved.data.items.map((post) => <PostCard key={post.id} post={post} interactive />)
-        ) : (
-          <div className="social-panel px-6 py-10">
-            <EmptyState title={t('social.savedEmpty')} />
-          </div>
-        )}
-      </div>
+      <PostGrid
+        pending={saved.isPending}
+        posts={saved.data?.items ?? []}
+        emptyTitle={t('social.savedEmpty')}
+      />
     );
   }
 
@@ -242,71 +238,72 @@ function ProfileTabContent({
     );
   }
 
-  if (tab === 'followers' || tab === 'following') {
+  if (tab === 'followers') {
     return (
-      <GraphList
-        pending={tab === 'followers' ? followers.isPending : following.isPending}
-        items={(tab === 'followers' ? followers.data?.items : following.data?.items) ?? []}
+      <ProfileGraphList
+        pending={followers.isPending}
+        items={followers.data?.items ?? []}
+        totalCount={profile.followerCount}
+        countLabelKey="social.followersCountLabel"
+        searchLabel={t('social.searchFollowers')}
+      />
+    );
+  }
+
+  if (tab === 'following') {
+    return (
+      <ProfileGraphList
+        pending={following.isPending}
+        items={following.data?.items ?? []}
+        totalCount={profile.followingCount}
+        countLabelKey="social.followingCountLabel"
+        searchLabel={t('social.searchFollowing')}
       />
     );
   }
 
   return (
-    <div className="flex flex-col gap-3 pb-20 lg:pb-6">
-      {posts.isPending ? (
-        <ListSkeleton rows={3} />
-      ) : posts.data?.items.length ? (
-        posts.data.items.map((post) => (
-          <PostCard key={post.id} post={post} interactive={sessionActive} />
-        ))
-      ) : (
-        <div className="social-panel px-6 py-10">
-          <EmptyState title={t('social.feedEmpty')} />
-        </div>
-      )}
-    </div>
+    <PostGrid
+      pending={posts.isPending}
+      posts={posts.data?.items ?? []}
+      emptyTitle={t('social.feedEmpty')}
+    />
   );
 }
 
-function GraphList({
+/** Profil gönderileri; keşfetteki kare ızgara ve tam ekran görüntüleyiciyi kullanır. */
+function PostGrid({
   pending,
-  items,
+  posts,
+  emptyTitle,
 }: {
   pending: boolean;
-  items: SocialProfile[];
+  posts: SocialPost[];
+  emptyTitle: string;
 }) {
-  if (pending) return <ListSkeleton rows={4} />;
-  if (items.length === 0) {
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+
+  if (pending) return <ListSkeleton rows={3} />;
+
+  if (posts.length === 0) {
     return (
       <div className="social-panel px-6 py-10">
-        <EmptyState title={t('social.emptyGraph')} />
+        <EmptyState title={emptyTitle} />
       </div>
     );
   }
+
   return (
-    <ul className="social-panel divide-y divide-border">
-      {items.map((person) => (
-        <li key={person.id}>
-          <Link
-            href={`/u/${person.username}`}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-surface-muted"
-          >
-            <span className="grid size-11 place-items-center overflow-hidden rounded-full bg-brand-800 text-xs font-bold text-white">
-              {person.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={person.avatarUrl} alt="" className="size-full object-cover" />
-              ) : (
-                person.displayName.slice(0, 1).toLocaleUpperCase(localeTag())
-              )}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate font-semibold">{person.displayName}</span>
-              <span className="block truncate text-xs text-foreground-muted">@{person.username}</span>
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="pb-20 lg:pb-6">
+      <DiscoverGrid posts={posts} onSelect={setViewerIndex} />
+      {viewerIndex !== null ? (
+        <DiscoverViewer
+          posts={posts}
+          startIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      ) : null}
+    </div>
   );
 }
 

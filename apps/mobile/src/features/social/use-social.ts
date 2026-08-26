@@ -282,7 +282,24 @@ export function useSearchProfiles(query: string) {
 export function useFollowingList(username: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.social.following(username),
-    queryFn: ({ signal }) => apiClient.social.listFollowing(username, { limit: 50 }, signal),
+    queryFn: ({ signal }) => apiClient.social.listFollowing(username, { limit: 100 }, signal),
     enabled: enabled && username.length > 0,
+  });
+}
+
+export function useFollowers(username: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.social.followers(username),
+    // Arama yüklü kayıtlar üzerinde çalıştığı için sayfa boyu geniş tutulur.
+    queryFn: ({ signal }) => apiClient.social.listFollowers(username, { limit: 100 }, signal),
+    enabled: enabled && username.length > 0,
+  });
+}
+
+export function useSavedPosts(enabled = false) {
+  return useQuery({
+    queryKey: queryKeys.social.saved(),
+    queryFn: ({ signal }) => apiClient.social.listSaved({ limit: 30 }, signal),
+    enabled,
   });
 }
