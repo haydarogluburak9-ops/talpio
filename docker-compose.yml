@@ -109,6 +109,8 @@ services:
       API_PORT: 3000
       API_PREFIX: ${API_PREFIX:-api/v1}
       API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3000}
+      # Doğrulama ve şifre sıfırlama e-postalarındaki bağlantı buradan üretilir.
+      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3002}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3001}
       DATABASE_URL: postgresql://${POSTGRES_USER:-talpio}:${POSTGRES_PASSWORD:-talpio_dev_password}@postgres:5432/${POSTGRES_DB:-talpio}?schema=public
@@ -121,6 +123,25 @@ services:
       S3_BUCKET: ${S3_BUCKET:-talpio}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-talpio}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-talpio_dev_password}
+      # Bildirim sürücüleri: konteynere açıkça geçilmezse .env'de ayarlansa bile
+      # ulaşmaz ve süreç sessizce mock ile açılır.
+      PUSH_DRIVER: ${PUSH_DRIVER:-mock}
+      MAIL_DRIVER: ${MAIL_DRIVER:-mock}
+      SMS_DRIVER: ${SMS_DRIVER:-mock}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      MAIL_FROM: "${MAIL_FROM:-Talpio <no-reply@talpio.com>}"
+      SMS_SENDER: ${SMS_SENDER:-TALPIO}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      NETGSM_USER: ${NETGSM_USER:-}
+      NETGSM_PASS: ${NETGSM_PASS:-}
+      NETGSM_HEADER: ${NETGSM_HEADER:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
       SEED_DEMO_ACCOUNTS: ${SEED_DEMO_ACCOUNTS:-true}
     ports:
       - "${API_PORT:-3000}:3000"
@@ -158,6 +179,28 @@ services:
       REDIS_PORT: 6379
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3000}
+      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3002}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      # Bildirimlerin çoğunu kuyruktan bu süreç gönderir; sürücüler burada da
+      # tanımlı olmazsa worker sessizce mock ile çalışır.
+      PUSH_DRIVER: ${PUSH_DRIVER:-mock}
+      MAIL_DRIVER: ${MAIL_DRIVER:-mock}
+      SMS_DRIVER: ${SMS_DRIVER:-mock}
+      EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
+      MAIL_FROM: "${MAIL_FROM:-Talpio <no-reply@talpio.com>}"
+      SMS_SENDER: ${SMS_SENDER:-TALPIO}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      NETGSM_USER: ${NETGSM_USER:-}
+      NETGSM_PASS: ${NETGSM_PASS:-}
+      NETGSM_HEADER: ${NETGSM_HEADER:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
     command: ["node", "dist/worker.js"]
     networks: [talpio]
 

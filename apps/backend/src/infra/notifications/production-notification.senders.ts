@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { renderNotification } from '@talpio/localization';
 import { NotificationChannel } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
@@ -8,86 +9,20 @@ import type {
   EmailSender,
   EmailTarget,
   NotificationMessage,
-  PushSender,
-  PushTarget,
   SendResult,
   SmsSender,
   SmsTarget,
 } from './notification-sender';
 import { sendSmtpMail } from './smtp-client';
 
-/**
- * FCM HTTP (legacy server key).
- * Anahtar yoksa gönderim düşer; platformun geri kalanı çalışmaya devam eder.
+/*
+ * Push sürücüsü için `expo-push.sender.ts` dosyasına bakın.
+ *
+ * Buradaki eski `FirebasePushSender`, FCM'in `fcm.googleapis.com/fcm/send`
+ * ucunu ve `Authorization: key=...` başlığını kullanıyordu. Google bu API'yi
+ * 2024'te tamamen kapattı, dolayısıyla adaptör ölü koddu. Mobil uygulama zaten
+ * Expo jetonu kaydettiği için yerine Expo Push API sürücüsü yazıldı.
  */
-@Injectable()
-export class FirebasePushSender implements PushSender {
-  readonly name = 'firebase';
-  private readonly logger = new Logger(FirebasePushSender.name);
-
-  constructor(
-    private readonly config: AppConfigService,
-    private readonly outbox: NotificationOutbox,
-  ) {}
-
-  async send(target: PushTarget, message: NotificationMessage): Promise<SendResult> {
-    const key = this.config.notifications.fcmServerKey;
-    if (!key) {
-      this.logger.warn('FCM_SERVER_KEY yok; push gönderilmedi.');
-      return {
-        delivered: false,
-        failureReason: 'FCM sunucu anahtarı yapılandırılmadı.',
-      };
-    }
-
-    if (target.tokens.length === 0) {
-      return { delivered: false, failureReason: 'Kayıtlı cihaz jetonu yok.' };
-    }
-
-    const response = await fetch('https://fcm.googleapis.com/fcm/send', {
-      method: 'POST',
-      headers: {
-        Authorization: `key=${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        registration_ids: target.tokens,
-        notification: {
-          title: 'Talpio',
-          body: message.type,
-        },
-        data: {
-          type: message.type,
-          deepLink: message.deepLink ?? '',
-          locale: message.locale,
-          params: JSON.stringify(message.params ?? {}),
-        },
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
-
-    const ok = response.ok;
-    for (const token of target.tokens) {
-      this.outbox.record({
-        channel: NotificationChannel.PUSH,
-        target: token,
-        type: message.type,
-        params: message.params,
-        deepLink: message.deepLink,
-        locale: message.locale,
-        sentAt: new Date().toISOString(),
-      });
-    }
-
-    if (!ok) {
-      const text = await response.text();
-      this.logger.warn(`FCM HTTP ${response.status}: ${text.slice(0, 200)}`);
-      return { delivered: false, failureReason: `FCM HTTP ${response.status}` };
-    }
-
-    return { delivered: true, failureReason: null };
-  }
-}
 
 @Injectable()
 export class SmtpEmailSender implements EmailSender {
@@ -108,6 +43,10 @@ export class SmtpEmailSender implements EmailSender {
       };
     }
 
+    // Konu ve gövde alıcının diliyle çözülür; ham tür adı ("OFFER_RECEIVED")
+    // kullanıcının gelen kutusunda görünmemelidir.
+    const { title, body } = renderNotification(message.type, message.params, message.locale);
+
     try {
       await sendSmtpMail({
         host,
@@ -117,10 +56,10 @@ export class SmtpEmailSender implements EmailSender {
         pass: this.config.notifications.smtpPass,
         from: this.config.notifications.mailFrom,
         to: target.email,
-        subject: `Talpio · ${message.type}`,
+        subject: `Talpio · ${title}`,
         text: [
           `Merhaba${target.name ? ` ${target.name}` : ''},`,
-          `Bildirim: ${message.type}`,
+          body,
           message.deepLink ? `Bağlantı: ${message.deepLink}` : '',
         ]
           .filter(Boolean)

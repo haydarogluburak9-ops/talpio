@@ -2,6 +2,7 @@ import { Global, Logger, Module } from '@nestjs/common';
 
 import { AppConfigService } from '@config/app-config.service';
 
+import { ExpoPushSender } from './expo-push.sender';
 import { MockEmailSender, MockPushSender, MockSmsSender } from './mock-notification.senders';
 import { NotificationOutbox } from './notification-outbox';
 import {
@@ -13,7 +14,6 @@ import {
   type SmsSender,
 } from './notification-sender';
 import {
-  FirebasePushSender,
   NetgsmSmsSender,
   SmtpEmailSender,
   TwilioSmsSender,
@@ -38,13 +38,13 @@ function warnIfMock(logger: Logger, channel: string, driver: string): void {
 function selectPushSender(
   config: AppConfigService,
   mock: MockPushSender,
-  firebase: FirebasePushSender,
+  expo: ExpoPushSender,
 ): PushSender {
   const driver = config.notifications.pushDriver;
   warnIfMock(new Logger('NotificationSenderModule'), 'Push', driver);
 
   if (driver === 'mock') return mock;
-  if (driver === 'firebase') return firebase;
+  if (driver === 'expo') return expo;
 
   throw new Error(`Push sürücüsü adaptörü henüz yazılmadı: ${driver}`);
 }
@@ -86,13 +86,13 @@ function selectSmsSender(
     MockPushSender,
     MockEmailSender,
     MockSmsSender,
-    FirebasePushSender,
+    ExpoPushSender,
     SmtpEmailSender,
     NetgsmSmsSender,
     TwilioSmsSender,
     {
       provide: PUSH_SENDER,
-      inject: [AppConfigService, MockPushSender, FirebasePushSender],
+      inject: [AppConfigService, MockPushSender, ExpoPushSender],
       useFactory: selectPushSender,
     },
     {

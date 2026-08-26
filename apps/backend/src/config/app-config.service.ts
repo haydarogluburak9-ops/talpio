@@ -125,7 +125,8 @@ export class AppConfigService {
     smsSender: string;
     /** Mock sürücülerin bellek içinde tuttuğu gönderim sayısı. */
     outboxLimit: number;
-    fcmServerKey?: string;
+    /** Expo Push API için isteğe bağlı erişim jetonu. */
+    expoAccessToken?: string;
     smtpHost?: string;
     smtpPort: number;
     smtpUser?: string;
@@ -138,7 +139,7 @@ export class AppConfigService {
     netgsmPass?: string;
     netgsmHeader?: string;
   } {
-    const fcmServerKey = this.get('FCM_SERVER_KEY');
+    const expoAccessToken = this.get('EXPO_ACCESS_TOKEN');
     const smtpHost = this.get('SMTP_HOST');
     const smtpUser = this.get('SMTP_USER');
     const smtpPass = this.get('SMTP_PASS');
@@ -157,7 +158,7 @@ export class AppConfigService {
       outboxLimit: this.get('NOTIFICATION_OUTBOX_LIMIT'),
       smtpPort: this.get('SMTP_PORT'),
       smtpSecure: this.get('SMTP_SECURE'),
-      ...(fcmServerKey ? { fcmServerKey } : {}),
+      ...(expoAccessToken ? { expoAccessToken } : {}),
       ...(smtpHost ? { smtpHost } : {}),
       ...(smtpUser ? { smtpUser } : {}),
       ...(smtpPass ? { smtpPass } : {}),

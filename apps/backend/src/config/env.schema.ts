@@ -102,12 +102,16 @@ export const envSchema = z
     ALLOWED_DOCUMENT_MIME: csv('application/pdf,image/jpeg,image/png'),
 
     // Bildirim
-    PUSH_DRIVER: z.enum(['mock', 'firebase']).default('mock'),
+    PUSH_DRIVER: z.enum(['mock', 'expo']).default('mock'),
     MAIL_DRIVER: z.enum(['mock', 'smtp']).default('mock'),
     SMS_DRIVER: z.enum(['mock', 'netgsm', 'twilio']).default('mock'),
     MAIL_FROM: z.string().default('Talpio <no-reply@talpio.com>'),
     SMS_SENDER: z.string().default('TALPIO'),
-    FCM_SERVER_KEY: z.string().optional(),
+    /**
+     * Expo Push API isteğe bağlı erişim jetonu. Expo hesabında "enhanced push
+     * security" açıksa zorunlu olur; açık değilse boş bırakılabilir.
+     */
+    EXPO_ACCESS_TOKEN: z.string().optional(),
     SMTP_HOST: z.string().optional(),
     SMTP_PORT: z.coerce.number().int().positive().default(587),
     SMTP_USER: z.string().optional(),
@@ -227,13 +231,6 @@ export const envSchema = z
           code: 'custom',
           path: ['MAIL_DRIVER'],
           message: 'Mock e-posta sürücüsü production ortamında kullanılamaz.',
-        });
-      }
-      if (env.PUSH_DRIVER === 'firebase' && !env.FCM_SERVER_KEY) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['FCM_SERVER_KEY'],
-          message: 'Firebase push sürücüsü için FCM_SERVER_KEY zorunludur.',
         });
       }
       if (env.MAIL_DRIVER === 'smtp' && !env.SMTP_HOST) {

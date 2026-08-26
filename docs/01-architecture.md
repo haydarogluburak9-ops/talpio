@@ -32,7 +32,7 @@ flowchart TB
     end
 
     subgraph External["Dış Servisler (soyutlanmış)"]
-        FCM["Firebase Cloud Messaging"]
+        PUSH["Expo Push API"]
         PAY["PaymentProvider<br/>(mock → iyzico/PayTR)"]
         SMS["SmsProvider<br/>(mock → Netgsm/Twilio)"]
         MAP["MapProvider<br/>(Google Maps / Mapbox)"]
@@ -49,7 +49,7 @@ flowchart TB
     WRK --> PG
     WRK --> RD
     REST -.enqueue.-> WRK
-    WRK --> FCM
+    WRK --> PUSH
     REST --> PAY
     WRK --> SMS
     MOB --> MAP
@@ -198,7 +198,7 @@ Aşağıdaki maddelerde makul varsayımlarla ilerlenmiştir; nihai karar sizindi
 | SMS sağlayıcısı    | MVP'de konsola yazan `MockSmsProvider`                         | Netgsm/İletimerkezi ücretlidir                 |
 | Harita sağlayıcısı | Soyut `MapProvider`; ilk uygulama Google Maps                  | API anahtarı ve faturalandırma hesabı gerekir  |
 | Nesne deposu       | Yerelde MinIO, production'da S3 uyumlu servis                  | Sağlayıcı seçimi sizde                         |
-| Push               | Firebase Cloud Messaging (ücretsiz katman)                     | `google-services.json` gerekir                 |
+| Push               | Expo Push API (`PUSH_DRIVER=expo`)                             | Kimlik bilgisi gerekmez; jetonlar Expo'dan     |
 | Hukuki metinler    | Yer tutucu taslak                                              | Avukat onayı gerekir                           |
 | Store hesapları    | Yok                                                            | Yayın aşamasında gerekli                       |
 | Production domain  | Yok                                                            | `talpio.com` varsayıldı, yapılandırılabilir |

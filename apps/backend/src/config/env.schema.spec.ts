@@ -16,9 +16,8 @@ const productionBase = {
   SMS_DRIVER: 'netgsm',
   AI_DRIVER: 'openai',
   AI_OPENAI_API_KEY: 'sk-test',
-  PUSH_DRIVER: 'firebase',
+  PUSH_DRIVER: 'expo',
   MAIL_DRIVER: 'smtp',
-  FCM_SERVER_KEY: 'fcm-test-key',
   SMTP_HOST: 'smtp.example.com',
   IYZICO_API_KEY: 'iy-key',
   IYZICO_SECRET_KEY: 'iy-secret',
@@ -123,6 +122,13 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...productionBase, MAIL_DRIVER: 'mock' })).toThrow(
       /Mock e-posta sürücüsü production/,
     );
+  });
+
+  it('Expo push sürücüsü kimlik bilgisi istemez', () => {
+    const env = validateEnv({ ...productionBase, EXPO_ACCESS_TOKEN: undefined });
+
+    expect(env.PUSH_DRIVER).toBe('expo');
+    expect(env.EXPO_ACCESS_TOKEN).toBeUndefined();
   });
 
   it('production ortamında HTTP API_PUBLIC_URL reddeder', () => {
