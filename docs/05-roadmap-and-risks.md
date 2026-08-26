@@ -55,7 +55,7 @@ puanlama, yorum ve tek seferlik satıcı cevabı.
 
 **Kapsam:** Dashboard, kullanıcı/satıcı yönetimi, belge doğrulama, talep-teklif-destek-şikâyet
 ekranları, sistem ayarları, denetim kayıtları.
-**Çıkış kriteri:** Admin, bir ustayı doğrulayıp askıya alabilir; tüm kritik listeler sayfalı
+**Çıkış kriteri:** Admin, bir satıcıyı doğrulayıp askıya alabilir; tüm kritik listeler sayfalı
 ve filtreli çalışır.
 
 ### Faz 9 — Ödeme Altyapısı

@@ -102,7 +102,7 @@ function toCategoryRefs(row: ProviderRow): EntityRef[] {
 
 /**
  * İptal oranı tamamlanan ve iptal edilen iş sayısından türetilir; hiç iş
- * yapmamış ustada oran 0 kabul edilir, aksi halde sıfıra bölünürdü.
+ * yapmamış satıcıda oran 0 kabul edilir, aksi halde sıfıra bölünürdü.
  */
 function cancellationRate(row: ProviderRow): number {
   const total = row.completedJobCount + row.cancelledJobCount;

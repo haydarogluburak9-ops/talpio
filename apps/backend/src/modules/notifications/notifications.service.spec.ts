@@ -26,7 +26,7 @@ function notificationRow(overrides: Record<string, unknown> = {}) {
     id: NOTIFICATION_ID,
     userId: USER_ID,
     type: NotificationType.OFFER_RECEIVED,
-    params: { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta' },
+    params: { jobTitle: 'Kombi bakımı', providerName: 'Yılmaz Ticaret' },
     channels: [NotificationChannel.IN_APP, NotificationChannel.PUSH],
     deepLink: 'talpio://job-offers/job-1',
     readAt: null,
@@ -173,7 +173,7 @@ describe('NotificationsService', () => {
         type: NotificationType.OFFER_RECEIVED,
         params: {
           jobTitle: 'Kombi bakımı',
-          providerName: 'Ali Usta',
+          providerName: 'Yılmaz Ticaret',
           amountMinor: 180000,
           currency: 'TRY',
         },
@@ -208,7 +208,7 @@ describe('NotificationsService', () => {
         service.dispatch({
           userId: USER_ID,
           type: NotificationType.JOB_STARTED,
-          params: { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta' },
+          params: { jobTitle: 'Kombi bakımı', providerName: 'Yılmaz Ticaret' },
         }),
       ).resolves.toBeUndefined();
     });
@@ -219,7 +219,7 @@ describe('NotificationsService', () => {
       await service.dispatch({
         userId: 'yok',
         type: NotificationType.JOB_COMPLETED,
-        params: { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta' },
+        params: { jobTitle: 'Kombi bakımı', providerName: 'Yılmaz Ticaret' },
       });
 
       expect(prisma.notification.create).not.toHaveBeenCalled();

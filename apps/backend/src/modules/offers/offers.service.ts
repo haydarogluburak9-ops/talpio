@@ -326,7 +326,7 @@ export class OffersService {
       });
 
       // Rakip teklifler otomatik düşer; satıcı seçildikten sonra bekleyen teklif
-      // kalması ustaları boşuna bekletir.
+      // kalması satıcıları boşuna bekletir.
       await tx.offer.updateMany({
         where: {
           jobRequestId: row.jobRequestId,

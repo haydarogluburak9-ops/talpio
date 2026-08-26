@@ -111,7 +111,7 @@ export class NotificationsService {
   }
 
   /**
-   * Aynı olayı birden çok alıcıya duyurur (ör. eşleşen ustalar).
+   * Aynı olayı birden çok alıcıya duyurur (ör. eşleşen satıcılar).
    *
    * Alıcılar birbirinden bağımsızdır; biri düşse diğerleri gönderilir.
    */

@@ -76,8 +76,8 @@ Jeton taşıma yöntemi platforma göre değişir, kimlik akışı değişmez: w
 ## Hızlı başlangıç
 
 ```bash
-git clone <repo-url> usta-pilot
-cd usta-pilot
+git clone <repo-url> talpio
+cd talpio
 
 cp .env.example .env                          # Windows: Copy-Item .env.example .env
 cp apps/backend/.env.example apps/backend/.env
@@ -131,7 +131,7 @@ PostgreSQL ve Redis host portları bilinçli olarak varsayılan değerlerinden f
 ## Monorepo yapısı
 
 ```
-usta-pilot/
+talpio/
 ├── apps/
 │   ├── backend/          NestJS API (modüler monolit)
 │   │   ├── prisma/       şema, migration, seed
@@ -142,8 +142,7 @@ usta-pilot/
 │   │       └── modules/  alan modülleri (auth, catalog, locations ...)
 │   ├── web/              Next.js müşteri sitesi (responsive)
 │   ├── admin/            Next.js yönetim paneli
-│   ├── mobile/           Expo + React Native (iOS / Android)
-│   └── mobile-flutter/   arşivlenmiş Flutter iskeleti (kullanılmıyor)
+│   └── mobile/           Expo + React Native (iOS / Android)
 ├── packages/
 │   ├── types/            roller, durumlar, model ve API sözleşmesi tipleri
 │   ├── config/           sabitler, limitler, API yolları, sorgu anahtarları

@@ -248,7 +248,7 @@ check(
   `status=${duplicate.status} code=${duplicate.json?.error?.code}`,
 );
 
-console.log('\nUsta ortalaması:');
+console.log('\nSatıcı ortalaması:');
 const afterProfile = await call('GET', `/providers/${providerProfileId}`);
 check(
   'yorum sayacı bir artar',
@@ -309,7 +309,7 @@ check(
   `status=${strangerReview.status} code=${strangerReview.json?.error?.code}`,
 );
 
-console.log('\nUsta cevabı:');
+console.log('\nSatıcı cevabı:');
 const customerReply = await call('POST', `/reviews/${reviewId}/reply`, {
   token: main.token,
   body: { body: 'Müşteri cevap yazamamalı.' },

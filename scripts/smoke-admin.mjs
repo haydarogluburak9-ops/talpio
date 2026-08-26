@@ -100,7 +100,7 @@ check('e-posta ile aranır', searched.json?.data?.[0]?.email === 'admin@talpio.c
 
 const filtered = await call('GET', '/admin/users?role=PROVIDER', { token: adminToken });
 check(
-  'rol filtresi yalnızca ustaları döner',
+  'rol filtresi yalnızca satıcıları döner',
   (filtered.json?.data ?? []).every((user) => user.role === 'PROVIDER'),
 );
 

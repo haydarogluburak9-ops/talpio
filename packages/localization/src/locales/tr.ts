@@ -1032,7 +1032,7 @@ export const tr = {
     credentialsByType: {
       IDENTITY: 'Kimlik',
       TAX_CERTIFICATE: 'Vergi levhası',
-      CRAFTSMANSHIP_CERTIFICATE: 'Ustalık belgesi',
+      CRAFTSMANSHIP_CERTIFICATE: 'Ticaret sicil belgesi',
       VOCATIONAL_QUALIFICATION: 'Mesleki yeterlilik',
       INSURANCE: 'Sigorta',
       OTHER: 'Belge',

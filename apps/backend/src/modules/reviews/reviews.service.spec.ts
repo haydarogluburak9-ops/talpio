@@ -321,7 +321,7 @@ describe('ReviewsService', () => {
   });
 
   describe('satıcı cevabı', () => {
-    it('yorumun ustası cevap yazabilir', async () => {
+    it('yorumun satıcısı cevap yazabilir', async () => {
       await service.reply(provider, REVIEW_ID, { body: 'Teşekkür ederiz.' });
 
       const args = firstCallArg<{ create: { body: string }; update: { body: string } }>(

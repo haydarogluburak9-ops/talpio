@@ -61,7 +61,7 @@ const RULES: Record<FilePurpose, PurposeRule> = {
     folder: 'documents',
     maxSizeBytes: UPLOAD.maxDocumentSizeBytes,
     allowedMimeTypes: UPLOAD.allowedDocumentMimeTypes,
-    // Kimlik ve ustalık belgeleri yalnızca sahibi ve yönetim tarafından görülür.
+    // Kimlik ve ticari yeterlilik belgeleri yalnızca sahibi ve yönetim tarafından görülür.
     isPublic: false,
   },
 };

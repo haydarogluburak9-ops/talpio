@@ -137,7 +137,7 @@ export interface AdminOrderSummary {
 /**
  * Yönetim listelerinde gösterilen ödeme satırı.
  *
- * `providerName` siparişi üstlenen ustayı, `paymentProvider` ödemeyi yürüten
+ * `providerName` siparişi üstlenen satıcıyı, `paymentProvider` ödemeyi yürüten
  * sağlayıcıyı belirtir; ikisi farklı kavramdır.
  */
 export interface AdminPaymentSummary {

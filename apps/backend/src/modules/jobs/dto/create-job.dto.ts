@@ -144,7 +144,7 @@ export class CreateJobDto {
 
   @ApiPropertyOptional({
     default: true,
-    description: 'Yanlış olduğunda talep taslak kalır ve ustalara gösterilmez.',
+    description: 'Yanlış olduğunda talep taslak kalır ve satıcılara gösterilmez.',
   })
   @IsOptional()
   @IsBoolean()

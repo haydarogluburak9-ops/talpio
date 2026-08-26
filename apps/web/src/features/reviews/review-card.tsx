@@ -23,7 +23,7 @@ const RATING_FIELDS = [
 
 export interface ReviewCardProps {
   review: Review;
-  /** Cevap kutusu yalnızca yorumun ilgili ustasına açılır. */
+  /** Cevap kutusu yalnızca yorumun ilgili satıcısına açılır. */
   replyable?: boolean;
 }
 

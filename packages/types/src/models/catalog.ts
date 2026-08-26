@@ -62,7 +62,7 @@ export interface Address extends BaseEntity {
 }
 
 /**
- * İş ilanında ustalara gösterilen adres. Teklif kabul edilene kadar açık adres
+ * İş ilanında satıcılara gösterilen adres. Teklif kabul edilene kadar açık adres
  * ve koordinat gizlenir; yalnızca ilçe seviyesi paylaşılır.
  */
 export interface MaskedAddress {

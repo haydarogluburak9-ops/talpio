@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | Klasör / git remote | `D:\Projects\usta-pilot` | Düşük — ürün adı Talpio |
 | Eski paket adı | Dokümanlarda `@ustapilot/*` tarihçesi | Düşük — kod `@talpio/*` |
-| Flutter arşiv | `apps/mobile-flutter` | Yok — CI’dan çıkarıldı |
-| Yorum / docs | Eski “UstaPilot” cümleleri `docs/01-architecture.md` vb. | Düşük |
+| Flutter arşiv | Silindi (2026-08-26) — git geçmişinde duruyor | Yok |
+| Yorum / docs | Türkçe “usta” anlatımı “satıcı” ile değiştirildi (2026-08-26) | Yok |
 
 ## Eski rota / env
 
@@ -22,6 +22,7 @@
 
 ## Yapılmaması gereken
 
-- Toplu `usta-pilot` → `talpio` klasör rename’i
+- Toplu `usta-pilot` → `talpio` klasör rename’i (elle yapılacak)
+- `CRAFTSMANSHIP_CERTIFICATE` enum adını değiştirmek — yalnızca Türkçe etiket düzeltildi
 - JobRequest tablosunu CommerceRequest ile birleştirmek
 - Sosyal tabloların Request/Offer/Order’a yazması

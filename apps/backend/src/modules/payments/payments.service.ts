@@ -633,7 +633,7 @@ export class PaymentsService {
     }
 
     // Müşteri yalnızca kendi cebinden çıkan ve cebine dönen hareketleri görür;
-    // komisyon ve hakediş ustayla platform arasındaki paylaşımdır.
+    // komisyon ve hakediş satıcıyla platform arasındaki paylaşımdır.
     return {
       order: { customerId: user.id },
       type: { in: [TransactionType.PAYMENT, TransactionType.REFUND] },

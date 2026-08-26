@@ -119,7 +119,7 @@ check(
 const document = await upload(token, {
   bytes: TINY_JPEG,
   mimeType: 'application/pdf',
-  filename: 'ustalik.pdf',
+  filename: 'ticaret-sicil.pdf',
   purpose: 'PROVIDER_DOCUMENT',
 });
 check('belge yüklenir', document.status === 201, `status=${document.status}`);

@@ -68,7 +68,7 @@ describe('canViewJob', () => {
     expect(canViewJob(provider, job)).toBe(true);
   });
 
-  it('satıcı seçildikten sonra havuzdaki diğer ustalar işi göremez', () => {
+  it('satıcı seçildikten sonra havuzdaki diğer satıcılar işi göremez', () => {
     expect(
       canViewJob(otherProvider, {
         ...job,

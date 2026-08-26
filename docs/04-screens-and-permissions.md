@@ -49,7 +49,7 @@ Tek uygulama, iki rol. Rol seçimi sonrası yönlendirme `GoRouter` redirect ile
 | İş tamamlama onayı         | `/customer/requests/:id/approve`        |
 | Değerlendirme              | `/customer/requests/:id/review`         |
 | Geçmiş işler               | `/customer/history`                     |
-| Favori ustalar             | `/customer/favorites`                   |
+| Favori satıcılar           | `/customer/favorites`                   |
 
 Alt navigasyon: **Ana Sayfa · Taleplerim · Mesajlar · Favoriler · Profil**
 
@@ -84,7 +84,7 @@ Alt navigasyon: **Ana Sayfa · İşler · Teklifler · Mesajlar · Profil**
 3. Büyük arama alanı
 4. Popüler kategoriler (yatay kaydırma)
 5. Acil satıcı çağır (vurgulu aksiyon kartı)
-6. Yakınındaki doğrulanmış ustalar
+6. Yakınındaki doğrulanmış satıcılar
 7. Devam eden işler
 8. Son talepler
 9. Kampanya kartı
@@ -97,7 +97,7 @@ Alt navigasyon: **Ana Sayfa · İşler · Teklifler · Mesajlar · Profil**
 | ------------------ | ----------------- | ------------------------------ |
 | Dashboard          | `/dashboard`      | KPI kartları + grafikler       |
 | Kullanıcılar       | `/users`          | Liste, detay, durum değiştirme |
-| Ustalar            | `/masters`        | Liste, profil, performans      |
+| Satıcılar / İşletmeler | `/masters`    | Liste, profil, performans      |
 | Satıcı doğrulamaları | `/verifications`  | Belge inceleme kuyruğu         |
 | İş talepleri       | `/job-requests`   | Liste, detay, durum geçmişi    |
 | Teklifler          | `/offers`         | Liste, filtreler               |

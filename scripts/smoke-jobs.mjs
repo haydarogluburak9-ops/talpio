@@ -163,7 +163,7 @@ check(
   !strangerList.json?.data?.some((item) => item.id === job?.id),
 );
 
-console.log('\nUsta havuzu:');
+console.log('\nSatıcı havuzu:');
 const providerLogin = await call('POST', '/auth/login', {
   body: { email: 'satici@talpio.com', password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
 });

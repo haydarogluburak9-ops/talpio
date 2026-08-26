@@ -1,7 +1,7 @@
--- UstaPilot: veritabanı ilk kurulumunda çalışan eklentiler.
+-- Talpio: veritabanı ilk kurulumunda çalışan eklentiler.
 -- Prisma migration'ları bu eklentilerin varlığını varsayar.
 
--- Benzerlik tabanlı metin araması (usta adı, iş başlığı, kategori arama)
+-- Benzerlik tabanlı metin araması (satıcı adı, iş başlığı, kategori arama)
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Aksan ve büyük/küçük harf duyarsız arama (Türkçe karakterler için)

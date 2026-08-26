@@ -33,7 +33,7 @@ function minorToLira(value: number | null | undefined): string {
  * Hizmet düzenleyici.
  *
  * Seçim ve fiyat aynı formda tutulur; kaydetme tek istekte listenin tamamını
- * gönderir, böylece yarım kalan bir güncelleme ustayı yanlış kategorilerde
+ * gönderir, böylece yarım kalan bir güncelleme satıcıyı yanlış kategorilerde
  * bırakmaz.
  */
 export function ProviderServicesForm({ services }: { services: ProviderService[] }) {

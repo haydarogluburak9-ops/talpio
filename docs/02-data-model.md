@@ -92,14 +92,13 @@ enum VerificationState {
   EXPIRED,
 }
 
-enum JobStatus {
+enum JobRequestStatus {
   DRAFT, // Taslak
   PUBLISHED, // Yayında
-  AWAITING_OFFERS, // Teklif bekliyor
   OFFERS_RECEIVED, // Teklifler alındı
-  MASTER_SELECTED, // Satıcı seçildi
-  APPOINTMENT_SCHEDULED, // Randevu planlandı
-  MASTER_EN_ROUTE, // Satıcı yolda
+  PROVIDER_SELECTED, // Satıcı seçildi
+  SCHEDULED, // Randevu planlandı
+  PROVIDER_EN_ROUTE, // Satıcı yolda
   IN_PROGRESS, // İş başladı
   AWAITING_CUSTOMER_APPROVAL, // Müşteri onayı bekliyor
   COMPLETED, // Tamamlandı
@@ -224,7 +223,7 @@ selectedOfferId?, viewCount, offerCount`
 Index: `(status, categoryId, cityId, createdAt DESC)`, `(customerId, status)`.
 
 **Adres gizliliği:** `Address` tam alanlarıyla saklanır ama API katmanı, işi kabul edilmemiş
-ustalara yalnızca `district + neighborhood` döndürür. Tam adres `MASTER_SELECTED`
+satıcılara yalnızca `district + neighborhood` döndürür. Tam adres `PROVIDER_SELECTED`
 durumundan itibaren yalnızca seçilen satıcıya açılır.
 
 ### Offer
@@ -236,7 +235,7 @@ createdAt, respondedAt`
 - Benzersiz kısıt: `(jobRequestId, masterId)` — bir satıcı bir işe tek aktif teklif verir;
   güncelleme `OfferRevision` olarak arşivlenir.
 - Teklif kabulü **tek transaction**: seçilen teklif `ACCEPTED`, diğerleri `REJECTED`,
-  iş `MASTER_SELECTED`, `Conversation` açılır, `Payment` kaydı oluşur.
+  iş `PROVIDER_SELECTED`, `Conversation` açılır, `Payment` kaydı oluşur.
 - Yarış koşulu koruması: `JobRequest` satırı `SELECT ... FOR UPDATE` ile kilitlenir ve
   `selectedOfferId IS NULL` koşulu doğrulanır.
 
@@ -308,7 +307,7 @@ gereken alanlar tek sorguda çekilir.
 
 ## 7. Satıcı Eşleştirme Sorgusu
 
-Bir talep yayınlandığında uygun ustalar şu koşullarla bulunur:
+Bir talep yayınlandığında uygun satıcılar şu koşullarla bulunur:
 
 1. `MasterCategory` kaydı talebin kategorisi veya üst kategorisiyle eşleşiyor.
 2. `MasterServiceArea` talebin ilçesini (veya tüm şehri) kapsıyor.

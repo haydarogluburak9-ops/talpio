@@ -119,7 +119,7 @@ describe('ProvidersService', () => {
       expect(result.serviceAreas).toEqual([{ id: DISTRICT_A, name: 'Kadıköy' }]);
     });
 
-    it('hiç iş yapmamış ustada iptal oranı sıfırdır', async () => {
+    it('hiç iş yapmamış satıcıda iptal oranı sıfırdır', async () => {
       const prisma = createPrismaMock();
       prisma.providerProfile.findFirst.mockResolvedValue(
         profileRow({ completedJobCount: 0, cancelledJobCount: 0 }),

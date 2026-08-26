@@ -114,7 +114,7 @@ export function isStaff(role: UserRole): boolean {
   return role === UserRole.SUPPORT || role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN;
 }
 
-/** İş detayını görüntüleyebilir mi? Havuzdaki yayınlanmış işler ustalara açıktır. */
+/** İş detayını görüntüleyebilir mi? Havuzdaki yayınlanmış işler satıcılara açıktır. */
 export function canViewJob(actor: ActorContext, job: JobAccessContext): boolean {
   if (isStaff(actor.role)) return true;
   if (actor.userId === job.customerId) return true;
@@ -130,7 +130,7 @@ export function canViewJob(actor: ActorContext, job: JobAccessContext): boolean 
 
 /**
  * Açık adres ve koordinat yalnızca işi alan satıcıya, iş sahibine ve personele
- * gösterilir. Havuzdaki ustalar yalnızca ilçe seviyesini görür.
+ * gösterilir. Havuzdaki satıcılar yalnızca ilçe seviyesini görür.
  */
 export function canViewFullAddress(actor: ActorContext, job: JobAccessContext): boolean {
   if (isStaff(actor.role)) return true;

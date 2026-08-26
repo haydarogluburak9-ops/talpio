@@ -14,7 +14,7 @@ import { spacing } from '@/theme/tokens';
 export interface OfferCardProps {
   offer: Offer;
   onPress?: () => void;
-  /** Müşteri ustayı, satıcı ise hangi işe verdiğini görmek ister. */
+  /** Müşteri satıcıyı, satıcı ise hangi işe verdiğini görmek ister. */
   variant?: 'customer' | 'provider';
 }
 

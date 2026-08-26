@@ -87,12 +87,17 @@ describe('renderNotification', () => {
   it('tutarı kullanıcının diliyle biçimlendirir', () => {
     const rendered = renderNotification(
       NotificationType.OFFER_RECEIVED,
-      { jobTitle: 'Kombi bakımı', providerName: 'Ali Usta', amountMinor: 180000, currency: 'TRY' },
+      {
+        jobTitle: 'Kombi bakımı',
+        providerName: 'Yılmaz Ticaret',
+        amountMinor: 180000,
+        currency: 'TRY',
+      },
       'tr',
     );
 
     expect(rendered.body).toContain('1.800,00');
-    expect(rendered.body).toContain('Ali Usta');
+    expect(rendered.body).toContain('Yılmaz Ticaret');
   });
 
   it('yerleştirilmemiş değişken bırakmaz', () => {

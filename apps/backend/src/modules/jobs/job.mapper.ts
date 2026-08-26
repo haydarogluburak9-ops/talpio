@@ -28,7 +28,7 @@ export type JobRequestRow = Prisma.JobRequestGetPayload<{ include: typeof jobReq
  * Talebi API gövdesine çevirir.
  *
  * `revealAddress` yalnızca müşterinin kendisi ve işi üstlenen satıcı için doğrudur.
- * Havuzdaki ustalar açık adresi ve koordinatı göremez; ilçe seviyesi yeterlidir
+ * Havuzdaki satıcılar açık adresi ve koordinatı göremez; ilçe seviyesi yeterlidir
  * ve müşterinin mahremiyeti korunur.
  */
 export function toJobRequest(

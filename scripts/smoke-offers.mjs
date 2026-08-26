@@ -2,7 +2,7 @@
  * Teklif akışının uçtan uca duman testi.
  *
  * Çalışan bir API ve tohumlanmış veritabanı gerektirir. Her çalıştırmada yeni
- * bir müşteri hesabı açar ve demo ustayla teklif verir; mevcut demo verisini
+ * bir müşteri hesabı açar ve demo satıcıyla teklif verir; mevcut demo verisini
  * kirletmemek için kendi oluşturduğu talep üzerinde çalışır.
  */
 const BASE = process.env.API_URL ?? 'http://localhost:3000/api/v1';
@@ -46,7 +46,7 @@ check('demo satıcı girişi', providerLogin.status === 200, `status=${providerL
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
 
 if (!providerToken) {
-  console.log('\nUsta girişi yapılamadı; teklif akışı doğrulanamıyor.');
+  console.log('\nSatıcı girişi yapılamadı; teklif akışı doğrulanamıyor.');
   process.exit(1);
 }
 

@@ -114,7 +114,6 @@ NestJS API (:3000)  — PostgreSQL + Redis + MinIO
 - **Admin:** Next.js panel
 - **Mobil:** Expo / React Native SDK 57
 - **Paketler:** `@talpio/types`, `config`, `validation`, `business-logic`, `api-client`, `localization`, `ui`
-- **Arşiv:** `apps/mobile-flutter` — kullanılmıyor, CI’dan çıkarıldı
 
 İş kuralları, Zod ve API istemcisi paylaşılan paketlerde. İstemci yalnızca UI yazar.
 
@@ -137,13 +136,12 @@ Abonelik satışı ve AI kredi satışı **bilinçli atlandı** (ürün kararı)
 ## 4) Monorepo
 
 ```
-usta-pilot/
+talpio/
 ├── apps/
 │   ├── backend/          NestJS, Prisma, seed, worker
 │   ├── web/              müşteri + satıcı web
 │   ├── admin/            yönetim
-│   ├── mobile/           Expo iOS/Android
-│   └── mobile-flutter/   ARŞİV
+│   └── mobile/           Expo iOS/Android
 ├── packages/             types, config, validation, business-logic, api-client, localization, ui
 ├── docker/
 ├── docs/
@@ -151,7 +149,7 @@ usta-pilot/
 ```
 
 npm workspaces + Turborepo. Node >= 20.11.  
-Git/klasör adı hâlâ `usta-pilot`; ürün ve paketler Talpio.
+Git deposu `talpio`; yerel klasör adı hâlâ `usta-pilot` (elle yeniden adlandırılacak).
 
 ---
 
@@ -346,7 +344,7 @@ Gelişmiş ERP (CRM/WO/kampanya admin) web klonu **değil**.
 | Hukuki metinler                                                            | Ürün özeti + disclaimer; **avukat onayı lansman engeli**                                         |
 | `@talpio/*` rename                                                         | Uygulandı                                                                                        |
 | Playwright E2E                                                             | Yok; duman scriptleri var                                                                        |
-| Flutter                                                                    | Arşiv; kullanılmıyor                                                                             |
+| Flutter                                                                    | Silindi; yalnızca git geçmişinde                                                                 |
 | Abonelik / AI kredi satışı                                                 | Yok (bilinçli)                                                                                   |
 
 **Lansman engelleri:** avukat onaylı yasal metin, gerçek ödeme 3DS/checkout + canlı anahtar, production AI anahtarı, store gizlilik metinleri, yedeklemenin gerçekten çalıştırılması (runbook var, “yedek alındı” iddiası yok).
@@ -355,7 +353,7 @@ Gelişmiş ERP (CRM/WO/kampanya admin) web klonu **değil**.
 
 ## 13) ChatGPT’nin özellikle bakması gerekenler
 
-1. **Repo klasörü:** GitHub/yerel dizin hâlâ `usta-pilot`; ürün ve paketler Talpio.
+1. **Repo klasörü:** GitHub deposu `talpio`; yerel dizin hâlâ `usta-pilot`. Ürün ve paketler Talpio.
 2. **Çift talep modeli:** JobRequest vs CommerceRequest — web/mobil/admin hangisini birincil kullanıyor? Kullanıcı hangisini görüyor?
 3. **Sosyal vs ticaret sızıntısı:** Post, talep/teklif yazıyor mu?
 4. **Landing vs app:** `/` marketing, `/akis` ürün. Navbar vaadi vs gerçek rota.
@@ -392,7 +390,7 @@ Web / admin / mobil / backend ayrı başlık.
 
 ### D) Düşük / bilinçli borç
 
-Klasör adı `usta-pilot`, Flutter arşiv, landing placeholder logolar, nav semantik sapma, hikâye 24s seed, payments flag.
+Yerel klasör adı `usta-pilot`, landing placeholder logolar, nav semantik sapma, hikâye 24s seed, payments flag.
 
 ### E) Lansman kararı
 

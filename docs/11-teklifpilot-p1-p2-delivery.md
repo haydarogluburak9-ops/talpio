@@ -23,7 +23,7 @@ Migration: `apps/backend/prisma/migrations/20260806145616_teklifpilot_rbac_comme
 ## Lokal komutlar
 
 ```powershell
-cd D:\Projects\usta-pilot
+cd D:\Projects\talpio
 npm run build --workspace=@talpio/types --workspace=@talpio/business-logic --workspace=@talpio/config --workspace=@talpio/localization --workspace=@talpio/validation --workspace=@talpio/api-client
 cd apps\backend
 npm test

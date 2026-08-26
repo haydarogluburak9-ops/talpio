@@ -109,14 +109,14 @@ Kesişen ilgi alanları (cross-cutting):
 | Kuyruk          | İş                                                                 |
 | --------------- | ------------------------------------------------------------------ |
 | `notifications` | Push/e-posta/SMS gönderimi, yeniden deneme                         |
-| `job-matching`  | Yeni talebi uygun ustalara dağıtma (kategori + bölge)              |
+| `job-matching`  | Yeni talebi uygun satıcılara dağıtma (kategori + bölge)            |
 | `media`         | Görsel işleme, thumbnail, EXIF temizleme                           |
 | `payments`      | Provizyon yakalama, satıcıya aktarım, mutabakat                      |
 | `maintenance`   | Süresi dolan teklifleri kapatma, hatırlatmalar, istatistik toplama |
 
 ### 2.4 Mobil (Expo / React Native)
 
-Aktif istemci `apps/mobile` (Expo SDK 57). `apps/mobile-flutter` arşivdir, build'e dahil değildir.
+Tek mobil istemci `apps/mobile` (Expo SDK 57).
 
 Jeton `expo-secure-store` içindedir. Web ile aynı API sözleşmesi kullanılır; ekran seti
 birebir kopya değildir.
@@ -130,7 +130,7 @@ birebir kopya değildir.
 ## 3. Monorepo Klasör Yapısı
 
 ```
-usta-pilot/
+talpio/
 ├─ apps/
 │  ├─ backend/                 # NestJS API (modüler monolit)
 │  │  ├─ prisma/
@@ -146,15 +146,14 @@ usta-pilot/
 │  │  └─ test/
 │  ├─ admin/                   # Next.js yönetim paneli
 │  ├─ web/                     # Next.js müşteri + satıcı
-│  ├─ mobile/                  # Expo (aktif)
-│  └─ mobile-flutter/          # ARŞİV — build dışı
+│  └─ mobile/                  # Expo + React Native
 ├─ packages/                   # types, config, validation, business-logic, api-client, localization, ui
 ├─ docs/
 ├─ docker/
 └─ docker-compose.yml
 ```
 
-Aktif mobil `apps/mobile` (Expo) npm workspace üyesidir. Flutter iskeleti arşivdir.
+Mobil uygulama `apps/mobile` (Expo) npm workspace üyesidir.
 
 ## 4. Ortamlar
 

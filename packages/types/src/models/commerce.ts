@@ -41,7 +41,7 @@ export interface CommissionRule extends BaseEntity {
   fixedMinor: number;
   categoryId?: string | null;
   cityId?: string | null;
-  /** Premium ustalara uygulanacak indirimli oran. */
+  /** Premium satıcılara uygulanacak indirimli oran. */
   premiumRateBps?: number | null;
   minAmountMinor?: number | null;
   maxAmountMinor?: number | null;
@@ -73,7 +73,7 @@ export interface ProviderWallet extends BaseEntity {
 /**
  * Satıcı ekranlarında gösterilen cüzdan özeti.
  *
- * Cüzdan kaydı ilk ödemeyle açıldığı için henüz iş almamış ustada satır yoktur;
+ * Cüzdan kaydı ilk ödemeyle açıldığı için henüz iş almamış satıcıda satır yoktur;
  * özet bu durumda sıfır tutarlarla döner, böylece ekran boş kalmaz.
  */
 export interface ProviderWalletSummary {

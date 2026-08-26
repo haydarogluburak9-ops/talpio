@@ -279,7 +279,7 @@ export class JobsService {
   }
 
   /**
-   * Kategori ve ilçe hizmet alanında olan ustalara eşleşme bildirimi gönderir.
+   * Kategori ve ilçe hizmet alanında olan satıcılara eşleşme bildirimi gönderir.
    * Alıcı yoksa hiçbir şey yapılmaz.
    */
   private async notifyMatchingProviders(job: JobRequestRow): Promise<void> {

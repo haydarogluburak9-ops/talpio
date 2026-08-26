@@ -74,23 +74,24 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | DELETE | `/users/me`                 | Hesap silme talebi (soft delete)            | Kimlikli |
 | GET    | `/customers/me`             | Müşteri profili                             | Müşteri  |
 | PATCH  | `/customers/me`             | Müşteri profili güncelle                    | Müşteri  |
-| POST   | `/masters`                  | Satıcı profili oluştur                        | Kimlikli |
-| GET    | `/masters/me`               | Kendi satıcı profili (özel alanlar dahil)     | Satıcı     |
-| PATCH  | `/masters/me`               | Satıcı profili güncelle                       | Satıcı     |
-| GET    | `/masters/:id`              | Herkese açık satıcı profili                   | Kimlikli |
-| GET    | `/masters`                  | Satıcı arama (kategori, bölge, puan filtreli) | Kimlikli |
-| PUT    | `/masters/me/categories`    | Hizmet kategorilerini ayarla                | Satıcı     |
-| PUT    | `/masters/me/service-areas` | Hizmet bölgelerini ayarla                   | Satıcı     |
-| PUT    | `/masters/me/working-hours` | Çalışma saatleri                            | Satıcı     |
-| GET    | `/masters/me/stats`         | Performans özeti                            | Satıcı     |
+| POST   | `/providers`                  | Satıcı profili oluştur                        | Kimlikli |
+| GET    | `/providers/me`               | Kendi satıcı profili (özel alanlar dahil)     | Satıcı     |
+| PATCH  | `/providers/me`               | Satıcı profili güncelle                       | Satıcı     |
+| GET    | `/providers/:id`              | Herkese açık satıcı profili                   | Kimlikli |
+| GET    | `/providers`                  | Satıcı arama (kategori, bölge, puan filtreli) | Kimlikli |
+| GET    | `/providers/me/services`      | Hizmet listesi                              | Satıcı     |
+| PUT    | `/providers/me/services`      | Hizmet kategorilerini ayarla                | Satıcı     |
+| PUT    | `/providers/me/service-areas` | Hizmet bölgelerini ayarla                   | Satıcı     |
+| PUT    | `/providers/me/availability`  | Çalışma saatleri                            | Satıcı     |
+| GET    | `/providers/me/earnings`      | Kazanç özeti                                | Satıcı     |
 
 ### Documents & Verification
 
 | Metot  | Yol                                | Açıklama                    | Erişim |
 | ------ | ---------------------------------- | --------------------------- | ------ |
-| POST   | `/masters/me/documents`            | Belge yükle                 | Satıcı   |
-| GET    | `/masters/me/documents`            | Kendi belgeleri + durumları | Satıcı   |
-| DELETE | `/masters/me/documents/:id`        | Belge sil (onaylanmamışsa)  | Satıcı   |
+| POST   | `/providers/me/documents`          | Belge yükle                 | Satıcı   |
+| GET    | `/providers/me/documents`          | Kendi belgeleri + durumları | Satıcı   |
+| DELETE | `/providers/me/documents/:id`      | Belge sil (onaylanmamışsa)  | Satıcı   |
 | GET    | `/admin/verifications`             | Bekleyen doğrulamalar       | Admin  |
 | POST   | `/admin/verifications/:id/approve` | Belge onayla                | Admin  |
 | POST   | `/admin/verifications/:id/reject`  | Gerekçeyle reddet           | Admin  |
@@ -193,15 +194,15 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | Metot | Yol                        | Açıklama                    | Erişim                    |
 | ----- | -------------------------- | --------------------------- | ------------------------- |
 | POST  | `/job-requests/:id/review` | Değerlendirme bırak         | İş sahibi, tamamlanmış iş |
-| GET   | `/masters/:id/reviews`     | Satıcı yorumları (sayfalı)    | Herkes                    |
-| POST  | `/reviews/:id/reply`       | Satıcının tek seferlik cevabı | Yorumun ustası            |
+| GET   | `/providers/:id/reviews`   | Satıcı yorumları (sayfalı)    | Herkes                    |
+| POST  | `/reviews/:id/reply`       | Satıcının tek seferlik cevabı | Yorumun satıcısı          |
 | POST  | `/reviews/:id/report`      | Yorumu şikâyet et           | Kimlikli                  |
 
 ### Favorites, Notifications, Support
 
 | Metot           | Yol                              | Açıklama                | Erişim   |
 | --------------- | -------------------------------- | ----------------------- | -------- |
-| GET/POST/DELETE | `/favorites/masters[/:masterId]` | Favori satıcı yönetimi    | Müşteri  |
+| GET/POST/DELETE | `/providers/favorites[/:id]`     | Favori satıcı yönetimi  | Müşteri  |
 | GET             | `/notifications`                 | Bildirim merkezi        | Kimlikli |
 | POST            | `/notifications/read-all`        | Tümünü okundu yap       | Kimlikli |
 | PUT             | `/notifications/preferences`     | Kanal tercihleri        | Kimlikli |
@@ -228,7 +229,7 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | GET            | `/admin/dashboard`               | Özet metrikler              |
 | GET            | `/admin/users`                   | Kullanıcı listesi + filtre  |
 | PATCH          | `/admin/users/:id/status`        | Askıya alma / aktifleştirme |
-| GET            | `/admin/masters`                 | Satıcı listesi                |
+| GET            | `/admin/providers`               | Satıcı listesi              |
 | GET            | `/admin/job-requests`            | Tüm talepler                |
 | GET            | `/admin/offers`                  | Tüm teklifler               |
 | GET            | `/admin/payments`                | Ödeme ve mutabakat          |
@@ -259,7 +260,7 @@ Aynı anahtarla gelen tekrar istek, ilk işlemin sonucunu döndürür — çift 
 | `TOKEN_EXPIRED`                            | 401       | Access token süresi doldu                         |
 | `REFRESH_TOKEN_REUSED`                     | 401       | Token yeniden kullanımı — tüm oturumlar kapatılır |
 | `PHONE_NOT_VERIFIED`                       | 403       | Telefon doğrulaması gerekli                       |
-| `MASTER_NOT_VERIFIED`                      | 403       | Doğrulanmamış satıcı teklif veremez                 |
+| `PROVIDER_NOT_VERIFIED`                    | 403       | Doğrulanmamış satıcı teklif veremez               |
 | `FORBIDDEN_RESOURCE`                       | 403       | Nesne sahipliği yok                               |
 | `JOB_NOT_OPEN_FOR_OFFERS`                  | 409       | İş teklife kapalı                                 |
 | `OFFER_ALREADY_ACCEPTED`                   | 409       | Zaten satıcı seçilmiş                               |
