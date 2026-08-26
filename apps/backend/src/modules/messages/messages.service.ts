@@ -124,6 +124,81 @@ export class MessagesService {
     return this.presentConversation(created, user.id);
   }
 
+  /**
+   * Gruba yeni katılımcı ekler.
+   *
+   * Zaten üye olanlar sessizce atlanır; eklenenler sohbete bir sistem
+   * mesajıyla duyurulur, böylece geçmişte kimin ne zaman katıldığı görünür.
+   */
+  async addGroupMembers(
+    user: AuthenticatedUser,
+    conversationId: string,
+    memberIds: string[],
+  ): Promise<Conversation> {
+    const conversation = await this.requireParticipation(user, conversationId);
+
+    if (!conversation.participants.some((item) => item.userId === user.id)) {
+      throw AppException.forbiddenResource('Sohbet', { conversationId });
+    }
+    if (!conversation.isGroup) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Yalnızca grup sohbetine kişi eklenebilir.',
+      });
+    }
+    await this.assertWritable(conversation);
+
+    const existing = new Set(conversation.participants.map((item) => item.userId));
+    const additions = [...new Set(memberIds)].filter((id) => !existing.has(id));
+
+    if (additions.length === 0) {
+      return this.presentConversation(conversation, user.id);
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: additions }, deletedAt: null },
+      select: { id: true, fullName: true },
+    });
+    if (users.length !== additions.length) {
+      throw new AppException('VALIDATION_ERROR', { message: 'Bazı kullanıcılar bulunamadı.' });
+    }
+
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      await tx.conversationParticipant.createMany({
+        data: additions.map((userId) => ({ conversationId, userId })),
+        skipDuplicates: true,
+      });
+
+      await tx.message.create({
+        data: {
+          conversationId,
+          senderId: null,
+          type: MessageType.SYSTEM,
+          body: `${users.map((item) => item.fullName).join(', ')} gruba eklendi.`,
+        },
+      });
+
+      await tx.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: now } });
+    });
+
+    const title = conversation.title ?? 'Grup sohbeti';
+    await this.notifications.dispatchAll(
+      users.map((member) => ({
+        userId: member.id,
+        type: NotificationType.MESSAGE_RECEIVED,
+        params: { senderName: title, preview: 'Sizi grup sohbetine ekledi.' },
+        deepLink: deepLinks.conversation(conversationId),
+      })),
+    );
+
+    const row = await this.prisma.conversation.findFirstOrThrow({
+      where: { id: conversationId },
+      include: conversationInclude,
+    });
+
+    return this.presentConversation(row, user.id);
+  }
+
   async listGroups(user: AuthenticatedUser): Promise<Conversation[]> {
     const rows = await this.prisma.conversation.findMany({
       where: {

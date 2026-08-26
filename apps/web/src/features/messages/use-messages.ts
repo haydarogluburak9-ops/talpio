@@ -82,6 +82,32 @@ export function useCreateGroupConversation() {
   });
 }
 
+export function useAddGroupMembers(conversationId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberIds: string[]) =>
+      apiClient.social.addGroupMembers(conversationId, { memberIds }),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.all() });
+    },
+  });
+}
+
+/** Kullanıcı adından doğrudan sohbet açar; sohbet varsa mevcut kayıt döner. */
+export function useStartDirectConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (username: string) => apiClient.social.messageProfile(username),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.conversations() });
+    },
+  });
+}
+
 /** Siparişin sohbetini açar; sohbet yoksa sunucu oluşturur. */
 export function useOpenConversation() {
   const queryClient = useQueryClient();

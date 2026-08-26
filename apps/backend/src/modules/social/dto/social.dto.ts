@@ -626,6 +626,53 @@ export class FeedQueryDto {
 
 export class DiscoverFeedQueryDto extends FeedQueryDto {}
 
+export class SearchProfilesQueryDto {
+  @ApiProperty({ description: 'Kullanıcı adı veya görünen ad', minLength: 2, maxLength: 60 })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(60)
+  q!: string;
+
+  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page: number = 1;
+
+  @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 50 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit: number = 20;
+}
+
+export class CreateGroupConversationDto {
+  @ApiProperty({ minLength: 2, maxLength: 80 })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(80)
+  title!: string;
+
+  @ApiProperty({ type: [String], minItems: 2, maxItems: 50 })
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(50)
+  @IsUUID('all', { each: true })
+  memberIds!: string[];
+}
+
+export class AddGroupMembersDto {
+  @ApiProperty({ type: [String], minItems: 1, maxItems: 50 })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(50)
+  @IsUUID('all', { each: true })
+  memberIds!: string[];
+}
+
 export class ReplaceInterestsDto {
   @ApiProperty({ type: [String], minItems: 3, maxItems: 12 })
   @IsArray()

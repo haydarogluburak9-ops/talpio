@@ -42,7 +42,7 @@ export function ConversationListScreen({ variant }: { variant: 'customer' | 'pro
     return (
       <Screen scroll={false} padded={false}>
         <InboxHeader
-          onCompose={() => router.push(`/${variant}/messages/new-group`)}
+          onCompose={() => router.push(`/${variant}/messages/new`)}
         />
         <ListSkeleton rows={4} />
       </Screen>
@@ -53,7 +53,7 @@ export function ConversationListScreen({ variant }: { variant: 'customer' | 'pro
     return (
       <Screen scroll={false} padded={false}>
         <InboxHeader
-          onCompose={() => router.push(`/${variant}/messages/new-group`)}
+          onCompose={() => router.push(`/${variant}/messages/new`)}
         />
         <EmptyState
           icon="chatbubble-ellipses-outline"
@@ -66,7 +66,7 @@ export function ConversationListScreen({ variant }: { variant: 'customer' | 'pro
 
   return (
     <Screen scroll={false} padded={false}>
-      <InboxHeader onCompose={() => router.push(`/${variant}/messages/new-group`)} />
+      <InboxHeader onCompose={() => router.push(`/${variant}/messages/new`)} />
       <FlatList
         data={items}
         keyExtractor={(conversation) => conversation.id}

@@ -9,6 +9,8 @@ import {
   type SocialProfile,
 } from '@talpio/types';
 
+import type { Prisma } from '@/generated/prisma/client';
+import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -16,7 +18,7 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
 
 import { ratioPercent, toFiniteNumber } from './business-profile.stats';
-import type { UpdateSocialProfileDto } from './dto/social.dto';
+import type { SearchProfilesQueryDto, UpdateSocialProfileDto } from './dto/social.dto';
 import { CAMPAIGN_POST_TYPES, DEAL_POST_TYPES, PORTFOLIO_POST_TYPES } from './post-tabs';
 import { socialProfileSelect, toSocialProfile, toSocialProfileEducation, toSocialProfileExperience, toSocialProfileSkill, type SocialProfileRow } from './social.mapper';
 import {
@@ -135,6 +137,54 @@ export class ProfilesService {
     });
 
     return this.toProfileWithCareer(updated);
+  }
+
+  /**
+   * Kullanıcı adı veya görünen ada göre profil arar.
+   *
+   * Mesajlaşmada alıcı seçmek için kullanılır; arayanın kendi profili
+   * sonuçtan düşer. İşletme profillerinin `userId` alanı boş olduğundan
+   * eleme `null` değerleri koruyacak biçimde kurulur.
+   */
+  async search(
+    query: SearchProfilesQueryDto,
+    viewerUserId?: string,
+  ): Promise<PaginatedResult<SocialProfile>> {
+    const needle = query.q.trim();
+    if (needle.length < 2) {
+      return PaginatedResult.of([], 0, query.page, query.limit);
+    }
+
+    const where: Prisma.SocialProfileWhereInput = {
+      deletedAt: null,
+      AND: [
+        {
+          OR: [
+            { username: { contains: needle, mode: 'insensitive' } },
+            { displayName: { contains: needle, mode: 'insensitive' } },
+          ],
+        },
+        ...(viewerUserId ? [{ OR: [{ userId: null }, { userId: { not: viewerUserId } }] }] : []),
+      ],
+    };
+
+    const [rows, total] = await Promise.all([
+      this.prisma.socialProfile.findMany({
+        where,
+        select: socialProfileSelect,
+        orderBy: [{ followerCount: 'desc' }, { username: 'asc' }],
+        skip: (query.page - 1) * query.limit,
+        take: query.limit,
+      }),
+      this.prisma.socialProfile.count({ where }),
+    ]);
+
+    return PaginatedResult.of(
+      rows.map((row) => toSocialProfile(row, this.fileBaseUrl)),
+      total,
+      query.page,
+      query.limit,
+    );
   }
 
   async getByUsername(username: string, viewerUserId?: string): Promise<SocialProfile> {

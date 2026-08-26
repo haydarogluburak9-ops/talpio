@@ -11,11 +11,11 @@ import { t } from '@/lib/i18n';
 
 import { ChatThread } from './chat-thread';
 import { ConversationList } from './conversation-list';
-import { NewGroupForm } from './new-group-form';
+import { NewConversationPanel } from './new-conversation-panel';
 
 export function MessagesPageBody() {
   const user = useAuthenticatedUser();
-  const [showNewGroup, setShowNewGroup] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
 
   if (!user) return <LoadingState label="Mesajlar yükleniyor" />;
 
@@ -23,10 +23,10 @@ export function MessagesPageBody() {
     <div className="flex h-[calc(100dvh-5.5rem)] flex-col overflow-hidden pb-16 lg:pb-0">
       <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:rounded-xl lg:border lg:border-border/70 lg:bg-surface lg:shadow-sm">
         <aside className="flex min-h-0 flex-col border-border/70 lg:border-r">
-          <MessagesInboxHeader onCompose={() => setShowNewGroup((value) => !value)} />
-          {showNewGroup ? (
+          <MessagesInboxHeader onCompose={() => setComposeOpen((value) => !value)} />
+          {composeOpen ? (
             <div className="border-b border-border/70 px-4 py-3">
-              <NewGroupForm />
+              <NewConversationPanel onClose={() => setComposeOpen(false)} />
             </div>
           ) : null}
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -75,8 +75,8 @@ function MessagesInboxHeader({ onCompose }: { onCompose?: () => void }) {
           type="button"
           onClick={onCompose}
           className="grid size-9 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-muted"
-          aria-label={t('messaging.newGroup')}
-          title={t('messaging.newGroup')}
+          aria-label={t('messaging.newMessage')}
+          title={t('messaging.newMessage')}
         >
           <MessageSquarePlus className="size-6" aria-hidden />
         </button>

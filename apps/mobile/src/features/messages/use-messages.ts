@@ -114,3 +114,16 @@ export function useCreateGroupConversation() {
     },
   });
 }
+
+export function useAddGroupMembers(conversationId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberIds: string[]) =>
+      apiClient.social.addGroupMembers(conversationId, { memberIds }),
+    onSuccess: (conversation) => {
+      queryClient.setQueryData(queryKeys.messages.conversation(conversation.id), conversation);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.all() });
+    },
+  });
+}

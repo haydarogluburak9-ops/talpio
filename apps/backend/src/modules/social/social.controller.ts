@@ -44,8 +44,10 @@ import { MessagesService } from '@modules/messages/messages.service';
 import { type CategoryFollowItem, CategoryFollowsService } from './category-follows.service';
 import { type SocialAnalyticsSummary, SocialAnalyticsService } from './analytics.service';
 import {
+  AddGroupMembersDto,
   CreateCommentDto,
   CreateContentReportDto,
+  CreateGroupConversationDto,
   CreateProfileEducationDto,
   CreateProfileExperienceDto,
   CreateProfileSkillDto,
@@ -57,6 +59,7 @@ import {
   FeedQueryDto,
   ListSocialQueryDto,
   ReplaceInterestsDto,
+  SearchProfilesQueryDto,
   ShareRequestToFeedDto,
   TrendingQueryDto,
   UpdateProfileEducationDto,
@@ -208,6 +211,16 @@ export class SocialController {
   }
 
   @Public()
+  @Get('profiles/search')
+  @RequirePermissions(Permission.SOCIAL_INTERACT)
+  @ApiOperation({ summary: 'Kullanıcı adı veya isme göre kişi arar' })
+  searchProfiles(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: SearchProfilesQueryDto,
+  ): Promise<PaginatedResult<SocialProfile>> {
+    return this.profiles.search(query, user.id);
+  }
+
   @Get('profiles/availability/:username')
   @ApiOperation({ summary: 'Kullanıcı adının müsait olup olmadığını kontrol eder' })
   checkUsernameAvailability(@Param('username') username: string) {
@@ -668,8 +681,19 @@ export class SocialController {
   @ApiOperation({ summary: 'Yeni grup sohbeti açar' })
   createGroupConversation(
     @CurrentUser() user: AuthenticatedUser,
-    @Body() body: { title: string; memberIds: string[] },
-  ) {
-    return this.messages.openGroup(user, body);
+    @Body() dto: CreateGroupConversationDto,
+  ): Promise<Conversation> {
+    return this.messages.openGroup(user, dto);
+  }
+
+  @Post('group-conversations/:id/members')
+  @RequirePermissions(Permission.SOCIAL_INTERACT, Permission.MESSAGE_SEND)
+  @ApiOperation({ summary: 'Grup sohbetine kişi ekler' })
+  addGroupMembers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AddGroupMembersDto,
+  ): Promise<Conversation> {
+    return this.messages.addGroupMembers(user, id, dto.memberIds);
   }
 }

@@ -227,6 +227,17 @@ export function useSavedPosts(enabled = false) {
   });
 }
 
+/** Kişi arama; iki harften kısa sorgular sunucuya gitmez. */
+export function useSearchProfiles(query: string) {
+  const needle = query.trim();
+  return useQuery({
+    queryKey: queryKeys.social.profileSearch(needle),
+    queryFn: ({ signal }) => apiClient.social.searchProfiles({ q: needle, limit: 20 }, signal),
+    enabled: needle.length >= 2,
+    staleTime: 30_000,
+  });
+}
+
 export function useMessageProfile(username: string) {
   const queryClient = useQueryClient();
   return useMutation({

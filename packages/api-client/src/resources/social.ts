@@ -208,6 +208,17 @@ export function createSocialResource(http: HttpClient) {
       return http.delete<SocialProfile>(API_ROUTES.social.follow(username));
     },
 
+    searchProfiles(
+      params: { q: string; page?: number; limit?: number },
+      signal?: AbortSignal,
+    ): Promise<Paginated<SocialProfile>> {
+      return http.paginated<SocialProfile>(API_ROUTES.social.profileSearch, {
+        method: 'GET',
+        query: { ...params },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
     listFollowers(
       username: string,
       params: { page?: number; limit?: number } = {},
@@ -491,6 +502,10 @@ export function createSocialResource(http: HttpClient) {
       return http.post<Conversation>(API_ROUTES.social.groupConversations, body, {
         ...(signal ? { signal } : {}),
       });
+    },
+
+    addGroupMembers(id: string, body: { memberIds: string[] }): Promise<Conversation> {
+      return http.post<Conversation>(API_ROUTES.social.groupConversationMembers(id), body);
     },
   };
 }

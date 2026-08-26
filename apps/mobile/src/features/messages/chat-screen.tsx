@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   TextInput,
@@ -14,6 +15,7 @@ import { MESSAGE } from '@talpio/config';
 import { formatDate, formatTime } from '@talpio/localization';
 import { ConversationStatus, MessageType, type Message } from '@talpio/types';
 
+import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
@@ -22,7 +24,9 @@ import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
 
+import { PeopleResults, PeopleSearchInput } from './people-picker';
 import {
+  useAddGroupMembers,
   useConversation,
   useMarkConversationRead,
   useSendMessage,
@@ -37,6 +41,7 @@ export function ChatScreen({ conversationId }: { conversationId: string }) {
   const thread = useThread(conversationId);
   const me = useCurrentUser();
   const { mutate: markAsRead } = useMarkConversationRead(conversationId);
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
 
   useEffect(() => {
     if (conversationId.length > 0) markAsRead();
@@ -64,7 +69,8 @@ export function ChatScreen({ conversationId }: { conversationId: string }) {
   }
 
   const other = conversation.data.participants.find((item) => item.userId !== me.data?.id);
-  const title = conversation.data.isGroup
+  const isGroup = Boolean(conversation.data.isGroup);
+  const title = isGroup
     ? conversation.data.title || t('messaging.newGroup')
     : (other?.displayName ?? t('messaging.chatTitle'));
   const isClosed = conversation.data.status !== ConversationStatus.ACTIVE;
@@ -74,7 +80,20 @@ export function ChatScreen({ conversationId }: { conversationId: string }) {
       <ChatHeader
         title={title}
         avatarUrl={other?.avatarUrl ?? null}
+        subtitle={
+          isGroup
+            ? t('messaging.groupMemberCount', { count: conversation.data.participants.length })
+            : null
+        }
         onBack={() => router.back()}
+        onAddMembers={isGroup && !isClosed ? () => setAddMembersOpen(true) : undefined}
+      />
+
+      <AddMembersModal
+        visible={addMembersOpen}
+        conversationId={conversationId}
+        memberUserIds={conversation.data.participants.map((item) => item.userId)}
+        onClose={() => setAddMembersOpen(false)}
       />
 
       <MessageThread messages={thread.data} currentUserId={me.data?.id ?? ''} />
@@ -95,11 +114,15 @@ export function ChatScreen({ conversationId }: { conversationId: string }) {
 function ChatHeader({
   title,
   avatarUrl,
+  subtitle,
   onBack,
+  onAddMembers,
 }: {
   title: string;
   avatarUrl: string | null;
+  subtitle?: string | null;
   onBack: () => void;
+  onAddMembers?: () => void;
 }) {
   const { t } = useI18n();
   const colors = useColors();
@@ -126,10 +149,102 @@ function ChatHeader({
         </View>
       )}
 
-      <Text variant="bodyStrong" numberOfLines={1} style={styles.headerTitle}>
-        {title}
-      </Text>
+      <View style={styles.headerTitle}>
+        <Text variant="bodyStrong" numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text variant="caption" tone="muted" numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+
+      {onAddMembers ? (
+        <Pressable
+          onPress={onAddMembers}
+          accessibilityRole="button"
+          accessibilityLabel={t('messaging.addMembers')}
+          hitSlop={8}
+        >
+          <Ionicons name="person-add-outline" size={22} color={colors.foreground} />
+        </Pressable>
+      ) : null}
     </View>
+  );
+}
+
+/** Grup sohbetine kişi ekleme kartı; mevcut üyeler listede pasif görünür. */
+function AddMembersModal({
+  visible,
+  conversationId,
+  memberUserIds,
+  onClose,
+}: {
+  visible: boolean;
+  conversationId: string;
+  memberUserIds: string[];
+  onClose: () => void;
+}) {
+  const { t } = useI18n();
+  const colors = useColors();
+  const addMembers = useAddGroupMembers(conversationId);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+
+  function close() {
+    setSelected([]);
+    setQuery('');
+    onClose();
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" onRequestClose={close}>
+      <Screen>
+        <View style={styles.modalHeader}>
+          <Text variant="title">{t('messaging.addMembersTitle')}</Text>
+          <Pressable
+            onPress={close}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            hitSlop={8}
+          >
+            <Ionicons name="close" size={24} color={colors.foreground} />
+          </Pressable>
+        </View>
+
+        <PeopleSearchInput query={query} onQueryChange={setQuery} />
+
+        <PeopleResults
+          query={query}
+          onSelect={(profile) => {
+            const userId = profile.userId;
+            if (!userId) return;
+            setSelected((current) =>
+              current.includes(userId)
+                ? current.filter((id) => id !== userId)
+                : [...current, userId],
+            );
+          }}
+          selectedUserIds={selected}
+          disabledUserIds={memberUserIds}
+          requireUserId
+        />
+
+        <View style={styles.modalFooter}>
+          <Text variant="caption" tone="muted">
+            {t('messaging.selectedCount', { count: selected.length })}
+          </Text>
+          <Button
+            label={addMembers.isPending ? t('messaging.addingMembers') : t('messaging.addMembersCta')}
+            loading={addMembers.isPending}
+            disabled={selected.length === 0}
+            block
+            onPress={() => addMembers.mutate(selected, { onSuccess: close })}
+          />
+        </View>
+      </Screen>
+    </Modal>
   );
 }
 
@@ -325,6 +440,13 @@ const styles = StyleSheet.create({
   },
   avatarLetter: { color: '#fff', fontWeight: '700' },
   headerTitle: { flex: 1 },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  modalFooter: { gap: spacing.sm, marginTop: spacing.md },
   list: { padding: spacing.md, gap: spacing.xs },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   bubbleGroup: { gap: spacing.xs },

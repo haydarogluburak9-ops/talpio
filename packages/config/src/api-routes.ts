@@ -142,6 +142,7 @@ export const API_ROUTES = {
     profileSkill: (id: string) => `/social/profiles/me/skills/${id}`,
     usernameAvailability: (username: string) =>
       `/social/profiles/availability/${encodeURIComponent(username)}`,
+    profileSearch: '/social/profiles/search',
     profileByUsername: (username: string) => `/social/profiles/${username}`,
     follow: (username: string) => `/social/profiles/${username}/follow`,
     message: (username: string) => `/social/profiles/${username}/message`,
@@ -182,6 +183,7 @@ export const API_ROUTES = {
     profileHighlight: (username: string, highlightId: string) =>
       `/social/profiles/${username}/highlights/${highlightId}`,
     groupConversations: '/social/group-conversations',
+    groupConversationMembers: (id: string) => `/social/group-conversations/${id}/members`,
   },
   notifications: {
     root: '/notifications',

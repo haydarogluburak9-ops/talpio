@@ -76,6 +76,7 @@ export const queryKeys = {
     me: () => ['social', 'me'] as const,
     usernameAvailability: (username: string) => ['social', 'username-availability', username] as const,
     profile: (username: string) => ['social', 'profile', username] as const,
+    profileSearch: (query: string) => ['social', 'profile-search', query] as const,
     followers: (username: string, params?: Record<string, unknown>) =>
       ['social', 'followers', username, params ?? {}] as const,
     following: (username: string, params?: Record<string, unknown>) =>

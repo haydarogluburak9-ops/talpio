@@ -38,7 +38,7 @@ export default function ProviderLayout() {
       <Stack.Screen name="support/[id]" options={{ title: t('support.detailTitle') }} />
       <Stack.Screen name="complaint" options={{ title: t('complaint.createTitle') }} />
       <Stack.Screen name="u/[username]" options={{ title: t('profile.title') }} />
-      <Stack.Screen name="messages/new-group" options={{ title: t('messaging.newGroup') }} />
+      <Stack.Screen name="messages/new" options={{ title: t('messaging.newMessage') }} />
     </Stack>
   );
 }

@@ -3,15 +3,17 @@
 import { MESSAGE } from '@talpio/config';
 import { formatDate, formatTime } from '@talpio/localization';
 import { FilePurpose, MessageType, type Message } from '@talpio/types';
-import { ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import { ArrowLeft, Camera, Mic, SendHorizontal } from 'lucide-react';
+import { Button, ErrorState, ListSkeleton, cn } from '@talpio/ui';
+import { ArrowLeft, Camera, Mic, SendHorizontal, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { apiClient } from '@/lib/api';
 import { t, getLocale } from '@/lib/i18n';
 
+import { PeoplePicker } from './people-picker';
 import {
+  useAddGroupMembers,
   useConversation,
   useMarkConversationRead,
   useSendMessage,
@@ -29,6 +31,7 @@ export function ChatThread({
   const thread = useThread(conversationId);
   const markRead = useMarkConversationRead(conversationId);
   const { mutate: markAsRead } = markRead;
+  const [addMembersOpen, setAddMembersOpen] = useState(false);
 
   useEffect(() => {
     if (conversationId.length > 0) markAsRead();
@@ -48,13 +51,35 @@ export function ChatThread({
 
   const other = conversation.data.participants.find((item) => item.userId !== currentUserId);
   const isClosed = conversation.data.status !== 'ACTIVE';
-  const title = conversation.data.isGroup
+  const isGroup = Boolean(conversation.data.isGroup);
+  const title = isGroup
     ? conversation.data.title || t('messaging.newGroup')
     : (other?.displayName ?? t('messaging.chatTitle'));
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
-      <ChatHeader title={title} avatarUrl={other?.avatarUrl ?? null} />
+      <ChatHeader
+        title={title}
+        avatarUrl={other?.avatarUrl ?? null}
+        subtitle={
+          isGroup
+            ? t('messaging.groupMemberCount', { count: conversation.data.participants.length })
+            : null
+        }
+        onAddMembers={
+          isGroup && !isClosed ? () => setAddMembersOpen((value) => !value) : undefined
+        }
+      />
+
+      {addMembersOpen ? (
+        <div className="shrink-0 border-b border-border/70 px-4 py-3">
+          <AddMembersPanel
+            conversationId={conversationId}
+            memberUserIds={conversation.data.participants.map((item) => item.userId)}
+            onClose={() => setAddMembersOpen(false)}
+          />
+        </div>
+      ) : null}
 
       <MessageScroller messages={thread.data} currentUserId={currentUserId} />
 
@@ -69,7 +94,17 @@ export function ChatThread({
   );
 }
 
-function ChatHeader({ title, avatarUrl }: { title: string; avatarUrl: string | null }) {
+function ChatHeader({
+  title,
+  avatarUrl,
+  subtitle,
+  onAddMembers,
+}: {
+  title: string;
+  avatarUrl: string | null;
+  subtitle?: string | null;
+  onAddMembers?: () => void;
+}) {
   return (
     <header className="flex shrink-0 items-center gap-3 border-b border-border/70 px-3 py-2.5">
       <Link
@@ -92,8 +127,85 @@ function ChatHeader({ title, avatarUrl }: { title: string; avatarUrl: string | n
         </span>
       )}
 
-      <p className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">{title}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-semibold text-foreground">{title}</p>
+        {subtitle ? <p className="truncate text-xs text-foreground-muted">{subtitle}</p> : null}
+      </div>
+
+      {onAddMembers ? (
+        <button
+          type="button"
+          onClick={onAddMembers}
+          className="grid size-9 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-surface-muted"
+          aria-label={t('messaging.addMembers')}
+          title={t('messaging.addMembers')}
+        >
+          <UserPlus className="size-5" aria-hidden />
+        </button>
+      ) : null}
     </header>
+  );
+}
+
+/** Grup sohbetine kişi ekleme paneli; mevcut üyeler listede pasif görünür. */
+function AddMembersPanel({
+  conversationId,
+  memberUserIds,
+  onClose,
+}: {
+  conversationId: string;
+  memberUserIds: string[];
+  onClose: () => void;
+}) {
+  const addMembers = useAddGroupMembers(conversationId);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+
+  return (
+    <div className="flex max-h-80 flex-col gap-3">
+      <p className="shrink-0 text-sm font-semibold text-foreground">
+        {t('messaging.addMembersTitle')}
+      </p>
+
+      <PeoplePicker
+        query={query}
+        onQueryChange={setQuery}
+        onSelect={(profile) => {
+          const userId = profile.userId;
+          if (!userId) return;
+          setSelected((current) =>
+            current.includes(userId)
+              ? current.filter((id) => id !== userId)
+              : [...current, userId],
+          );
+        }}
+        selectedUserIds={selected}
+        disabledUserIds={memberUserIds}
+        requireUserId
+        autoFocus
+      />
+
+      <div className="flex shrink-0 items-center justify-between gap-3">
+        <span className="text-xs text-foreground-muted">
+          {t('messaging.selectedCount', { count: selected.length })}
+        </span>
+        <Button
+          type="button"
+          size="sm"
+          disabled={selected.length === 0 || addMembers.isPending}
+          onClick={() =>
+            addMembers.mutate(selected, {
+              onSuccess: () => {
+                setSelected([]);
+                onClose();
+              },
+            })
+          }
+        >
+          {addMembers.isPending ? t('messaging.addingMembers') : t('messaging.addMembersCta')}
+        </Button>
+      </div>
+    </div>
   );
 }
 

@@ -268,6 +268,17 @@ export function useProfilePosts(username: string) {
   });
 }
 
+/** Kişi arama; iki harften kısa sorgular sunucuya gitmez. */
+export function useSearchProfiles(query: string) {
+  const needle = query.trim();
+  return useQuery({
+    queryKey: queryKeys.social.profileSearch(needle),
+    queryFn: ({ signal }) => apiClient.social.searchProfiles({ q: needle, limit: 20 }, signal),
+    enabled: needle.length >= 2,
+    staleTime: 30_000,
+  });
+}
+
 export function useFollowingList(username: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.social.following(username),
