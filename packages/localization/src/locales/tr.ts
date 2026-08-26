@@ -1361,6 +1361,7 @@ export const tr = {
       'Bu alanlar seçtiğiniz kategoriye göre değişir; satıcıların doğru teklif vermesini sağlar.',
     attributeRequired: 'Bu alan zorunludur.',
     attributeMissing: 'Kategoriye özel zorunlu alanları doldurun.',
+    attributeDatePlaceholder: 'YYYY-AA-GG',
     optionYes: 'Evet',
     optionNo: 'Hayır',
     createFailed: 'Talep oluşturulamadı.',

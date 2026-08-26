@@ -8,11 +8,17 @@ import { FormField } from '@/components/form-field';
 import { OptionPicker } from '@/components/option-picker';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
-import { useCategories } from '@/features/catalog/use-categories';
+import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
+import {
+  CategoryAttributeFields,
+  findMissingAttributes,
+  toSpecificationValues,
+  type AttributeValues,
+} from './category-attribute-fields';
 import { useCreateCommerceRequest } from './use-requests';
 
 const TYPE_KEYS: { value: RequestType; key: string }[] = [
@@ -37,6 +43,8 @@ export function CommerceRequestFormScreen() {
   const [cityId, setCityId] = useState<string | null>(null);
   const districts = useDistricts(cityId);
   const [error, setError] = useState<string | null>(null);
+  const [attributeValues, setAttributeValues] = useState<AttributeValues>({});
+  const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     requestType: RequestType.PRODUCT_SUPPLY as RequestType,
     title: '',
@@ -57,8 +65,13 @@ export function CommerceRequestFormScreen() {
   );
   const subcategories = selectedCategory?.subcategories ?? [];
 
+  const attributeSchema = useCategoryAttributeSchema(form.categoryId || undefined);
+  const attributeFields = attributeSchema.data?.fields ?? [];
+  const attributeSchemaPending = Boolean(form.categoryId) && attributeSchema.isPending;
+
   async function onSubmit() {
     setError(null);
+    setAttributeErrors({});
     if (
       form.title.trim().length < 5 ||
       form.description.trim().length < 10 ||
@@ -68,6 +81,15 @@ export function CommerceRequestFormScreen() {
       !form.deliveryLocation.trim()
     ) {
       setError(t('commerce.requiredFields'));
+      return;
+    }
+
+    const missingAttributes = findMissingAttributes(attributeFields, attributeValues);
+    if (missingAttributes.length > 0) {
+      setAttributeErrors(
+        Object.fromEntries(missingAttributes.map((key) => [key, t('commerce.attributeRequired')])),
+      );
+      setError(t('commerce.attributeMissing'));
       return;
     }
 
@@ -90,6 +112,7 @@ export function CommerceRequestFormScreen() {
           brandPreference: form.brandPreference || undefined,
           quantity: form.quantity || undefined,
           unit: form.unit || undefined,
+          ...toSpecificationValues(attributeFields, attributeValues),
         },
         publish: true,
       });
@@ -119,7 +142,12 @@ export function CommerceRequestFormScreen() {
           name: categoryLabel(item.slug, item.name),
         }))}
         selectedId={form.categoryId || null}
-        onSelect={(id) => setForm((current) => ({ ...current, categoryId: id, subcategoryId: '' }))}
+        onSelect={(id) => {
+          // Alan şeması kategoriye bağlıdır; önceki kategorinin cevapları taşınmaz.
+          setAttributeValues({});
+          setAttributeErrors({});
+          setForm((current) => ({ ...current, categoryId: id, subcategoryId: '' }));
+        }}
         emptyLabel={t('commerce.selectPlaceholder')}
         searchable
       />
@@ -158,6 +186,20 @@ export function CommerceRequestFormScreen() {
         value={form.brandPreference}
         onChangeText={(brandPreference) => setForm((current) => ({ ...current, brandPreference }))}
       />
+      <CategoryAttributeFields
+        fields={attributeFields}
+        values={attributeValues}
+        errors={attributeErrors}
+        onChange={(key, value) => {
+          setAttributeValues((current) => ({ ...current, [key]: value }));
+          setAttributeErrors((current) => {
+            if (!current[key]) return current;
+            const next = { ...current };
+            delete next[key];
+            return next;
+          });
+        }}
+      />
       <OptionPicker
         label={t('commerce.fieldCity')}
         options={(cities.data ?? []).map((item) => ({ id: item.id, name: item.name }))}
@@ -193,6 +235,7 @@ export function CommerceRequestFormScreen() {
       <Button
         label={create.isPending ? t('commerce.submitting') : t('commerce.submit')}
         loading={create.isPending}
+        disabled={categories.isPending || attributeSchemaPending}
         block
         onPress={() => void onSubmit()}
       />

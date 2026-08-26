@@ -1348,6 +1348,7 @@ export const en: Messages = {
       'These fields change with the selected category so sellers can quote accurately.',
     attributeRequired: 'This field is required.',
     attributeMissing: 'Fill in the required category-specific fields.',
+    attributeDatePlaceholder: 'YYYY-MM-DD',
     optionYes: 'Yes',
     optionNo: 'No',
     createFailed: 'Could not create the request.',
