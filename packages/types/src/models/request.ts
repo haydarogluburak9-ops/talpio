@@ -33,6 +33,8 @@ export interface CommerceRequest extends BaseEntity {
   /** listMatched yanıtında doldurulur. */
   matchScore?: number | null;
   matchReasons?: string[] | null;
+  /** publish ve getById (yalnızca alıcı/moderatör) yanıtında doldurulur. */
+  matchCount?: number | null;
 }
 
 export interface RequestMatch {

@@ -15,6 +15,7 @@ import {
   useAcceptRequestOffer,
   useCommerceRequest,
   useMyBusinesses,
+  usePublishCommerceRequest,
   useRequestOffers,
 } from './use-requests';
 
@@ -26,6 +27,7 @@ export function RequestDetail({ id }: { id: string }) {
   const request = useCommerceRequest(id);
   const offers = useRequestOffers(id);
   const accept = useAcceptRequestOffer(id);
+  const publish = usePublishCommerceRequest(id);
   const share = useShareRequestToFeed();
   const viewer = session.data ?? null;
   const isBuyer = Boolean(viewer && request.data && viewer.id === request.data.buyerUserId);
@@ -96,6 +98,16 @@ export function RequestDetail({ id }: { id: string }) {
           </div>
         ) : null}
       </header>
+
+      {isBuyer ? (
+        <DistributionStatus
+          status={row.status}
+          matchCount={row.matchCount ?? null}
+          publishing={publish.isPending}
+          failed={publish.isError}
+          onPublish={() => publish.mutate()}
+        />
+      ) : null}
 
       {canOffer ? (
         <section id="teklif-ver" className="social-panel scroll-mt-24 p-5 sm:p-6">
@@ -236,6 +248,60 @@ export function RequestDetail({ id }: { id: string }) {
         </section>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Talebin dağıtım durumu: yayında mı, kaç işletmeyle eşleşti. Sıfır eşleşme
+ * sessizce boş bırakılmaz; kullanıcıya açıkça söylenir.
+ */
+function DistributionStatus({
+  status,
+  matchCount,
+  publishing,
+  failed,
+  onPublish,
+}: {
+  status: string;
+  matchCount: number | null;
+  publishing: boolean;
+  failed: boolean;
+  onPublish: () => void;
+}) {
+  if (status === 'DRAFT') {
+    return (
+      <section className="social-panel space-y-3 p-5 sm:p-6">
+        <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+          {t('commerce.distributionDraftTitle')}
+        </h2>
+        <p className="text-sm text-foreground-muted">{t('commerce.distributionDraftBody')}</p>
+        <Button type="button" size="sm" disabled={publishing} onClick={onPublish}>
+          {publishing ? t('commerce.distributionPublishing') : t('commerce.distributionPublish')}
+        </Button>
+        {failed ? (
+          <p role="alert" className="text-sm text-danger-on-surface">
+            {t('commerce.distributionPublishFailed')}
+          </p>
+        ) : null}
+      </section>
+    );
+  }
+
+  if (matchCount == null) return null;
+
+  return (
+    <section className="social-panel space-y-2 p-5 sm:p-6">
+      <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+        {matchCount > 0
+          ? t('commerce.distributionMatchedTitle')
+          : t('commerce.distributionNoMatchTitle')}
+      </h2>
+      <p className="text-sm text-foreground-muted">
+        {matchCount > 0
+          ? t('commerce.distributionMatchedBody', { count: matchCount })
+          : t('commerce.distributionNoMatchBody')}
+      </p>
+    </section>
   );
 }
 

@@ -1358,6 +1358,17 @@ export const tr = {
     delivery: 'Teslim',
     location: 'Konum',
     badge: 'Rozet',
+    distributionMatchedTitle: 'Talebiniz yayında',
+    distributionMatchedBody:
+      '{count} işletmeyle eşleşti ve hepsine bildirim gönderildi. Gelen teklifler bu sayfada listelenir.',
+    distributionNoMatchTitle: 'Talebiniz yayında, henüz eşleşen işletme yok',
+    distributionNoMatchBody:
+      'Kategori ve bölge için şu an uygun bir işletme bulunamadı. Talebiniz açık kalıyor; uygun bir işletme katıldığında eşleşir ve bildirim alırsınız.',
+    distributionDraftTitle: 'Talebiniz henüz yayında değil',
+    distributionDraftBody: 'Yayınlanmadığı sürece işletmelere ulaşmaz ve teklif alamazsınız.',
+    distributionPublish: 'Şimdi yayınla',
+    distributionPublishing: 'Yayınlanıyor…',
+    distributionPublishFailed: 'Talep yayınlanamadı, tekrar deneyin.',
   },
   legal: {
     privacyTitle: 'Gizlilik politikası',

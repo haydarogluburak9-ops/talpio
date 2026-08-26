@@ -89,12 +89,15 @@ describe('SocialBridgeService', () => {
     const prisma = {
       post: { findFirst: jest.fn().mockResolvedValue(postRow()) },
       commerceRequest: { create: commerceCreate },
+      businessCategory: { findFirst: jest.fn() },
     };
     const requests = {
       create: jest.fn().mockResolvedValue({
         id: REQUEST_ID,
         title: '5W-30 fırsat',
         buyerUserId: USER_ID,
+        status: 'MATCHING',
+        matchCount: 4,
       }),
       getById: jest.fn(),
     };
@@ -118,13 +121,151 @@ describe('SocialBridgeService', () => {
         requestType: 'PRODUCT_SUPPLY',
         title: '5W-30 fırsat',
         budgetMinor: 99_00,
-        publish: false,
         specifications: expect.objectContaining({ sourcePostId: POST_ID, brand: 'Shell' }),
       }),
     );
     expect(commerceCreate).not.toHaveBeenCalled();
     expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'social.post.create_request', entityId: REQUEST_ID }),
+    );
+  });
+
+  it('akıştan oluşturulan talebi varsayılan olarak yayınlar', async () => {
+    const prisma = {
+      post: { findFirst: jest.fn().mockResolvedValue(postRow()) },
+      commerceRequest: { create: jest.fn() },
+      businessCategory: { findFirst: jest.fn() },
+    };
+    const requests = {
+      create: jest.fn().mockResolvedValue({
+        id: REQUEST_ID,
+        title: '5W-30 fırsat',
+        buyerUserId: USER_ID,
+        status: 'MATCHING',
+        matchCount: 3,
+      }),
+      getById: jest.fn(),
+    };
+    const audit = { record: jest.fn().mockResolvedValue(undefined) };
+
+    const service = new SocialBridgeService(
+      prisma as unknown as PrismaService,
+      { fileBaseUrl: 'http://x' } as unknown as AppConfigService,
+      {} as PostsService,
+      {} as ProfilesService,
+      requests as unknown as RequestsService,
+      audit as unknown as AuditLogService,
+    );
+
+    const created = await service.createRequestFromPost(user, POST_ID);
+
+    expect(requests.create).toHaveBeenCalledWith(user, expect.objectContaining({ publish: true }));
+    expect(created.status).toBe('MATCHING');
+    expect(created.matchCount).toBe(3);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        changes: expect.objectContaining({ publish: true, matchCount: 3 }),
+      }),
+    );
+  });
+
+  it('publish override false ile taslak bırakılabilir', async () => {
+    const prisma = {
+      post: { findFirst: jest.fn().mockResolvedValue(postRow()) },
+      commerceRequest: { create: jest.fn() },
+      businessCategory: { findFirst: jest.fn() },
+    };
+    const requests = {
+      create: jest.fn().mockResolvedValue({ id: REQUEST_ID, buyerUserId: USER_ID }),
+      getById: jest.fn(),
+    };
+
+    const service = new SocialBridgeService(
+      prisma as unknown as PrismaService,
+      { fileBaseUrl: 'http://x' } as unknown as AppConfigService,
+      {} as PostsService,
+      {} as ProfilesService,
+      requests as unknown as RequestsService,
+      { record: jest.fn() } as unknown as AuditLogService,
+    );
+
+    await service.createRequestFromPost(user, POST_ID, { publish: false });
+
+    expect(requests.create).toHaveBeenCalledWith(user, expect.objectContaining({ publish: false }));
+  });
+
+  it('gönderide kategori yoksa yazar işletmenin kategorisine düşer', async () => {
+    const row = postRow();
+    const prisma = {
+      post: {
+        findFirst: jest.fn().mockResolvedValue({
+          ...row,
+          author: { ...row.author, kind: 'BUSINESS', businessId: 'biz-1' },
+        }),
+      },
+      commerceRequest: { create: jest.fn() },
+      businessCategory: {
+        findFirst: jest.fn().mockResolvedValue({ categoryId: 'cat-9' }),
+      },
+    };
+    const requests = {
+      create: jest.fn().mockResolvedValue({ id: REQUEST_ID, buyerUserId: USER_ID, matchCount: 1 }),
+      getById: jest.fn(),
+    };
+
+    const service = new SocialBridgeService(
+      prisma as unknown as PrismaService,
+      { fileBaseUrl: 'http://x' } as unknown as AppConfigService,
+      {} as PostsService,
+      {} as ProfilesService,
+      requests as unknown as RequestsService,
+      { record: jest.fn() } as unknown as AuditLogService,
+    );
+
+    await service.createRequestFromPost(user, POST_ID);
+
+    expect(prisma.businessCategory.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { businessId: 'biz-1' } }),
+    );
+    expect(requests.create).toHaveBeenCalledWith(
+      user,
+      expect.objectContaining({ categoryId: 'cat-9', publish: true }),
+    );
+  });
+
+  it('gönderi kategorisi varsa işletme kategorisine bakmaz', async () => {
+    const row = postRow();
+    const prisma = {
+      post: {
+        findFirst: jest.fn().mockResolvedValue({
+          ...row,
+          author: { ...row.author, kind: 'BUSINESS', businessId: 'biz-1' },
+          dealMetadata: { ...row.dealMetadata, categoryId: 'cat-1' },
+        }),
+      },
+      commerceRequest: { create: jest.fn() },
+      businessCategory: { findFirst: jest.fn() },
+    };
+    const requests = {
+      create: jest.fn().mockResolvedValue({ id: REQUEST_ID, buyerUserId: USER_ID }),
+      getById: jest.fn(),
+    };
+
+    const service = new SocialBridgeService(
+      prisma as unknown as PrismaService,
+      { fileBaseUrl: 'http://x' } as unknown as AppConfigService,
+      {} as PostsService,
+      {} as ProfilesService,
+      requests as unknown as RequestsService,
+      { record: jest.fn() } as unknown as AuditLogService,
+    );
+
+    await service.createRequestFromPost(user, POST_ID);
+
+    expect(prisma.businessCategory.findFirst).not.toHaveBeenCalled();
+    expect(requests.create).toHaveBeenCalledWith(
+      user,
+      expect.objectContaining({ categoryId: 'cat-1' }),
     );
   });
 

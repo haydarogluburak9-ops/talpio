@@ -64,17 +64,23 @@ export class SocialBridgeService {
         ? RequestType.SERVICE
         : RequestType.PRODUCT_SUPPLY;
 
+    const categoryId = deal?.categoryId ?? (await this.authorBusinessCategoryId(post.author));
+
     const dto: CreateCommerceRequestDto = {
       requestType,
       title,
       description,
-      categoryId: deal?.categoryId ?? undefined,
+      categoryId: categoryId ?? undefined,
       subcategoryId: deal?.subcategoryId ?? undefined,
       quantity: deal?.minQuantity ?? undefined,
       unit: deal?.unit ?? undefined,
       budgetMinor: deal?.dealPriceMinor ?? deal?.listPriceMinor ?? undefined,
       source: RequestSource.WEB,
-      publish: overrides.publish ?? false,
+      /**
+       * Akıştan gelen talep DRAFT kalırsa eşleşme ve bildirim üretmez; kullanıcı
+       * "Teklif iste" dediğinde hiçbir şey olmaz. Bu yüzden varsayılan yayındır.
+       */
+      publish: overrides.publish ?? true,
       specifications: {
         sourcePostId: post.id,
         sourceAuthorProfileId: post.authorProfileId,
@@ -94,10 +100,34 @@ export class SocialBridgeService {
       action: 'social.post.create_request',
       entityType: 'CommerceRequest',
       entityId: created.id,
-      changes: { postId: post.id, requestId: created.id, publish: dto.publish ?? false },
+      changes: {
+        postId: post.id,
+        requestId: created.id,
+        publish: dto.publish ?? false,
+        matchCount: created.matchCount ?? null,
+      },
     });
 
     return created;
+  }
+
+  /**
+   * Gönderide kategori yoksa yazar işletmenin kategorisine düşer. Kategorisiz
+   * yayınlanan talep deterministik eşleştiricide hiçbir hard filter'a takılmaz,
+   * yani platformdaki tüm aktif işletmelere bildirim gider.
+   */
+  private async authorBusinessCategoryId(
+    author: { businessId: string | null } | null,
+  ): Promise<string | null> {
+    const businessId = author?.businessId;
+    if (!businessId) return null;
+
+    const row = await this.prisma.businessCategory.findFirst({
+      where: { businessId },
+      orderBy: { createdAt: 'asc' },
+      select: { categoryId: true },
+    });
+    return row?.categoryId ?? null;
   }
 
   /**

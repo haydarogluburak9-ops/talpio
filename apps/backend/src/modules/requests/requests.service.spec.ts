@@ -72,7 +72,140 @@ describe('RequestsService tenant isolation', () => {
   const requestOrderLink = prisma.requestOrderLink as { create: jest.Mock };
   const user = prisma.user as { findUnique: jest.Mock };
 
+  const business = prisma.business as { findMany: jest.Mock };
+  const userBlock = prisma.userBlock as { findMany: jest.Mock };
+  const requestMatchMocks = prisma.requestMatch as {
+    deleteMany: jest.Mock;
+    upsert: jest.Mock;
+    groupBy: jest.Mock;
+  };
+  const requestOfferMocks = prisma.requestOffer as { groupBy: jest.Mock };
+  const commerceRequestMocks = prisma.commerceRequest as { update: jest.Mock };
+
+  const buyer = {
+    id: 'buyer-a',
+    role: UserRole.CUSTOMER,
+    sessionId: 's',
+    permissionCodes: [Permission.REQUEST_UPDATE_OWN],
+    businessIds: [],
+  };
+
+  function draftRow(overrides: Record<string, unknown> = {}) {
+    const now = new Date('2026-08-01T10:00:00.000Z');
+    return {
+      id: 'req-1',
+      requestType: 'PRODUCT_SUPPLY',
+      title: 'Motor yağı tedariki',
+      description: 'Akıştan oluşturulan talep açıklaması',
+      categoryId: 'cat-1',
+      subcategoryId: null,
+      quantity: null,
+      unit: null,
+      specifications: { sourcePostId: 'post-1' },
+      budgetMinor: 9900,
+      currency: 'TRY',
+      deliveryCityId: null,
+      deliveryDistrictId: null,
+      deliveryAddressText: null,
+      deliveryDeadline: null,
+      visibility: 'PUBLIC_MATCHED',
+      buyerUserId: 'buyer-a',
+      businessId: null,
+      status: RequestStatus.DRAFT,
+      source: 'WEB',
+      aiClassification: null,
+      aiConfidence: null,
+      publishedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      category: { slug: 'motor-yagi', name: 'Motor yağı' },
+      deliveryCity: null,
+      ...overrides,
+    };
+  }
+
+  function matcherBusiness(overrides: Record<string, unknown> = {}) {
+    return {
+      id: 'biz-1',
+      isActive: true,
+      verificationStatus: 'VERIFIED',
+      minOrderQuantity: null,
+      maxOrderQuantity: null,
+      categories: [{ categoryId: 'cat-1' }],
+      serviceAreas: [],
+      memberships: [{ userId: 'seller-1', user: { lastActiveAt: null } }],
+      providerProfile: null,
+      ...overrides,
+    };
+  }
+
+  function primePublish(businesses: unknown[]) {
+    userBlock.findMany.mockResolvedValue([]);
+    requestOfferMocks.groupBy.mockResolvedValue([]);
+    requestMatchMocks.groupBy.mockResolvedValue([]);
+    requestMatchMocks.deleteMany.mockResolvedValue({ count: 0 });
+    requestMatchMocks.upsert.mockResolvedValue({});
+    business.findMany.mockResolvedValue(businesses);
+    outbox.write.mockResolvedValue(undefined);
+    audit.record.mockResolvedValue(undefined);
+  }
+
   beforeEach(() => jest.clearAllMocks());
+
+  it('publish eşleşen işletmenin üyelerine outbox olayı yazar ve matchCount döner', async () => {
+    const row = draftRow();
+    commerceRequest.findFirst.mockResolvedValue(row);
+    primePublish([matcherBusiness(), matcherBusiness({ id: 'biz-2' })]);
+    commerceRequestMocks.update.mockResolvedValue({
+      ...row,
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    const published = await service.publish(buyer, 'req-1');
+
+    expect(published.status).toBe(RequestStatus.MATCHING);
+    expect(published.matchCount).toBe(2);
+    expect(requestMatchMocks.upsert).toHaveBeenCalledTimes(2);
+    expect(outbox.write).toHaveBeenCalledTimes(1);
+    expect(outbox.write).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'request.matched',
+        idempotencyKey: 'request.matched:req-1:seller-1',
+      }),
+    );
+  });
+
+  it('publish sıfır eşleşmede talebi yayında bırakır, matchCount 0 döner', async () => {
+    const row = draftRow();
+    commerceRequest.findFirst.mockResolvedValue(row);
+    primePublish([matcherBusiness({ categories: [{ categoryId: 'cat-other' }] })]);
+    commerceRequestMocks.update.mockResolvedValue({
+      ...row,
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    const published = await service.publish(buyer, 'req-1');
+
+    expect(published.status).toBe(RequestStatus.MATCHING);
+    expect(published.matchCount).toBe(0);
+    expect(requestMatchMocks.upsert).not.toHaveBeenCalled();
+    expect(outbox.write).not.toHaveBeenCalled();
+  });
+
+  it('getById alıcıya eşleşme sayısını döner', async () => {
+    commerceRequest.findFirst.mockResolvedValue({
+      ...draftRow({ status: RequestStatus.MATCHING }),
+      _count: { matches: 5 },
+    });
+
+    const found = await service.getById(buyer, 'req-1');
+
+    expect(found.matchCount).toBe(5);
+  });
 
   it('alıcı A, alıcı B talebini göremez', async () => {
     commerceRequest.findFirst.mockResolvedValue({

@@ -37,6 +37,7 @@ export function toCommerceRequest(row: {
   deletedAt: Date | null;
   matchScore?: number | null;
   matchReasons?: string[] | null;
+  matchCount?: number | null;
 }): CommerceRequest {
   return {
     id: row.id,
@@ -67,6 +68,7 @@ export function toCommerceRequest(row: {
     deletedAt: row.deletedAt?.toISOString() ?? null,
     matchScore: row.matchScore ?? null,
     matchReasons: row.matchReasons ?? null,
+    matchCount: row.matchCount ?? null,
   };
 }
 

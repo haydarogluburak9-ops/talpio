@@ -166,12 +166,14 @@ export class RequestsService {
   async getById(user: AuthenticatedUser, id: string): Promise<CommerceRequest> {
     const row = await this.prisma.commerceRequest.findFirst({
       where: { id, deletedAt: null },
+      include: { _count: { select: { matches: true } } },
     });
     if (!row) throw AppException.notFound('Talep', id);
 
     const canModerate = user.permissionCodes?.includes(Permission.ADMIN_REQUEST_MODERATE);
     if (row.buyerUserId === user.id || canModerate) {
-      return toCommerceRequest(row);
+      /** Dağıtım kapsamı yalnızca alıcıya/moderatöre gösterilir. */
+      return toCommerceRequest({ ...row, matchCount: row._count?.matches ?? null });
     }
 
     const businessIds = user.businessIds ?? [];
@@ -321,7 +323,7 @@ export class RequestsService {
       changes: { matchCount: matches.length, classification },
     });
 
-    return toCommerceRequest(updated);
+    return toCommerceRequest({ ...updated, matchCount: matches.length });
   }
 
   private async loadMatcherBusinesses(buyerUserId: string): Promise<{

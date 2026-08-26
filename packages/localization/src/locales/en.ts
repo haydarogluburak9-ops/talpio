@@ -1345,6 +1345,18 @@ export const en: Messages = {
     delivery: 'Delivery',
     location: 'Location',
     badge: 'Badge',
+    distributionMatchedTitle: 'Your request is live',
+    distributionMatchedBody:
+      'It matched {count} businesses and all of them were notified. Incoming offers are listed on this page.',
+    distributionNoMatchTitle: 'Your request is live, but no business matched yet',
+    distributionNoMatchBody:
+      'No suitable business was found for this category and area right now. The request stays open; when a matching business joins you will be notified.',
+    distributionDraftTitle: 'Your request is not published yet',
+    distributionDraftBody:
+      'Until it is published it does not reach any business and cannot receive offers.',
+    distributionPublish: 'Publish now',
+    distributionPublishing: 'Publishing…',
+    distributionPublishFailed: 'Could not publish the request. Please try again.',
   },
   legal: {
     privacyTitle: 'Privacy policy',

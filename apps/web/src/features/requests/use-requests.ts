@@ -54,6 +54,17 @@ export function useCreateCommerceRequest() {
   });
 }
 
+export function usePublishCommerceRequest(requestId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiClient.requests.publish(requestId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.requests.all() });
+    },
+  });
+}
+
 export function useCreateRequestOffer(requestId: string) {
   const queryClient = useQueryClient();
 
