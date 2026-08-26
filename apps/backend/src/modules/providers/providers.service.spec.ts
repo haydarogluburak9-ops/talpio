@@ -59,7 +59,7 @@ function profileRow(overrides: Record<string, unknown> = {}) {
 }
 
 type PrismaMock = {
-  providerProfile: { findFirst: jest.Mock; update: jest.Mock };
+  providerProfile: { findFirst: jest.Mock; create: jest.Mock; update: jest.Mock };
   providerService: { create: jest.Mock; update: jest.Mock; deleteMany: jest.Mock };
   providerServiceArea: { deleteMany: jest.Mock; createMany: jest.Mock };
   serviceCategory: { findMany: jest.Mock };
@@ -72,6 +72,7 @@ function createPrismaMock(): PrismaMock {
   const prisma: PrismaMock = {
     providerProfile: {
       findFirst: jest.fn().mockResolvedValue(profileRow()),
+      create: jest.fn().mockResolvedValue(profileRow()),
       update: jest.fn().mockResolvedValue(profileRow()),
     },
     providerService: {
@@ -129,7 +130,21 @@ describe('ProvidersService', () => {
       expect(result.cancellationRate).toBe(0);
     });
 
-    it('profili olmayan kullanıcıyı reddeder', async () => {
+    it('profili olmayan kullanıcıya boş profil açar', async () => {
+      const prisma = createPrismaMock();
+      prisma.providerProfile.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(profileRow());
+
+      const result = await createService(prisma).getMe(provider);
+
+      expect(prisma.providerProfile.create).toHaveBeenCalledWith({
+        data: { userId: provider.id },
+      });
+      expect(result.id).toBe(PROFILE_ID);
+    });
+
+    it('profil açıldıktan sonra da okunamıyorsa reddeder', async () => {
       const prisma = createPrismaMock();
       prisma.providerProfile.findFirst.mockResolvedValue(null);
 

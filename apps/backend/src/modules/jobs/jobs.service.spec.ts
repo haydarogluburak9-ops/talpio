@@ -201,8 +201,19 @@ describe('JobsService', () => {
   });
 
   describe('getById yetkilendirmesi', () => {
-    it('başkasının talebini müşteriye göstermez', async () => {
+    it('havuzdaki açık talebi başka bir müşteriye maskeli gösterir', async () => {
+      // Havuz alıcı/satıcı ayrımı yapmaz: açık talebi herkes görebilir, ama
+      // teklif verilene kadar açık adres kimseye gitmez.
       prisma.jobRequest.findFirst.mockResolvedValue(jobRow());
+
+      const result = await service.getById(otherCustomer, jobRow().id);
+
+      expect(result.address.isFullyVisible).toBe(false);
+      expect(result.address.addressLine).toBeUndefined();
+    });
+
+    it('teklife kapalı talebi ilgisiz müşteriye göstermez', async () => {
+      prisma.jobRequest.findFirst.mockResolvedValue(jobRow({ status: JobRequestStatus.COMPLETED }));
 
       await expect(
         codeOfRejection(() => service.getById(otherCustomer, jobRow().id)),

@@ -522,10 +522,22 @@ describe('OffersService', () => {
         ...offerRow(),
         jobRequest: { customerId: CUSTOMER_ID },
       });
+      prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(codeOfRejection(() => service.getById(otherCustomer, OFFER_ID))).resolves.toBe(
         'FORBIDDEN_RESOURCE',
       );
+    });
+
+    it('teklifi veren satıcıya gösterir', async () => {
+      prisma.offer.findFirst.mockResolvedValue({
+        ...offerRow(),
+        jobRequest: { customerId: CUSTOMER_ID },
+      });
+
+      const result = await service.getById(provider, OFFER_ID);
+
+      expect(result.id).toBe(OFFER_ID);
     });
 
     it('olmayan teklif için NOT_FOUND döner', async () => {

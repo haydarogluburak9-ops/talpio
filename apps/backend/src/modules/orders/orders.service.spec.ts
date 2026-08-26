@@ -207,6 +207,14 @@ function firstCallArg<T>(mock: jest.Mock): T {
   return mock.mock.calls[0]?.[0] as T;
 }
 
+/**
+ * Taraf süzgeci tek bir `OR` dalında toplanır: aynı kişi hem müşteri hem satıcı
+ * olabildiği için sorgu iki tarafı da kapsar.
+ */
+function scopeOf(mock: jest.Mock): unknown {
+  return firstCallArg<{ where: { OR?: unknown } }>(mock).where.OR;
+}
+
 type OrderUpdateData = {
   status: OrderStatus;
   startedAt?: Date;
@@ -549,28 +557,30 @@ describe('OrdersService', () => {
   });
 
   describe('listeleme ve görüntüleme', () => {
-    it('müşteriye yalnızca kendi siparişlerini sorgular', async () => {
+    it('satıcı profili olmayan müşteriye yalnızca kendi siparişlerini sorgular', async () => {
+      prisma.providerProfile.findFirst.mockResolvedValue(null);
+
       await service.listMine(customer, listQuery());
 
-      const { where } = firstCallArg<{ where: { customerId?: string } }>(prisma.order.findMany);
-      expect(where.customerId).toBe(CUSTOMER_ID);
+      expect(scopeOf(prisma.order.findMany)).toEqual([{ customerId: CUSTOMER_ID }]);
     });
 
-    it('satıcıya üstlendiği işleri sorgular', async () => {
+    it('satıcıya hem üstlendiği hem verdiği siparişleri sorgular', async () => {
       await service.listMine(provider, listQuery());
 
-      const { where } = firstCallArg<{ where: { providerProfileId?: string } }>(
-        prisma.order.findMany,
-      );
-      expect(where.providerProfileId).toBe(PROFILE_ID);
+      expect(scopeOf(prisma.order.findMany)).toEqual([
+        { customerId: PROVIDER_USER_ID },
+        { providerProfileId: PROFILE_ID },
+      ]);
     });
 
     it('personele taraf süzgeci uygulamaz', async () => {
       await service.listMine(admin, listQuery());
 
       const { where } = firstCallArg<{
-        where: { customerId?: string; providerProfileId?: string };
+        where: { OR?: unknown; customerId?: string; providerProfileId?: string };
       }>(prisma.order.findMany);
+      expect(where.OR).toBeUndefined();
       expect(where.customerId).toBeUndefined();
       expect(where.providerProfileId).toBeUndefined();
     });

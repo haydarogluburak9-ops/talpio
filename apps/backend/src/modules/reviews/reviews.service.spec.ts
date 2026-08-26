@@ -162,6 +162,14 @@ function firstCallArg<T>(mock: jest.Mock): T {
   return mock.mock.calls[0]?.[0] as T;
 }
 
+/**
+ * Taraf süzgeci tek bir `OR` dalında toplanır: aynı kişi hem müşteri hem satıcı
+ * olabildiği için sorgu iki tarafı da kapsar.
+ */
+function scopeOf(mock: jest.Mock): unknown {
+  return firstCallArg<{ where: { OR?: unknown } }>(mock).where.OR;
+}
+
 async function codeOfRejection(run: () => Promise<unknown>): Promise<string> {
   try {
     await run();
@@ -356,28 +364,30 @@ describe('ReviewsService', () => {
   });
 
   describe('listeleme ve görüntüleme', () => {
-    it('müşteriye yalnızca kendi yazdıklarını sorgular', async () => {
+    it('satıcı profili olmayan müşteriye yalnızca kendi yazdıklarını sorgular', async () => {
+      prisma.providerProfile.findFirst.mockResolvedValue(null);
+
       await service.listMine(customer, listQuery());
 
-      const { where } = firstCallArg<{ where: { customerId?: string } }>(prisma.review.findMany);
-      expect(where.customerId).toBe(CUSTOMER_ID);
+      expect(scopeOf(prisma.review.findMany)).toEqual([{ customerId: CUSTOMER_ID }]);
     });
 
-    it('satıcıya aldığı yorumları sorgular', async () => {
+    it('satıcıya hem aldığı hem yazdığı yorumları sorgular', async () => {
       await service.listMine(provider, listQuery());
 
-      const { where } = firstCallArg<{ where: { providerProfileId?: string } }>(
-        prisma.review.findMany,
-      );
-      expect(where.providerProfileId).toBe(PROFILE_ID);
+      expect(scopeOf(prisma.review.findMany)).toEqual([
+        { customerId: PROVIDER_USER_ID },
+        { providerProfileId: PROFILE_ID },
+      ]);
     });
 
     it('personele taraf süzgeci uygulamaz', async () => {
       await service.listMine(admin, listQuery());
 
       const { where } = firstCallArg<{
-        where: { customerId?: string; providerProfileId?: string };
+        where: { OR?: unknown; customerId?: string; providerProfileId?: string };
       }>(prisma.review.findMany);
+      expect(where.OR).toBeUndefined();
       expect(where.customerId).toBeUndefined();
       expect(where.providerProfileId).toBeUndefined();
     });
@@ -405,10 +415,19 @@ describe('ReviewsService', () => {
 
     it('gizlenmiş yorumu ilgisiz kullanıcıya göstermez', async () => {
       prisma.review.findFirst.mockResolvedValue(reviewRow({ status: ReviewStatus.HIDDEN }));
+      prisma.providerProfile.findFirst.mockResolvedValue(null);
 
       await expect(codeOfRejection(() => service.getById(otherCustomer, REVIEW_ID))).resolves.toBe(
         'FORBIDDEN_RESOURCE',
       );
+    });
+
+    it('gizlenmiş yorumu aldığı satıcıya gösterir', async () => {
+      prisma.review.findFirst.mockResolvedValue(reviewRow({ status: ReviewStatus.HIDDEN }));
+
+      const review = await service.getById(provider, REVIEW_ID);
+
+      expect(review.id).toBe(REVIEW_ID);
     });
 
     it('gizlenmiş yorumu yazarına gösterir', async () => {
