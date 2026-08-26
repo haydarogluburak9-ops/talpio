@@ -80,15 +80,27 @@ fi
 log "Docker image build (15-30 dk sürebilir)"
 docker compose --env-file .env -f docker-compose.prod.yml build
 
+# `docker compose run` stdin'i tüketir; script `curl | bash` ile çalıştığında
+# kalan satırları da yutar ve deploy migrate adımından sonra sessizce biter.
+# Bu yüzden her `run` çağrısına `< /dev/null` verilir.
 log "Veritabanı migrate (backend başlamadan önce)"
-docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend npx prisma migrate deploy
+docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend npx prisma migrate deploy < /dev/null
 
 log "Stack başlatılıyor"
 docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate web admin backend worker
 
+# Çalışma imajı yalnızca `dist` taşır, ama seed `src/generated` ve
+# `src/modules/social/demo-story-refresh` yollarını TypeScript kaynağı olarak
+# import eder. Kaynakları host'taki checkout'tan bağlıyoruz; `tsconfig.json`
+# ise `@/*` alias'ını çözmek için gerekiyor. `prisma generate` bağlama yüzünden
+# root'a ait olan `src/` içine yazdığı için bu tek kullanımlık konteyner
+# root olarak çalışır.
 log "Seed"
-docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps backend sh -c \
-  'cd /app/apps/backend && npx prisma generate && npx --yes tsx prisma/seed/index.ts'
+docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps --user root \
+  -v "$INSTALL_DIR/apps/backend/src/modules:/app/apps/backend/src/modules:ro" \
+  -v "$INSTALL_DIR/apps/backend/tsconfig.json:/app/apps/backend/tsconfig.json:ro" \
+  backend sh -c \
+  'cd /app/apps/backend && npx prisma generate && npx --yes tsx prisma/seed/index.ts' < /dev/null
 
 log "Sağlık kontrolü"
 sleep 10
