@@ -3,6 +3,7 @@ export * from './format';
 export * from './status-labels';
 export * from './notifications';
 export * from './category-label';
+export * from './localized-text';
 export { tr } from './locales/tr';
 export { en } from './locales/en';
 export { de } from './locales/de';

@@ -1,9 +1,10 @@
 'use client';
 
+import { resolveLocalizedText, resolveOptionLabel } from '@talpio/localization';
 import type { AttributeFieldDefinition } from '@talpio/types';
 import { Field, Input, Select } from '@talpio/ui';
 
-import { t } from '@/lib/i18n';
+import { getLocale, t } from '@/lib/i18n';
 
 /**
  * Kategoriye özel alanların form durumu. Denetimli girdiler tek tip olsun diye
@@ -11,8 +12,14 @@ import { t } from '@/lib/i18n';
  */
 export type AttributeValues = Record<string, string>;
 
-function labelFor(field: AttributeFieldDefinition): string {
-  return field.unit ? `${field.label} (${field.unit})` : field.label;
+/**
+ * Şema metinleri veritabanından çok dilli gelir; ekranda gösterilecek dil
+ * burada seçilir. Saklanan enum değerleri bundan etkilenmez.
+ */
+function labelFor(field: AttributeFieldDefinition, locale: string): string {
+  const label = resolveLocalizedText(field.label, locale);
+  const unit = resolveLocalizedText(field.unit, locale);
+  return unit ? `${label} (${unit})` : label;
 }
 
 /** Doldurulmamış zorunlu alanların anahtarları. */
@@ -62,11 +69,13 @@ interface ControlProps {
 function AttributeControl({
   field,
   value,
+  locale,
   controlProps,
   onChange,
 }: {
   field: AttributeFieldDefinition;
   value: string;
+  locale: string;
   controlProps: ControlProps;
   onChange: (value: string) => void;
 }) {
@@ -75,8 +84,8 @@ function AttributeControl({
       <Select {...controlProps} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{t('commerce.selectPlaceholder')}</option>
         {(field.options ?? []).map((option) => (
-          <option key={option} value={option}>
-            {option}
+          <option key={option.value} value={option.value}>
+            {resolveOptionLabel(option, locale)}
           </option>
         ))}
       </Select>
@@ -131,6 +140,8 @@ export function CategoryAttributeFields({
   errors: Record<string, string>;
   onChange: (key: string, value: string) => void;
 }) {
+  const locale = getLocale();
+
   if (fields.length === 0) return null;
 
   return (
@@ -143,24 +154,29 @@ export function CategoryAttributeFields({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {fields.map((field) => (
-          <Field
-            key={field.key}
-            label={labelFor(field)}
-            required={field.required}
-            {...(field.description ? { hint: field.description } : {})}
-            {...(errors[field.key] ? { error: errors[field.key] } : {})}
-          >
-            {(controlProps) => (
-              <AttributeControl
-                field={field}
-                value={values[field.key] ?? ''}
-                controlProps={controlProps}
-                onChange={(next) => onChange(field.key, next)}
-              />
-            )}
-          </Field>
-        ))}
+        {fields.map((field) => {
+          const hint = resolveLocalizedText(field.description, locale);
+
+          return (
+            <Field
+              key={field.key}
+              label={labelFor(field, locale)}
+              required={field.required}
+              {...(hint ? { hint } : {})}
+              {...(errors[field.key] ? { error: errors[field.key] } : {})}
+            >
+              {(controlProps) => (
+                <AttributeControl
+                  field={field}
+                  value={values[field.key] ?? ''}
+                  locale={locale}
+                  controlProps={controlProps}
+                  onChange={(next) => onChange(field.key, next)}
+                />
+              )}
+            </Field>
+          );
+        })}
       </div>
     </section>
   );

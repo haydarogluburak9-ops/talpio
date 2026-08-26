@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type {
   AttributeFieldDefinition,
+  AttributeFieldOption,
   AttributeFieldType,
   CategoryAttributeSchema,
+  LocalizedText,
   ServiceCategory,
   ServiceSubcategory,
 } from '@talpio/types';
@@ -131,6 +133,9 @@ export class CatalogService {
   /**
    * `schema` sütunu şemasız JSON'dur; admin veya seed hatalı yazdığında form
    * çökmesin diye alanlar tek tek doğrulanır ve tanınmayanlar elenir.
+   *
+   * Metinler hem düz string hem `{ tr, en }` biçiminde gelebilir; düz string
+   * eski satırların biçimidir ve her dilde aynı metin anlamına gelir.
    */
   private parseAttributeFields(schema: unknown): AttributeFieldDefinition[] {
     if (typeof schema !== 'object' || schema === null) return [];
@@ -142,32 +147,77 @@ export class CatalogService {
     for (const entry of raw) {
       if (typeof entry !== 'object' || entry === null) continue;
       const candidate = entry as Record<string, unknown>;
-      const { key, label, type } = candidate;
+      const { key, type } = candidate;
 
       if (typeof key !== 'string' || key.length === 0) continue;
-      if (typeof label !== 'string' || label.length === 0) continue;
+      const label = this.parseLocalizedText(candidate.label);
+      if (label === undefined) continue;
       if (typeof type !== 'string' || !ATTRIBUTE_FIELD_TYPES.includes(type as AttributeFieldType)) {
         continue;
       }
 
-      const options = Array.isArray(candidate.options)
-        ? candidate.options.filter((option): option is string => typeof option === 'string')
-        : undefined;
+      const options = this.parseOptions(candidate.options);
+      const unit = this.parseLocalizedText(candidate.unit);
+      const description = this.parseLocalizedText(candidate.description);
 
       fields.push({
         key,
         label,
         type: type as AttributeFieldType,
         ...(candidate.required === true ? { required: true } : {}),
-        ...(options && options.length > 0 ? { options } : {}),
-        ...(typeof candidate.unit === 'string' ? { unit: candidate.unit } : {}),
-        ...(typeof candidate.description === 'string'
-          ? { description: candidate.description }
-          : {}),
+        ...(options.length > 0 ? { options } : {}),
+        ...(unit !== undefined ? { unit } : {}),
+        ...(description !== undefined ? { description } : {}),
       });
     }
 
     return fields;
+  }
+
+  /**
+   * Görünen metni doğrular. Düz string olduğu gibi kabul edilir; sözlükte
+   * string olmayan ve boş diller atılır, geriye hiç dil kalmazsa metin
+   * kullanılamaz sayılır (`undefined`).
+   */
+  private parseLocalizedText(value: unknown): LocalizedText | undefined {
+    if (typeof value === 'string') return value.length > 0 ? value : undefined;
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+
+    const translations: Record<string, string> = {};
+    for (const [locale, text] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof text === 'string' && text.length > 0) translations[locale] = text;
+    }
+
+    return Object.keys(translations).length > 0 ? translations : undefined;
+  }
+
+  /**
+   * Enum seçenekleri. Düz string eski biçimdir: saklanan değer ile etiket
+   * aynıdır. Etiketi bozuk olan seçenek elenmez, değerin kendisi etiket olur;
+   * kullanıcı seçimini kaybetmesin diye.
+   */
+  private parseOptions(value: unknown): AttributeFieldOption[] {
+    if (!Array.isArray(value)) return [];
+
+    const options: AttributeFieldOption[] = [];
+
+    for (const entry of value) {
+      if (typeof entry === 'string') {
+        if (entry.length > 0) options.push({ value: entry, label: entry });
+        continue;
+      }
+
+      if (typeof entry !== 'object' || entry === null) continue;
+      const candidate = entry as Record<string, unknown>;
+      if (typeof candidate.value !== 'string' || candidate.value.length === 0) continue;
+
+      options.push({
+        value: candidate.value,
+        label: this.parseLocalizedText(candidate.label) ?? candidate.value,
+      });
+    }
+
+    return options;
   }
 
   private toCategory(row: CategoryRow): ServiceCategory {

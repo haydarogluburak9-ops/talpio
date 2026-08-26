@@ -33,10 +33,14 @@ export interface EntityRef {
   name: string;
 }
 
-export interface LocalizedText {
-  tr: string;
-  en?: string;
-}
+/**
+ * Kullanıcıya görünen, veritabanında saklanan metin. Dil kodundan (`tr`, `en`
+ * …) metne eşlemedir; düz string ise metin bütün dillerde aynı kabul edilir.
+ *
+ * Çözümleme istemcide yapılır (`resolveLocalizedText`): uç bütün dilleri
+ * birden döndürür, böylece dil değiştiğinde veri yeniden çekilmez.
+ */
+export type LocalizedText = string | Readonly<Record<string, string>>;
 
 /** Yüklenen dosyanın hangi amaca hizmet ettiği. Kabul edilen türleri belirler. */
 export const FilePurpose = {

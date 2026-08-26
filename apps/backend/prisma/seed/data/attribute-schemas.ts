@@ -1,3 +1,5 @@
+import type { AttributeFieldType, LocalizedText } from '@talpio/types';
+
 /**
  * Kategoriye özel talep alanları.
  *
@@ -8,8 +10,11 @@
  * Alan tipleri `AttributeFieldType` ile sınırlıdır:
  * string | number | decimal | boolean | enum | date.
  *
- * `enum` seçenekleri hem depolanan değer hem de ekranda görünen etikettir;
- * kategori adları gibi Türkçe tutulur.
+ * Görünen metinler (`label`, `description`, `unit` ve enum etiketleri) dil
+ * kodundan metne eşlemedir; çözümleme istemcide yapılır. Enum seçeneklerinin
+ * `value` alanı talebe yazılan sabittir ve dile göre değişmez; yalnızca
+ * `label` çevrilir. Böylece aynı ürün, form hangi dilde doldurulursa
+ * doldurulsun tek bir değerle kaydedilir.
  *
  * Temel formda zaten bulunan alanlar (miktar, birim, marka tercihi, teslimat
  * adresi, teslim tarihi) burada tekrarlanmaz.
@@ -19,12 +24,12 @@ export interface AttributeSchemaSeed {
   version: number;
   fields: {
     key: string;
-    label: string;
-    type: 'string' | 'number' | 'decimal' | 'boolean' | 'enum' | 'date';
+    label: LocalizedText;
+    type: AttributeFieldType;
     required?: boolean;
-    options?: string[];
-    unit?: string;
-    description?: string;
+    options?: { value: string; label: LocalizedText }[];
+    unit?: LocalizedText;
+    description?: LocalizedText;
   }[];
 }
 
@@ -35,40 +40,59 @@ export const ATTRIBUTE_SCHEMA_SEEDS: AttributeSchemaSeed[] = [
     fields: [
       {
         key: 'productType',
-        label: 'Ürün tipi',
+        label: { tr: 'Ürün tipi', en: 'Product type' },
         type: 'enum',
         required: true,
         options: [
-          'Motor yağı',
-          'Hidrolik yağ',
-          'Dişli yağı',
-          'Endüstriyel yağ',
-          'Transmisyon yağı',
-          'Gres',
+          { value: 'engineOil', label: { tr: 'Motor yağı', en: 'Engine oil' } },
+          { value: 'hydraulicOil', label: { tr: 'Hidrolik yağ', en: 'Hydraulic oil' } },
+          { value: 'gearOil', label: { tr: 'Dişli yağı', en: 'Gear oil' } },
+          { value: 'industrialOil', label: { tr: 'Endüstriyel yağ', en: 'Industrial oil' } },
+          {
+            value: 'transmissionOil',
+            label: { tr: 'Transmisyon yağı', en: 'Transmission fluid' },
+          },
+          { value: 'grease', label: { tr: 'Gres', en: 'Grease' } },
         ],
       },
       {
         key: 'viscosity',
-        label: 'Viskozite',
+        label: { tr: 'Viskozite', en: 'Viscosity' },
         type: 'string',
         required: true,
-        description: 'Örn. 5W-30, ISO VG 46',
+        description: { tr: 'Örn. 5W-30, ISO VG 46', en: 'e.g. 5W-30, ISO VG 46' },
       },
       {
         key: 'standard',
-        label: 'Standart / spesifikasyon',
+        label: { tr: 'Standart / spesifikasyon', en: 'Standard / specification' },
         type: 'string',
-        description: 'Örn. API SN, ACEA C3, DIN 51524',
+        description: {
+          tr: 'Örn. API SN, ACEA C3, DIN 51524',
+          en: 'e.g. API SN, ACEA C3, DIN 51524',
+        },
       },
       {
         key: 'packagingType',
-        label: 'Ambalaj',
+        label: { tr: 'Ambalaj', en: 'Packaging' },
         type: 'enum',
         required: true,
-        options: ['Varil', 'Bidon', 'IBC', 'Dökme'],
+        options: [
+          { value: 'drum', label: { tr: 'Varil', en: 'Drum' } },
+          { value: 'pail', label: { tr: 'Bidon', en: 'Pail' } },
+          { value: 'ibc', label: { tr: 'IBC', en: 'IBC tote' } },
+          { value: 'bulk', label: { tr: 'Dökme', en: 'Bulk' } },
+        ],
       },
-      { key: 'invoiceRequired', label: 'Fatura gerekli', type: 'boolean' },
-      { key: 'alternativeBrandAllowed', label: 'Alternatif marka kabul edilir', type: 'boolean' },
+      {
+        key: 'invoiceRequired',
+        label: { tr: 'Fatura gerekli', en: 'Invoice required' },
+        type: 'boolean',
+      },
+      {
+        key: 'alternativeBrandAllowed',
+        label: { tr: 'Alternatif marka kabul edilir', en: 'Alternative brands accepted' },
+        type: 'boolean',
+      },
     ],
   },
   {
@@ -77,34 +101,55 @@ export const ATTRIBUTE_SCHEMA_SEEDS: AttributeSchemaSeed[] = [
     fields: [
       {
         key: 'componentType',
-        label: 'Komponent tipi',
+        label: { tr: 'Komponent tipi', en: 'Component type' },
         type: 'enum',
         required: true,
         options: [
-          'Pasif komponent',
-          'Aktif komponent / IC',
-          'Mikrodenetleyici',
-          'Sensör',
-          'Konnektör',
-          'PCB',
+          { value: 'passive', label: { tr: 'Pasif komponent', en: 'Passive component' } },
+          { value: 'activeIc', label: { tr: 'Aktif komponent / IC', en: 'Active component / IC' } },
+          { value: 'microcontroller', label: { tr: 'Mikrodenetleyici', en: 'Microcontroller' } },
+          { value: 'sensor', label: { tr: 'Sensör', en: 'Sensor' } },
+          { value: 'connector', label: { tr: 'Konnektör', en: 'Connector' } },
+          { value: 'pcb', label: { tr: 'PCB', en: 'PCB' } },
         ],
       },
       {
         key: 'manufacturerPartNumber',
-        label: 'Üretici parça numarası (MPN)',
+        label: { tr: 'Üretici parça numarası (MPN)', en: 'Manufacturer part number (MPN)' },
         type: 'string',
         required: true,
-        description: 'Muadil kabul ediyorsanız açıklamaya not düşün',
+        description: {
+          tr: 'Muadil kabul ediyorsanız açıklamaya not düşün',
+          en: 'If equivalent parts are acceptable, mention it in the description',
+        },
       },
       {
         key: 'mountingType',
-        label: 'Montaj tipi',
+        label: { tr: 'Montaj tipi', en: 'Mounting type' },
         type: 'enum',
-        options: ['SMD', 'THT', 'Modül'],
+        options: [
+          { value: 'smd', label: { tr: 'SMD', en: 'SMD' } },
+          { value: 'tht', label: { tr: 'THT', en: 'THT' } },
+          { value: 'module', label: { tr: 'Modül', en: 'Module' } },
+        ],
       },
-      { key: 'tolerancePercent', label: 'Tolerans', type: 'decimal', unit: '%' },
-      { key: 'operatingVoltage', label: 'Çalışma gerilimi', type: 'string', unit: 'V' },
-      { key: 'rohsCompliant', label: 'RoHS uyumlu olmalı', type: 'boolean' },
+      {
+        key: 'tolerancePercent',
+        label: { tr: 'Tolerans', en: 'Tolerance' },
+        type: 'decimal',
+        unit: '%',
+      },
+      {
+        key: 'operatingVoltage',
+        label: { tr: 'Çalışma gerilimi', en: 'Operating voltage' },
+        type: 'string',
+        unit: 'V',
+      },
+      {
+        key: 'rohsCompliant',
+        label: { tr: 'RoHS uyumlu olmalı', en: 'Must be RoHS compliant' },
+        type: 'boolean',
+      },
     ],
   },
   {
@@ -113,32 +158,54 @@ export const ATTRIBUTE_SCHEMA_SEEDS: AttributeSchemaSeed[] = [
     fields: [
       {
         key: 'storageCondition',
-        label: 'Saklama koşulu',
+        label: { tr: 'Saklama koşulu', en: 'Storage condition' },
         type: 'enum',
         required: true,
-        options: ['Kuru gıda', 'Soğuk zincir (0-4 °C)', 'Donuk (-18 °C)'],
+        options: [
+          { value: 'ambient', label: { tr: 'Kuru gıda', en: 'Dry goods' } },
+          { value: 'chilled', label: { tr: 'Soğuk zincir (0-4 °C)', en: 'Chilled (0-4 °C)' } },
+          { value: 'frozen', label: { tr: 'Donuk (-18 °C)', en: 'Frozen (-18 °C)' } },
+        ],
       },
       {
         key: 'minShelfLifeDays',
-        label: 'Asgari raf ömrü',
+        label: { tr: 'Asgari raf ömrü', en: 'Minimum shelf life' },
         type: 'number',
         required: true,
-        unit: 'gün',
-        description: 'Teslimat tarihinden itibaren kalan süre',
+        unit: { tr: 'gün', en: 'days' },
+        description: {
+          tr: 'Teslimat tarihinden itibaren kalan süre',
+          en: 'Remaining shelf life from the delivery date',
+        },
       },
       {
         key: 'packagingType',
-        label: 'Ambalaj',
+        label: { tr: 'Ambalaj', en: 'Packaging' },
         type: 'enum',
-        options: ['Koli', 'Çuval', 'Palet', 'Kasa', 'Dökme'],
+        options: [
+          { value: 'case', label: { tr: 'Koli', en: 'Case' } },
+          { value: 'sack', label: { tr: 'Çuval', en: 'Sack' } },
+          { value: 'pallet', label: { tr: 'Palet', en: 'Pallet' } },
+          { value: 'crate', label: { tr: 'Kasa', en: 'Crate' } },
+          { value: 'bulk', label: { tr: 'Dökme', en: 'Bulk' } },
+        ],
       },
       {
         key: 'certification',
-        label: 'Sertifika',
+        label: { tr: 'Sertifika', en: 'Certification' },
         type: 'enum',
-        options: ['Fark etmez', 'Helal', 'ISO 22000', 'Organik'],
+        options: [
+          { value: 'any', label: { tr: 'Fark etmez', en: 'No preference' } },
+          { value: 'halal', label: { tr: 'Helal', en: 'Halal' } },
+          { value: 'iso22000', label: { tr: 'ISO 22000', en: 'ISO 22000' } },
+          { value: 'organic', label: { tr: 'Organik', en: 'Organic' } },
+        ],
       },
-      { key: 'earliestProductionDate', label: 'En erken üretim tarihi', type: 'date' },
+      {
+        key: 'earliestProductionDate',
+        label: { tr: 'En erken üretim tarihi', en: 'Earliest production date' },
+        type: 'date',
+      },
     ],
   },
 ];

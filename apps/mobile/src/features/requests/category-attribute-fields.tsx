@@ -1,10 +1,11 @@
+import { resolveLocalizedText, resolveOptionLabel } from '@talpio/localization';
 import type { AttributeFieldDefinition } from '@talpio/types';
 import { StyleSheet, View } from 'react-native';
 
 import { FormField } from '@/components/form-field';
 import { OptionPicker } from '@/components/option-picker';
 import { Text } from '@/components/text';
-import { useT } from '@/lib/i18n';
+import { useI18n, useT } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
 /**
@@ -16,8 +17,14 @@ export type AttributeValues = Record<string, string>;
 /** Seçimi boşaltan satırın kimliği; şema seçenekleriyle çakışmasın diye ayrık. */
 const UNSET_OPTION_ID = '__unset__';
 
-function labelFor(field: AttributeFieldDefinition): string {
-  const label = field.unit ? `${field.label} (${field.unit})` : field.label;
+/**
+ * Şema metinleri veritabanından çok dilli gelir; ekranda gösterilecek dil
+ * burada seçilir. Saklanan enum değerleri bundan etkilenmez.
+ */
+function labelFor(field: AttributeFieldDefinition, locale: string): string {
+  const text = resolveLocalizedText(field.label, locale);
+  const unit = resolveLocalizedText(field.unit, locale);
+  const label = unit ? `${text} (${unit})` : text;
   return field.required === true ? `${label} *` : label;
 }
 
@@ -70,8 +77,9 @@ function AttributeControl({
   error: string | undefined;
   onChange: (value: string) => void;
 }) {
-  const t = useT();
-  const label = labelFor(field);
+  const { t, locale } = useI18n();
+  const label = labelFor(field, locale);
+  const hint = resolveLocalizedText(field.description, locale) || undefined;
 
   if (field.type === 'enum' || field.type === 'boolean') {
     const options =
@@ -80,7 +88,10 @@ function AttributeControl({
             { id: 'true', name: t('commerce.optionYes') },
             { id: 'false', name: t('commerce.optionNo') },
           ]
-        : (field.options ?? []).map((option) => ({ id: option, name: option }));
+        : (field.options ?? []).map((option) => ({
+            id: option.value,
+            name: resolveOptionLabel(option, locale),
+          }));
 
     return (
       <View style={styles.picker}>
@@ -95,9 +106,9 @@ function AttributeControl({
           <Text variant="caption" tone="danger">
             {error}
           </Text>
-        ) : field.description ? (
+        ) : hint ? (
           <Text variant="caption" tone="muted">
-            {field.description}
+            {hint}
           </Text>
         ) : null}
       </View>
@@ -112,7 +123,7 @@ function AttributeControl({
         onChangeText={onChange}
         keyboardType={field.type === 'number' ? 'number-pad' : 'decimal-pad'}
         error={error}
-        hint={field.description}
+        hint={hint}
       />
     );
   }
@@ -124,7 +135,7 @@ function AttributeControl({
       onChangeText={onChange}
       placeholder={field.type === 'date' ? t('commerce.attributeDatePlaceholder') : undefined}
       error={error}
-      hint={field.description}
+      hint={hint}
     />
   );
 }
