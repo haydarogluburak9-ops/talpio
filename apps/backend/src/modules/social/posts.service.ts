@@ -45,6 +45,11 @@ const CAMPAIGN_NOTIFY_TYPES = new Set<string>([
   PostType.NEW_PRODUCT,
 ]);
 
+/** Kampanya bildirimi alıcı havuzları; toplam alıcı CAMPAIGN_NOTIFY_LIMIT ile sınırlı. */
+const CAMPAIGN_FOLLOWER_LIMIT = 500;
+const CAMPAIGN_CATEGORY_FOLLOWER_LIMIT = 500;
+const CAMPAIGN_NOTIFY_LIMIT = 750;
+
 @Injectable()
 export class PostsService {
   constructor(
@@ -237,7 +242,7 @@ export class PostsService {
         },
       });
     }
-    void this.notifyFollowersOfCampaign(mapped, author.id);
+    void this.notifyCampaignAudience(mapped, author.id, user.id);
     void this.notifyMentions(created.mentionedUserIds, mapped, author.displayName);
     void this.realtime.postCreated(user.id, mapped.id, author.id);
     return mapped;
@@ -248,27 +253,54 @@ export class PostsService {
     return this.profiles.ensureBusinessProfile(businessId, userId);
   }
 
-  private async notifyFollowersOfCampaign(
+  /**
+   * Kampanya duyurusu: işletmeyi takip edenler + kampanyanın kategorisini
+   * takip edenler. İki küme çakışabildiği için tekilleştirilir; takipçiler
+   * (daha yüksek niyet) sınıra önce girer.
+   */
+  private async notifyCampaignAudience(
     post: SocialPost,
     authorProfileId: string,
+    actorUserId: string,
   ): Promise<void> {
     if (!CAMPAIGN_NOTIFY_TYPES.has(post.type)) return;
 
-    const follows = await this.prisma.follow.findMany({
-      where: { followingProfileId: authorProfileId },
-      select: {
-        follower: { select: { userId: true } },
-      },
-      take: 500,
-    });
+    const categoryId = post.deal?.categoryId ?? null;
 
-    const userIds = [
-      ...new Set(
-        follows
-          .map((row) => row.follower.userId)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0),
-      ),
+    const [follows, categoryFollows] = await Promise.all([
+      this.prisma.follow.findMany({
+        where: { followingProfileId: authorProfileId },
+        select: {
+          follower: { select: { userId: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: CAMPAIGN_FOLLOWER_LIMIT,
+      }),
+      categoryId
+        ? this.prisma.categoryFollow.findMany({
+            where: { categoryId, profile: { deletedAt: null } },
+            select: {
+              profile: { select: { userId: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: CAMPAIGN_CATEGORY_FOLLOWER_LIMIT,
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const recipients = new Set<string>();
+    const candidates = [
+      ...follows.map((row) => row.follower.userId),
+      ...categoryFollows.map((row) => row.profile.userId),
     ];
+    for (const candidate of candidates) {
+      if (recipients.size >= CAMPAIGN_NOTIFY_LIMIT) break;
+      if (typeof candidate !== 'string' || candidate.length === 0) continue;
+      if (candidate === actorUserId) continue;
+      recipients.add(candidate);
+    }
+
+    const userIds = [...recipients];
     if (userIds.length === 0) return;
 
     const title =

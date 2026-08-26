@@ -91,6 +91,8 @@ type PrismaMock = {
   socialProfile: { update: jest.Mock };
   fileAsset: { findMany: jest.Mock };
   priceHistory: { create: jest.Mock };
+  follow: { findMany: jest.Mock };
+  categoryFollow: { findMany: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -114,13 +116,27 @@ function createPrismaMock(): PrismaMock {
     priceHistory: {
       create: jest.fn().mockResolvedValue({}),
     },
+    follow: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+    categoryFollow: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     $transaction: jest.fn(),
   };
   mock.$transaction.mockImplementation(async (fn: (tx: PrismaMock) => unknown) => fn(mock));
   return mock;
 }
 
-function createService(prisma: PrismaMock, profileId = PROFILE_ID) {
+function notificationsMock() {
+  return { dispatchAll: jest.fn().mockResolvedValue(undefined) };
+}
+
+function createService(
+  prisma: PrismaMock,
+  profileId = PROFILE_ID,
+  notifications: { dispatchAll: jest.Mock } = notificationsMock(),
+) {
   const files = { assertOwnedBy: jest.fn().mockResolvedValue(undefined) } as unknown as FilesService;
   const profiles = {
     ensurePersonalProfile: jest
@@ -130,16 +146,12 @@ function createService(prisma: PrismaMock, profileId = PROFILE_ID) {
   } as unknown as ProfilesService;
   const config = { fileBaseUrl: 'http://localhost:9000/talpio' } as unknown as AppConfigService;
   const rbac = { assertBusinessAccess: jest.fn().mockResolvedValue(undefined) };
-  const notifications = { dispatchAll: jest.fn().mockResolvedValue(undefined) };
   const graph = {
     attachBodyEntities: jest.fn().mockResolvedValue({
       mentionedUserIds: [],
       mentionedNames: new Map(),
     }),
   } as unknown as SocialGraphService;
-  (prisma as PrismaMock & { follow: { findMany: jest.Mock } }).follow = {
-    findMany: jest.fn().mockResolvedValue([]),
-  };
 
   return new PostsService(
     prisma as unknown as PrismaService,
@@ -348,6 +360,121 @@ describe('PostsService', () => {
         data: expect.objectContaining({ type: 'DEAL' }),
       }),
     );
+  });
+
+  describe('kampanya bildirimi', () => {
+    /** Bildirim `create` içinde fire-and-forget çağrıldığı için doğrudan çalıştırılır. */
+    function notifyAudience(
+      service: PostsService,
+      post: Record<string, unknown>,
+      actorUserId = USER_ID,
+    ) {
+      return (
+        service as unknown as {
+          notifyCampaignAudience: (
+            post: unknown,
+            authorProfileId: string,
+            actorUserId: string,
+          ) => Promise<void>;
+        }
+      ).notifyCampaignAudience(post, PROFILE_ID, actorUserId);
+    }
+
+    function campaignPost(categoryId: string | null = 'cat-1') {
+      return {
+        id: POST_ID,
+        type: 'CAMPAIGN',
+        body: 'Hafta sonu motor yağı kampanyası',
+        author: { id: PROFILE_ID, displayName: 'Yağ A.Ş.' },
+        promo: { label: 'Hafta sonu %20' },
+        deal: { title: 'Hafta sonu %20', categoryId },
+      };
+    }
+
+    it('takipçilere ve kategori takipçilerine gönderir, tekilleştirir', async () => {
+      const notifications = notificationsMock();
+      const service = createService(prisma, PROFILE_ID, notifications);
+      prisma.follow.findMany.mockResolvedValue([
+        { follower: { userId: 'follower-1' } },
+        { follower: { userId: 'shared-user' } },
+      ]);
+      prisma.categoryFollow.findMany.mockResolvedValue([
+        { profile: { userId: 'shared-user' } },
+        { profile: { userId: 'interest-1' } },
+      ]);
+
+      await notifyAudience(service, campaignPost());
+
+      expect(prisma.categoryFollow.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { categoryId: 'cat-1', profile: { deletedAt: null } },
+        }),
+      );
+      const inputs = notifications.dispatchAll.mock.calls[0]?.[0] as Array<{
+        userId: string;
+        type: string;
+      }>;
+      expect(inputs.map((input) => input.userId)).toEqual([
+        'follower-1',
+        'shared-user',
+        'interest-1',
+      ]);
+      expect(inputs.every((input) => input.type === 'CAMPAIGN')).toBe(true);
+    });
+
+    it('kampanyayı paylaşan kullanıcıya bildirim göndermez', async () => {
+      const notifications = notificationsMock();
+      const service = createService(prisma, PROFILE_ID, notifications);
+      prisma.follow.findMany.mockResolvedValue([{ follower: { userId: 'follower-1' } }]);
+      prisma.categoryFollow.findMany.mockResolvedValue([
+        { profile: { userId: USER_ID } },
+        { profile: { userId: null } },
+      ]);
+
+      await notifyAudience(service, campaignPost());
+
+      const inputs = notifications.dispatchAll.mock.calls[0]?.[0] as Array<{ userId: string }>;
+      expect(inputs.map((input) => input.userId)).toEqual(['follower-1']);
+    });
+
+    it('kategori yoksa yalnızca takipçilere gönderir', async () => {
+      const notifications = notificationsMock();
+      const service = createService(prisma, PROFILE_ID, notifications);
+      prisma.follow.findMany.mockResolvedValue([{ follower: { userId: 'follower-1' } }]);
+
+      await notifyAudience(service, campaignPost(null));
+
+      expect(prisma.categoryFollow.findMany).not.toHaveBeenCalled();
+      const inputs = notifications.dispatchAll.mock.calls[0]?.[0] as Array<{ userId: string }>;
+      expect(inputs.map((input) => input.userId)).toEqual(['follower-1']);
+    });
+
+    it('kampanya olmayan gönderi için bildirim üretmez', async () => {
+      const notifications = notificationsMock();
+      const service = createService(prisma, PROFILE_ID, notifications);
+
+      await notifyAudience(service, { ...campaignPost(), type: 'TEXT' });
+
+      expect(prisma.follow.findMany).not.toHaveBeenCalled();
+      expect(notifications.dispatchAll).not.toHaveBeenCalled();
+    });
+
+    it('alıcı sayısını 750 ile sınırlar', async () => {
+      const notifications = notificationsMock();
+      const service = createService(prisma, PROFILE_ID, notifications);
+      prisma.follow.findMany.mockResolvedValue(
+        Array.from({ length: 500 }, (_, index) => ({ follower: { userId: `f-${index}` } })),
+      );
+      prisma.categoryFollow.findMany.mockResolvedValue(
+        Array.from({ length: 500 }, (_, index) => ({ profile: { userId: `c-${index}` } })),
+      );
+
+      await notifyAudience(service, campaignPost());
+
+      const inputs = notifications.dispatchAll.mock.calls[0]?.[0] as Array<{ userId: string }>;
+      expect(inputs).toHaveLength(750);
+      expect(inputs[0]?.userId).toBe('f-0');
+    });
   });
 
   it('başkasının gönderisini silmeye izin vermez', async () => {
