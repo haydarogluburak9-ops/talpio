@@ -1,5 +1,11 @@
 import type { PrismaClient } from '../../../src/generated/prisma/client';
-import { PostType, PostVisibility } from '../../../src/generated/prisma/enums';
+import {
+  PostType,
+  PostVisibility,
+  RequestSource,
+  RequestStatus,
+  RequestType,
+} from '../../../src/generated/prisma/enums';
 
 import { refreshDemoStories } from '../../../src/modules/social/demo-story-refresh';
 import { DEMO_ACCOUNTS } from './demo-accounts';
@@ -80,6 +86,18 @@ type SeedPost = {
     stockQuantity?: string;
     locationText?: string;
   };
+  /**
+   * REQUEST_SHARE gönderileri için kaynak talep. Bağlantı olmadan akıştaki
+   * "Teklif ver" eylemi hedefsiz kalır.
+   */
+  request?: {
+    title: string;
+    requestType: RequestType;
+    quantity?: number;
+    unit?: string;
+    budgetMinor?: number;
+    deliveryAddressText?: string;
+  };
   comments?: Array<{ author: string; body: string }>;
   likedBy?: string[];
   savedBy?: string[];
@@ -138,6 +156,13 @@ const FEED_POSTS: SeedPost[] = [
     type: PostType.REQUEST_SHARE,
     image: IMG.barrels,
     body: 'Acil: 2 ton hidrolik yağ lazım, ISO 46. New York loft projesi. Teklif bekliyorum. #madeniyağ #acil #newyork',
+    request: {
+      title: '2 ton hidrolik yağ (ISO 46)',
+      requestType: RequestType.PRODUCT_SUPPLY,
+      quantity: 2,
+      unit: 'ton',
+      deliveryAddressText: 'New York',
+    },
     comments: [
       { author: 'elifyag', body: 'Stokta var, mesaj atın fiyatı ileteyim.' },
       { author: 'muratsahin', body: 'Biz de aynı ürünü arıyorduk, takip.' },
@@ -236,6 +261,13 @@ const FEED_POSTS: SeedPost[] = [
     type: PostType.REQUEST_SHARE,
     image: IMG.warehouse,
     body: 'Berlin’e 6.000 m PVC profil. Teklif ve teslim süresi önemli. #pvc #talep #berlin',
+    request: {
+      title: '6.000 m PVC profil tedariki',
+      requestType: RequestType.WHOLESALE,
+      quantity: 6000,
+      unit: 'm',
+      deliveryAddressText: 'Berlin',
+    },
     comments: [{ author: 'hasanozturk', body: 'Gaziantep’ten yükleriz, navlun ayrı hesaplanır.' }],
     likedBy: ['ganteppvc', 'burak', 'denizinsaat', 'selinkoc'],
     savedBy: ['ganteppvc'],
@@ -509,9 +541,12 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
 
   const profiles = await prisma.socialProfile.findMany({
     where: { username: { in: [...usernames] }, deletedAt: null },
-    select: { id: true, username: true },
+    select: { id: true, username: true, userId: true },
   });
   const byUsername = new Map(profiles.map((profile) => [profile.username, profile.id]));
+  const userIdByUsername = new Map(
+    profiles.flatMap((profile) => (profile.userId ? [[profile.username, profile.userId]] : [])),
+  );
   const profileIds = profiles.map((profile) => profile.id);
 
   await prisma.follow.deleteMany({
@@ -525,6 +560,15 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
   });
   await prisma.post.deleteMany({
     where: { authorProfileId: { in: profileIds } },
+  });
+  // Talep paylaşımları her tohumlamada yeniden bağlanır. Yalnızca tohum
+  // kaynaklı (IMPORT) kayıtları siliyoruz; demo kullanıcıların uygulamadan
+  // oluşturduğu gerçek talepler korunur.
+  await prisma.commerceRequest.deleteMany({
+    where: {
+      buyerUserId: { in: [...userIdByUsername.values()] },
+      source: RequestSource.IMPORT,
+    },
   });
 
   for (const [follower, following] of FOLLOW_EDGES) {
@@ -554,6 +598,29 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
     const authorId = byUsername.get(item.author);
     if (!authorId) continue;
 
+    const buyerUserId = userIdByUsername.get(item.author);
+    let commerceRequestId: string | null = null;
+    if (item.request && buyerUserId) {
+      const created = await prisma.commerceRequest.create({
+        data: {
+          buyerUserId,
+          requestType: item.request.requestType,
+          title: item.request.title,
+          description: item.body,
+          quantity: item.request.quantity,
+          unit: item.request.unit,
+          budgetMinor: item.request.budgetMinor,
+          deliveryAddressText: item.request.deliveryAddressText,
+          status: RequestStatus.PUBLISHED,
+          source: RequestSource.IMPORT,
+          publishedAt: hoursAgo(item.hoursAgo),
+          createdAt: hoursAgo(item.hoursAgo),
+        },
+        select: { id: true },
+      });
+      commerceRequestId = created.id;
+    }
+
     const post = await prisma.post.create({
       data: {
         authorProfileId: authorId,
@@ -561,6 +628,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
         body: item.body,
         visibility: PostVisibility.PUBLIC,
         createdAt: hoursAgo(item.hoursAgo),
+        ...(commerceRequestId ? { commerceRequestId } : {}),
         ...(item.deal
           ? {
               promoLabel: item.deal.title,

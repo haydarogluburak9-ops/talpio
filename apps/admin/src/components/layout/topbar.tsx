@@ -1,6 +1,7 @@
 'use client';
 
 import { LogOut, Moon, Sun } from 'lucide-react';
+import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
@@ -44,12 +45,16 @@ export function Topbar({
 
       <div className="flex shrink-0 items-center gap-2">
         {user ? (
-          <div className="hidden text-right leading-tight sm:block">
+          <Link
+            href="/account"
+            title={t('admin.account')}
+            className="hidden rounded-[--radius-control] px-2 py-1 text-right leading-tight hover:bg-surface-muted sm:block"
+          >
             <p className="text-sm font-medium">{user.fullName}</p>
             <p className="text-xs text-foreground-muted">
               {ROLE_KEYS[user.role] ? t(ROLE_KEYS[user.role]) : user.role}
             </p>
-          </div>
+          </Link>
         ) : null}
 
         <LanguageSwitcher />

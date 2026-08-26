@@ -1,8 +1,8 @@
 'use client';
 
-import { MESSAGE } from '@talpio/config';
+import { MESSAGE, UPLOAD } from '@talpio/config';
 import { formatDate, formatTime } from '@talpio/localization';
-import { FilePurpose, MessageType, type Message } from '@talpio/types';
+import { FilePurpose, MessageType, type FileAsset, type Message } from '@talpio/types';
 import { Button, ErrorState, ListSkeleton, cn } from '@talpio/ui';
 import { ArrowLeft, Camera, Mic, SendHorizontal, UserPlus } from 'lucide-react';
 import Link from 'next/link';
@@ -257,6 +257,7 @@ function MessageRow({
 }) {
   const locale = getLocale();
   const showDay = !previous || !isSameDay(previous.createdAt, message.createdAt);
+  const images = message.attachments.filter((item) => item.mimeType.startsWith('image/'));
 
   if (message.type === MessageType.SYSTEM) {
     return (
@@ -282,6 +283,32 @@ function MessageRow({
           )}
         >
           {message.body ? <p className="whitespace-pre-wrap">{message.body}</p> : null}
+
+          {images.length > 0 ? (
+            <div className={cn('flex flex-wrap gap-1', message.body ? 'mt-1.5' : null)}>
+              {images.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block"
+                  aria-label={t('messaging.previewPhoto')}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={t('messaging.previewPhoto')}
+                    loading="lazy"
+                    className={cn(
+                      'rounded-[14px] object-cover',
+                      images.length > 1 ? 'size-28' : 'max-h-72 max-w-full',
+                    )}
+                  />
+                </a>
+              ))}
+            </div>
+          ) : null}
 
           {message.type === MessageType.VOICE ||
           message.attachments.some((item) => item.mimeType.startsWith('audio/')) ? (
@@ -328,10 +355,12 @@ function MessageRow({
 function Composer({ conversationId }: { conversationId: string }) {
   const [body, setBody] = useState('');
   const [recording, setRecording] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const send = useSendMessage(conversationId);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const trimmed = body.trim();
   const canSend = trimmed.length > 0 && trimmed.length <= MESSAGE.maxBodyLength && !send.isPending;
@@ -346,8 +375,55 @@ function Composer({ conversationId }: { conversationId: string }) {
     );
   }
 
+  /**
+   * Seçilen fotoğrafları yükleyip tek mesaj olarak gönderir.
+   *
+   * Yazı alanı temizlenmez: fotoğraf ayrı bir mesaj olarak gider, böylece
+   * kullanıcı yazmaya devam ederken de fotoğraf paylaşabilir.
+   */
+  async function sendPhotos(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setError(null);
+
+    const selected = [...files];
+    if (selected.length > MESSAGE.maxAttachments) {
+      setError(t('upload.tooMany', { count: MESSAGE.maxAttachments }));
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Biri başarısız olduğunda diğerleri iptal edilmez; yüklenenler gönderilir.
+      const results = await Promise.allSettled(
+        selected.map((file) => apiClient.files.upload(file, FilePurpose.MESSAGE_ATTACHMENT)),
+      );
+      const uploaded = results
+        .filter(
+          (result): result is PromiseFulfilledResult<FileAsset> => result.status === 'fulfilled',
+        )
+        .map((result) => result.value);
+
+      if (uploaded.length === 0) {
+        setError(t('upload.failed'));
+        return;
+      }
+
+      await send.mutateAsync({
+        type: MessageType.IMAGE,
+        attachmentFileIds: uploaded.map((file) => file.id),
+        clientMessageId: crypto.randomUUID(),
+      });
+
+      if (uploaded.length < selected.length) setError(t('upload.failed'));
+    } catch {
+      setError(t('messaging.sendFailed'));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function startRecording() {
-    setVoiceError(null);
+    setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
@@ -367,7 +443,7 @@ function Composer({ conversationId }: { conversationId: string }) {
       recorder.start();
       setRecording(true);
     } catch {
-      setVoiceError(t('messaging.micDenied'));
+      setError(t('messaging.micDenied'));
     }
   }
 
@@ -394,7 +470,7 @@ function Composer({ conversationId }: { conversationId: string }) {
         clientMessageId: crypto.randomUUID(),
       });
     } catch {
-      setVoiceError(t('messaging.sendFailed'));
+      setError(t('messaging.sendFailed'));
     }
   }
 
@@ -403,9 +479,9 @@ function Composer({ conversationId }: { conversationId: string }) {
       onSubmit={submit}
       className="flex shrink-0 flex-col gap-2 border-t border-border/70 bg-surface px-3 py-2.5"
     >
-      {send.isError || voiceError ? (
+      {send.isError || error ? (
         <p role="alert" className="rounded-lg bg-danger-surface px-3 py-2 text-sm text-danger-on-surface">
-          {voiceError ?? t('messaging.sendFailed')}
+          {error ?? t('messaging.sendFailed')}
         </p>
       ) : null}
 
@@ -413,12 +489,33 @@ function Composer({ conversationId }: { conversationId: string }) {
         <p className="text-center text-xs font-medium text-[#0095F6]">{t('messaging.recording')}</p>
       ) : null}
 
+      {uploading ? (
+        <p className="text-center text-xs font-medium text-[#0095F6]">
+          {t('messaging.sendingPhoto')}
+        </p>
+      ) : null}
+
       <div className="flex items-end gap-2">
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept={`${UPLOAD.allowedImageMimeTypes.join(',')},image/*`}
+          multiple
+          className="sr-only"
+          onChange={(event) => {
+            void sendPhotos(event.target.files);
+            // Aynı dosya tekrar seçilebilsin diye alan sıfırlanır.
+            event.target.value = '';
+          }}
+        />
+
         <button
           type="button"
-          className="grid size-9 shrink-0 place-items-center text-foreground-muted"
-          aria-label={t('messaging.previewPhoto')}
-          disabled
+          onClick={() => photoInputRef.current?.click()}
+          disabled={uploading || send.isPending}
+          className="grid size-9 shrink-0 place-items-center rounded-full text-foreground-muted transition-colors hover:bg-surface-muted disabled:opacity-50"
+          aria-label={t('messaging.attachPhoto')}
+          title={t('messaging.attachPhoto')}
         >
           <Camera className="size-6" aria-hidden />
         </button>

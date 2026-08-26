@@ -108,8 +108,11 @@ export class FeedService {
             take: 24,
           });
 
+    const followingSet = new Set(following.map((row) => row.followingProfileId));
     return {
-      items: rows.map((row) => toSocialPost(row, this.config.fileBaseUrl)),
+      items: rows.map((row) =>
+        toSocialPost(row, this.config.fileBaseUrl, { followedProfileIds: followingSet }),
+      ),
       comingSoon: false,
     };
   }
@@ -275,6 +278,7 @@ export class FeedService {
         savedByMe: row.postId ? flags.saved.has(row.postId) : false,
         sharedByMe: row.postId ? flags.shared.has(row.postId) : false,
         score,
+        followedProfileIds: followingSet,
       }),
     );
 

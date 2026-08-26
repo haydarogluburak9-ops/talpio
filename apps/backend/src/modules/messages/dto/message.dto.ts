@@ -56,7 +56,7 @@ export class SendMessageDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(5)
+  @ArrayMaxSize(MESSAGE.maxAttachments)
   @IsUUID('all', { each: true })
   attachmentFileIds: string[] = [];
 

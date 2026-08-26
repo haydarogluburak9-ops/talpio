@@ -21,6 +21,11 @@ export interface LoginPayload {
   deviceName?: string;
 }
 
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  password: string;
+}
+
 /**
  * Kimlik uçları. Başarılı çağrılarda jetonlar istemcinin jeton deposuna
  * yazılır; web'de bu bir no-op'tur çünkü sunucu HTTP-only çerez gönderir.
@@ -89,6 +94,18 @@ export function createAuthResource(http: HttpClient) {
 
     resetPassword(token: string, password: string, signal?: AbortSignal): Promise<{ reset: true }> {
       return http.post(API_ROUTES.auth.resetPassword, { token, password }, { signal });
+    },
+
+    /**
+     * Oturum sahibinin kendi şifresini değiştirir. Diğer cihazlardaki oturumlar
+     * sunucuda kapanır; isteği yapan oturum ayakta kaldığı için jetonlar
+     * yenilenmez.
+     */
+    changePassword(
+      payload: ChangePasswordPayload,
+      signal?: AbortSignal,
+    ): Promise<{ changed: true }> {
+      return http.post(API_ROUTES.auth.changePassword, payload, { signal });
     },
   };
 }

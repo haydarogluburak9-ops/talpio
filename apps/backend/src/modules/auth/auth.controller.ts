@@ -11,6 +11,7 @@ import type { DevicePlatform } from '@/generated/prisma/client';
 import { AuthService, type DeviceContext } from './auth.service';
 import { CurrentUser as CurrentUserParam } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -172,6 +173,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Şifre sıfırlama jetonunu tüketir' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.verification.resetPassword(dto.token, dto.password);
+  }
+
+  @Post('change-password')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: 'Oturum açmış kullanıcının kendi şifresini değiştirir' })
+  changePassword(@CurrentUserParam() user: AuthenticatedUser, @Body() dto: ChangePasswordDto) {
+    return this.auth.changePassword(user.id, user.sessionId, dto.currentPassword, dto.password);
   }
 
   /**

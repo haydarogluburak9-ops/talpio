@@ -87,3 +87,6 @@ export const changePasswordSchema = z
     path: ['password'],
     message: 'Yeni şifre mevcut şifreden farklı olmalıdır',
   });
+
+export type ChangePasswordInput = z.input<typeof changePasswordSchema>;
+export type ChangePasswordPayload = z.output<typeof changePasswordSchema>;

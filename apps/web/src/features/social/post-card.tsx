@@ -7,6 +7,7 @@ import { Button, cn } from '@talpio/ui';
 import {
   Bookmark,
   ClipboardPlus,
+  HandCoins,
   Heart,
   MessageCircle,
   MoreHorizontal,
@@ -144,7 +145,9 @@ function NestedOriginal({ post }: { post: SocialPost }) {
           t('social.quotedFrom')
         )}
       </p>
-      {post.body ? <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{post.body}</p> : null}
+      {post.body ? (
+        <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{post.body}</p>
+      ) : null}
     </div>
   );
 }
@@ -197,8 +200,7 @@ export function PostCard({
   const original = post.originalPost ?? null;
   const isRepost = post.type === 'REPOST';
   const showDealCta =
-    interactive &&
-    (Boolean(deal) || Boolean(promo) || DEALISH_TYPES.has(post.type));
+    interactive && (Boolean(deal) || Boolean(promo) || DEALISH_TYPES.has(post.type));
   const initials = (author?.displayName ?? 'T')
     .split(/\s+/)
     .map((part) => part[0])
@@ -209,6 +211,12 @@ export function PostCard({
   const tags = post.hashtags ?? [];
   const isOwn = Boolean(me.data && author && me.data.id === author.id);
   const showFollow = interactive && Boolean(author) && !isOwn && !author?.isFollowing;
+  /**
+   * Talep paylaşımının kaynak talebi. Yalnızca `commerceRequestId` taşıyan
+   * gönderiler teklif alabilir; talebi paylaşan kişiye buton gösterilmez.
+   */
+  const offerRequestId = post.type === 'REQUEST_SHARE' ? (post.commerceRequestId ?? null) : null;
+  const showOfferCta = interactive && Boolean(offerRequestId) && Boolean(me.data) && !isOwn;
   const body = post.body ?? '';
   const longBody = body.length > CAPTION_LIMIT;
   const caption = expanded || !longBody ? body : `${body.slice(0, CAPTION_LIMIT).trimEnd()}… `;
@@ -490,6 +498,19 @@ export function PostCard({
           >
             <ClipboardPlus className="size-4" />
             {createRequest.isPending ? t('social.creatingRequest') : t('social.askOffer')}
+          </button>
+        </div>
+      ) : null}
+
+      {showOfferCta ? (
+        <div className="px-4 pt-3">
+          <button
+            type="button"
+            onClick={() => router.push(`/tedarik/${offerRequestId}#teklif-ver`)}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 text-sm font-semibold text-white hover:bg-accent-600"
+          >
+            <HandCoins className="size-4" />
+            {t('social.giveOffer')}
           </button>
         </div>
       ) : null}

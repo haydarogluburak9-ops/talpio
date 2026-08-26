@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { Topbar } from '@/components/layout/topbar';
 import { UsersPanel } from '@/features/admin/users-panel';
+import { UsersStats } from '@/features/admin/users-stats';
 
 import { t } from '@/lib/i18n';
 
@@ -13,6 +14,7 @@ export default function UsersPage() {
       <Topbar titleKey="admin.users" descriptionKey="admin.usersHint" />
 
       <main className="flex-1 space-y-6 p-6">
+        <UsersStats />
         <UsersPanel />
       </main>
     </>

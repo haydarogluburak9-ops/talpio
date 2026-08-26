@@ -344,10 +344,27 @@ function toPromoFromRow(row: PostRow): SocialPostPromo | null {
   };
 }
 
+/**
+ * İzleyicinin takip ettiği profil id kümesi verilmişse yazar kaydına
+ * `isFollowing` iliştirir. Küme yoksa (anonim izleyici) bayrak hiç eklenmez.
+ */
+function viewerFollowExtras(
+  profileId: string,
+  followedProfileIds?: ReadonlySet<string>,
+): { isFollowing?: boolean } {
+  if (!followedProfileIds) return {};
+  return { isFollowing: followedProfileIds.has(profileId) };
+}
+
 export function toSocialPost(
   row: PostRow,
   fileBaseUrl: string,
-  extras: { likedByMe?: boolean; savedByMe?: boolean; sharedByMe?: boolean } = {},
+  extras: {
+    likedByMe?: boolean;
+    savedByMe?: boolean;
+    sharedByMe?: boolean;
+    followedProfileIds?: ReadonlySet<string>;
+  } = {},
 ): SocialPost {
   const original = row.originalPost
     ? toSocialPost(
@@ -358,6 +375,7 @@ export function toSocialPost(
           mentions: [],
         } as PostRow,
         fileBaseUrl,
+        { followedProfileIds: extras.followedProfileIds },
       )
     : null;
 
@@ -385,7 +403,13 @@ export function toSocialPost(
     promo: toPromoFromRow(row),
     deal: row.dealMetadata ? toDealMetadata(row.dealMetadata) : null,
     media: (row.media ?? []).map((m) => toFileAsset(m.file, fileBaseUrl)),
-    author: row.author ? toSocialProfile(row.author, fileBaseUrl) : null,
+    author: row.author
+      ? toSocialProfile(
+          row.author,
+          fileBaseUrl,
+          viewerFollowExtras(row.author.id, extras.followedProfileIds),
+        )
+      : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     deletedAt: row.deletedAt?.toISOString() ?? null,
@@ -413,7 +437,13 @@ export function toSocialComment(row: CommentRow, fileBaseUrl: string): SocialPos
 export function toFeedItem(
   row: FeedItemRow,
   fileBaseUrl: string,
-  extras: { likedByMe?: boolean; savedByMe?: boolean; sharedByMe?: boolean; score?: number } = {},
+  extras: {
+    likedByMe?: boolean;
+    savedByMe?: boolean;
+    sharedByMe?: boolean;
+    score?: number;
+    followedProfileIds?: ReadonlySet<string>;
+  } = {},
 ): FeedItem {
   return {
     id: row.id,

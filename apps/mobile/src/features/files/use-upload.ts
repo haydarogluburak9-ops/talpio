@@ -35,13 +35,7 @@ export function usePhotoUpload(purpose: FilePurpose = FilePurpose.JOB_PHOTO) {
     setHasFailure(false);
     setPendingCount((count) => count + accepted.length);
 
-    // Yüklemeler tek tek beklenmez; birinin başarısız olması diğerlerini
-    // iptal etmemeli, bu yüzden sonuçlar ayrı ayrı değerlendirilir.
-    const results = await Promise.allSettled(accepted.map((asset) => uploadAsset(asset, purpose)));
-
-    const uploaded = results
-      .filter((result): result is PromiseFulfilledResult<FileAsset> => result.status === 'fulfilled')
-      .map((result) => result.value);
+    const uploaded = await uploadPickedAssets(accepted, purpose);
 
     setPendingCount((count) => count - accepted.length);
     setItems((current) => [...current, ...uploaded]);
@@ -65,6 +59,24 @@ export function usePhotoUpload(purpose: FilePurpose = FilePurpose.JOB_PHOTO) {
     add,
     remove,
   };
+}
+
+/**
+ * Seçilen varlıkları yükler ve başarılı olanları döner.
+ *
+ * Yüklemeler tek tek beklenmez; birinin başarısız olması diğerlerini iptal
+ * etmemeli, bu yüzden sonuçlar ayrı ayrı değerlendirilir. Çağıran, eksik dönen
+ * sonuçtan kısmi başarısızlığı anlar.
+ */
+export async function uploadPickedAssets(
+  assets: PickedAsset[],
+  purpose: FilePurpose,
+): Promise<FileAsset[]> {
+  const results = await Promise.allSettled(assets.map((asset) => uploadAsset(asset, purpose)));
+
+  return results
+    .filter((result): result is PromiseFulfilledResult<FileAsset> => result.status === 'fulfilled')
+    .map((result) => result.value);
 }
 
 /**

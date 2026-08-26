@@ -23,6 +23,7 @@ import {
   Star,
   Tag,
   TrendingUp,
+  UserCog,
   Users,
   Wallet,
   type LucideIcon,
@@ -110,6 +111,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { labelKey: 'admin.settings', href: '/settings', icon: Settings },
       { labelKey: 'admin.roles', href: '/settings/roles', icon: ShieldCheck },
       { labelKey: 'admin.audit', href: '/audit-logs', icon: FileText },
+      { labelKey: 'admin.account', href: '/account', icon: UserCog },
     ],
   },
 ];

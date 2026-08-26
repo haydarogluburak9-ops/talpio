@@ -263,6 +263,67 @@ export class AuthService {
     });
   }
 
+  /**
+   * Oturum sahibinin kendi şifresini değiştirir.
+   *
+   * Mevcut şifre hatalıysa 401 değil doğrulama hatası döner: oturum geçerlidir,
+   * hatalı olan tek şey formdaki alandır. 401 dönseydi istemci jeton yenilemeye
+   * kalkar ve kullanıcıyı oturumdan düşürürdü.
+   *
+   * Değişiklikten sonra diğer cihazlardaki oturumlar iptal edilir; şifreyi
+   * değiştirmenin amacı çalınmış bir erişimi kesmek olabilir. İsteği yapan
+   * oturum ayakta kalır, aksi halde kullanıcı kendi eylemiyle dışarı atılırdı.
+   */
+  async changePassword(
+    userId: string,
+    sessionId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ changed: true }> {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      select: { id: true, passwordHash: true },
+    });
+
+    if (!user) throw AppException.notFound('Kullanıcı', userId);
+
+    if (!user.passwordHash || !(await this.passwords.verify(user.passwordHash, currentPassword))) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Mevcut şifre hatalı.',
+        details: [{ field: 'currentPassword', issue: 'Mevcut şifre hatalı.' }],
+      });
+    }
+
+    if (await this.passwords.verify(user.passwordHash, newPassword)) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Yeni şifre mevcut şifreden farklı olmalıdır.',
+        details: [{ field: 'password', issue: 'Yeni şifre mevcut şifreden farklı olmalıdır.' }],
+      });
+    }
+
+    const passwordHash = await this.passwords.hash(newPassword);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash, failedLoginCount: 0, lockedUntil: null },
+      }),
+      this.prisma.userSession.updateMany({
+        where: { userId: user.id, revokedAt: null, NOT: { id: sessionId } },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
+
+    this.logger.log({ userId: user.id }, 'Kullanıcı şifresini değiştirdi');
+    void writeAudit(this.prisma, {
+      actorId: user.id,
+      action: 'auth.password_change',
+      entityType: 'User',
+      entityId: user.id,
+    });
+
+    return { changed: true };
+  }
+
   async currentUser(userId: string): Promise<CurrentUser> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deletedAt: null },

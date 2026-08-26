@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -13,13 +14,14 @@ import {
 
 import { MESSAGE } from '@talpio/config';
 import { formatDate, formatTime } from '@talpio/localization';
-import { ConversationStatus, MessageType, type Message } from '@talpio/types';
+import { ConversationStatus, FilePurpose, MessageType, type Message } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
 import { ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { uploadPickedAssets } from '@/features/files/use-upload';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
@@ -296,6 +298,7 @@ function MessageBubble({
   const { t, locale } = useI18n();
 
   const showDay = !previous || !isSameDay(previous.createdAt, message.createdAt);
+  const images = message.attachments.filter((item) => item.mimeType.startsWith('image/'));
 
   if (message.type === MessageType.SYSTEM) {
     return (
@@ -323,6 +326,16 @@ function MessageBubble({
           <Text style={isMine ? styles.textMine : styles.textTheirs}>{message.body}</Text>
         ) : null}
 
+        {images.map((item) => (
+          <Image
+            key={item.id}
+            source={{ uri: item.url }}
+            style={styles.attachment}
+            accessibilityLabel={t('messaging.previewPhoto')}
+            accessibilityIgnoresInvertColors
+          />
+        ))}
+
         {message.location ? (
           <Text style={isMine ? styles.textMine : styles.textTheirs}>
             {message.location.latitude.toFixed(5)}, {message.location.longitude.toFixed(5)}
@@ -348,6 +361,8 @@ function Composer({ conversationId }: { conversationId: string }) {
   const colors = useColors();
 
   const [body, setBody] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const send = useSendMessage(conversationId);
 
   const trimmed = body.trim();
@@ -362,15 +377,91 @@ function Composer({ conversationId }: { conversationId: string }) {
     );
   }
 
+  /**
+   * Galeriden seçilen fotoğrafları yükleyip tek mesaj olarak gönderir.
+   *
+   * Yazı alanı temizlenmez: fotoğraf ayrı bir mesaj olarak gider, böylece
+   * kullanıcı yazmaya devam ederken de fotoğraf paylaşabilir.
+   */
+  async function pickAndSendPhotos() {
+    setError(null);
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setError(t('messaging.galleryDenied'));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: MESSAGE.maxAttachments,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+    if (result.canceled || result.assets.length === 0) return;
+
+    const selected = result.assets.slice(0, MESSAGE.maxAttachments);
+
+    setUploading(true);
+    try {
+      const uploaded = await uploadPickedAssets(
+        selected.map((asset) => ({
+          uri: asset.uri,
+          mimeType: asset.mimeType ?? null,
+          fileName: asset.fileName ?? null,
+        })),
+        FilePurpose.MESSAGE_ATTACHMENT,
+      );
+
+      if (uploaded.length === 0) {
+        setError(t('upload.failed'));
+        return;
+      }
+
+      await send.mutateAsync({
+        type: MessageType.IMAGE,
+        attachmentFileIds: uploaded.map((file) => file.id),
+        clientMessageId: `${conversationId}-${Date.now()}`,
+      });
+
+      if (uploaded.length < selected.length) setError(t('upload.failed'));
+    } catch {
+      setError(t('messaging.sendFailed'));
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <View style={[styles.composer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
-      {send.isError ? (
+      {send.isError || error ? (
         <Text variant="caption" tone="danger">
-          {t('messaging.sendFailed')}
+          {error ?? t('messaging.sendFailed')}
+        </Text>
+      ) : null}
+
+      {uploading ? (
+        <Text variant="caption" tone="muted">
+          {t('messaging.sendingPhoto')}
         </Text>
       ) : null}
 
       <View style={styles.composerRow}>
+        <Pressable
+          onPress={() => void pickAndSendPhotos()}
+          accessibilityRole="button"
+          accessibilityLabel={t('messaging.attachPhoto')}
+          disabled={uploading || send.isPending}
+          style={styles.iconButton}
+          hitSlop={8}
+        >
+          <Ionicons
+            name="camera-outline"
+            size={24}
+            color={uploading || send.isPending ? colors.border : colors.foregroundMuted}
+          />
+        </Pressable>
+
         <TextInput
           value={body}
           onChangeText={setBody}
@@ -394,16 +485,7 @@ function Composer({ conversationId }: { conversationId: string }) {
           >
             <Ionicons name="send" size={18} color="#fff" />
           </Pressable>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('messaging.previewPhoto')}
-            style={styles.iconButton}
-            disabled
-          >
-            <Ionicons name="camera-outline" size={24} color={colors.foregroundMuted} />
-          </Pressable>
-        )}
+        ) : null}
       </View>
     </View>
   );
@@ -472,6 +554,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 6,
     borderBottomRightRadius: 22,
   },
+  attachment: { width: 200, height: 200, borderRadius: 14, marginTop: 2 },
   textMine: { color: '#fff', fontSize: 15, lineHeight: 20 },
   textTheirs: { color: '#262626', fontSize: 15, lineHeight: 20 },
   timestamp: { alignSelf: 'flex-end', fontSize: 10 },

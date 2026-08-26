@@ -19,6 +19,7 @@ export const API_ROUTES = {
     verifyPhone: '/auth/phone/verify',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    changePassword: '/auth/change-password',
     sessions: '/auth/sessions',
   },
   users: {

@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { localeTag, t } from '@/lib/i18n';
 
-import { useDiscoverFeed, useFollow } from './use-social';
+import { useDiscoverFeed, useFollow, useUnfollow } from './use-social';
 
 export function SuggestedBusinesses({
   compact = false,
@@ -59,6 +59,7 @@ export function SuggestedBusinesses({
               username={author.username}
               name={author.displayName}
               avatarUrl={author.avatarUrl}
+              isFollowing={author.isFollowing}
             />
           ))}
         </ul>
@@ -86,7 +87,13 @@ function BusinessBlock({
   authors,
 }: {
   title: string;
-  authors: Array<{ id: string; username: string; displayName: string; avatarUrl?: string | null }>;
+  authors: Array<{
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string | null;
+    isFollowing?: boolean;
+  }>;
 }) {
   return (
     <div className="social-panel p-5">
@@ -100,6 +107,7 @@ function BusinessBlock({
             username={author.username}
             name={author.displayName}
             avatarUrl={author.avatarUrl}
+            isFollowing={author.isFollowing}
           />
         ))}
       </ul>
@@ -124,12 +132,18 @@ function SuggestedRow({
   username,
   name,
   avatarUrl,
+  isFollowing = false,
 }: {
   username: string;
   name: string;
   avatarUrl?: string | null;
+  isFollowing?: boolean;
 }) {
   const follow = useFollow(username);
+  const unfollow = useUnfollow(username);
+  const pending = follow.isPending || unfollow.isPending;
+  // Sunucu bayrağı tazelenene kadar mutasyonun hedef durumu gösterilir.
+  const followed = pending ? follow.isPending : isFollowing;
 
   return (
     <li className="flex items-center gap-3">
@@ -152,11 +166,16 @@ function SuggestedRow({
       </div>
       <Button
         size="sm"
-        className="bg-accent-500 text-white hover:bg-accent-600"
-        disabled={follow.isPending}
-        onClick={() => follow.mutate()}
+        variant={followed ? 'outline' : 'primary'}
+        className={
+          followed
+            ? 'border-border bg-surface-muted text-foreground-muted hover:bg-surface-muted/70'
+            : 'bg-accent-500 text-white hover:bg-accent-600'
+        }
+        disabled={pending}
+        onClick={() => (followed ? unfollow.mutate() : follow.mutate())}
       >
-        {t('social.followCta')}
+        {followed ? t('social.followingCta') : t('social.followCta')}
       </Button>
     </li>
   );

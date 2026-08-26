@@ -7,14 +7,19 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
+import { OfferForm } from '@/features/offers/offer-form';
 import { useShareRequestToFeed } from '@/features/social/use-social';
 import { t, getLocale } from '@/lib/i18n';
 
 import {
   useAcceptRequestOffer,
   useCommerceRequest,
+  useMyBusinesses,
   useRequestOffers,
 } from './use-requests';
+
+/** Yalnızca bu durumlarda backend yeni teklif kabul eder. */
+const OFFER_OPEN_STATUSES = new Set(['PUBLISHED', 'MATCHING', 'QUOTING']);
 
 export function RequestDetail({ id }: { id: string }) {
   const session = useSession();
@@ -22,6 +27,14 @@ export function RequestDetail({ id }: { id: string }) {
   const offers = useRequestOffers(id);
   const accept = useAcceptRequestOffer(id);
   const share = useShareRequestToFeed();
+  const viewer = session.data ?? null;
+  const isBuyer = Boolean(viewer && request.data && viewer.id === request.data.buyerUserId);
+  const canOffer =
+    Boolean(viewer) &&
+    Boolean(request.data) &&
+    !isBuyer &&
+    OFFER_OPEN_STATUSES.has(request.data?.status ?? '');
+  const businesses = useMyBusinesses(canOffer);
   const comparison = useMemo(
     () =>
       compareOffers(
@@ -44,7 +57,7 @@ export function RequestDetail({ id }: { id: string }) {
   }
 
   const row = request.data;
-  const isBuyer = session.data?.id === row.buyerUserId;
+  const myBusinesses = (businesses.data as Array<{ id: string; name: string }> | undefined) ?? [];
 
   return (
     <div className="flex flex-col gap-4 pb-20 lg:pb-6">
@@ -84,131 +97,144 @@ export function RequestDetail({ id }: { id: string }) {
         ) : null}
       </header>
 
-      <section className="social-panel p-5 sm:p-6">
-        <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
-          {t('offer.compareTitle')}
-        </h2>
-        <div className="mt-4">
-          {offers.isPending ? <ListSkeleton rows={2} /> : null}
-          {offers.data?.length === 0 ? (
-            <p className="text-sm text-foreground-muted">{t('commerce.noOffers')}</p>
-          ) : null}
-          {(offers.data ?? []).length > 0 ? (
-            <>
-              <div className="hidden overflow-x-auto lg:block">
-                <table className="w-full min-w-[640px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-border text-xs uppercase tracking-wide text-foreground-muted">
-                      <th className="py-2 pr-3 font-semibold">{t('commerce.amount')}</th>
-                      <th className="py-2 pr-3 font-semibold">{t('commerce.delivery')}</th>
-                      <th className="py-2 pr-3 font-semibold">{t('commerce.location')}</th>
-                      <th className="py-2 pr-3 font-semibold">{t('commerce.badge')}</th>
-                      <th className="py-2 font-semibold" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(offers.data ?? []).map((offer) => (
-                      <tr key={offer.id} className="border-b border-border/60 align-top">
-                        <td className="py-3 pr-3 font-semibold text-accent-600">
-                          {formatMoneyMinor(
-                            offer.amountMinor,
-                            offer.currency,
-                            getLocale(),
-                          )}
-                        </td>
-                        <td className="py-3 pr-3 text-foreground-muted">
-                          {offer.deliveryDays != null ? `${offer.deliveryDays} gün` : '—'}
-                          {offer.shippingIncluded != null
-                            ? ` · ${
-                                offer.shippingIncluded
-                                  ? t('social.shippingIncludedYes')
-                                  : t('social.shippingIncludedNo')
-                              }`
-                            : ''}
-                        </td>
-                        <td className="py-3 pr-3 text-foreground-muted">
-                          {offer.locationText ?? '—'}
-                        </td>
-                        <td className="py-3 pr-3">
-                          <OfferBadges
-                            badges={[
-                              ...(offer.badges ?? []),
-                              ...(comparison.badgesByOfferId[offer.id] ?? []),
-                            ]}
-                          />
-                        </td>
-                        <td className="py-3 text-right">
-                          {isBuyer && offer.status === 'SUBMITTED' ? (
-                            <Button
-                              size="sm"
-                              className="bg-accent-500 text-white hover:bg-accent-600"
-                              disabled={accept.isPending}
-                              onClick={() => accept.mutate(offer.id)}
-                            >
-                              {t('offer.accept')}
-                            </Button>
-                          ) : (
-                            <span className="text-xs text-foreground-muted">{offer.status}</span>
-                          )}
-                        </td>
+      {canOffer ? (
+        <section id="teklif-ver" className="social-panel scroll-mt-24 p-5 sm:p-6">
+          <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+            {t('social.giveOffer')}
+          </h2>
+          <div className="mt-4">
+            {businesses.isPending ? (
+              <ListSkeleton rows={1} />
+            ) : myBusinesses[0] ? (
+              <OfferForm requestId={id} businessId={myBusinesses[0].id} />
+            ) : (
+              <p className="text-sm text-foreground-muted">
+                Teklif için önce işletme kaydı gerekir.
+              </p>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {isBuyer ? (
+        <section className="social-panel p-5 sm:p-6">
+          <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
+            {t('offer.compareTitle')}
+          </h2>
+          <div className="mt-4">
+            {offers.isPending ? <ListSkeleton rows={2} /> : null}
+            {offers.data?.length === 0 ? (
+              <p className="text-sm text-foreground-muted">{t('commerce.noOffers')}</p>
+            ) : null}
+            {(offers.data ?? []).length > 0 ? (
+              <>
+                <div className="hidden overflow-x-auto lg:block">
+                  <table className="w-full min-w-[640px] text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-xs uppercase tracking-wide text-foreground-muted">
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.amount')}</th>
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.delivery')}</th>
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.location')}</th>
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.badge')}</th>
+                        <th className="py-2 font-semibold" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <ul className="flex flex-col gap-3 lg:hidden">
-                {(offers.data ?? []).map((offer) => (
-                  <li
-                    key={offer.id}
-                    className="flex flex-col gap-3 rounded-xl bg-surface-muted/60 px-4 py-3 ring-1 ring-border/70"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-lg font-semibold text-accent-600">
-                          {formatMoneyMinor(
-                            offer.amountMinor,
-                            offer.currency,
-                            getLocale(),
-                          )}
-                        </p>
-                        <p className="text-sm text-foreground-muted">
-                          {offer.status}
-                          {offer.deliveryDays != null ? ` · ${offer.deliveryDays} gün` : ''}
-                          {offer.locationText ? ` · ${offer.locationText}` : ''}
-                          {offer.shippingIncluded != null
-                            ? ` · ${
-                                offer.shippingIncluded
-                                  ? t('social.shippingIncludedYes')
-                                  : t('social.shippingIncludedNo')
-                              }`
-                            : ''}
-                        </p>
+                    </thead>
+                    <tbody>
+                      {(offers.data ?? []).map((offer) => (
+                        <tr key={offer.id} className="border-b border-border/60 align-top">
+                          <td className="py-3 pr-3 font-semibold text-accent-600">
+                            {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
+                          </td>
+                          <td className="py-3 pr-3 text-foreground-muted">
+                            {offer.deliveryDays != null ? `${offer.deliveryDays} gün` : '—'}
+                            {offer.shippingIncluded != null
+                              ? ` · ${
+                                  offer.shippingIncluded
+                                    ? t('social.shippingIncludedYes')
+                                    : t('social.shippingIncludedNo')
+                                }`
+                              : ''}
+                          </td>
+                          <td className="py-3 pr-3 text-foreground-muted">
+                            {offer.locationText ?? '—'}
+                          </td>
+                          <td className="py-3 pr-3">
+                            <OfferBadges
+                              badges={[
+                                ...(offer.badges ?? []),
+                                ...(comparison.badgesByOfferId[offer.id] ?? []),
+                              ]}
+                            />
+                          </td>
+                          <td className="py-3 text-right">
+                            {isBuyer && offer.status === 'SUBMITTED' ? (
+                              <Button
+                                size="sm"
+                                className="bg-accent-500 text-white hover:bg-accent-600"
+                                disabled={accept.isPending}
+                                onClick={() => accept.mutate(offer.id)}
+                              >
+                                {t('offer.accept')}
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-foreground-muted">{offer.status}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <ul className="flex flex-col gap-3 lg:hidden">
+                  {(offers.data ?? []).map((offer) => (
+                    <li
+                      key={offer.id}
+                      className="flex flex-col gap-3 rounded-xl bg-surface-muted/60 px-4 py-3 ring-1 ring-border/70"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-lg font-semibold text-accent-600">
+                            {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
+                          </p>
+                          <p className="text-sm text-foreground-muted">
+                            {offer.status}
+                            {offer.deliveryDays != null ? ` · ${offer.deliveryDays} gün` : ''}
+                            {offer.locationText ? ` · ${offer.locationText}` : ''}
+                            {offer.shippingIncluded != null
+                              ? ` · ${
+                                  offer.shippingIncluded
+                                    ? t('social.shippingIncludedYes')
+                                    : t('social.shippingIncludedNo')
+                                }`
+                              : ''}
+                          </p>
+                        </div>
+                        {isBuyer && offer.status === 'SUBMITTED' ? (
+                          <Button
+                            size="sm"
+                            className="bg-accent-500 text-white hover:bg-accent-600"
+                            disabled={accept.isPending}
+                            onClick={() => accept.mutate(offer.id)}
+                          >
+                            {t('offer.accept')}
+                          </Button>
+                        ) : null}
                       </div>
-                      {isBuyer && offer.status === 'SUBMITTED' ? (
-                        <Button
-                          size="sm"
-                          className="bg-accent-500 text-white hover:bg-accent-600"
-                          disabled={accept.isPending}
-                          onClick={() => accept.mutate(offer.id)}
-                        >
-                          {t('offer.accept')}
-                        </Button>
-                      ) : null}
-                    </div>
-                    <OfferBadges
-                      badges={[
-                        ...(offer.badges ?? []),
-                        ...(comparison.badgesByOfferId[offer.id] ?? []),
-                      ]}
-                    />
-                    {offer.note ? <p className="text-sm">{offer.note}</p> : null}
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-        </div>
-      </section>
+                      <OfferBadges
+                        badges={[
+                          ...(offer.badges ?? []),
+                          ...(comparison.badgesByOfferId[offer.id] ?? []),
+                        ]}
+                      />
+                      {offer.note ? <p className="text-sm">{offer.note}</p> : null}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

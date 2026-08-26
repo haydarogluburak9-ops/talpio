@@ -77,6 +77,8 @@ export const REVIEW = {
 
 export const MESSAGE = {
   maxBodyLength: 4000,
+  /** Tek mesaja iliştirilebilen dosya sayısı. */
+  maxAttachments: 5,
   /** Gerçek zamanlı bağlantı kurulana kadar kullanılacak yenileme aralığı (ms). */
   pollingIntervalMs: 8000,
 } as const;

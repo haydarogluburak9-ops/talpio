@@ -2,6 +2,7 @@ import { UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
+import type { FeedCacheService } from '@infra/cache/feed-cache.service';
 import type { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
@@ -88,15 +89,21 @@ function createService(prisma: PrismaMock) {
 
   const config = { fileBaseUrl: 'http://localhost:9000/talpio' } as unknown as AppConfigService;
 
+  const feedCache = {
+    bumpUserVersion: jest.fn().mockResolvedValue(undefined),
+  };
+
   return {
     service: new FollowsService(
       prisma as unknown as PrismaService,
       config,
       profiles,
       notifications as never,
+      feedCache as unknown as FeedCacheService,
     ),
     profiles,
     notifications,
+    feedCache,
   };
 }
 

@@ -5,6 +5,7 @@ import { NotificationType, type SocialProfile } from '@talpio/types';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
+import { FeedCacheService } from '@infra/cache/feed-cache.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -20,6 +21,7 @@ export class FollowsService {
     private readonly config: AppConfigService,
     private readonly profiles: ProfilesService,
     private readonly notifications: NotificationsService,
+    private readonly feedCache: FeedCacheService,
   ) {}
 
   async follow(user: AuthenticatedUser, username: string): Promise<SocialProfile> {
@@ -58,6 +60,8 @@ export class FollowsService {
           data: { followerCount: { increment: 1 } },
         });
       });
+
+      await this.feedCache.bumpUserVersion(user.id);
 
       if (target.userId && target.userId !== user.id) {
         await this.notifications.dispatch({
@@ -98,6 +102,8 @@ export class FollowsService {
           data: { followerCount: { decrement: 1 } },
         });
       });
+
+      await this.feedCache.bumpUserVersion(user.id);
     }
 
     return this.profiles.getByUsername(username, user.id);
