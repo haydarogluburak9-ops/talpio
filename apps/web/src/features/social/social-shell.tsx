@@ -128,7 +128,7 @@ export function SocialShell({
             showRail
               ? 'max-w-[1160px] xl:grid-cols-[minmax(0,1fr)_300px]'
               : wide
-                ? 'max-w-[1100px]'
+                ? 'max-w-[1440px]'
                 : 'max-w-[920px]',
           )}
         >

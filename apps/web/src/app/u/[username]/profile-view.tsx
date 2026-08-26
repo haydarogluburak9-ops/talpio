@@ -100,30 +100,30 @@ export function SocialProfileView() {
 
   return (
     <SocialShell showRail={false} wide>
-      <div className="social-panel mb-3 overflow-hidden p-4">
-        <ProfileHeader
-          profile={profile.data}
-          isOwn={isOwn}
-          onOpenPosts={() => setTab('posts')}
-          onOpenFollowers={() => setTab('followers')}
-          onOpenFollowing={() => setTab('following')}
-        />
-        <ProfileHighlightsSection profile={profile.data} isOwn={isOwn} />
-      </div>
-
       <div
         className={cn(
-          'grid items-start gap-3',
+          'grid items-start gap-4',
           isPersonal && 'md:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]',
         )}
       >
         {isPersonal ? (
-          <div className="md:sticky md:top-20">
+          <aside className="md:sticky md:top-20">
             <ProfileSidebar profile={profile.data} isOwn={isOwn} />
-          </div>
+          </aside>
         ) : null}
 
         <div className="min-w-0">
+          <div className="social-panel mb-3 overflow-hidden p-4">
+            <ProfileHeader
+              profile={profile.data}
+              isOwn={isOwn}
+              onOpenPosts={() => setTab('posts')}
+              onOpenFollowers={() => setTab('followers')}
+              onOpenFollowing={() => setTab('following')}
+            />
+            <ProfileHighlightsSection profile={profile.data} isOwn={isOwn} />
+          </div>
+
           {tabs.length > 0 ? (
             <div className="social-panel mb-3 overflow-x-auto px-2 py-1">
               <div className="flex min-w-max gap-1" role="tablist">
@@ -295,7 +295,7 @@ function PostGrid({
 
   return (
     <div className="pb-20 lg:pb-6">
-      <DiscoverGrid posts={posts} onSelect={setViewerIndex} />
+      <DiscoverGrid posts={posts} onSelect={setViewerIndex} wide />
       {viewerIndex !== null ? (
         <DiscoverViewer
           posts={posts}

@@ -13,12 +13,20 @@ import {
 export function DiscoverGrid({
   posts,
   onSelect,
+  wide = false,
 }: {
   posts: SocialPost[];
   onSelect: (index: number) => void;
+  /** Geniş sütunda üç kare devasa kalırdı; yer açıldıkça sütun eklenir. */
+  wide?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-0.5 sm:gap-1">
+    <div
+      className={cn(
+        'grid gap-0.5 sm:gap-1',
+        wide ? 'grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5' : 'grid-cols-3',
+      )}
+    >
       {posts.map((post, index) => (
         <DiscoverGridTile key={post.id} post={post} onClick={() => onSelect(index)} />
       ))}
