@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 
@@ -41,6 +42,7 @@ export function PublicProfileScreen({
 }) {
   const { t } = useI18n();
   const colors = useColors();
+  const router = useRouter();
   const profile = useSocialProfile(username);
   const me = useSocialMe();
   const posts = useProfilePosts(username);
@@ -75,6 +77,7 @@ export function PublicProfileScreen({
   const row = profile.data;
   const items = posts.data?.items ?? [];
   const isOwn = me.data?.username === row.username;
+  const store = row.kind === 'BUSINESS' ? row.business : null;
   const tabs: { id: ProfileTab; label: string }[] = [
     { id: 'posts', label: t('social.posts') },
     { id: 'followers', label: t('social.followersTab') },
@@ -133,6 +136,19 @@ export function PublicProfileScreen({
                   loading={follow.isPending}
                   onPress={() => follow.mutate(row.username)}
                   style={styles.action}
+                />
+              ) : null}
+              {store ? (
+                <Button
+                  label={t('social.requestQuoteCta')}
+                  variant="outline"
+                  onPress={() =>
+                    router.push({
+                      pathname: '/customer/requests/new',
+                      params: { storeUsername: row.username },
+                    })
+                  }
+                  style={styles.quote}
                 />
               ) : null}
               <Button
@@ -333,6 +349,7 @@ const styles = StyleSheet.create({
   },
   copy: { flex: 1, gap: 4, paddingBottom: spacing.xs },
   action: { marginTop: spacing.md },
+  quote: { marginTop: spacing.sm },
   report: { marginTop: spacing.sm },
   statRow: { flexDirection: 'row', gap: spacing.xl, marginTop: spacing.md },
   stat: { alignItems: 'center', gap: 2 },

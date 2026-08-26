@@ -4,12 +4,14 @@ import { ApiError } from '@talpio/api-client';
 import { RequestType } from '@talpio/types';
 
 import { Button } from '@/components/button';
+import { Card } from '@/components/card';
 import { FormField } from '@/components/form-field';
 import { OptionPicker } from '@/components/option-picker';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { useSocialProfile } from '@/features/social/use-social';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
@@ -34,11 +36,17 @@ const TYPE_KEYS: { value: RequestType; key: string }[] = [
   { value: RequestType.OTHER, key: 'commerce.typeOther' },
 ];
 
-export function CommerceRequestFormScreen() {
+export function CommerceRequestFormScreen({
+  /** Mağaza profilindeki "Teklif iste" düğmesinden gelindiğinde dolu olur. */
+  storeUsername,
+}: {
+  storeUsername?: string;
+}) {
   const { t, categoryLabel } = useI18n();
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
   const create = useCreateCommerceRequest();
+  const storeProfile = useSocialProfile(storeUsername ?? '');
 
   const [cityId, setCityId] = useState<string | null>(null);
   const districts = useDistricts(cityId);
@@ -59,15 +67,19 @@ export function CommerceRequestFormScreen() {
     deliveryDeadline: '',
   });
 
+  const store = storeProfile.data?.kind === 'BUSINESS' ? storeProfile.data : null;
+  // Mağazadan gelindiğinde kategori hazır seçilir; kullanıcının seçimi bunu ezer.
+  const categoryId = form.categoryId || store?.business?.categories[0]?.id || '';
+
   const selectedCategory = useMemo(
-    () => (categories.data ?? []).find((item) => item.id === form.categoryId),
-    [categories.data, form.categoryId],
+    () => (categories.data ?? []).find((item) => item.id === categoryId),
+    [categories.data, categoryId],
   );
   const subcategories = selectedCategory?.subcategories ?? [];
 
-  const attributeSchema = useCategoryAttributeSchema(form.categoryId || undefined);
+  const attributeSchema = useCategoryAttributeSchema(categoryId || undefined);
   const attributeFields = attributeSchema.data?.fields ?? [];
-  const attributeSchemaPending = Boolean(form.categoryId) && attributeSchema.isPending;
+  const attributeSchemaPending = Boolean(categoryId) && attributeSchema.isPending;
 
   async function onSubmit() {
     setError(null);
@@ -75,7 +87,7 @@ export function CommerceRequestFormScreen() {
     if (
       form.title.trim().length < 5 ||
       form.description.trim().length < 10 ||
-      !form.categoryId ||
+      !categoryId ||
       !cityId ||
       !form.districtId ||
       !form.deliveryLocation.trim()
@@ -98,7 +110,7 @@ export function CommerceRequestFormScreen() {
         requestType: form.requestType,
         title: form.title.trim(),
         description: form.description.trim(),
-        categoryId: form.categoryId,
+        categoryId,
         subcategoryId: form.subcategoryId || undefined,
         quantity: form.quantity || undefined,
         unit: form.unit || undefined,
@@ -113,6 +125,7 @@ export function CommerceRequestFormScreen() {
           quantity: form.quantity || undefined,
           unit: form.unit || undefined,
           ...toSpecificationValues(attributeFields, attributeValues),
+          ...(storeUsername ? { preferredSellerUsername: storeUsername } : {}),
         },
         publish: true,
       });
@@ -128,6 +141,17 @@ export function CommerceRequestFormScreen() {
         {t('commerce.createDescription')}
       </Text>
 
+      {store ? (
+        <Card style={{ marginBottom: spacing.md }}>
+          <Text variant="bodyStrong">
+            {t('social.quoteForStore', { name: store.displayName })}
+          </Text>
+          <Text variant="caption" tone="muted">
+            {t('social.quoteForStoreHint')}
+          </Text>
+        </Card>
+      ) : null}
+
       <OptionPicker
         label={t('commerce.fieldType')}
         options={TYPE_KEYS.map((item) => ({ id: item.value, name: t(item.key) }))}
@@ -141,7 +165,7 @@ export function CommerceRequestFormScreen() {
           id: item.id,
           name: categoryLabel(item.slug, item.name),
         }))}
-        selectedId={form.categoryId || null}
+        selectedId={categoryId || null}
         onSelect={(id) => {
           // Alan şeması kategoriye bağlıdır; önceki kategorinin cevapları taşınmaz.
           setAttributeValues({});
