@@ -102,14 +102,6 @@ jobs:
         env:
           E2E_API_ORIGIN: http://127.0.0.1:3000
 
-  flutter-archive:
-    name: Flutter arşiv
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Arşiv README doğrula
-        run: grep -q "ARŞİV" apps/mobile-flutter/README.md
-
   docker:
     name: Docker imajları
     runs-on: ubuntu-latest
