@@ -5,11 +5,17 @@ import { RequestType } from '@talpio/types';
 import { Button, Field, Input, Select, Textarea } from '@talpio/ui';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useCategories } from '@/features/catalog/use-categories';
+import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
 import { useSocialProfile } from '@/features/social/use-social';
 import { t } from '@/lib/i18n';
 
+import {
+  CategoryAttributeFields,
+  findMissingAttributes,
+  toSpecificationValues,
+  type AttributeValues,
+} from './category-attribute-fields';
 import { useCreateCommerceRequest } from './use-requests';
 
 const REQUEST_TYPE_OPTIONS: { value: RequestType; labelKey: string }[] = [
@@ -25,7 +31,14 @@ const REQUEST_TYPE_OPTIONS: { value: RequestType; labelKey: string }[] = [
   { value: RequestType.OTHER, labelKey: 'commerce.typeOther' },
 ];
 
-export function CommerceRequestForm({ storeUsername }: { storeUsername?: string }) {
+export function CommerceRequestForm({
+  storeUsername,
+  initialCategorySlug,
+}: {
+  storeUsername?: string;
+  /** Kısayol bağlantılarının kategoriyi hazır seçmesi için. */
+  initialCategorySlug?: string;
+}) {
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
   const create = useCreateCommerceRequest();
@@ -34,12 +47,15 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
   const [cityId, setCityId] = useState('');
   const districts = useDistricts(cityId || undefined);
   const [error, setError] = useState<string | null>(null);
+  const [attributeValues, setAttributeValues] = useState<AttributeValues>({});
+  const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
 
   const [form, setForm] = useState({
     requestType: RequestType.PRODUCT_SUPPLY as RequestType,
     title: '',
     description: '',
     categoryId: '',
+    categoryPicked: false,
     subcategoryId: '',
     districtId: '',
     quantity: '',
@@ -49,13 +65,25 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
     deliveryDeadline: '',
   });
 
+  // Kısayol yalnızca kullanıcı kendi seçimini yapana kadar geçerlidir.
+  const shortcutCategoryId = useMemo(() => {
+    if (!initialCategorySlug) return '';
+    return (categories.data ?? []).find((c) => c.slug === initialCategorySlug)?.id ?? '';
+  }, [categories.data, initialCategorySlug]);
+
+  const categoryId = form.categoryPicked || form.categoryId ? form.categoryId : shortcutCategoryId;
+
   const selectedCategory = useMemo(
-    () => (categories.data ?? []).find((c) => c.id === form.categoryId),
-    [categories.data, form.categoryId],
+    () => (categories.data ?? []).find((c) => c.id === categoryId),
+    [categories.data, categoryId],
   );
 
   const subcategories = selectedCategory?.subcategories ?? [];
   const store = storeProfile.data?.kind === 'BUSINESS' ? storeProfile.data : null;
+
+  const attributeSchema = useCategoryAttributeSchema(categoryId || undefined);
+  const attributeFields = attributeSchema.data?.fields ?? [];
+  const attributeSchemaPending = Boolean(categoryId) && attributeSchema.isPending;
 
   useEffect(() => {
     const firstCategory = store?.business?.categories[0]?.id;
@@ -68,13 +96,14 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+    setAttributeErrors({});
 
     if (
       !form.title.trim() ||
       form.title.trim().length < 5 ||
       !form.description.trim() ||
       form.description.trim().length < 10 ||
-      !form.categoryId ||
+      !categoryId ||
       !cityId ||
       !form.districtId ||
       !form.deliveryLocation.trim()
@@ -83,12 +112,21 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
       return;
     }
 
+    const missingAttributes = findMissingAttributes(attributeFields, attributeValues);
+    if (missingAttributes.length > 0) {
+      setAttributeErrors(
+        Object.fromEntries(missingAttributes.map((key) => [key, t('commerce.attributeRequired')])),
+      );
+      setError(t('commerce.attributeMissing'));
+      return;
+    }
+
     try {
       await create.mutateAsync({
         requestType: form.requestType,
         title: form.title.trim(),
         description: form.description.trim(),
-        categoryId: form.categoryId,
+        categoryId,
         subcategoryId: form.subcategoryId || undefined,
         quantity: form.quantity || undefined,
         unit: form.unit || undefined,
@@ -102,6 +140,7 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
           brandPreference: form.brandPreference || undefined,
           quantity: form.quantity || undefined,
           unit: form.unit || undefined,
+          ...toSpecificationValues(attributeFields, attributeValues),
           ...(storeUsername ? { preferredSellerUsername: storeUsername } : {}),
         },
         publish: true,
@@ -143,10 +182,18 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
         {(props) => (
           <Select
             {...props}
-            value={form.categoryId}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, categoryId: e.target.value, subcategoryId: '' }))
-            }
+            value={categoryId}
+            onChange={(e) => {
+              // Alan şeması kategoriye bağlıdır; önceki kategorinin cevapları taşınmaz.
+              setAttributeValues({});
+              setAttributeErrors({});
+              setForm((f) => ({
+                ...f,
+                categoryId: e.target.value,
+                categoryPicked: true,
+                subcategoryId: '',
+              }));
+            }}
             required
           >
             <option value="">{t('commerce.selectPlaceholder')}</option>
@@ -241,6 +288,21 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
         </Field>
       </div>
 
+      <CategoryAttributeFields
+        fields={attributeFields}
+        values={attributeValues}
+        errors={attributeErrors}
+        onChange={(key, value) => {
+          setAttributeValues((current) => ({ ...current, [key]: value }));
+          setAttributeErrors((current) => {
+            if (!current[key]) return current;
+            const next = { ...current };
+            delete next[key];
+            return next;
+          });
+        }}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('commerce.fieldCity')} required>
           {(props) => (
@@ -306,7 +368,10 @@ export function CommerceRequestForm({ storeUsername }: { storeUsername?: string 
 
       {error ? <p className="text-sm text-danger-500">{error}</p> : null}
 
-      <Button type="submit" disabled={create.isPending || categories.isPending}>
+      <Button
+        type="submit"
+        disabled={create.isPending || categories.isPending || attributeSchemaPending}
+      >
         {create.isPending ? t('commerce.submitting') : t('commerce.submit')}
       </Button>
     </form>

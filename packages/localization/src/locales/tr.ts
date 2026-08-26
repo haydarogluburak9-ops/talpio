@@ -1356,6 +1356,13 @@ export const tr = {
     descriptionPlaceholder: 'İhtiyaç, marka, model, teslim koşulları…',
     addressPlaceholder: 'Mahalle, sokak veya açık adres',
     requiredFields: 'Başlık, açıklama, kategori, şehir, ilçe ve teslimat adresi zorunludur.',
+    attributeSectionTitle: 'Kategoriye özel bilgiler',
+    attributeSectionHint:
+      'Bu alanlar seçtiğiniz kategoriye göre değişir; satıcıların doğru teklif vermesini sağlar.',
+    attributeRequired: 'Bu alan zorunludur.',
+    attributeMissing: 'Kategoriye özel zorunlu alanları doldurun.',
+    optionYes: 'Evet',
+    optionNo: 'Hayır',
     createFailed: 'Talep oluşturulamadı.',
     submit: 'Talebi yayınla',
     submitting: 'Gönderiliyor…',

@@ -1343,6 +1343,13 @@ export const en: Messages = {
     descriptionPlaceholder: 'Need, brand, model, delivery terms…',
     addressPlaceholder: 'Neighborhood, street, or full address',
     requiredFields: 'Title, description, category, city, district, and delivery address are required.',
+    attributeSectionTitle: 'Category-specific details',
+    attributeSectionHint:
+      'These fields change with the selected category so sellers can quote accurately.',
+    attributeRequired: 'This field is required.',
+    attributeMissing: 'Fill in the required category-specific fields.',
+    optionYes: 'Yes',
+    optionNo: 'No',
     createFailed: 'Could not create the request.',
     submit: 'Publish request',
     submitting: 'Sending…',

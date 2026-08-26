@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 import { CommerceRequestForm } from '@/features/requests/commerce-request-form';
-import { OilRequestForm } from '@/features/requests/oil-request-form';
 import { SocialShell } from '@/features/social/social-shell';
 import { t } from '@/lib/i18n';
 import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
@@ -11,12 +9,18 @@ export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata('commerce.createTitle', { descriptionKey: 'commerce.createDescription' });
 }
 
+/** Dikeye özel form yerine artık genel form açılır; kategori hazır seçilir. */
+const CATEGORY_SHORTCUTS: Record<string, string> = {
+  yag: 'madeni-yag-kimya',
+  oil: 'madeni-yag-kimya',
+};
+
 type SearchParams = Promise<{ tip?: string; magaza?: string }>;
 
 export default async function TedarikPage({ searchParams }: { searchParams: SearchParams }) {
   await applyRequestLocale();
   const params = await searchParams;
-  const oilMode = params.tip === 'yag' || params.tip === 'oil';
+  const initialCategorySlug = params.tip ? CATEGORY_SHORTCUTS[params.tip] : undefined;
   const storeUsername = params.magaza?.trim() || undefined;
 
   return (
@@ -31,26 +35,15 @@ export default async function TedarikPage({ searchParams }: { searchParams: Sear
         <p className="mt-2 max-w-xl text-sm text-foreground-muted">
           {t('commerce.createDescription')}
         </p>
-        <p className="mt-3 text-sm text-foreground-muted">
-          {oilMode ? (
-            <>
-              Madeni yağ formu.{' '}
-              <Link href="/tedarik" className="font-medium text-accent-600 hover:underline">
-                Genel tedarik formuna dön
-              </Link>
-            </>
-          ) : (
-            <>
-              Genel form.{' '}
-              <Link href="/tedarik?tip=yag" className="font-medium text-accent-600 hover:underline">
-                Madeni yağ özel formu
-              </Link>
-            </>
-          )}
+        <p className="mt-3 max-w-xl text-sm text-foreground-muted">
+          {t('commerce.attributeSectionHint')}
         </p>
       </div>
       <div className="social-panel p-5 sm:p-6">
-        {oilMode ? <OilRequestForm /> : <CommerceRequestForm storeUsername={storeUsername} />}
+        <CommerceRequestForm
+          storeUsername={storeUsername}
+          initialCategorySlug={initialCategorySlug}
+        />
       </div>
     </SocialShell>
   );
