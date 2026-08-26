@@ -258,6 +258,7 @@ function ProfileTabContent({
         totalCount={profile.followingCount}
         countLabelKey="social.followingCountLabel"
         searchLabel={t('social.searchFollowing')}
+        unfollowable={isOwn}
       />
     );
   }

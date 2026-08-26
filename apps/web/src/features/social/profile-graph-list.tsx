@@ -1,12 +1,14 @@
 'use client';
 
 import type { SocialProfile } from '@talpio/types';
-import { EmptyState, ListSkeleton } from '@talpio/ui';
+import { Button, EmptyState, ListSkeleton } from '@talpio/ui';
 import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { localeTag, t } from '@/lib/i18n';
+
+import { useUnfollow } from './use-social';
 
 /**
  * Takipçi / takip edilen listesi.
@@ -21,12 +23,18 @@ export function ProfileGraphList({
   totalCount,
   countLabelKey,
   searchLabel,
+  unfollowable = false,
 }: {
   pending: boolean;
   items: SocialProfile[];
   totalCount: number;
   countLabelKey: 'social.followersCountLabel' | 'social.followingCountLabel';
   searchLabel: string;
+  /**
+   * Yalnızca kişinin kendi "takip edilenler" listesinde açılır: oradaki her
+   * kayıt tanımı gereği takip edilendir, dolayısıyla durum sorgusu gerekmez.
+   */
+  unfollowable?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const needle = query.trim().toLocaleLowerCase(localeTag());
@@ -71,10 +79,10 @@ export function ProfileGraphList({
       ) : (
         <ul className="social-panel divide-y divide-border">
           {visible.map((person) => (
-            <li key={person.id}>
+            <li key={person.id} className="flex items-center gap-2 pr-4 hover:bg-surface-muted">
               <Link
                 href={`/u/${person.username}`}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-surface-muted"
+                className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
               >
                 <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-brand-800 text-xs font-bold text-white">
                   {person.avatarUrl ? (
@@ -91,10 +99,29 @@ export function ProfileGraphList({
                   </span>
                 </span>
               </Link>
+
+              {unfollowable ? <UnfollowButton username={person.username} /> : null}
             </li>
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+function UnfollowButton({ username }: { username: string }) {
+  const unfollow = useUnfollow(username);
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="shrink-0 border-border bg-surface-muted text-foreground-muted hover:border-danger-on-surface/40 hover:text-danger-on-surface"
+      disabled={unfollow.isPending}
+      isLoading={unfollow.isPending}
+      onClick={() => unfollow.mutate()}
+    >
+      {t('social.unfollow')}
+    </Button>
   );
 }
