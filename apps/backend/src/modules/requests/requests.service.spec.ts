@@ -1,3 +1,4 @@
+import { REQUEST_MATCHING } from '@talpio/config';
 import { Permission, RequestOfferStatus, RequestStatus, UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
@@ -194,6 +195,51 @@ describe('RequestsService tenant isolation', () => {
     expect(published.matchCount).toBe(0);
     expect(requestMatchMocks.upsert).not.toHaveBeenCalled();
     expect(outbox.write).not.toHaveBeenCalled();
+  });
+
+  it('publish kategorisiz talepte eşleşmeyi dar üst sınıra kırpar', async () => {
+    const row = draftRow({ categoryId: null, category: null });
+    commerceRequest.findFirst.mockResolvedValue(row);
+    primePublish(
+      Array.from({ length: REQUEST_MATCHING.maxMatchesWithoutCategory + 20 }, (_, i) =>
+        matcherBusiness({
+          id: `biz-${i}`,
+          memberships: [{ userId: `seller-${i}`, user: { lastActiveAt: null } }],
+        }),
+      ),
+    );
+    commerceRequestMocks.update.mockResolvedValue({
+      ...row,
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    const published = await service.publish(buyer, 'req-1');
+
+    expect(published.matchCount).toBe(REQUEST_MATCHING.maxMatchesWithoutCategory);
+    expect(outbox.write).toHaveBeenCalledTimes(REQUEST_MATCHING.maxMatchesWithoutCategory);
+  });
+
+  it('publish kategorili talepte dar sınırı uygulamaz', async () => {
+    const row = draftRow();
+    commerceRequest.findFirst.mockResolvedValue(row);
+    primePublish(
+      Array.from({ length: REQUEST_MATCHING.maxMatchesWithoutCategory + 5 }, (_, i) =>
+        matcherBusiness({
+          id: `biz-${i}`,
+          memberships: [{ userId: `seller-${i}`, user: { lastActiveAt: null } }],
+        }),
+      ),
+    );
+    commerceRequestMocks.update.mockResolvedValue({
+      ...row,
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    const published = await service.publish(buyer, 'req-1');
+
+    expect(published.matchCount).toBe(REQUEST_MATCHING.maxMatchesWithoutCategory + 5);
   });
 
   it('getById alıcıya eşleşme sayısını döner', async () => {

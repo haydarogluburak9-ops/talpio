@@ -4,7 +4,7 @@ import {
   compareOffers,
   selectCommissionRule,
 } from '@talpio/business-logic';
-import { deepLinks } from '@talpio/config';
+import { REQUEST_MATCHING, deepLinks } from '@talpio/config';
 import {
   DOMAIN_EVENT_TYPES,
   NotificationType,
@@ -224,7 +224,7 @@ export class RequestsService {
         ? Object.keys(row.specifications)
         : [];
 
-    const matches = matchBusinessesToRequest(
+    const ranked = matchBusinessesToRequest(
       {
         categoryId: row.categoryId,
         subcategoryId: row.subcategoryId,
@@ -236,6 +236,16 @@ export class RequestsService {
         buyerUserId: row.buyerUserId,
       },
       matcherInput,
+    );
+
+    // Kategorisiz talepte eşleştirici kategori filtresini uygulayamaz; aday
+    // havuzu tüm aktif işletmeler olur. Liste puana göre sıralı geldiği için
+    // baştan kesmek en isabetli işletmeleri korur.
+    const matches = ranked.slice(
+      0,
+      row.categoryId
+        ? REQUEST_MATCHING.maxMatches
+        : REQUEST_MATCHING.maxMatchesWithoutCategory,
     );
 
     const now = new Date();

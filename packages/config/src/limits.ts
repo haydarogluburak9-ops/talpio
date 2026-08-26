@@ -57,6 +57,17 @@ export const JOB = {
   defaultExpiryDays: 14,
 } as const;
 
+export const REQUEST_MATCHING = {
+  /** Tek talebin eşleşebileceği işletme sayısı. */
+  maxMatches: 100,
+  /**
+   * Kategorisi olmayan talepler için daha dar sınır: eşleştirici kategori
+   * filtresini uygulayamadığı için aday havuzu tüm aktif işletmelerdir ve
+   * sınırsız bırakılırsa tek talep platforma bildirim yağdırır.
+   */
+  maxMatchesWithoutCategory: 25,
+} as const;
+
 export const OFFER = {
   minNoteLength: 0,
   maxNoteLength: 1500,
