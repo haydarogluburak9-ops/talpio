@@ -54,7 +54,7 @@ export function SocialProfileView() {
 
   if (profile.isPending) {
     return (
-      <SocialShell>
+      <SocialShell showRail={false} wide>
         <ListSkeleton rows={3} />
       </SocialShell>
     );
@@ -62,7 +62,7 @@ export function SocialProfileView() {
 
   if (profile.isError || !profile.data) {
     return (
-      <SocialShell>
+      <SocialShell showRail={false} wide>
         <div className="social-panel p-4">
           <ErrorState
             title={t('social.profileNotFound')}
@@ -99,7 +99,7 @@ export function SocialProfileView() {
   const isPersonal = profile.data.kind === 'PERSONAL';
 
   return (
-    <SocialShell showRail={false}>
+    <SocialShell showRail={false} wide>
       <div className="social-panel mb-3 overflow-hidden p-4">
         <ProfileHeader
           profile={profile.data}

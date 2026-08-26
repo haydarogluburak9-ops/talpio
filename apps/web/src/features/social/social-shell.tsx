@@ -100,9 +100,12 @@ function SocialBottomNav({
 export function SocialShell({
   children,
   showRail = true,
+  wide = false,
 }: {
   children: React.ReactNode;
   showRail?: boolean;
+  /** Kendi iç sütunu olan sayfalar (profil) için geniş ölçü. */
+  wide?: boolean;
 }) {
   const pathname = usePathname();
   const session = useSession();
@@ -122,7 +125,11 @@ export function SocialShell({
         <div
           className={cn(
             'mx-auto grid w-full gap-4',
-            showRail ? 'max-w-[1160px] xl:grid-cols-[minmax(0,1fr)_300px]' : 'max-w-[920px]',
+            showRail
+              ? 'max-w-[1160px] xl:grid-cols-[minmax(0,1fr)_300px]'
+              : wide
+                ? 'max-w-[1100px]'
+                : 'max-w-[920px]',
           )}
         >
           <section className="min-w-0 pb-24">{children}</section>
