@@ -254,7 +254,7 @@ function ProviderSection({ profile }: { profile: ProviderProfile }) {
 }
 
 function ServicesSection({ selection }: { selection: Map<string, string> }) {
-  const { t, categoryLabel } = useI18n();
+  const { t, categoryName } = useI18n();
   const categories = useCategories();
   const replace = useReplaceMyServices();
 
@@ -289,7 +289,7 @@ function ServicesSection({ selection }: { selection: Map<string, string> }) {
         label={t('profile.selectCategory')}
         options={(categories.data ?? []).map((category) => ({
           id: category.id,
-          name: categoryLabel(category.slug, category.name),
+          name: categoryName(category),
         }))}
         selectedIds={new Set(selected.keys())}
         onToggle={(option) => toggle(option.id)}

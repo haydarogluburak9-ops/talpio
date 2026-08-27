@@ -98,7 +98,7 @@ export function ProviderReviewsScreen({ providerId }: { providerId: string }) {
 }
 
 function ProviderCard({ provider }: { provider: ProviderSummary }) {
-  const { t } = useI18n();
+  const { t, categoryName } = useI18n();
 
   return (
     <Card>
@@ -130,7 +130,7 @@ function ProviderCard({ provider }: { provider: ProviderSummary }) {
       {provider.categories.length > 0 ? (
         <View style={styles.categories}>
           {provider.categories.map((category) => (
-            <Badge key={category.id} tone="neutral" label={category.name} />
+            <Badge key={category.id} tone="neutral" label={categoryName(category)} />
           ))}
         </View>
       ) : null}

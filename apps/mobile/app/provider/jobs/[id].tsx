@@ -21,7 +21,7 @@ import { spacing } from '@/theme/tokens';
  */
 export default function ProviderJobDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const router = useRouter();
   const job = useJob(params.id ?? '');
 
@@ -59,8 +59,9 @@ export default function ProviderJobDetailScreen() {
         </View>
 
         <Text variant="caption" tone="muted">
-          {data.category.name}
-          {data.subcategory ? ` · ${data.subcategory.name}` : ''} · {data.address.districtName},{' '}
+          {categoryName(data.category)}
+          {data.subcategory ? ` · ${categoryName(data.subcategory)}` : ''} ·{' '}
+          {data.address.districtName},{' '}
           {data.address.cityName}
         </Text>
 

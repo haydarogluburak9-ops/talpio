@@ -14,6 +14,7 @@ import {
   SUBSCRIPTION_PLAN_SEEDS,
 } from './data/billing';
 import { COMMERCE_CATEGORIES, SERVICE_CATEGORIES } from './data/categories';
+import { catalogNameTranslations } from './data/category-translations';
 import { COMMISSION_RULES } from './data/commission';
 import { DEMO_ACCOUNTS, LEGACY_DEMO_EMAILS } from './data/demo-accounts';
 import { seedSocialNetwork } from './data/social-feed';
@@ -93,10 +94,12 @@ async function seedServiceCategories(): Promise<void> {
   });
 
   for (const [index, category] of SERVICE_CATEGORIES.entries()) {
+    const nameTranslations = catalogNameTranslations(category.slug, category.name);
     const created = await prisma.serviceCategory.upsert({
       where: { slug: category.slug },
       update: {
         name: category.name,
+        nameTranslations,
         description: category.description,
         iconKey: category.iconKey,
         sortOrder: index,
@@ -106,6 +109,7 @@ async function seedServiceCategories(): Promise<void> {
       create: {
         slug: category.slug,
         name: category.name,
+        nameTranslations,
         description: category.description,
         iconKey: category.iconKey,
         sortOrder: index,
@@ -114,13 +118,22 @@ async function seedServiceCategories(): Promise<void> {
     });
 
     for (const [subIndex, subcategory] of category.subcategories.entries()) {
+      const subNameTranslations = catalogNameTranslations(subcategory.slug, subcategory.name);
+
       await prisma.serviceSubcategory.upsert({
         where: { categoryId_slug: { categoryId: created.id, slug: subcategory.slug } },
-        update: { name: subcategory.name, sortOrder: subIndex, isActive: true, deletedAt: null },
+        update: {
+          name: subcategory.name,
+          nameTranslations: subNameTranslations,
+          sortOrder: subIndex,
+          isActive: true,
+          deletedAt: null,
+        },
         create: {
           categoryId: created.id,
           slug: subcategory.slug,
           name: subcategory.name,
+          nameTranslations: subNameTranslations,
           sortOrder: subIndex,
           isActive: true,
         },

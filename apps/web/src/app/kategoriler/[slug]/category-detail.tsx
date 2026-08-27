@@ -14,7 +14,7 @@ import {
   useUnfollowCategory,
 } from '@/features/social/use-social';
 import { apiClient } from '@/lib/api';
-import { categoryLabel, t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 export function CategoryDetail({ slug }: { slug: string }) {
   const session = useSession();
@@ -59,7 +59,7 @@ export function CategoryDetail({ slug }: { slug: string }) {
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className="font-display text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl dark:text-foreground">
-            {categoryLabel(data.slug, data.name)}
+            {categoryName(data)}
           </h1>
           {data.description ? (
             <p className="text-sm text-foreground-muted text-balance-safe">{data.description}</p>
@@ -99,7 +99,7 @@ export function CategoryDetail({ slug }: { slug: string }) {
           <ul className="flex flex-wrap gap-2">
             {data.subcategories.map((subcategory) => (
               <li key={subcategory.id}>
-                <Badge tone="brand">{subcategory.name}</Badge>
+                <Badge tone="brand">{categoryName(subcategory)}</Badge>
               </li>
             ))}
           </ul>

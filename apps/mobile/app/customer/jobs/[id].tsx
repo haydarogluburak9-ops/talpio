@@ -67,7 +67,7 @@ function JobDetailContent({
   onRefresh: () => void;
   refreshing: boolean;
 }) {
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const router = useRouter();
   const cancelJob = useCancelJob(job.id);
   const [confirming, setConfirming] = useState(false);
@@ -88,8 +88,9 @@ function JobDetailContent({
         </View>
 
         <Text variant="caption" tone="muted">
-          {job.category.name}
-          {job.subcategory ? ` · ${job.subcategory.name}` : ''} · {job.address.districtName},{' '}
+          {categoryName(job.category)}
+          {job.subcategory ? ` · ${categoryName(job.subcategory)}` : ''} ·{' '}
+          {job.address.districtName},{' '}
           {job.address.cityName}
         </Text>
 

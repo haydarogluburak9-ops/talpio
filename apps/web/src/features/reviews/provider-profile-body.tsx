@@ -7,7 +7,7 @@ import { Badge, Card, CardContent, ErrorState, LoadingState } from '@talpio/ui';
 
 import { apiClient } from '@/lib/api';
 import { publicEnv } from '@/lib/env';
-import { localeTag, t } from '@/lib/i18n';
+import { categoryName, localeTag, t } from '@/lib/i18n';
 
 import { ProviderReviews } from './provider-reviews';
 
@@ -73,7 +73,7 @@ function ProviderCard({ provider }: { provider: ProviderSummary }) {
           <ul className="flex flex-wrap gap-2">
             {provider.categories.map((category) => (
               <li key={category.id}>
-                <Badge tone="neutral">{category.name}</Badge>
+                <Badge tone="neutral">{categoryName(category)}</Badge>
               </li>
             ))}
           </ul>

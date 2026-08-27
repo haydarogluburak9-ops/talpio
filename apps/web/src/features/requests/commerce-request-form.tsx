@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
 import { useSocialProfile } from '@/features/social/use-social';
-import { t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 import {
   CategoryAttributeFields,
@@ -199,7 +199,7 @@ export function CommerceRequestForm({
             <option value="">{t('commerce.selectPlaceholder')}</option>
             {(categories.data ?? []).map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {categoryName(category)}
               </option>
             ))}
           </Select>
@@ -217,7 +217,7 @@ export function CommerceRequestForm({
               <option value="">{t('commerce.selectPlaceholder')}</option>
               {subcategories.map((sub) => (
                 <option key={sub.id} value={sub.id}>
-                  {sub.name}
+                  {categoryName(sub)}
                 </option>
               ))}
             </Select>

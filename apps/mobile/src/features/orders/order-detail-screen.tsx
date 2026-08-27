@@ -93,7 +93,7 @@ function OrderDetailContent({
   onRefresh: () => void;
   refreshing: boolean;
 }) {
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const router = useRouter();
   const isProvider = variant === 'provider';
 
@@ -121,7 +121,7 @@ function OrderDetailContent({
 
         {order.job ? (
           <Text variant="caption" tone="muted">
-            {order.job.category.name} · {order.job.address.districtName},{' '}
+            {categoryName(order.job.category)} · {order.job.address.districtName},{' '}
             {order.job.address.cityName}
           </Text>
         ) : null}

@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { apiClient } from '@/lib/api';
-import { localeTag, t } from '@/lib/i18n';
+import { categoryName, localeTag, t } from '@/lib/i18n';
 
 import { ReportDialog } from './report-dialog';
 import { ProfileAvatarEditor, ProfileCoverEditor } from './profile-media-editor';
@@ -158,7 +158,7 @@ export function ProfileHeader({
               key={category.id}
               className="rounded-lg border border-border bg-surface-muted/60 px-2.5 py-1 text-xs font-medium text-foreground-muted"
             >
-              {category.name}
+              {categoryName(category)}
             </li>
           ))}
         </ul>

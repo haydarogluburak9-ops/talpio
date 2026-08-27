@@ -34,7 +34,7 @@ const VALIDITY_CHOICES = [24, 48, OFFER.defaultValidityHours, 168] as const;
  */
 export default function CreateOfferScreen() {
   const params = useLocalSearchParams<{ jobId?: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const colors = useColors();
   const router = useRouter();
 
@@ -110,7 +110,8 @@ export default function CreateOfferScreen() {
         </Text>
         <Text variant="bodyStrong">{job.data.title}</Text>
         <Text variant="caption" tone="muted">
-          {job.data.category.name} · {job.data.address.districtName}, {job.data.address.cityName}
+          {categoryName(job.data.category)} · {job.data.address.districtName},{' '}
+          {job.data.address.cityName}
         </Text>
         {job.data.budget ? (
           <Badge tone="neutral" label={`${t('job.budget')}: ${formatMoney(job.data.budget, locale)}`} />

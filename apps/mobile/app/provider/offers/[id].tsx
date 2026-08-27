@@ -20,7 +20,7 @@ import { spacing } from '@/theme/tokens';
 /** Satıcının kendi teklifinin detayı. Yalnızca bekleyen teklif geri çekilebilir. */
 export default function ProviderOfferDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const router = useRouter();
 
   const offer = useOffer(params.id ?? '');
@@ -88,7 +88,8 @@ export default function ProviderOfferDetailScreen() {
           </Text>
           <Text variant="bodyStrong">{job.data.title}</Text>
           <Text variant="caption" tone="muted">
-            {job.data.category.name} · {job.data.address.districtName}, {job.data.address.cityName}
+            {categoryName(job.data.category)} · {job.data.address.districtName},{' '}
+            {job.data.address.cityName}
           </Text>
         </Card>
       ) : null}

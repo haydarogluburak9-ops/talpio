@@ -18,7 +18,7 @@ import { radius, spacing } from '@/theme/tokens';
 
 export default function CategoryDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const { t } = useI18n();
+  const { t, categoryName } = useI18n();
   const router = useRouter();
   const navigation = useNavigation();
   const colors = useColors();
@@ -26,8 +26,8 @@ export default function CategoryDetailScreen() {
 
   // Başlık veri geldikten sonra güncellenir; yükleme sırasında jenerik kalır.
   useEffect(() => {
-    if (category.data) navigation.setOptions({ title: category.data.name });
-  }, [category.data, navigation]);
+    if (category.data) navigation.setOptions({ title: categoryName(category.data) });
+  }, [category.data, categoryName, navigation]);
 
   const isNotFound = category.error instanceof ApiError && category.error.status === 404;
 
@@ -50,7 +50,7 @@ export default function CategoryDetailScreen() {
             <View style={[styles.iconWrap, { backgroundColor: colors.surfaceMuted }]}>
               <CategoryIcon iconKey={category.data.iconKey} size={28} color={colors.brand} />
             </View>
-            <Text variant="displaySm">{category.data.name}</Text>
+            <Text variant="displaySm">{categoryName(category.data)}</Text>
             {category.data.description ? (
               <Text variant="body" tone="muted">
                 {category.data.description}
@@ -63,7 +63,7 @@ export default function CategoryDetailScreen() {
               <View style={styles.row}>
                 <Ionicons name="ellipse" size={8} color={colors.accent} />
                 <Text variant="bodyStrong" style={styles.rowLabel}>
-                  {subcategory.name}
+                  {categoryName(subcategory)}
                 </Text>
               </View>
             </Card>

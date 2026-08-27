@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { getLocales } from 'expo-localization';
 
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isSupportedLocale, type SupportedLocale } from '@talpio/config';
-import { createTranslator, localizedCategoryName, type Translator } from '@talpio/localization';
+import { catalogName, createTranslator, type Translator } from '@talpio/localization';
+import type { LocalizedName } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
 import { env } from '@/lib/env';
@@ -10,7 +11,8 @@ import { secureStorage } from '@/lib/secure-storage';
 
 interface I18nValue extends Translator {
   setLocale: (locale: SupportedLocale) => void;
-  categoryLabel: (slug: string, fallback: string) => string;
+  /** Kategori / alt kategori adını aktif dile indirger. */
+  categoryName: (value: LocalizedName & { slug?: string }) => string;
 }
 
 function fallbackLocale(): SupportedLocale {
@@ -46,7 +48,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () => ({
       ...createTranslator(locale),
       setLocale,
-      categoryLabel: (slug, fallback) => localizedCategoryName(slug, locale, fallback),
+      categoryName: (value) => catalogName(value, locale),
     }),
     [locale],
   );

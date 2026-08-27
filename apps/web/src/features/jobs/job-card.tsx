@@ -6,7 +6,7 @@ import type { JobRequest } from '@talpio/types';
 import { Badge, Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
-import { t, getLocale } from '@/lib/i18n';
+import { t, categoryName, getLocale } from '@/lib/i18n';
 
 export function JobCard({ job }: { job: JobRequest }) {
   const locale = getLocale();
@@ -19,7 +19,7 @@ export function JobCard({ job }: { job: JobRequest }) {
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">{job.title}</p>
               <p className="text-sm text-foreground-muted">
-                {job.category.name} · {job.address.districtName}, {job.address.cityName}
+                {categoryName(job.category)} · {job.address.districtName}, {job.address.cityName}
               </p>
             </div>
             <StatusPill label={jobStatusLabel(job.status, locale)} tone={JOB_STATUS_TONES[job.status]} />

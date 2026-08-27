@@ -2,8 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { toLocaleTag } from '@talpio/localization';
+
 import { FormField } from '@/components/form-field';
 import { Text } from '@/components/text';
+import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
 
@@ -40,13 +43,17 @@ export function OptionPicker({
   disabled = false,
 }: OptionPickerProps) {
   const colors = useColors();
+  const { locale } = useI18n();
   const [query, setQuery] = useState('');
 
+  // Küçültme dile bağlı: Türkçe'de "I" → "ı", İngilizce'de "i". Sabit 'tr'
+  // bırakılırsa İngilizce arayüzde "Industrial" araması eşleşmez.
   const visible = useMemo(() => {
     if (!searchable || query.trim() === '') return options;
-    const needle = query.trim().toLocaleLowerCase('tr');
-    return options.filter((option) => option.name.toLocaleLowerCase('tr').includes(needle));
-  }, [options, query, searchable]);
+    const tag = toLocaleTag(locale);
+    const needle = query.trim().toLocaleLowerCase(tag);
+    return options.filter((option) => option.name.toLocaleLowerCase(tag).includes(needle));
+  }, [locale, options, query, searchable]);
 
   return (
     <View style={styles.container}>

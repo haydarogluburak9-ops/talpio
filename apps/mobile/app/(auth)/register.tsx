@@ -16,7 +16,7 @@ import { useColors } from '@/theme/theme-provider';
 import { radius, spacing, MIN_TOUCH_TARGET } from '@/theme/tokens';
 
 export default function RegisterScreen() {
-  const { t, locale, categoryLabel } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const colors = useColors();
   const register = useRegister();
 
@@ -217,7 +217,7 @@ export default function RegisterScreen() {
                         style={{ color: selected ? colors.onBrand : colors.foreground, fontWeight: '600' }}
                       >
                         {selected ? '✓ ' : ''}
-                        {categoryLabel(category.slug, category.name)}
+                        {categoryName(category)}
                       </Text>
                     </Pressable>
                   );

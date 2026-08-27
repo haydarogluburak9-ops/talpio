@@ -10,7 +10,7 @@ import { useCategories } from '@/features/catalog/use-categories';
 import { MediaUploader } from '@/features/files/media-uploader';
 import { useSession } from '@/features/auth/use-session';
 import { useMyBusinesses } from '@/features/requests/use-requests';
-import { t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 import { useCreatePost, useSocialMe } from './use-social';
 
@@ -311,7 +311,7 @@ export function PostComposer({
               <option value="">{t('common.selectPlaceholder')}</option>
               {(categories.data ?? []).map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {categoryName(category)}
                 </option>
               ))}
             </select>

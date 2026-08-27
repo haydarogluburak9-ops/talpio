@@ -6,7 +6,7 @@ import type { Order } from '@talpio/types';
 import { Card, CardContent, StatusPill } from '@talpio/ui';
 import Link from 'next/link';
 
-import { t, getLocale } from '@/lib/i18n';
+import { t, categoryName, getLocale } from '@/lib/i18n';
 
 export function OrderCard({ order }: { order: Order }) {
   const locale = getLocale();
@@ -20,7 +20,7 @@ export function OrderCard({ order }: { order: Order }) {
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">{order.job?.title ?? t('order.detailTitle')}</p>
               <p className="text-sm text-foreground-muted">
-                {order.job?.category.name}
+                {order.job ? categoryName(order.job.category) : null}
                 {address ? ` · ${address.districtName}, ${address.cityName}` : ''}
               </p>
             </div>

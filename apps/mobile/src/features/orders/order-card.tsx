@@ -17,7 +17,7 @@ export interface OrderCardProps {
 }
 
 export function OrderCard({ order, onPress, variant = 'customer' }: OrderCardProps) {
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
   const isProvider = variant === 'provider';
   const amount = isProvider ? order.providerPayout : order.total;
   const counterparty = isProvider ? order.customer?.displayName : order.provider?.displayName;
@@ -33,7 +33,8 @@ export function OrderCard({ order, onPress, variant = 'customer' }: OrderCardPro
 
       {order.job ? (
         <Text variant="caption" tone="muted">
-          {order.job.category.name} · {order.job.address.districtName}, {order.job.address.cityName}
+          {categoryName(order.job.category)} · {order.job.address.districtName},{' '}
+          {order.job.address.cityName}
         </Text>
       ) : null}
 

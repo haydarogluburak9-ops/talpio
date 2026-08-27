@@ -70,7 +70,7 @@ const EMPTY_DRAFT: Draft = {
  */
 export default function NewJobScreen() {
   const params = useLocalSearchParams<{ categoryId?: string }>();
-  const { t, categoryLabel } = useI18n();
+  const { t, categoryName } = useI18n();
   const colors = useColors();
   const router = useRouter();
 
@@ -215,7 +215,7 @@ export default function NewJobScreen() {
                 >
                   <CategoryIcon iconKey={category.iconKey} color={colors.brand} />
                   <Text variant="caption" numberOfLines={2}>
-                    {categoryLabel(category.slug, category.name)}
+                    {categoryName(category)}
                   </Text>
                 </Card>
               );
@@ -225,7 +225,7 @@ export default function NewJobScreen() {
           {subcategories.length > 0 ? (
             <OptionPicker
               label={t('job.subcategory')}
-              options={subcategories.map((item) => ({ id: item.id, name: item.name }))}
+              options={subcategories.map((item) => ({ id: item.id, name: categoryName(item) }))}
               selectedId={draft.subcategoryId}
               onSelect={(subcategoryId) => patch({ subcategoryId })}
               emptyLabel={t('job.selectCategoryFirst')}

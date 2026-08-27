@@ -5,7 +5,7 @@ import { Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
-import { categoryLabel, localeTag, t } from '@/lib/i18n';
+import { categoryName, localeTag, t } from '@/lib/i18n';
 
 import { CategoryIcon } from './category-icon';
 import { useCategories } from './use-categories';
@@ -40,10 +40,14 @@ export function CategoryGrid({
       ? data.filter((category) => {
           const haystack = [
             category.name,
-            categoryLabel(category.slug, category.name),
+            categoryName(category),
             category.description ?? '',
             category.slug,
-            ...(category.subcategories ?? []).flatMap((sub) => [sub.name, sub.slug]),
+            ...(category.subcategories ?? []).flatMap((sub) => [
+              sub.name,
+              categoryName(sub),
+              sub.slug,
+            ]),
           ]
             .join(' ')
             .toLocaleLowerCase(localeTag());
@@ -133,7 +137,7 @@ export function CategoryGrid({
                   <CategoryIcon iconKey={category.iconKey} className="size-5" />
                 </span>
                 <span className="font-display text-sm font-semibold tracking-tight text-balance-safe">
-                  {categoryLabel(category.slug, category.name)}
+                  {categoryName(category)}
                 </span>
               </Link>
             </li>

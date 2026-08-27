@@ -42,7 +42,7 @@ export function CommerceRequestFormScreen({
 }: {
   storeUsername?: string;
 }) {
-  const { t, categoryLabel } = useI18n();
+  const { t, categoryName } = useI18n();
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
   const create = useCreateCommerceRequest();
@@ -163,7 +163,7 @@ export function CommerceRequestFormScreen({
         label={t('commerce.fieldCategory')}
         options={(categories.data ?? []).map((item) => ({
           id: item.id,
-          name: categoryLabel(item.slug, item.name),
+          name: categoryName(item),
         }))}
         selectedId={categoryId || null}
         onSelect={(id) => {
@@ -180,7 +180,7 @@ export function CommerceRequestFormScreen({
           label={t('commerce.fieldSubcategory')}
           options={subcategories.map((item) => ({
             id: item.id,
-            name: categoryLabel(item.slug, item.name),
+            name: categoryName(item),
           }))}
           selectedId={form.subcategoryId || null}
           onSelect={(id) => setForm((current) => ({ ...current, subcategoryId: id }))}

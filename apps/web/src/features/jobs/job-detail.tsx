@@ -18,7 +18,7 @@ import {
 import { useState } from 'react';
 
 import { OfferList } from '@/features/offers/offer-list';
-import { t, getLocale } from '@/lib/i18n';
+import { t, categoryName, getLocale } from '@/lib/i18n';
 
 import { useCancelJob, useJob } from './use-jobs';
 
@@ -60,8 +60,9 @@ function JobDetailView({ job }: { job: JobRequest }) {
             <StatusPill label={jobStatusLabel(job.status, locale)} tone={JOB_STATUS_TONES[job.status]} />
           </div>
           <p className="text-sm text-foreground-muted">
-            {job.category.name}
-            {job.subcategory ? ` · ${job.subcategory.name}` : ''} · {job.address.districtName},{' '}
+            {categoryName(job.category)}
+            {job.subcategory ? ` · ${categoryName(job.subcategory)}` : ''} ·{' '}
+            {job.address.districtName},{' '}
             {job.address.cityName}
           </p>
         </CardHeader>

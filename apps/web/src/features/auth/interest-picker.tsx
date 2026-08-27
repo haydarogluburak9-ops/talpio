@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 
 import { CategoryIcon } from '@/features/catalog/category-icon';
 import { useCategories } from '@/features/catalog/use-categories';
-import { categoryLabel, t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 import { MIN_INTERESTS } from '@/lib/interest-onboarding';
 const MAX_INTERESTS = 12;
@@ -119,7 +119,7 @@ export function InterestPicker({
                     <CategoryIcon iconKey={category.iconKey} className="size-4" />
                   </span>
                   <span className="font-display text-[13px] font-semibold leading-snug tracking-tight text-balance-safe">
-                    {categoryLabel(category.slug, category.name)}
+                    {categoryName(category)}
                   </span>
                   {active ? (
                     <span className="absolute right-2.5 top-2.5 grid size-5 place-items-center rounded-full bg-accent-500 text-white">

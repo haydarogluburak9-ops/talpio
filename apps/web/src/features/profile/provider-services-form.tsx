@@ -13,7 +13,7 @@ import {
 import { useState } from 'react';
 
 import { useCategories } from '@/features/catalog/use-categories';
-import { t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 import { FormStatus } from './account-profile-form';
 import { useReplaceMyServices } from './use-profile';
@@ -93,7 +93,7 @@ export function ProviderServicesForm({ services }: { services: ProviderService[]
                       checked={isSelected}
                       onChange={() => toggle(category.id)}
                     />
-                    {category.name}
+                    {categoryName(category)}
                   </label>
 
                   {isSelected ? (

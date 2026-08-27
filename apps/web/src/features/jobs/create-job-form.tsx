@@ -14,7 +14,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useCategories } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
 import { PhotoUploader } from '@/features/files/photo-uploader';
-import { t } from '@/lib/i18n';
+import { categoryName, t } from '@/lib/i18n';
 
 import { useCreateJob } from './use-jobs';
 
@@ -106,7 +106,7 @@ export function CreateJobForm() {
                 <option value="">{t('common.selectPlaceholder')}</option>
                 {categories.data?.map((category) => (
                   <option key={category.id} value={category.id}>
-                    {category.name}
+                    {categoryName(category)}
                   </option>
                 ))}
               </Select>
@@ -132,7 +132,7 @@ export function CreateJobForm() {
                 <option value="">{t('common.selectPlaceholder')}</option>
                 {subcategories.map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.name}
+                    {categoryName(subcategory)}
                   </option>
                 ))}
               </Select>

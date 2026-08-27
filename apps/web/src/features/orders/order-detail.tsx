@@ -21,7 +21,7 @@ import { useSession } from '@/features/auth/use-session';
 import { useOpenConversation } from '@/features/messages/use-messages';
 import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
-import { t, getLocale } from '@/lib/i18n';
+import { t, categoryName, getLocale } from '@/lib/i18n';
 
 import {
   useApproveOrder,
@@ -98,7 +98,7 @@ function OrderDetailView({ order }: { order: Order }) {
             />
           </div>
           <p className="text-sm text-foreground-muted">
-            {order.job?.category.name}
+            {order.job ? categoryName(order.job.category) : null}
             {order.job ? ` · ${order.job.address.districtName}, ${order.job.address.cityName}` : ''}
           </p>
         </CardHeader>

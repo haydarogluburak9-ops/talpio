@@ -18,7 +18,7 @@ export interface JobCardProps {
 }
 
 export function JobCard({ job, onPress, variant = 'customer' }: JobCardProps) {
-  const { t, locale } = useI18n();
+  const { t, locale, categoryName } = useI18n();
 
   return (
     <Card onPress={onPress}>
@@ -30,7 +30,7 @@ export function JobCard({ job, onPress, variant = 'customer' }: JobCardProps) {
       </View>
 
       <Text variant="caption" tone="muted">
-        {job.category.name} · {job.address.districtName}, {job.address.cityName}
+        {categoryName(job.category)} · {job.address.districtName}, {job.address.cityName}
       </Text>
 
       <Text variant="caption" tone="muted" numberOfLines={2}>

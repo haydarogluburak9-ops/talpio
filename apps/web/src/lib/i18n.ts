@@ -1,5 +1,6 @@
 import { DEFAULT_LOCALE, isSupportedLocale, type SupportedLocale } from '@talpio/config';
-import { createTranslator, localizedCategoryName, toLocaleTag } from '@talpio/localization';
+import { catalogName, createTranslator, toLocaleTag } from '@talpio/localization';
+import type { LocalizedName } from '@talpio/types';
 
 import { publicEnv } from './env';
 
@@ -34,6 +35,7 @@ export function localeTag(): string {
   return toLocaleTag(currentLocale);
 }
 
-export function categoryLabel(slug: string, fallback: string): string {
-  return localizedCategoryName(slug, currentLocale, fallback);
+/** Kategori / alt kategori adını aktif dile indirger. */
+export function categoryName(value: LocalizedName & { slug?: string }): string {
+  return catalogName(value, currentLocale);
 }
