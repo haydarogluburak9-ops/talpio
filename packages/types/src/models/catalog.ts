@@ -1,8 +1,22 @@
-import type { BaseEntity, GeoPoint } from './common';
+import type { BaseEntity, EntityRef, GeoPoint, LocalizedText } from './common';
 
-export interface ServiceCategory extends BaseEntity {
-  slug: string;
+/**
+ * Katalog adının çok dilli hâli. Uç bütün dilleri birden döndürür; kullanıcının
+ * diline indirgeme istemcide `resolveCategoryName` ile yapılır.
+ *
+ * Boş olabilir: admin panelinden açılan ve henüz çevrilmemiş kategorilerde
+ * sözlük yoktur, o zaman Türkçe `name` her dilde kullanılır.
+ */
+export interface LocalizedName {
   name: string;
+  nameTranslations?: LocalizedText | null;
+}
+
+/** Listelerde ve kartlarda taşınan kategori referansı. */
+export interface CategoryRef extends EntityRef, LocalizedName {}
+
+export interface ServiceCategory extends BaseEntity, LocalizedName {
+  slug: string;
   description?: string | null;
   iconKey?: string | null;
   sortOrder: number;
@@ -10,10 +24,9 @@ export interface ServiceCategory extends BaseEntity {
   subcategories?: ServiceSubcategory[];
 }
 
-export interface ServiceSubcategory extends BaseEntity {
+export interface ServiceSubcategory extends BaseEntity, LocalizedName {
   categoryId: string;
   slug: string;
-  name: string;
   sortOrder: number;
   isActive: boolean;
 }

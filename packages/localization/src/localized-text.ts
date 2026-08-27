@@ -1,5 +1,5 @@
 import { DEFAULT_LOCALE } from '@talpio/config';
-import type { AttributeFieldOption, LocalizedText } from '@talpio/types';
+import type { AttributeFieldOption, LocalizedName, LocalizedText } from '@talpio/types';
 
 /**
  * Çok dilli metni kullanıcının diline indirger.
@@ -29,4 +29,16 @@ export function resolveLocalizedText(value: LocalizedText | undefined, locale: s
 export function resolveOptionLabel(option: AttributeFieldOption, locale: string): string {
   const label = resolveLocalizedText(option.label, locale);
   return label.length > 0 ? label : option.value;
+}
+
+/**
+ * Kategori / alt kategori adını kullanıcının diline indirger.
+ *
+ * `nameTranslations` sözlüğü kazanır; sözlük yoksa ya da hiçbir dilde dolu
+ * değilse Türkçe `name` sütunu kullanılır. Admin panelinden açılan ve henüz
+ * çevrilmemiş kategoriler bu yedekle çalışır.
+ */
+export function resolveCategoryName(value: LocalizedName, locale: string): string {
+  const translated = resolveLocalizedText(value.nameTranslations ?? undefined, locale);
+  return translated.length > 0 ? translated : value.name;
 }

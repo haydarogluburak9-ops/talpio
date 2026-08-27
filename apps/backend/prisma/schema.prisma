@@ -729,7 +729,11 @@ model Neighborhood {
 model ServiceCategory {
   id          String   @id @default(uuid(7))
   slug        String   @unique
+  /// Türkçe ad. `nameTranslations` boşken tüm dillerde yedek olarak kullanılır.
   name        String
+  /// Dil kodundan ada eşleme (`{ "tr": "…", "en": "…" }`). Uç sözlüğü olduğu
+  /// gibi döndürür; dile indirgeme istemcide yapılır.
+  nameTranslations Json? @map("name_translations")
   description String?
   /// Arayüzün kendi ikon kümesinden seçtiği anahtar; dosya yolu değil.
   iconKey     String?  @map("icon_key")
@@ -758,7 +762,10 @@ model ServiceSubcategory {
   id         String   @id @default(uuid(7))
   categoryId String   @map("category_id")
   slug       String
+  /// Türkçe ad; `nameTranslations` boşken yedek olarak kullanılır.
   name       String
+  /// Dil kodundan ada eşleme. Bkz. `ServiceCategory.nameTranslations`.
+  nameTranslations Json? @map("name_translations")
   sortOrder  Int      @default(0) @map("sort_order")
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")

@@ -1,4 +1,4 @@
-import { resolveLocalizedText, resolveOptionLabel } from './localized-text';
+import { resolveCategoryName, resolveLocalizedText, resolveOptionLabel } from './localized-text';
 
 describe('resolveLocalizedText', () => {
   it('istenen dili döndürür', () => {
@@ -39,5 +39,37 @@ describe('resolveOptionLabel', () => {
 
   it('etiket boşsa saklanan değeri gösterir', () => {
     expect(resolveOptionLabel({ value: 'ibc', label: {} }, 'tr')).toBe('ibc');
+  });
+});
+
+describe('resolveCategoryName', () => {
+  const category = {
+    name: 'Madeni yağ & kimya',
+    nameTranslations: { tr: 'Madeni yağ & kimya', en: 'Lubricants & chemicals' },
+  };
+
+  it('istenen dildeki adı döndürür', () => {
+    expect(resolveCategoryName(category, 'tr')).toBe('Madeni yağ & kimya');
+    expect(resolveCategoryName(category, 'en')).toBe('Lubricants & chemicals');
+  });
+
+  it('çevirisi olmayan dilde İngilizceye düşer', () => {
+    expect(resolveCategoryName(category, 'de')).toBe('Lubricants & chemicals');
+  });
+
+  it('sözlük yokken Türkçe ada düşer', () => {
+    expect(resolveCategoryName({ name: 'Motor yağı' }, 'en')).toBe('Motor yağı');
+    expect(resolveCategoryName({ name: 'Motor yağı', nameTranslations: null }, 'en')).toBe(
+      'Motor yağı',
+    );
+  });
+
+  it('sözlük boş ya da tamamen boş metinken Türkçe ada düşer', () => {
+    expect(resolveCategoryName({ name: 'Motor yağı', nameTranslations: {} }, 'en')).toBe(
+      'Motor yağı',
+    );
+    expect(
+      resolveCategoryName({ name: 'Motor yağı', nameTranslations: { en: '' } }, 'en'),
+    ).toBe('Motor yağı');
   });
 });

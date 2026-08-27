@@ -2,6 +2,8 @@ import type { Prisma } from '@/generated/prisma/client';
 import { VerificationStatus } from '@/generated/prisma/client';
 import type { Offer, ProviderSummary } from '@talpio/types';
 
+import { categoryRefSelect, toCategoryRef } from '@common/i18n/localized-text';
+
 /**
  * Teklif sorgularında daima çekilen ilişkiler. Tek yerde tutulur ki liste ve
  * detay uçları aynı gövdeyi döndürsün.
@@ -20,7 +22,7 @@ export const offerInclude = {
       user: {
         select: { fullName: true, avatar: { select: { storageKey: true } } },
       },
-      services: { select: { category: { select: { id: true, name: true } } } },
+      services: { select: { category: { select: categoryRefSelect } } },
     },
   },
 } satisfies Prisma.OfferInclude;
@@ -51,7 +53,7 @@ export function toOffer(row: OfferRow, options: { fileBaseUrl: string }): Offer 
 function toProviderSummary(row: OfferRow['providerProfile'], fileBaseUrl: string): ProviderSummary {
   // Aynı kategoriye birden çok hizmet tanımlanabildiği için tekilleştirilir.
   const categories = new Map(
-    row.services.map((service) => [service.category.id, service.category.name]),
+    row.services.map((service) => [service.category.id, toCategoryRef(service.category)]),
   );
 
   const avatarKey = row.user.avatar?.storageKey;
@@ -66,6 +68,6 @@ function toProviderSummary(row: OfferRow['providerProfile'], fileBaseUrl: string
     reviewCount: row.reviewCount,
     completedJobCount: row.completedJobCount,
     averageResponseMinutes: row.averageResponseMinutes,
-    categories: [...categories].map(([id, name]) => ({ id, name })),
+    categories: [...categories.values()],
   };
 }

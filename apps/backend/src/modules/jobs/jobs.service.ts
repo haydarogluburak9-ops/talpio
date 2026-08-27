@@ -5,6 +5,7 @@ import { JobRequestStatus, NotificationType, UserRole, type JobRequest } from '@
 
 import type { Prisma } from '@/generated/prisma/client';
 import { AppException } from '@common/errors/app.exception';
+import { parseNameTranslations } from '@common/i18n/localized-text';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -300,7 +301,7 @@ export class JobsService {
         type: NotificationType.JOB_MATCHED,
         params: {
           jobTitle: job.title,
-          categoryName: job.category.name,
+          categoryName: parseNameTranslations(job.category.nameTranslations) ?? job.category.name,
           districtName: job.district.name,
         },
         deepLink: deepLinks.job(job.id),

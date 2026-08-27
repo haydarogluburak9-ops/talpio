@@ -8,6 +8,8 @@ import type {
   ProviderSummary,
 } from '@talpio/types';
 
+import { categoryRefSelect, toCategoryRef } from '@common/i18n/localized-text';
+
 /**
  * Sipariş sorgularında daima çekilen ilişkiler. Liste ve detay uçları aynı
  * gövdeyi döndürsün diye tek yerde tutulur.
@@ -19,7 +21,7 @@ export const orderInclude = {
       title: true,
       status: true,
       customerId: true,
-      category: { select: { id: true, name: true } },
+      category: { select: categoryRefSelect },
       city: { select: { name: true } },
       district: { select: { name: true } },
       neighborhood: { select: { name: true } },
@@ -40,7 +42,7 @@ export const orderInclude = {
       completedJobCount: true,
       averageResponseMinutes: true,
       user: { select: { fullName: true, avatar: { select: { storageKey: true } } } },
-      services: { select: { category: { select: { id: true, name: true } } } },
+      services: { select: { category: { select: categoryRefSelect } } },
     },
   },
   customer: { select: { id: true, fullName: true, avatar: { select: { storageKey: true } } } },
@@ -106,7 +108,7 @@ function toJobSummary(row: OrderRow, reveal: boolean): OrderJobSummary {
   return {
     id: job.id,
     title: job.title,
-    category: { id: job.category.id, name: job.category.name },
+    category: toCategoryRef(job.category),
     status: job.status,
     address,
   };
@@ -115,7 +117,7 @@ function toJobSummary(row: OrderRow, reveal: boolean): OrderJobSummary {
 function toProviderSummary(row: OrderRow['providerProfile'], fileBaseUrl: string): ProviderSummary {
   // Aynı kategoriye birden çok hizmet tanımlanabildiği için tekilleştirilir.
   const categories = new Map(
-    row.services.map((service) => [service.category.id, service.category.name]),
+    row.services.map((service) => [service.category.id, toCategoryRef(service.category)]),
   );
 
   const avatarKey = row.user.avatar?.storageKey;
@@ -130,7 +132,7 @@ function toProviderSummary(row: OrderRow['providerProfile'], fileBaseUrl: string
     reviewCount: row.reviewCount,
     completedJobCount: row.completedJobCount,
     averageResponseMinutes: row.averageResponseMinutes,
-    categories: [...categories].map(([id, name]) => ({ id, name })),
+    categories: [...categories.values()],
   };
 }
 

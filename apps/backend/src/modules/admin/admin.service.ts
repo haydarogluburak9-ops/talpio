@@ -34,6 +34,7 @@ import {
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
+import { parseNameTranslations } from '@common/i18n/localized-text';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { QueueService } from '@infra/queue/queue.service';
@@ -822,6 +823,7 @@ export class AdminService {
       id: row.id,
       slug: row.slug,
       name: row.name,
+      nameTranslations: parseNameTranslations(row.nameTranslations),
       description: row.description,
       iconKey: row.iconKey,
       sortOrder: row.sortOrder,
@@ -833,6 +835,7 @@ export class AdminService {
         categoryId: sub.categoryId,
         slug: sub.slug,
         name: sub.name,
+        nameTranslations: parseNameTranslations(sub.nameTranslations),
         sortOrder: sub.sortOrder,
         isActive: sub.isActive,
         createdAt: sub.createdAt.toISOString(),
@@ -882,6 +885,7 @@ export class AdminService {
       id: created.id,
       slug: created.slug,
       name: created.name,
+      nameTranslations: parseNameTranslations(created.nameTranslations),
       description: created.description,
       iconKey: created.iconKey,
       sortOrder: created.sortOrder,
@@ -948,6 +952,7 @@ export class AdminService {
       id: updated.id,
       slug: updated.slug,
       name: updated.name,
+      nameTranslations: parseNameTranslations(updated.nameTranslations),
       description: updated.description,
       iconKey: updated.iconKey,
       sortOrder: updated.sortOrder,
@@ -959,6 +964,7 @@ export class AdminService {
         categoryId: sub.categoryId,
         slug: sub.slug,
         name: sub.name,
+        nameTranslations: parseNameTranslations(sub.nameTranslations),
         sortOrder: sub.sortOrder,
         isActive: sub.isActive,
         createdAt: sub.createdAt.toISOString(),

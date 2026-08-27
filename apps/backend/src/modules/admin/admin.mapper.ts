@@ -14,6 +14,7 @@ import type {
 } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
+import { parseLocalizedText, parseNameTranslations } from '@common/i18n/localized-text';
 
 export const adminUserInclude = {
   avatar: { select: { storageKey: true } },
@@ -29,7 +30,7 @@ export const adminProviderInclude = {
 } satisfies Prisma.ProviderProfileInclude;
 
 export const adminJobInclude = {
-  category: { select: { name: true } },
+  category: { select: { name: true, nameTranslations: true } },
   city: { select: { name: true } },
   district: { select: { name: true } },
   customer: { select: { fullName: true } },
@@ -65,7 +66,7 @@ export const adminTransactionInclude = {
 } satisfies Prisma.TransactionInclude;
 
 export const adminCommissionInclude = {
-  category: { select: { name: true } },
+  category: { select: { name: true, nameTranslations: true } },
   city: { select: { name: true } },
 } satisfies Prisma.CommissionRuleInclude;
 
@@ -128,6 +129,7 @@ export function toAdminJob(row: AdminJobRow): AdminJobSummary {
     title: row.title,
     status: row.status,
     categoryName: row.category.name,
+    categoryNameTranslations: parseNameTranslations(row.category.nameTranslations),
     cityName: row.city.name,
     districtName: row.district.name,
     customerName: row.customer.fullName,
@@ -208,6 +210,7 @@ export function toAdminCommissionRule(row: AdminCommissionRow): AdminCommissionR
     fixedMinor: row.fixedMinor,
     premiumRateBps: row.premiumRateBps,
     categoryName: row.category?.name ?? null,
+    categoryNameTranslations: parseNameTranslations(row.category?.nameTranslations),
     cityName: row.city?.name ?? null,
     minAmountMinor: row.minAmountMinor,
     maxAmountMinor: row.maxAmountMinor,
@@ -247,7 +250,13 @@ function toNotificationParams(value: Prisma.JsonValue): NotificationParams {
 
   const params: NotificationParams = {};
   for (const [key, item] of Object.entries(value)) {
-    if (typeof item === 'string' || typeof item === 'number') params[key] = item;
+    if (typeof item === 'string' || typeof item === 'number') {
+      params[key] = item;
+      continue;
+    }
+
+    const localized = parseLocalizedText(item);
+    if (localized !== undefined) params[key] = localized;
   }
   return params;
 }

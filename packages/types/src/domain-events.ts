@@ -4,6 +4,8 @@
  * Domain işlemi ile aynı transaction'da yazılır; publisher BullMQ'ya aktarır.
  */
 
+import type { LocalizedText } from './models/common';
+
 export const DOMAIN_EVENT_TYPES = {
   ORDER_CREATED: 'order.created',
   /** İleride ERP WorkOrder köprüsü bu olayı dinler. */
@@ -49,7 +51,8 @@ export interface RequestMatchedEventPayload {
   businessId: string;
   userId: string;
   requestTitle: string;
-  categoryName: string;
+  /** Bildirim gövdesi alıcının dilinde üretildiği için çeviri sözlüğü taşınır. */
+  categoryName: LocalizedText;
   cityName: string;
   shortDescription: string;
   deadline: string;

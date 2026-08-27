@@ -12,6 +12,7 @@ import {
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
+import { categoryRefSelect, toCategoryRef } from '@common/i18n/localized-text';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
@@ -301,7 +302,7 @@ export class ProfilesService {
         providerProfileId: true,
         categories: {
           select: {
-            category: { select: { id: true, name: true, slug: true } },
+            category: { select: { ...categoryRefSelect, slug: true } },
           },
         },
         serviceAreas: {
@@ -394,7 +395,10 @@ export class ProfilesService {
       providerProfileId: provider?.id ?? business.providerProfileId,
       isVerified,
       about: provider?.about?.trim() || profileBio,
-      categories: business.categories.map((row) => row.category),
+      categories: business.categories.map((row) => ({
+        ...toCategoryRef(row.category),
+        slug: row.category.slug,
+      })),
       serviceRegions: regions,
       rating: toFiniteNumber(provider?.averageRating),
       reviewCount: provider?.reviewCount ?? 0,

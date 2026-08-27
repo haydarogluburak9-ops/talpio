@@ -68,7 +68,7 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
       title: 'Mutfak lavabosu tıkalı',
       status: JobRequestStatus.PROVIDER_SELECTED,
       customerId: CUSTOMER_ID,
-      category: { id: 'cat-1', name: 'Tesisat' },
+      category: { id: 'cat-1', name: 'Tesisat', nameTranslations: { en: 'Plumbing' } },
       city: { name: 'Gaziantep' },
       district: { name: 'Şahinbey' },
       neighborhood: null,
@@ -87,7 +87,11 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
       completedJobCount: 58,
       averageResponseMinutes: 35,
       user: { fullName: 'Ahmet Yılmaz', avatar: null },
-      services: [{ category: { id: 'cat-1', name: 'Tesisat' } }],
+      services: [
+        {
+          category: { id: 'cat-1', name: 'Tesisat', nameTranslations: { en: 'Plumbing' } },
+        },
+      ],
     },
     customer: { id: CUSTOMER_ID, fullName: 'Ayşe Demir', avatar: null },
     ...overrides,

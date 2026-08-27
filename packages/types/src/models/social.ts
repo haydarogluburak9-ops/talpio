@@ -6,7 +6,8 @@ import type {
   PostVisibility,
   SocialProfileKind,
 } from '../enums/social';
-import type { BaseEntity, FileAsset } from './common';
+import type { CategoryRef } from './catalog';
+import type { BaseEntity, FileAsset, LocalizedText } from './common';
 
 export interface SocialBusinessCard {
   businessId: string;
@@ -14,7 +15,7 @@ export interface SocialBusinessCard {
   providerProfileId?: string | null;
   isVerified: boolean;
   about?: string | null;
-  categories: Array<{ id: string; name: string; slug: string }>;
+  categories: Array<CategoryRef & { slug: string }>;
   serviceRegions: string[];
   rating?: number | null;
   reviewCount: number;
@@ -213,6 +214,7 @@ export interface CategoryFollow {
   categoryId: string;
   categorySlug: string;
   categoryName: string;
+  categoryNameTranslations?: LocalizedText | null;
   createdAt: string;
   isFollowing: boolean;
 }

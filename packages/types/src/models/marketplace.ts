@@ -5,8 +5,8 @@ import type {
   OrderStatus,
   ReviewStatus,
 } from '../enums/statuses';
-import type { BaseEntity, EntityRef, Money } from './common';
-import type { MaskedAddress } from './catalog';
+import type { BaseEntity, Money } from './common';
+import type { CategoryRef, MaskedAddress } from './catalog';
 import type { ProviderSummary } from './identity';
 
 export const JobSize = {
@@ -48,8 +48,8 @@ export interface JobStatusHistoryEntry {
 
 export interface JobRequest extends BaseEntity {
   customerId: string;
-  category: EntityRef;
-  subcategory?: EntityRef | null;
+  category: CategoryRef;
+  subcategory?: CategoryRef | null;
   title: string;
   description: string;
   status: JobRequestStatus;
@@ -90,7 +90,7 @@ export interface Offer extends BaseEntity {
 export interface OrderJobSummary {
   id: string;
   title: string;
-  category: EntityRef;
+  category: CategoryRef;
   status: JobRequestStatus;
   address: MaskedAddress;
 }

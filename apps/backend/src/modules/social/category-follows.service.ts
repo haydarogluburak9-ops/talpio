@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import type { LocalizedText } from '@talpio/types';
+
 import { AppException } from '@common/errors/app.exception';
+import { parseNameTranslations } from '@common/i18n/localized-text';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
@@ -10,6 +13,7 @@ export interface CategoryFollowItem {
   categoryId: string;
   categorySlug: string;
   categoryName: string;
+  categoryNameTranslations: LocalizedText | null;
   createdAt: string;
   isFollowing: boolean;
 }
@@ -37,6 +41,7 @@ export class CategoryFollowsService {
       categoryId: category.id,
       categorySlug: category.slug,
       categoryName: category.name,
+      categoryNameTranslations: parseNameTranslations(category.nameTranslations),
       createdAt: new Date().toISOString(),
       isFollowing: true,
     };
@@ -54,6 +59,7 @@ export class CategoryFollowsService {
       categoryId: category.id,
       categorySlug: category.slug,
       categoryName: category.name,
+      categoryNameTranslations: parseNameTranslations(category.nameTranslations),
       createdAt: new Date().toISOString(),
       isFollowing: false,
     };
@@ -65,7 +71,16 @@ export class CategoryFollowsService {
       where: { profileId: me.id },
       orderBy: { createdAt: 'desc' },
       include: {
-        category: { select: { id: true, slug: true, name: true, deletedAt: true, isActive: true } },
+        category: {
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            nameTranslations: true,
+            deletedAt: true,
+            isActive: true,
+          },
+        },
       },
     });
 
@@ -75,6 +90,7 @@ export class CategoryFollowsService {
         categoryId: row.category.id,
         categorySlug: row.category.slug,
         categoryName: row.category.name,
+        categoryNameTranslations: parseNameTranslations(row.category.nameTranslations),
         createdAt: row.createdAt.toISOString(),
         isFollowing: true,
       }));
@@ -121,7 +137,7 @@ export class CategoryFollowsService {
   private async requireCategory(categoryId: string) {
     const category = await this.prisma.serviceCategory.findFirst({
       where: { id: categoryId, deletedAt: null, isActive: true },
-      select: { id: true, slug: true, name: true },
+      select: { id: true, slug: true, name: true, nameTranslations: true },
     });
     if (!category) {
       throw new AppException('NOT_FOUND', { message: 'Kategori bulunamadı.' });

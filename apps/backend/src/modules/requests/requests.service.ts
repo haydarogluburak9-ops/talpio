@@ -25,6 +25,7 @@ import {
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
+import { parseNameTranslations } from '@common/i18n/localized-text';
 import { OutboxService } from '@infra/outbox/outbox.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { AuditLogService } from '@modules/admin/audit-log.service';
@@ -41,6 +42,12 @@ import type {
   ListRequestsQueryDto,
 } from './dto/create-request.dto';
 import { toCommerceRequest, toRequestOffer } from './request.mapper';
+
+/**
+ * Kategorisiz talebin eşleşme bildiriminde kategori yuvası boş kalmasın. Gövde
+ * alıcının dilinde üretildiği için yedek de çok dillidir.
+ */
+const UNCATEGORIZED_MATCH_LABEL = { tr: 'Talep', en: 'Request' } as const;
 
 @Injectable()
 export class RequestsService {
@@ -192,7 +199,7 @@ export class RequestsService {
     const row = await this.prisma.commerceRequest.findFirst({
       where: { id, deletedAt: null },
       include: {
-        category: { select: { slug: true, name: true } },
+        category: { select: { slug: true, name: true, nameTranslations: true } },
         deliveryCity: { select: { name: true } },
       },
     });
@@ -251,7 +258,9 @@ export class RequestsService {
     const now = new Date();
     const shortDescription = row.description.replace(/\s+/g, ' ').trim().slice(0, 140);
     const cityName = row.deliveryCity?.name ?? '—';
-    const categoryName = row.category?.name ?? 'Talep';
+    const categoryName = row.category
+      ? (parseNameTranslations(row.category.nameTranslations) ?? row.category.name)
+      : UNCATEGORIZED_MATCH_LABEL;
     const deadline = row.deliveryDeadline?.toISOString() ?? '';
 
     const updated = await this.prisma.$transaction(async (tx) => {

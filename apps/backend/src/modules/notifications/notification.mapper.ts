@@ -1,6 +1,7 @@
 import type { DeviceToken, Notification, NotificationParams } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
+import { parseLocalizedText } from '@common/i18n/localized-text';
 
 export type NotificationRow = Prisma.NotificationGetPayload<Record<string, never>>;
 export type DeviceTokenRow = Prisma.DeviceTokenGetPayload<Record<string, never>>;
@@ -33,9 +34,10 @@ export function toDeviceToken(row: DeviceTokenRow): DeviceToken {
 }
 
 /**
- * JSON sütunu her şeyi kabul eder; istemciye giden değerler dizge ve sayıya
- * indirgenir. Beklenmeyen bir yapı geldiğinde metin yerleştirmesi bozulmasın
- * diye alan atılır — eksik değişken, ekranda `[object Object]` görmekten iyidir.
+ * JSON sütunu her şeyi kabul eder; istemciye giden değerler dizge, sayı ve
+ * çeviri sözlüğüne indirgenir. Beklenmeyen bir yapı geldiğinde metin
+ * yerleştirmesi bozulmasın diye alan atılır — eksik değişken, ekranda
+ * `[object Object]` görmekten iyidir.
  */
 function toParams(value: Prisma.JsonValue): NotificationParams {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
@@ -43,7 +45,13 @@ function toParams(value: Prisma.JsonValue): NotificationParams {
   const params: NotificationParams = {};
 
   for (const [key, item] of Object.entries(value)) {
-    if (typeof item === 'string' || typeof item === 'number') params[key] = item;
+    if (typeof item === 'string' || typeof item === 'number') {
+      params[key] = item;
+      continue;
+    }
+
+    const localized = parseLocalizedText(item);
+    if (localized !== undefined) params[key] = localized;
   }
 
   return params;

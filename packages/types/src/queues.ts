@@ -4,6 +4,8 @@
  * API ve worker aynı tipleri kullanır; string sabitler dağılmaz.
  */
 
+import type { NotificationParams } from './models/messaging';
+
 export const QUEUE_NAMES = {
   AI_AGENT: 'ai-agent',
   DOCUMENT_GENERATION: 'document-generation',
@@ -43,7 +45,7 @@ export interface NotificationDispatchJobPayload {
   notificationId?: string;
   userId?: string;
   type?: string;
-  params?: Record<string, string | number>;
+  params?: NotificationParams;
   deepLink?: string | null;
   dedupeKey?: string;
   requestId?: string;

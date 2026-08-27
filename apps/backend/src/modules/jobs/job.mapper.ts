@@ -1,13 +1,15 @@
 import type { Prisma } from '@/generated/prisma/client';
 import type { JobAttachment, JobRequest, MaskedAddress } from '@talpio/types';
 
+import { categoryRefSelect, toCategoryRef } from '@common/i18n/localized-text';
+
 /**
  * Talep sorgularında daima çekilen ilişkiler. Tek yerde tutulur ki liste ve
  * detay uçları aynı gövdeyi döndürsün.
  */
 export const jobRequestInclude = {
-  category: { select: { id: true, name: true } },
-  subcategory: { select: { id: true, name: true } },
+  category: { select: categoryRefSelect },
+  subcategory: { select: categoryRefSelect },
   city: { select: { name: true } },
   district: { select: { name: true } },
   neighborhood: { select: { name: true } },
@@ -38,8 +40,8 @@ export function toJobRequest(
   return {
     id: row.id,
     customerId: row.customerId,
-    category: { id: row.category.id, name: row.category.name },
-    subcategory: row.subcategory ? { id: row.subcategory.id, name: row.subcategory.name } : null,
+    category: toCategoryRef(row.category),
+    subcategory: row.subcategory ? toCategoryRef(row.subcategory) : null,
     title: row.title,
     description: row.description,
     status: row.status,

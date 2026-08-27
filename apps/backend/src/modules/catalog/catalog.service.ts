@@ -4,12 +4,12 @@ import type {
   AttributeFieldOption,
   AttributeFieldType,
   CategoryAttributeSchema,
-  LocalizedText,
   ServiceCategory,
   ServiceSubcategory,
 } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { parseLocalizedText, parseNameTranslations } from '@common/i18n/localized-text';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 const ATTRIBUTE_FIELD_TYPES: readonly AttributeFieldType[] = [
@@ -25,6 +25,7 @@ type CategoryRow = {
   id: string;
   slug: string;
   name: string;
+  nameTranslations: unknown;
   description: string | null;
   iconKey: string | null;
   sortOrder: number;
@@ -39,6 +40,7 @@ type SubcategoryRow = {
   categoryId: string;
   slug: string;
   name: string;
+  nameTranslations: unknown;
   sortOrder: number;
   isActive: boolean;
   createdAt: Date;
@@ -150,15 +152,15 @@ export class CatalogService {
       const { key, type } = candidate;
 
       if (typeof key !== 'string' || key.length === 0) continue;
-      const label = this.parseLocalizedText(candidate.label);
+      const label = parseLocalizedText(candidate.label);
       if (label === undefined) continue;
       if (typeof type !== 'string' || !ATTRIBUTE_FIELD_TYPES.includes(type as AttributeFieldType)) {
         continue;
       }
 
       const options = this.parseOptions(candidate.options);
-      const unit = this.parseLocalizedText(candidate.unit);
-      const description = this.parseLocalizedText(candidate.description);
+      const unit = parseLocalizedText(candidate.unit);
+      const description = parseLocalizedText(candidate.description);
 
       fields.push({
         key,
@@ -172,23 +174,6 @@ export class CatalogService {
     }
 
     return fields;
-  }
-
-  /**
-   * Görünen metni doğrular. Düz string olduğu gibi kabul edilir; sözlükte
-   * string olmayan ve boş diller atılır, geriye hiç dil kalmazsa metin
-   * kullanılamaz sayılır (`undefined`).
-   */
-  private parseLocalizedText(value: unknown): LocalizedText | undefined {
-    if (typeof value === 'string') return value.length > 0 ? value : undefined;
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
-
-    const translations: Record<string, string> = {};
-    for (const [locale, text] of Object.entries(value as Record<string, unknown>)) {
-      if (typeof text === 'string' && text.length > 0) translations[locale] = text;
-    }
-
-    return Object.keys(translations).length > 0 ? translations : undefined;
   }
 
   /**
@@ -213,7 +198,7 @@ export class CatalogService {
 
       options.push({
         value: candidate.value,
-        label: this.parseLocalizedText(candidate.label) ?? candidate.value,
+        label: parseLocalizedText(candidate.label) ?? candidate.value,
       });
     }
 
@@ -225,6 +210,7 @@ export class CatalogService {
       id: row.id,
       slug: row.slug,
       name: row.name,
+      nameTranslations: parseNameTranslations(row.nameTranslations),
       description: row.description,
       iconKey: row.iconKey,
       sortOrder: row.sortOrder,
@@ -243,6 +229,7 @@ export class CatalogService {
       categoryId: row.categoryId,
       slug: row.slug,
       name: row.name,
+      nameTranslations: parseNameTranslations(row.nameTranslations),
       sortOrder: row.sortOrder,
       isActive: row.isActive,
       createdAt: row.createdAt.toISOString(),

@@ -1,12 +1,8 @@
-import type {
-  EntityRef,
-  ProviderProfile,
-  ProviderService,
-  ProviderSummary,
-} from '@talpio/types';
+import type { CategoryRef, ProviderProfile, ProviderService, ProviderSummary } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { VerificationStatus } from '@/generated/prisma/client';
+import { categoryRefSelect, toCategoryRef } from '@common/i18n/localized-text';
 
 /** Satıcı profili sorgularında daima çekilen ilişkiler. */
 export const providerInclude = {
@@ -20,8 +16,8 @@ export const providerInclude = {
       startingPriceMinor: true,
       createdAt: true,
       updatedAt: true,
-      category: { select: { id: true, name: true } },
-      subcategory: { select: { id: true, name: true } },
+      category: { select: categoryRefSelect },
+      subcategory: { select: categoryRefSelect },
     },
     orderBy: { createdAt: 'asc' },
   },
@@ -92,12 +88,12 @@ export function toProviderService(row: ProviderRow['services'][number]): Provide
 }
 
 /** Aynı kategoride birden çok alt hizmet tanımlanabildiği için tekilleştirilir. */
-function toCategoryRefs(row: ProviderRow): EntityRef[] {
+function toCategoryRefs(row: ProviderRow): CategoryRef[] {
   const categories = new Map(
-    row.services.map((service) => [service.category.id, service.category.name]),
+    row.services.map((service) => [service.category.id, toCategoryRef(service.category)]),
   );
 
-  return [...categories].map(([id, name]) => ({ id, name }));
+  return [...categories.values()];
 }
 
 /**

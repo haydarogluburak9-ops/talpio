@@ -1,7 +1,7 @@
 import type { ConversationStatus, MessageType } from '../enums/messaging';
 import type { NotificationChannel, NotificationType, DevicePlatform } from '../enums/messaging';
 import type { PaginationMeta } from '../api/envelope';
-import type { BaseEntity, GeoPoint } from './common';
+import type { BaseEntity, GeoPoint, LocalizedText } from './common';
 
 export interface ConversationParticipant {
   userId: string;
@@ -57,7 +57,14 @@ export interface Message extends BaseEntity {
  * yerden — `renderNotification` — çözülür. Tip güvenliği bildirimi *üreten*
  * tarafta `NotificationDispatch` ile sağlanır.
  */
-export type NotificationParams = Record<string, string | number>;
+export type NotificationParams = Record<string, NotificationParamValue>;
+
+/**
+ * Sözlük biçimi, gövdeye yerleşen bir değerin kendisinin de çevrilmesi
+ * gerektiği durumlar içindir (kategori adı gibi). `renderNotification` değeri
+ * alıcının diline indirger; ham sözlük hiçbir zaman ekrana çıkmaz.
+ */
+export type NotificationParamValue = string | number | LocalizedText;
 
 /**
  * Tür başına parametre şekli.
@@ -67,7 +74,7 @@ export type NotificationParams = Record<string, string | number>;
  */
 export interface NotificationParamsMap {
   JOB_PUBLISHED: { jobTitle: string };
-  JOB_MATCHED: { jobTitle: string; categoryName: string; districtName: string };
+  JOB_MATCHED: { jobTitle: string; categoryName: LocalizedText; districtName: string };
   OFFER_RECEIVED: {
     jobTitle: string;
     providerName: string;
@@ -98,7 +105,7 @@ export interface NotificationParamsMap {
   REQUEST_MATCHED: {
     requestId: string;
     requestTitle: string;
-    categoryName: string;
+    categoryName: LocalizedText;
     cityName: string;
     shortDescription: string;
     deadline: string;

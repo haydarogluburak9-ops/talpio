@@ -56,7 +56,11 @@ function jobRow(overrides: Partial<JobRequestRow> = {}): JobRequestRow {
     updatedAt: now,
     deletedAt: null,
     commerceRequestId: null,
-    category: { id: 'cat-1', name: 'Tesisat' },
+    category: {
+      id: 'cat-1',
+      name: 'Tesisat',
+      nameTranslations: { tr: 'Tesisat', en: 'Plumbing' },
+    },
     subcategory: null,
     city: { name: 'İstanbul' },
     district: { name: 'Kadıköy' },

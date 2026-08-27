@@ -2,6 +2,7 @@ import { DEFAULT_LOCALE } from '@talpio/config';
 import type { NotificationParams, NotificationType } from '@talpio/types';
 
 import { formatDateTime, formatMoneyMinor, formatRating } from './format';
+import { resolveLocalizedText } from './localized-text';
 import { createTranslator } from './translator';
 
 export interface RenderedNotification {
@@ -33,9 +34,19 @@ export function renderNotification(
 /**
  * Para, puan ve tarih alanlarının biçimi dile bağlıdır; yerleştirmeden önce
  * çevrilir. Aksi halde katalog metni "180000" gibi ham değer taşırdı.
+ *
+ * Sözlük taşıyan parametreler (kategori adı gibi) de burada dile indirgenir;
+ * gövdenin geri kalanı alıcının dilindeyken içine Türkçe ada gömülmesin.
  */
-function withLocalizedValues(params: NotificationParams, locale: string): NotificationParams {
-  const values: NotificationParams = { ...params };
+function withLocalizedValues(
+  params: NotificationParams,
+  locale: string,
+): Record<string, string | number> {
+  const values: Record<string, string | number> = {};
+
+  for (const [key, value] of Object.entries(params)) {
+    values[key] = typeof value === 'object' ? resolveLocalizedText(value, locale) : value;
+  }
 
   if (typeof params.amountMinor === 'number') {
     values.amount = formatMoneyMinor(

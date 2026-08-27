@@ -1,6 +1,7 @@
 import type { DocumentStatus, DocumentType, UserStatus, VerificationStatus } from '../enums/statuses';
 import type { UserRole } from '../enums/roles';
 import type { BaseEntity, EntityRef } from './common';
+import type { CategoryRef } from './catalog';
 
 export interface User extends BaseEntity {
   email: string;
@@ -46,7 +47,7 @@ export interface ProviderProfile extends BaseEntity {
   cancellationRate: number;
   /** Tekliflere ortalama yanıt süresi (dakika). */
   averageResponseMinutes?: number | null;
-  categories: EntityRef[];
+  categories: CategoryRef[];
   serviceAreas: EntityRef[];
   lastActiveAt?: string | null;
 }
@@ -62,7 +63,7 @@ export interface ProviderSummary {
   reviewCount: number;
   completedJobCount: number;
   averageResponseMinutes?: number | null;
-  categories: EntityRef[];
+  categories: CategoryRef[];
 }
 
 export interface ProviderService extends BaseEntity {

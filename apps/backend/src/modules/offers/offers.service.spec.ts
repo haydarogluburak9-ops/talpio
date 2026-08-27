@@ -65,7 +65,11 @@ function offerRow(overrides: Partial<OfferRow> = {}): OfferRow {
       completedJobCount: 58,
       averageResponseMinutes: 35,
       user: { fullName: 'Ahmet Yılmaz', avatar: null },
-      services: [{ category: { id: 'cat-1', name: 'Tesisat' } }],
+      services: [
+        {
+          category: { id: 'cat-1', name: 'Tesisat', nameTranslations: { en: 'Plumbing' } },
+        },
+      ],
     },
     ...overrides,
   };

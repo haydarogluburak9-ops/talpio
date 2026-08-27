@@ -26,7 +26,7 @@ function serviceRow(overrides: Record<string, unknown> = {}) {
     startingPriceMinor: 50_000,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-    category: { id: CATEGORY_A, name: 'Tesisat' },
+    category: { id: CATEGORY_A, name: 'Tesisat', nameTranslations: { en: 'Plumbing' } },
     subcategory: null,
     ...overrides,
   };
@@ -115,7 +115,9 @@ describe('ProvidersService', () => {
 
       expect(result.isVerified).toBe(true);
       expect(result.cancellationRate).toBeCloseTo(0.1);
-      expect(result.categories).toEqual([{ id: CATEGORY_A, name: 'Tesisat' }]);
+      expect(result.categories).toEqual([
+        { id: CATEGORY_A, name: 'Tesisat', nameTranslations: { en: 'Plumbing' } },
+      ]);
       expect(result.serviceAreas).toEqual([{ id: DISTRICT_A, name: 'Kadıköy' }]);
     });
 

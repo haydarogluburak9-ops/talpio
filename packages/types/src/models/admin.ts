@@ -13,7 +13,7 @@ import type {
   UserStatus,
   VerificationStatus,
 } from '../enums/statuses';
-import type { Money } from './common';
+import type { LocalizedText, Money } from './common';
 import type { NotificationParams } from './messaging';
 import type { SupportMessage } from './support';
 
@@ -100,6 +100,7 @@ export interface AdminJobSummary {
   title: string;
   status: JobRequestStatus;
   categoryName: string;
+  categoryNameTranslations?: LocalizedText | null;
   cityName: string;
   districtName: string;
   customerName: string;
@@ -180,6 +181,7 @@ export interface AdminCommissionRuleSummary {
   fixedMinor: number;
   premiumRateBps?: number | null;
   categoryName?: string | null;
+  categoryNameTranslations?: LocalizedText | null;
   cityName?: string | null;
   minAmountMinor?: number | null;
   maxAmountMinor?: number | null;
