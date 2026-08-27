@@ -68,6 +68,8 @@ export function CommerceRequestFormScreen({
   });
 
   const store = storeProfile.data?.kind === 'BUSINESS' ? storeProfile.data : null;
+  const targetBusinessId = store?.business?.businessId ?? null;
+  const storeProfilePending = Boolean(storeUsername) && storeProfile.isPending;
   // Mağazadan gelindiğinde kategori hazır seçilir; kullanıcının seçimi bunu ezer.
   const categoryId = form.categoryId || store?.business?.categories[0]?.id || '';
 
@@ -125,8 +127,10 @@ export function CommerceRequestFormScreen({
           quantity: form.quantity || undefined,
           unit: form.unit || undefined,
           ...toSpecificationValues(attributeFields, attributeValues),
-          ...(storeUsername ? { preferredSellerUsername: storeUsername } : {}),
         },
+        // Bir mağazadan teklif isteniyorsa talep yalnızca ona gider; mağazasız
+        // açılan talep eşleşen satıcılara ve takipçilere dağıtılır.
+        ...(targetBusinessId ? { businessId: targetBusinessId } : {}),
         publish: true,
       });
     } catch (err) {
@@ -259,7 +263,8 @@ export function CommerceRequestFormScreen({
       <Button
         label={create.isPending ? t('commerce.submitting') : t('commerce.submit')}
         loading={create.isPending}
-        disabled={categories.isPending || attributeSchemaPending}
+        // Mağaza kimliği gelmeden gönderilirse talep yanlışlıkla herkese açılır.
+        disabled={categories.isPending || attributeSchemaPending || storeProfilePending}
         block
         onPress={() => void onSubmit()}
       />

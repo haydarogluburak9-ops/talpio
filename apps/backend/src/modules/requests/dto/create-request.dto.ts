@@ -86,6 +86,13 @@ export class CreateCommerceRequestDto {
   @IsDateString()
   deliveryDeadline?: string;
 
+  @ApiPropertyOptional({
+    description: 'Doğrudan teklif istenen işletme; verilirse talep yalnızca ona gider',
+  })
+  @IsOptional()
+  @IsUUID()
+  businessId?: string;
+
   @ApiPropertyOptional({ enum: RequestVisibility })
   @IsOptional()
   @IsEnum(RequestVisibility)

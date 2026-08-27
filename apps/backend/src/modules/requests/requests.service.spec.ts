@@ -73,7 +73,7 @@ describe('RequestsService tenant isolation', () => {
   const requestOrderLink = prisma.requestOrderLink as { create: jest.Mock };
   const user = prisma.user as { findUnique: jest.Mock };
 
-  const business = prisma.business as { findMany: jest.Mock };
+  const business = prisma.business as { findMany: jest.Mock; findFirst: jest.Mock };
   const userBlock = prisma.userBlock as { findMany: jest.Mock };
   const requestMatchMocks = prisma.requestMatch as {
     deleteMany: jest.Mock;
@@ -240,6 +240,38 @@ describe('RequestsService tenant isolation', () => {
     const published = await service.publish(buyer, 'req-1');
 
     expect(published.matchCount).toBe(REQUEST_MATCHING.maxMatchesWithoutCategory + 5);
+  });
+
+  it('publish davetli talebi yalnızca hedef işletmeye dağıtır', async () => {
+    commerceRequest.findFirst.mockResolvedValue(
+      draftRow({
+        visibility: 'INVITE_ONLY',
+        businessId: 'biz-invited',
+        // Kategori tutmuyor: eşleştirici çalışsaydı bu işletme elenirdi.
+        categoryId: 'cat-nobody-has',
+      }),
+    );
+    primePublish([matcherBusiness({ id: 'biz-other' })]);
+    business.findFirst.mockResolvedValue({
+      id: 'biz-invited',
+      memberships: [{ userId: 'invited-seller' }],
+    });
+    commerceRequestMocks.update.mockResolvedValue({
+      ...draftRow(),
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    const published = await service.publish(buyer, 'req-1');
+
+    expect(published.matchCount).toBe(1);
+    expect(business.findMany).not.toHaveBeenCalled();
+    expect(requestMatchMocks.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { requestId_businessId: { requestId: 'req-1', businessId: 'biz-invited' } },
+      }),
+    );
+    expect(outbox.write).toHaveBeenCalledTimes(1);
   });
 
   it('publish demo işletmeleri aday havuzuna almaz', async () => {

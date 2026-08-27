@@ -1077,7 +1077,7 @@ export const en: Messages = {
     percentValue: '{count}%',
     quoteForStore: 'Request a quote from {name}',
     quoteForStoreHint:
-      'When you publish, matching sellers including this store can see the request in that category.',
+      'Only this store sees this request. It is not posted to the feed and no other seller receives it.',
     noAbout: 'This store has not added a description yet.',
     credentialsByType: {
       IDENTITY: 'ID',

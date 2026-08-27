@@ -34,7 +34,11 @@ import { FraudService } from '@modules/fraud/fraud.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { RbacService } from '@modules/rbac/rbac.service';
 
-import { matchBusinessesToRequest } from './matching/deterministic-matcher';
+import {
+  MATCH_REASON,
+  matchBusinessesToRequest,
+  type MatchCandidate,
+} from './matching/deterministic-matcher';
 import type { MatcherBusiness } from './matching/deterministic-matcher';
 import type {
   CreateCommerceRequestDto,
@@ -61,8 +65,19 @@ export class RequestsService {
   ) {}
 
   async create(user: AuthenticatedUser, dto: CreateCommerceRequestDto): Promise<CommerceRequest> {
+    // Hedef işletme burada doğrulanır: yayında sessizce düşerse alıcı talebinin
+    // gittiğini sanır ve kimseden cevap gelmez.
+    if (dto.businessId) {
+      const target = await this.prisma.business.findFirst({
+        where: { id: dto.businessId, deletedAt: null, isActive: true },
+        select: { id: true },
+      });
+      if (!target) throw AppException.notFound('İşletme', dto.businessId);
+    }
+
     const row = await this.prisma.commerceRequest.create({
       data: {
+        businessId: dto.businessId ?? null,
         requestType: dto.requestType,
         title: dto.title,
         description: dto.description,
@@ -76,7 +91,11 @@ export class RequestsService {
         deliveryDistrictId: dto.deliveryDistrictId ?? null,
         deliveryAddressText: dto.deliveryAddressText ?? null,
         deliveryDeadline: dto.deliveryDeadline ? new Date(dto.deliveryDeadline) : null,
-        visibility: dto.visibility ?? RequestVisibility.PUBLIC_MATCHED,
+        // Bir mağazaya teklif isteği açıkça özeldir; aksi belirtilmedikçe
+        // eşleştiriciye açılmaz.
+        visibility:
+          dto.visibility ??
+          (dto.businessId ? RequestVisibility.INVITE_ONLY : RequestVisibility.PUBLIC_MATCHED),
         buyerUserId: user.id,
         status: RequestStatus.DRAFT,
         source: dto.source ?? RequestSource.WEB,
@@ -168,6 +187,94 @@ export class RequestsService {
       page,
       limit,
     );
+  }
+
+  /**
+   * Talebin kimlere gideceğini belirler.
+   *
+   * `INVITE_ONLY` + hedef işletme varsa eşleştirici hiç çalışmaz: alıcı satıcıyı
+   * kendisi seçmiştir, kategori ya da servis alanı tutmuyor diye elenmesi
+   * alıcının isteğini boşa çıkarır. Diğer tüm taleplerde deterministik
+   * eşleştirici aday havuzunu puanlar.
+   */
+  private async resolveRecipients(row: {
+    id: string;
+    buyerUserId: string;
+    businessId: string | null;
+    visibility: string;
+    categoryId: string | null;
+    subcategoryId: string | null;
+    deliveryCityId: string | null;
+    deliveryDistrictId: string | null;
+    deliveryCity: { name: string } | null;
+    quantity: Prisma.Decimal | null;
+    specifications: unknown;
+  }): Promise<{
+    matches: MatchCandidate[];
+    membershipsByBusiness: Map<string, string[]>;
+  }> {
+    if (row.visibility === RequestVisibility.INVITE_ONLY && row.businessId) {
+      const target = await this.prisma.business.findFirst({
+        where: { id: row.businessId, deletedAt: null, isActive: true },
+        select: {
+          id: true,
+          memberships: { where: { status: 'ACTIVE' }, select: { userId: true } },
+        },
+      });
+      if (!target) return { matches: [], membershipsByBusiness: new Map() };
+
+      return {
+        matches: [
+          {
+            businessId: target.id,
+            score: 100,
+            reasons: {
+              codes: [MATCH_REASON.DIRECT_INVITE],
+              labels: ['Buyer requested a quote from you directly'],
+              details: { cityName: row.deliveryCity?.name ?? null },
+            },
+          },
+        ],
+        membershipsByBusiness: new Map([
+          [target.id, target.memberships.map((member) => member.userId)],
+        ]),
+      };
+    }
+
+    const { matcherInput, membershipsByBusiness } = await this.loadMatcherBusinesses(
+      row.buyerUserId,
+    );
+
+    const spec =
+      row.specifications &&
+      typeof row.specifications === 'object' &&
+      !Array.isArray(row.specifications)
+        ? Object.keys(row.specifications)
+        : [];
+
+    const ranked = matchBusinessesToRequest(
+      {
+        categoryId: row.categoryId,
+        subcategoryId: row.subcategoryId,
+        deliveryCityId: row.deliveryCityId,
+        deliveryDistrictId: row.deliveryDistrictId,
+        cityName: row.deliveryCity?.name ?? null,
+        quantity: row.quantity,
+        specificationKeys: spec,
+        buyerUserId: row.buyerUserId,
+      },
+      matcherInput,
+    );
+
+    // Kategorisiz talepte eşleştirici kategori filtresini uygulayamaz; aday
+    // havuzu tüm aktif işletmeler olur. Liste puana göre sıralı geldiği için
+    // baştan kesmek en isabetli işletmeleri korur.
+    const matches = ranked.slice(
+      0,
+      row.categoryId ? REQUEST_MATCHING.maxMatches : REQUEST_MATCHING.maxMatchesWithoutCategory,
+    );
+
+    return { matches, membershipsByBusiness };
   }
 
   /**
@@ -276,40 +383,7 @@ export class RequestsService {
       method: 'deterministic',
     };
 
-    const { matcherInput, membershipsByBusiness } = await this.loadMatcherBusinesses(
-      row.buyerUserId,
-    );
-
-    const spec =
-      row.specifications &&
-      typeof row.specifications === 'object' &&
-      !Array.isArray(row.specifications)
-        ? Object.keys(row.specifications)
-        : [];
-
-    const ranked = matchBusinessesToRequest(
-      {
-        categoryId: row.categoryId,
-        subcategoryId: row.subcategoryId,
-        deliveryCityId: row.deliveryCityId,
-        deliveryDistrictId: row.deliveryDistrictId,
-        cityName: row.deliveryCity?.name ?? null,
-        quantity: row.quantity,
-        specificationKeys: spec,
-        buyerUserId: row.buyerUserId,
-      },
-      matcherInput,
-    );
-
-    // Kategorisiz talepte eşleştirici kategori filtresini uygulayamaz; aday
-    // havuzu tüm aktif işletmeler olur. Liste puana göre sıralı geldiği için
-    // baştan kesmek en isabetli işletmeleri korur.
-    const matches = ranked.slice(
-      0,
-      row.categoryId
-        ? REQUEST_MATCHING.maxMatches
-        : REQUEST_MATCHING.maxMatchesWithoutCategory,
-    );
+    const { matches, membershipsByBusiness } = await this.resolveRecipients(row);
 
     const now = new Date();
     const shortDescription = row.description.replace(/\s+/g, ' ').trim().slice(0, 140);

@@ -1088,7 +1088,7 @@ export const tr = {
     percentValue: '%{count}',
     quoteForStore: '{name} mağazasına teklif isteği',
     quoteForStoreHint:
-      'Talebiniz yayınlanınca eşleşen satıcılarla birlikte bu mağaza da ilgili kategoride görür.',
+      'Bu talebi yalnızca bu mağaza görür; akışta yayımlanmaz, başka satıcıya gitmez.',
     noAbout: 'Bu mağaza henüz bir açıklama eklemedi.',
     credentialsByType: {
       IDENTITY: 'Kimlik',

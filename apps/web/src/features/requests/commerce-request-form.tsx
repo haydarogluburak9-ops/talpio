@@ -3,7 +3,7 @@
 import { ApiError } from '@talpio/api-client';
 import { RequestType } from '@talpio/types';
 import { Button, Field, Input, Select, Textarea } from '@talpio/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
@@ -86,7 +86,14 @@ export function CommerceRequestForm({
     return (categories.data ?? []).find((c) => c.slug === initialCategorySlug)?.id ?? '';
   }, [categories.data, initialCategorySlug]);
 
-  const categoryId = form.categoryPicked || form.categoryId ? form.categoryId : shortcutCategoryId;
+  const store = storeProfile.data?.kind === 'BUSINESS' ? storeProfile.data : null;
+  const targetBusinessId = store?.business?.businessId ?? null;
+  const storeProfilePending = Boolean(storeUsername) && storeProfile.isPending;
+
+  // Kullanıcı kendi seçimini yapana kadar sırayla mağazanın kategorisi ve
+  // kısayolun kategorisi geçerlidir.
+  const fallbackCategoryId = store?.business?.categories[0]?.id ?? shortcutCategoryId;
+  const categoryId = form.categoryPicked || form.categoryId ? form.categoryId : fallbackCategoryId;
 
   const selectedCategory = useMemo(
     () => (categories.data ?? []).find((c) => c.id === categoryId),
@@ -94,19 +101,10 @@ export function CommerceRequestForm({
   );
 
   const subcategories = selectedCategory?.subcategories ?? [];
-  const store = storeProfile.data?.kind === 'BUSINESS' ? storeProfile.data : null;
 
   const attributeSchema = useCategoryAttributeSchema(categoryId || undefined);
   const attributeFields = attributeSchema.data?.fields ?? [];
   const attributeSchemaPending = Boolean(categoryId) && attributeSchema.isPending;
-
-  useEffect(() => {
-    const firstCategory = store?.business?.categories[0]?.id;
-    if (!firstCategory) return;
-    setForm((current) =>
-      current.categoryId ? current : { ...current, categoryId: firstCategory },
-    );
-  }, [store?.business?.categories]);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -156,8 +154,10 @@ export function CommerceRequestForm({
           quantity: form.quantity || undefined,
           unit: form.unit || undefined,
           ...toSpecificationValues(attributeFields, attributeValues),
-          ...(storeUsername ? { preferredSellerUsername: storeUsername } : {}),
         },
+        // Bir mağazadan teklif isteniyorsa talep yalnızca ona gider; mağazasız
+        // açılan talep eşleşen satıcılara ve takipçilere dağıtılır.
+        ...(targetBusinessId ? { businessId: targetBusinessId } : {}),
         publish: true,
       });
     } catch (err) {
@@ -390,7 +390,13 @@ export function CommerceRequestForm({
 
       <Button
         type="submit"
-        disabled={create.isPending || categories.isPending || attributeSchemaPending}
+        disabled={
+          create.isPending ||
+          categories.isPending ||
+          attributeSchemaPending ||
+          // Mağaza kimliği gelmeden gönderilirse talep yanlışlıkla herkese açılır.
+          storeProfilePending
+        }
       >
         {create.isPending ? t('commerce.submitting') : t('commerce.submit')}
       </Button>

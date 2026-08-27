@@ -18,6 +18,8 @@ export const MATCH_REASON = {
   ACTIVE_30D: 'ACTIVE_30D',
   RESPONSE_RATE: 'RESPONSE_RATE',
   AVAILABLE_NOW: 'AVAILABLE_NOW',
+  /** Alıcı bu satıcıyı doğrudan seçti; puanlama uygulanmaz. */
+  DIRECT_INVITE: 'DIRECT_INVITE',
 } as const;
 
 export type MatchReasonCode = (typeof MATCH_REASON)[keyof typeof MATCH_REASON];
@@ -41,6 +43,7 @@ const REASON_LABEL: Record<MatchReasonCode, (details: MatchReasonDetails) => str
       ? `Response rate ${d.responseRatePct}%`
       : 'Responds to matched requests',
   AVAILABLE_NOW: () => 'Seller available now',
+  DIRECT_INVITE: () => 'Buyer requested a quote from you directly',
 };
 
 export interface AvailabilitySlot {

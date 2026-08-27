@@ -17,6 +17,8 @@ export const createCommerceRequestSchema = z.object({
   deliveryDistrictId: uuidSchema.optional(),
   deliveryAddressText: z.string().trim().max(500).optional(),
   deliveryDeadline: isoDateSchema.optional(),
+  /** Doğrudan teklif istenen işletme; verilirse talep yalnızca ona gider. */
+  businessId: uuidSchema.optional(),
   visibility: z.enum(RequestVisibility).optional(),
   source: z.enum(RequestSource).optional(),
   publish: z.boolean().optional(),

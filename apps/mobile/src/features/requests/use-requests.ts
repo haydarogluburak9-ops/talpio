@@ -41,9 +41,27 @@ export function useCreateCommerceRequest() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (body: CreateCommerceRequestPayload) => apiClient.requests.create(body),
+    mutationFn: async (body: CreateCommerceRequestPayload) => {
+      const request = await apiClient.requests.create(body);
+
+      /**
+       * Herkese açık talep akışta da paylaşılır ki takipçiler görsün. Belirli
+       * bir mağazaya açılan talep özeldir, paylaşılmaz. Paylaşım ikincil; hata
+       * alırsa talep yine yayında kalır.
+       */
+      if (!body.businessId) {
+        try {
+          await apiClient.social.shareRequest(request.id);
+        } catch {
+          // Akış paylaşımı ikincil; talep zaten yayında.
+        }
+      }
+
+      return request;
+    },
     onSuccess: (request) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.requests.all() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.all() });
       router.push(`/customer/requests/${request.id}`);
     },
   });
