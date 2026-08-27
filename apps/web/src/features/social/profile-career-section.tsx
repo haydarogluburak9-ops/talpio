@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { getLocale, t } from '@/lib/i18n';
 
@@ -877,6 +878,9 @@ function EducationForm({
  * Kenar sütunu dar olduğu için formlar kart içinde açılmaz; ekranın ortasında
  * kendi penceresini açar. Küçük ekranda alttan yükselen sayfa gibi davranır,
  * masaüstünde ortalanır.
+ *
+ * Gövdeye portallanır: kenar sütunu `sticky` olduğu için kendi yığılma bağlamını
+ * kurar ve pencere orada kalsaydı profil başlığının altında çizilirdi.
  */
 function CareerFormShell({
   title,
@@ -907,9 +911,11 @@ function CareerFormShell({
     };
   }, [onClose]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-brand-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4 dark:bg-black/60"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-brand-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4 dark:bg-black/60"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -945,7 +951,8 @@ function CareerFormShell({
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
