@@ -16,8 +16,15 @@ COPY packages ./packages
 RUN npm ci --include-workspace-root
 
 FROM deps AS build
+# NEXT_PUBLIC_* degiskenleri derleme aninda gomulur; calisma aninda verilmesi
+# etkisizdir. Eksik birakilirsa kod icindeki localhost yedegi uretime kacar ve
+# canonical/OpenGraph adresleri bozulur.
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_DEFAULT_LOCALE
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+ENV NEXT_PUBLIC_DEFAULT_LOCALE=${NEXT_PUBLIC_DEFAULT_LOCALE}
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY apps/web ./apps/web
 COPY packages ./packages
