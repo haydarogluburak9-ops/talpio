@@ -244,7 +244,9 @@ export class NotificationsService {
    * yapıldığını buradan doğrular.
    */
   listOutbox(): OutboxEntry[] {
-    if (this.config.isProduction) {
+    // İzin verilenler listesi kullanılır: `!isProduction` yazılırsa `staging`
+    // de kapsam dışında kalır ve tampon internete açık bir sunucuda okunabilir.
+    if (!this.config.isDevelopment && this.config.nodeEnv !== 'test') {
       throw new AppException('NOT_FOUND', {
         message: 'Bu uç yalnızca geliştirme ortamında açıktır.',
       });

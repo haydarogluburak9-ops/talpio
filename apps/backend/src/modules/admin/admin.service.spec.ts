@@ -54,6 +54,7 @@ function providerRow(overrides: Record<string, unknown> = {}) {
 type PrismaMock = {
   user: { findFirst: jest.Mock; findMany: jest.Mock; update: jest.Mock; count: jest.Mock };
   userSession: { updateMany: jest.Mock };
+  verificationToken: { updateMany: jest.Mock };
   providerProfile: { findFirst: jest.Mock; update: jest.Mock };
   providerDocument: { updateMany: jest.Mock };
   $transaction: jest.Mock;
@@ -73,6 +74,7 @@ function createPrismaMock(): PrismaMock {
       count: jest.fn().mockResolvedValue(1),
     },
     userSession: { updateMany: jest.fn().mockResolvedValue({ count: 3 }) },
+    verificationToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     providerProfile,
     providerDocument: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     // Servis dizi biçimli işlem kullanır; mock çağrıları olduğu gibi bekler.
@@ -166,6 +168,24 @@ describe('AdminService', () => {
       expect(audit.record).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'user.status.updated', actorId: admin.id }),
       );
+    });
+
+    it('askıya alınca bekleyen doğrulama jetonlarını da tüketir', async () => {
+      // Aksi hâlde yasaklı kullanıcı, yasaktan önce aldığı e-posta jetonunu
+      // kullanarak hesabını yeniden ACTIVE yapabilirdi.
+      const prisma = createPrismaMock();
+
+      await createService(prisma).updateUserStatus(
+        admin,
+        TARGET_ID,
+        { status: UserStatus.SUSPENDED },
+        {},
+      );
+
+      expect(prisma.verificationToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: TARGET_ID, consumedAt: null },
+        data: { consumedAt: expect.any(Date) },
+      });
     });
 
     it('hesabı yeniden etkinleştirirken oturumlara dokunmaz', async () => {

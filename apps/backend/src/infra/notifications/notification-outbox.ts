@@ -37,7 +37,7 @@ export class NotificationOutbox {
   constructor(private readonly config: AppConfigService) {}
 
   record(entry: OutboxEntry): void {
-    this.entries.push(entry);
+    this.entries.push(redactSecrets(entry));
 
     const overflow = this.entries.length - this.config.notifications.outboxLimit;
     if (overflow > 0) this.entries.splice(0, overflow);
@@ -58,4 +58,34 @@ export class NotificationOutbox {
   clear(): void {
     this.entries.length = 0;
   }
+}
+
+/** Jeton taşıyan bağlantılarda sorgu dizesi atılır. */
+const TOKEN_BEARING = /[?#]/;
+
+/**
+ * Tampona sır yazılmaz.
+ *
+ * Parola sıfırlama bağlantısı ve tek kullanımlık kod, doğrulama akışının
+ * kendisidir; tamponu okuyabilen biri hesabı devralabilir. Duman testinin
+ * ihtiyacı olan tek şey gönderimin yapıldığı bilgisi, o yüzden kanal, hedef ve
+ * tür korunur.
+ *
+ * Temizlik tek noktada yapılır: her gönderici `record` üzerinden geçtiği için
+ * ileride eklenen bir sürücü de varsayılan olarak güvenli olur.
+ */
+function redactSecrets(entry: OutboxEntry): OutboxEntry {
+  const params = { ...entry.params };
+  if ('ticketSubject' in params) {
+    params.ticketSubject = '[gizlendi]';
+  }
+
+  return {
+    ...entry,
+    params,
+    deepLink:
+      entry.deepLink && TOKEN_BEARING.test(entry.deepLink)
+        ? entry.deepLink.split(/[?#]/)[0]!
+        : entry.deepLink,
+  };
 }

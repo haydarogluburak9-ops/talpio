@@ -50,11 +50,19 @@ export class VerificationService {
 
   async verifyEmail(token: string): Promise<{ verified: true }> {
     const row = await this.consumeToken(token, 'EMAIL_VERIFICATION');
+    const user = await this.prisma.user.findUnique({
+      where: { id: row.userId },
+      select: { status: true },
+    });
+
+    // Yalnızca doğrulama bekleyen hesap aktifleşir. Koşulsuz `ACTIVE` yazmak,
+    // askıya alınmış bir kullanıcının yasaktan önce aldığı jetonu kullanarak
+    // hesabını kendi kendine geri açmasına izin veriyordu.
     await this.prisma.user.update({
       where: { id: row.userId },
       data: {
         emailVerifiedAt: new Date(),
-        status: 'ACTIVE',
+        ...(user?.status === 'PENDING_VERIFICATION' ? { status: 'ACTIVE' as const } : {}),
       },
     });
     return { verified: true };
@@ -230,16 +238,19 @@ export class VerificationService {
       this.logger.log({ email, subject, link }, 'Auth e-postası (mock)');
     }
 
+    // Tampona jeton taşıyan bağlantı yazılmaz. Duman testinin doğrulaması
+    // gereken şey gönderimin yapıldığı; sırrın kendisi değil.
     this.outbox.record({
       channel: NotificationChannel.EMAIL,
       target: email,
       type: NotificationType.SUPPORT_REPLY,
       params: { ticketSubject: subject },
-      deepLink: link,
+      deepLink: null,
       locale,
       sentAt: new Date().toISOString(),
     });
     void name;
+    void link;
   }
 }
 

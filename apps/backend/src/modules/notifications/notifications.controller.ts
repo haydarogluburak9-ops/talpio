@@ -6,11 +6,17 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { DeviceToken, Notification, NotificationFeedMeta } from '@talpio/types';
+import {
+  UserRole,
+  type DeviceToken,
+  type Notification,
+  type NotificationFeedMeta,
+} from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import type { OutboxEntry } from '@infra/notifications/notification-outbox';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
+import { Roles } from '@modules/auth/decorators/roles.decorator';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
 import { RegisterDeviceTokenDto, RemoveDeviceTokenDto } from './dto/device-token.dto';
@@ -39,8 +45,15 @@ export class NotificationsController {
     return { unreadCount: await this.notifications.unreadCount(user.id) };
   }
 
-  /** Mock sürücülerin tamponu; production'da kapalıdır. */
+  /**
+   * Mock sürücülerin tamponu; yalnızca geliştirme ortamında ve yalnızca süper
+   * yöneticiye açıktır.
+   *
+   * Rol kısıtı olmadan bu uç, sıradan bir hesabın başkasının parola sıfırlama
+   * bağlantısını okuyup hesabını devralmasına izin veriyordu.
+   */
   @Get('mock-outbox')
+  @Roles(UserRole.SUPER_ADMIN)
   @ApiExcludeEndpoint()
   listOutbox(): OutboxEntry[] {
     return this.notifications.listOutbox();

@@ -302,10 +302,19 @@ export class AdminService {
     });
 
     if (dto.status !== UserStatus.ACTIVE) {
-      await this.prisma.userSession.updateMany({
-        where: { userId: id, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
+      // Oturumların yanında bekleyen doğrulama jetonları da tüketilir: yasaktan
+      // önce alınmış bir e-posta jetonu, hesabı yeniden aktifleştirmek için
+      // kullanılabilirdi.
+      await this.prisma.$transaction([
+        this.prisma.userSession.updateMany({
+          where: { userId: id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        }),
+        this.prisma.verificationToken.updateMany({
+          where: { userId: id, consumedAt: null },
+          data: { consumedAt: new Date() },
+        }),
+      ]);
     }
 
     await this.audit.record(
