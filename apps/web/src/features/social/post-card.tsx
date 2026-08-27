@@ -24,7 +24,6 @@ import { ReportDialog } from './report-dialog';
 import {
   useCreateComment,
   useCreatePost,
-  useCreateRequestFromPost,
   useFollow,
   useHidePost,
   useLikePost,
@@ -178,7 +177,6 @@ export function PostCard({
   const recordView = useRecordPostView();
   const comments = usePostComments(post.id, showComments);
   const createComment = useCreateComment(post.id);
-  const createRequest = useCreateRequestFromPost();
   const me = useSocialMe(interactive);
   const follow = useFollow(post.author?.username ?? '');
   const [commentBody, setCommentBody] = useState('');
@@ -215,6 +213,24 @@ export function PostCard({
    * Talep paylaşımının kaynak talebi. Yalnızca `commerceRequestId` taşıyan
    * gönderiler teklif alabilir; talebi paylaşan kişiye buton gösterilmez.
    */
+  /**
+   * Teklif isteme, ilanı kopyalayan bir talep yaratmak yerine formu açar.
+   * İlandan yalnızca nesnel alanlar taşınır (ürün, birim, marka, kategori);
+   * miktarı ve teslim ayrıntısını alıcı kendi yazmalı, aksi halde satıcıya
+   * kendi reklam metni talep olarak geri döner.
+   */
+  const askOfferHref = (() => {
+    const params = new URLSearchParams();
+    if (author?.username) params.set('magaza', author.username);
+    if (deal?.categoryId) params.set('kategoriId', deal.categoryId);
+    if (deal?.subcategoryId) params.set('altKategoriId', deal.subcategoryId);
+    const product = deal?.productName ?? deal?.title;
+    if (product) params.set('urun', product.slice(0, 120));
+    if (deal?.unit) params.set('birim', deal.unit);
+    if (deal?.brand) params.set('marka', deal.brand);
+    return `/tedarik?${params.toString()}`;
+  })();
+
   const offerRequestId = post.type === 'REQUEST_SHARE' ? (post.commerceRequestId ?? null) : null;
   const showOfferCta = interactive && Boolean(offerRequestId) && Boolean(me.data) && !isOwn;
   const body = post.body ?? '';
@@ -487,21 +503,11 @@ export function PostCard({
         <div className="px-4 pt-3">
           <button
             type="button"
-            disabled={createRequest.isPending}
-            onClick={() =>
-              createRequest.mutate(
-                { postId: post.id },
-                {
-                  onSuccess: (request) => {
-                    router.push(`/tedarik/${request.id}`);
-                  },
-                },
-              )
-            }
+            onClick={() => router.push(askOfferHref)}
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 text-sm font-semibold text-white hover:bg-accent-600"
           >
             <ClipboardPlus className="size-4" />
-            {createRequest.isPending ? t('social.creatingRequest') : t('social.askOffer')}
+            {t('social.askOffer')}
           </button>
         </div>
       ) : null}

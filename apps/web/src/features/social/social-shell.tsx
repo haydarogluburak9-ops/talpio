@@ -14,6 +14,7 @@ import { usePathname } from 'next/navigation';
 
 import { useSession } from '@/features/auth/use-session';
 import { InterestOnboardingGate } from '@/features/auth/interest-onboarding-gate';
+import { NearbyRequestsRail } from '@/features/requests/nearby-requests-rail';
 import { t } from '@/lib/i18n';
 
 import { ComposeProvider, useCompose } from './compose-context';
@@ -175,6 +176,7 @@ export function SocialShell({
                     {t('nav.newRequest')} →
                   </Link>
                 </div>
+                <NearbyRequestsRail />
                 <SuggestedBusinesses compact withIntro />
                 <TrendingRail />
               </div>

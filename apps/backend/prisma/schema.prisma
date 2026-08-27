@@ -805,6 +805,9 @@ model User {
   lastActiveAt    DateTime?  @map("last_active_at")
   /// Ardışık hatalı giriş sayacı; brute-force korumasını besler.
   failedLoginCount Int       @default(0) @map("failed_login_count")
+  /// Tohumlanmış vitrin hesabı. Akışta görünür ama talep eşleştirmesine ve
+  /// kullanıcı sayımlarına girmez; gerçek alıcı sahte satıcıyla eşleşmesin.
+  isDemo          Boolean    @default(false) @map("is_demo")
   lockedUntil     DateTime?  @map("locked_until")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
@@ -2088,6 +2091,8 @@ model Business {
   ownerUserId        String             @map("owner_user_id")
   verificationStatus VerificationStatus @default(UNVERIFIED) @map("verification_status")
   isActive           Boolean            @default(true) @map("is_active")
+  /// Tohumlanmış vitrin işletmesi. Bkz. `User.isDemo`.
+  isDemo             Boolean            @default(false) @map("is_demo")
   minOrderQuantity   Decimal?           @map("min_order_quantity") @db.Decimal(18, 4)
   maxOrderQuantity   Decimal?           @map("max_order_quantity") @db.Decimal(18, 4)
   providerProfileId  String?            @map("provider_profile_id")

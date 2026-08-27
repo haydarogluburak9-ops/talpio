@@ -76,6 +76,7 @@ export const API_ROUTES = {
     root: '/requests',
     mine: '/requests/mine',
     matched: '/requests/matched',
+    nearby: '/requests/nearby',
     byId: (id: string) => `/requests/${id}`,
     publish: (id: string) => `/requests/${id}/publish`,
     offers: (id: string) => `/requests/${id}/offers`,

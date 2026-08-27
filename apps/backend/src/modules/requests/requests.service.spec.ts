@@ -242,6 +242,24 @@ describe('RequestsService tenant isolation', () => {
     expect(published.matchCount).toBe(REQUEST_MATCHING.maxMatchesWithoutCategory + 5);
   });
 
+  it('publish demo işletmeleri aday havuzuna almaz', async () => {
+    commerceRequest.findFirst.mockResolvedValue(draftRow());
+    primePublish([]);
+    commerceRequestMocks.update.mockResolvedValue({
+      ...draftRow(),
+      status: RequestStatus.MATCHING,
+      publishedAt: new Date(),
+    });
+
+    await service.publish(buyer, 'req-1');
+
+    expect(business.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ isDemo: false }),
+      }),
+    );
+  });
+
   it('getById alıcıya eşleşme sayısını döner', async () => {
     commerceRequest.findFirst.mockResolvedValue({
       ...draftRow({ status: RequestStatus.MATCHING }),

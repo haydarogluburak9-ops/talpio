@@ -170,6 +170,62 @@ export class RequestsService {
     );
   }
 
+  /**
+   * Kullanıcının şehrindeki açık talepler.
+   *
+   * Eşleşme listesinden farkı: eşleşme yalnızca kategori/servis alanı tutan
+   * işletmelere gider, burada ise şehirdeki tüm açık talepler görünür. Amaç
+   * yeni gelen kullanıcının siteye girdiğinde canlı bir talep akışı görmesi;
+   * bu yüzden alıcının kendi talepleri ve davetli talepler dışarıda kalır.
+   */
+  async listNearby(user: AuthenticatedUser, limit = 5): Promise<CommerceRequest[]> {
+    const cityId = await this.resolveViewerCityId(user);
+    if (!cityId) return [];
+
+    const rows = await this.prisma.commerceRequest.findMany({
+      where: {
+        deletedAt: null,
+        deliveryCityId: cityId,
+        buyerUserId: { not: user.id },
+        visibility: RequestVisibility.PUBLIC_MATCHED,
+        status: { in: [RequestStatus.PUBLISHED, RequestStatus.MATCHING, RequestStatus.QUOTING] },
+      },
+      orderBy: { publishedAt: 'desc' },
+      take: Math.min(limit, 20),
+    });
+
+    return rows.map((row) => toCommerceRequest(row));
+  }
+
+  /**
+   * Görüntüleyenin şehri. Sırayla varsayılan adres, sosyal profil konumu ve
+   * işletmesinin ilk servis alanı denenir; hiçbiri yoksa yakınlık hesaplanamaz.
+   */
+  private async resolveViewerCityId(user: AuthenticatedUser): Promise<string | null> {
+    const address = await this.prisma.address.findFirst({
+      where: { userId: user.id, deletedAt: null },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      select: { cityId: true },
+    });
+    if (address?.cityId) return address.cityId;
+
+    const profile = await this.prisma.socialProfile.findFirst({
+      where: { userId: user.id, deletedAt: null, locationCityId: { not: null } },
+      select: { locationCityId: true },
+    });
+    if (profile?.locationCityId) return profile.locationCityId;
+
+    const businessIds = user.businessIds ?? [];
+    if (businessIds.length === 0) return null;
+
+    const serviceArea = await this.prisma.businessServiceArea.findFirst({
+      where: { businessId: { in: [...businessIds] } },
+      select: { cityId: true },
+    });
+
+    return serviceArea?.cityId ?? null;
+  }
+
   async getById(user: AuthenticatedUser, id: string): Promise<CommerceRequest> {
     const row = await this.prisma.commerceRequest.findFirst({
       where: { id, deletedAt: null },
@@ -350,7 +406,9 @@ export class RequestsService {
     membershipsByBusiness: Map<string, string[]>;
   }> {
     const businesses = await this.prisma.business.findMany({
-      where: { deletedAt: null, isActive: true },
+      // Demo işletmeler akışta vitrin olarak durur ama teklif veremez; eşleşme
+      // havuzuna girerlerse gerçek alıcı cevapsız kalacak bir satıcıyla eşleşir.
+      where: { deletedAt: null, isActive: true, isDemo: false },
       include: {
         categories: { select: { categoryId: true } },
         serviceAreas: { select: { cityId: true, districtId: true } },

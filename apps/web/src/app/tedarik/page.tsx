@@ -15,13 +15,31 @@ const CATEGORY_SHORTCUTS: Record<string, string> = {
   oil: 'madeni-yag-kimya',
 };
 
-type SearchParams = Promise<{ tip?: string; magaza?: string }>;
+type SearchParams = Promise<{
+  tip?: string;
+  magaza?: string;
+  kategoriId?: string;
+  altKategoriId?: string;
+  urun?: string;
+  birim?: string;
+  marka?: string;
+}>;
 
 export default async function TedarikPage({ searchParams }: { searchParams: SearchParams }) {
   await applyRequestLocale();
   const params = await searchParams;
   const initialCategorySlug = params.tip ? CATEGORY_SHORTCUTS[params.tip] : undefined;
   const storeUsername = params.magaza?.trim() || undefined;
+
+  // Akıştaki "Teklif iste" butonu ilanın nesnel alanlarını taşır; miktar ve
+  // teslim ayrıntısı bilerek boş bırakılır, onları alıcı yazmalı.
+  const prefill = {
+    categoryId: params.kategoriId?.trim() || undefined,
+    subcategoryId: params.altKategoriId?.trim() || undefined,
+    productName: params.urun?.trim() || undefined,
+    unit: params.birim?.trim() || undefined,
+    brand: params.marka?.trim() || undefined,
+  };
 
   return (
     <SocialShell showRail={false}>
@@ -43,6 +61,7 @@ export default async function TedarikPage({ searchParams }: { searchParams: Sear
         <CommerceRequestForm
           storeUsername={storeUsername}
           initialCategorySlug={initialCategorySlug}
+          prefill={prefill}
         />
       </div>
     </SocialShell>

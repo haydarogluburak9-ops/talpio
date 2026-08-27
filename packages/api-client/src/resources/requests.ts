@@ -41,6 +41,13 @@ export function createRequestsResource(http: HttpClient) {
       });
     },
 
+    listNearby(limit = 5, signal?: AbortSignal): Promise<CommerceRequest[]> {
+      return http.get<CommerceRequest[]>(API_ROUTES.requests.nearby, {
+        query: { limit },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
     getById(id: string, signal?: AbortSignal): Promise<CommerceRequest> {
       return http.get<CommerceRequest>(API_ROUTES.requests.byId(id), {
         ...(signal ? { signal } : {}),

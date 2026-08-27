@@ -49,6 +49,7 @@ export function UsersStats() {
     { label: t('admin.metricCustomer'), value: users.customers },
     { label: t('admin.metricSeller'), value: users.providers },
     { label: t('admin.metricNewThisWeek'), value: users.newThisWeek },
+    { label: t('admin.metricDemo'), value: users.demo },
   ];
 
   return (
@@ -57,7 +58,7 @@ export function UsersStats() {
         {formatNumber(users.total, locale)}
       </p>
 
-      <dl className="grid gap-3 border-t border-border pt-4 sm:grid-cols-3">
+      <dl className="grid gap-3 border-t border-border pt-4 sm:grid-cols-4">
         {breakdown.map((metric) => (
           <div key={metric.label}>
             <dt className="text-xs text-foreground-muted">{metric.label}</dt>

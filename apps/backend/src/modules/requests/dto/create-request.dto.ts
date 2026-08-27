@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -158,4 +159,14 @@ export class ListRequestsQueryDto {
   @IsInt()
   @Min(1)
   limit?: number = 20;
+}
+
+export class NearbyRequestsQueryDto {
+  @ApiPropertyOptional({ description: 'Kenar çubuğu kutusu için küçük tutulur' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(20)
+  limit?: number = 5;
 }

@@ -488,6 +488,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
         verificationStatus: account.provider.verified ? 'VERIFIED' : 'UNVERIFIED',
         deletedAt: null,
         isActive: true,
+        isDemo: true,
       },
       create: {
         name: account.provider.businessName,
@@ -495,6 +496,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
         ownerUserId: user.id,
         providerProfileId: provider.id,
         verificationStatus: account.provider.verified ? 'VERIFIED' : 'UNVERIFIED',
+        isDemo: true,
       },
     });
 

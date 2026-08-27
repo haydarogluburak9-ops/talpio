@@ -130,13 +130,15 @@ export class AdminService {
    */
   async dashboard(): Promise<AdminDashboard> {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const activeUser = { deletedAt: null };
+    // Vitrin hesapları gerçek kayıt sayısını şişirir; ayrı kalemde raporlanır.
+    const activeUser = { deletedAt: null, isDemo: false };
 
     const [
       totalUsers,
       customers,
       providers,
       newThisWeek,
+      demoUsers,
       verifiedProviders,
       pendingProviders,
       totalJobs,
@@ -154,6 +156,7 @@ export class AdminService {
       this.prisma.user.count({ where: { ...activeUser, role: UserRole.CUSTOMER } }),
       this.prisma.user.count({ where: { ...activeUser, role: UserRole.PROVIDER } }),
       this.prisma.user.count({ where: { ...activeUser, createdAt: { gte: weekAgo } } }),
+      this.prisma.user.count({ where: { deletedAt: null, isDemo: true } }),
       this.prisma.providerProfile.count({
         where: { deletedAt: null, verificationStatus: VerificationStatus.VERIFIED },
       }),
@@ -187,7 +190,7 @@ export class AdminService {
     const currency = this.config.defaultCurrency;
 
     return {
-      users: { total: totalUsers, customers, providers, newThisWeek },
+      users: { total: totalUsers, customers, providers, newThisWeek, demo: demoUsers },
       providers: { verified: verifiedProviders, pendingVerification: pendingProviders },
       jobs: {
         total: totalJobs,

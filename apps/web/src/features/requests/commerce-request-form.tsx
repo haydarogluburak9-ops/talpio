@@ -31,13 +31,28 @@ const REQUEST_TYPE_OPTIONS: { value: RequestType; labelKey: string }[] = [
   { value: RequestType.OTHER, labelKey: 'commerce.typeOther' },
 ];
 
+/**
+ * Akıştaki ilandan taşınan nesnel alanlar. Miktar, teslim yeri ve açıklama
+ * bilerek yoktur: onları ilandan kopyalamak satıcıya kendi reklam metnini
+ * talep olarak geri gönderir.
+ */
+export interface RequestPrefill {
+  categoryId?: string;
+  subcategoryId?: string;
+  productName?: string;
+  unit?: string;
+  brand?: string;
+}
+
 export function CommerceRequestForm({
   storeUsername,
   initialCategorySlug,
+  prefill,
 }: {
   storeUsername?: string;
   /** Kısayol bağlantılarının kategoriyi hazır seçmesi için. */
   initialCategorySlug?: string;
+  prefill?: RequestPrefill;
 }) {
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
@@ -52,15 +67,15 @@ export function CommerceRequestForm({
 
   const [form, setForm] = useState({
     requestType: RequestType.PRODUCT_SUPPLY as RequestType,
-    title: '',
+    title: prefill?.productName ?? '',
     description: '',
-    categoryId: '',
+    categoryId: prefill?.categoryId ?? '',
     categoryPicked: false,
-    subcategoryId: '',
+    subcategoryId: prefill?.subcategoryId ?? '',
     districtId: '',
     quantity: '',
-    unit: 'adet',
-    brandPreference: '',
+    unit: prefill?.unit ?? 'adet',
+    brandPreference: prefill?.brand ?? '',
     deliveryLocation: '',
     deliveryDeadline: '',
   });
@@ -158,6 +173,11 @@ export function CommerceRequestForm({
             {t('social.quoteForStore', { name: store.displayName })}
           </p>
           <p className="mt-1 text-foreground-muted">{t('social.quoteForStoreHint')}</p>
+          {prefill?.productName ? (
+            <p className="mt-2 text-foreground-muted">
+              {t('commerce.prefillHint', { product: prefill.productName })}
+            </p>
+          ) : null}
         </div>
       ) : null}
       <Field label={t('commerce.fieldType')} required>

@@ -25,6 +25,15 @@ export function useMatchedRequests() {
   });
 }
 
+export function useNearbyRequests(limit = 5, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.requests.nearby(limit),
+    queryFn: ({ signal }) => apiClient.requests.listNearby(limit, signal),
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
 export function useCommerceRequest(id: string) {
   return useQuery({
     queryKey: queryKeys.requests.detail(id),

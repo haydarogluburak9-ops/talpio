@@ -17,6 +17,7 @@ import {
   CreateCommerceRequestDto,
   CreateRequestOfferDto,
   ListRequestsQueryDto,
+  NearbyRequestsQueryDto,
 } from './dto/create-request.dto';
 import { RequestsService } from './requests.service';
 
@@ -55,6 +56,16 @@ export class RequestsController {
     @Query() query: ListRequestsQueryDto,
   ): Promise<PaginatedResult<CommerceRequest>> {
     return this.requests.listMatched(user, query);
+  }
+
+  @Get('nearby')
+  @RequirePermissions(Permission.REQUEST_READ_OWN, Permission.REQUEST_READ_MATCHED)
+  @ApiOperation({ summary: 'Kullanıcının şehrindeki açık talepleri listeler' })
+  listNearby(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: NearbyRequestsQueryDto,
+  ): Promise<CommerceRequest[]> {
+    return this.requests.listNearby(user, query.limit);
   }
 
   @Get(':id')

@@ -26,11 +26,14 @@ import type { SupportMessage } from './support';
  */
 export interface AdminDashboard {
   users: {
+    /** Gerçek kayıtlar; tohumlanmış vitrin hesapları sayılmaz. */
     total: number;
     customers: number;
     providers: number;
     /** Son yedi günde katılanlar. */
     newThisWeek: number;
+    /** Vitrin için tohumlanmış demo hesapları; yukarıdaki sayımların dışındadır. */
+    demo: number;
   };
   providers: {
     verified: number;
