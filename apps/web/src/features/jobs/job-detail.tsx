@@ -3,7 +3,7 @@
 import { nextJobStatuses } from '@talpio/business-logic';
 import { JOB_STATUS_TONES } from '@talpio/config';
 import { formatDate, formatMoney, jobStatusLabel } from '@talpio/localization';
-import { JobRequestStatus, JobSize, JobTimeSlot, type JobRequest } from '@talpio/types';
+import { JobRequestStatus, type JobRequest } from '@talpio/types';
 import {
   Badge,
   Button,
@@ -22,20 +22,6 @@ import { t, getLocale } from '@/lib/i18n';
 
 import { useCancelJob, useJob } from './use-jobs';
 
-const SIZE_LABELS: Record<JobSize, string> = {
-  [JobSize.SMALL]: 'Küçük',
-  [JobSize.MEDIUM]: 'Orta',
-  [JobSize.LARGE]: 'Büyük',
-  [JobSize.UNKNOWN]: 'Belirtilmedi',
-};
-
-const TIME_SLOT_LABELS: Record<JobTimeSlot, string> = {
-  [JobTimeSlot.MORNING]: 'Sabah',
-  [JobTimeSlot.AFTERNOON]: 'Öğleden sonra',
-  [JobTimeSlot.EVENING]: 'Akşam',
-  [JobTimeSlot.FLEXIBLE]: 'Fark etmez',
-};
-
 export function JobDetail({ jobId }: { jobId: string }) {
   const job = useJob(jobId);
 
@@ -43,13 +29,13 @@ export function JobDetail({ jobId }: { jobId: string }) {
     return (
       <ErrorState
         title={t('status.errorTitle')}
-        description="Talep yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+        description={t('job.loadFailed')}
         action={{ label: t('common.retry'), onClick: () => void job.refetch() }}
       />
     );
   }
 
-  if (!job.data) return <LoadingState label="Talep yükleniyor" />;
+  if (!job.data) return <LoadingState label={t('job.loading')} />;
 
   return <JobDetailView job={job.data} />;
 }
@@ -111,27 +97,32 @@ function JobDetailView({ job }: { job: JobRequest }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Talep bilgileri</CardTitle>
+          <CardTitle>{t('job.infoTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <DetailRow label={t('job.budget')} value={job.budget ? formatMoney(job.budget, locale) : '—'} />
-            <DetailRow label="İşin büyüklüğü" value={SIZE_LABELS[job.size]} />
+            <DetailRow label={t('job.size')} value={t(`jobSize.${job.size}`)} />
             <DetailRow
-              label="Tercih edilen gün"
-              value={job.preferredDate ? formatDate(job.preferredDate, locale) : 'Esnek'}
+              label={t('job.preferredDay')}
+              value={
+                job.preferredDate ? formatDate(job.preferredDate, locale) : t('job.flexibleDate')
+              }
             />
-            <DetailRow label="Tercih edilen zaman" value={TIME_SLOT_LABELS[job.preferredTimeSlot]} />
-            <DetailRow label="Oluşturulma" value={formatDate(job.createdAt, locale)} />
             <DetailRow
-              label="Son geçerlilik"
+              label={t('job.preferredTime')}
+              value={t(`jobTimeSlot.${job.preferredTimeSlot}`)}
+            />
+            <DetailRow label={t('job.createdAt')} value={formatDate(job.createdAt, locale)} />
+            <DetailRow
+              label={t('job.expiresAt')}
               value={job.expiresAt ? formatDate(job.expiresAt, locale) : '—'}
             />
             <DetailRow
-              label="Adres"
+              label={t('job.address')}
               value={
                 job.address.addressLine ??
-                `${job.address.districtName}, ${job.address.cityName} (açık adres gizli)`
+                `${job.address.districtName}, ${job.address.cityName} (${t('job.addressMasked')})`
               }
               className="sm:col-span-2"
             />
@@ -156,22 +147,20 @@ function JobDetailView({ job }: { job: JobRequest }) {
           <CardContent className="flex flex-col gap-3 pt-5 sm:pt-6">
             {cancelJob.isError ? (
               <p role="alert" className="text-sm text-danger-on-surface">
-                Talep iptal edilemedi. Lütfen tekrar deneyin.
+                {t('job.cancelFailed')}
               </p>
             ) : null}
 
             {confirmingCancel ? (
               <div className="flex flex-wrap items-center gap-3">
-                <p className="text-sm text-foreground">
-                  Talebi iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-                </p>
+                <p className="text-sm text-foreground">{t('job.cancelConfirm')}</p>
                 <Button
                   variant="danger"
                   size="sm"
                   isLoading={cancelJob.isPending}
                   onClick={() => cancelJob.mutate(undefined)}
                 >
-                  Evet, iptal et
+                  {t('job.cancelConfirmAction')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setConfirmingCancel(false)}>
                   {t('common.cancel')}
@@ -179,7 +168,7 @@ function JobDetailView({ job }: { job: JobRequest }) {
               </div>
             ) : (
               <Button variant="outline" size="sm" onClick={() => setConfirmingCancel(true)}>
-                Talebi iptal et
+                {t('job.cancelRequest')}
               </Button>
             )}
           </CardContent>

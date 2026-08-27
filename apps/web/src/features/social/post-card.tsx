@@ -266,7 +266,11 @@ export function PostCard({
               <span className="text-xs text-foreground-muted">{t('social.repostedBy')}</span>
             ) : null}
             {author?.isVerifiedDisplay ? (
-              <span className="text-info-500" title="Doğrulanmış" aria-label="Doğrulanmış">
+              <span
+                className="text-info-500"
+                title={t('offer.verifiedBadge')}
+                aria-label={t('offer.verifiedBadge')}
+              >
                 ✓
               </span>
             ) : null}

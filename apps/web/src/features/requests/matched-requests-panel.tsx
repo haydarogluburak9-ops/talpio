@@ -18,9 +18,9 @@ export function MatchedRequestsPanel() {
     return (
       <div className="social-panel p-5">
         <p className="text-sm text-foreground-muted">
-          Eşleşen talepler yüklenemedi.{' '}
+          {t('commerce.matchedLoadFailed')}{' '}
           <button type="button" className="underline" onClick={() => void matched.refetch()}>
-            Tekrar dene
+            {t('common.retry')}
           </button>
         </p>
       </div>
@@ -33,9 +33,7 @@ export function MatchedRequestsPanel() {
   if (items.length === 0) {
     return (
       <div className="social-panel p-5">
-        <p className="text-sm text-foreground-muted">
-          Henüz eşleşen tedarik talebi yok. Tedarikçi işletmenizi oluşturduğunuzdan emin olun.
-        </p>
+        <p className="text-sm text-foreground-muted">{t('commerce.matchedEmpty')}</p>
       </div>
     );
   }
@@ -76,13 +74,13 @@ export function MatchedRequestsPanel() {
               href={`/tedarik/${request.id}`}
               className="text-sm font-semibold text-accent-600 hover:underline"
             >
-              Detay
+              {t('common.details')}
             </Link>
           </div>
           {businessList[0] ? (
             <OfferForm requestId={request.id} businessId={businessList[0].id} />
           ) : (
-            <p className="text-sm text-foreground-muted">Teklif için önce işletme kaydı gerekir.</p>
+            <p className="text-sm text-foreground-muted">{t('commerce.businessRequired')}</p>
           )}
         </li>
       ))}

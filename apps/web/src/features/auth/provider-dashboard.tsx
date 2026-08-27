@@ -39,7 +39,7 @@ export function ProviderDashboard() {
   const session = useSessionForProvider();
   const { user, isBlocked, logout } = session;
 
-  if (isBlocked || !user) return <LoadingState label="Panel yükleniyor" />;
+  if (isBlocked || !user) return <LoadingState label={t('provider.dashboardLoading')} />;
 
   return (
     <div className="flex flex-col gap-4 pb-20 lg:pb-6">
@@ -65,7 +65,7 @@ export function ProviderDashboard() {
               href="/satici/tedarik"
               className={cn(buttonVariants({ size: 'sm' }), 'bg-accent-500 text-white hover:bg-accent-600')}
             >
-              Tedarik talepleri
+              {t('commerce.matchedHeading')}
             </Link>
             <Link href="/mesajlar" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               {t('messaging.listTitle')}
@@ -88,7 +88,7 @@ export function ProviderDashboard() {
             {t('provider.activeJobsTitle')}
           </h2>
           <Link href="/siparislerim" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
-            Tümünü gör
+            {t('common.seeAll')}
           </Link>
         </div>
         <ActiveOrders />
@@ -139,7 +139,7 @@ function Metrics() {
         isPending={activeOrders.isPending}
       />
       <Metric
-        label="Bekleyen teklif"
+        label={t('offer.pendingCount')}
         value={pendingOffers.data ? String(pendingOffers.data.meta.total) : null}
         isPending={pendingOffers.isPending}
       />
@@ -192,7 +192,7 @@ function ActiveOrders() {
   if (orders.isError) {
     return (
       <p className="text-sm text-foreground-muted">
-        İşleriniz şu anda yüklenemedi.{' '}
+        {t('order.providerListLoadFailed')}{' '}
         <button type="button" onClick={() => void orders.refetch()} className="underline">
           {t('common.retry')}
         </button>

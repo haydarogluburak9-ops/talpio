@@ -17,7 +17,7 @@ export function MessagesPageBody() {
   const user = useAuthenticatedUser();
   const [composeOpen, setComposeOpen] = useState(false);
 
-  if (!user) return <LoadingState label="Mesajlar yükleniyor" />;
+  if (!user) return <LoadingState label={t('messaging.listLoading')} />;
 
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] flex-col overflow-hidden pb-16 lg:pb-0">
@@ -47,7 +47,7 @@ export function MessagesPageBody() {
 
 export function ChatPageBody({ conversationId }: { conversationId: string }) {
   const user = useAuthenticatedUser();
-  if (!user) return <LoadingState label="Sohbet yükleniyor" />;
+  if (!user) return <LoadingState label={t('messaging.chatLoading')} />;
 
   return (
     <div className="flex h-[calc(100dvh-5.5rem)] flex-col overflow-hidden pb-16 lg:pb-0">

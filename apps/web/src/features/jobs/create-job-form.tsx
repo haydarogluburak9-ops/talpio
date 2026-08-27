@@ -19,17 +19,17 @@ import { t } from '@/lib/i18n';
 import { useCreateJob } from './use-jobs';
 
 const SIZE_OPTIONS = [
-  { value: JobSize.UNKNOWN, label: 'Emin değilim' },
-  { value: JobSize.SMALL, label: 'Küçük (birkaç saat)' },
-  { value: JobSize.MEDIUM, label: 'Orta (bir gün)' },
-  { value: JobSize.LARGE, label: 'Büyük (birden fazla gün)' },
+  JobSize.UNKNOWN,
+  JobSize.SMALL,
+  JobSize.MEDIUM,
+  JobSize.LARGE,
 ] as const;
 
 const TIME_SLOT_OPTIONS = [
-  { value: JobTimeSlot.FLEXIBLE, label: 'Fark etmez' },
-  { value: JobTimeSlot.MORNING, label: 'Sabah' },
-  { value: JobTimeSlot.AFTERNOON, label: 'Öğleden sonra' },
-  { value: JobTimeSlot.EVENING, label: 'Akşam' },
+  JobTimeSlot.FLEXIBLE,
+  JobTimeSlot.MORNING,
+  JobTimeSlot.AFTERNOON,
+  JobTimeSlot.EVENING,
 ] as const;
 
 /** Kullanıcı lirayı girer, sözleşme kuruş bekler. */
@@ -91,7 +91,7 @@ export function CreateJobForm() {
         <p role="alert" className="rounded-[--radius-control] bg-danger-surface p-3 text-sm text-danger-on-surface">
           {createJob.error instanceof ApiError
             ? createJob.error.message
-            : 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.'}
+            : t('auth.networkError')}
         </p>
       ) : null}
 
@@ -100,7 +100,7 @@ export function CreateJobForm() {
           <CardTitle>{t('job.stepCategory')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Hizmet kategorisi" required error={errors.categoryId?.message}>
+          <Field label={t('job.category')} required error={errors.categoryId?.message}>
             {(props) => (
               <Select {...props} {...register('categoryId')} disabled={categories.isPending}>
                 <option value="">{t('common.selectPlaceholder')}</option>
@@ -114,8 +114,10 @@ export function CreateJobForm() {
           </Field>
 
           <Field
-            label="Alt kategori"
-            hint={subcategories.length === 0 ? 'Önce kategori seçin' : t('common.optional')}
+            label={t('job.subcategory')}
+            hint={
+              subcategories.length === 0 ? t('job.selectCategoryFirst') : t('common.optional')
+            }
             error={errors.subcategoryId?.message}
           >
             {(props) => (
@@ -146,14 +148,14 @@ export function CreateJobForm() {
         <CardContent className="flex flex-col gap-4">
           <Field label={t('job.title')} required error={errors.title?.message}>
             {(props) => (
-              <Input {...props} {...register('title')} placeholder="Örn. Mutfak musluğu damlatıyor" />
+              <Input {...props} {...register('title')} placeholder={t('job.titlePlaceholder')} />
             )}
           </Field>
 
           <Field
             label={t('job.description')}
             required
-            hint="Sorunu ne kadar ayrıntılı anlatırsanız teklifler o kadar isabetli olur."
+            hint={t('job.descriptionHint')}
             error={errors.description?.message}
           >
             {(props) => (
@@ -161,18 +163,18 @@ export function CreateJobForm() {
                 {...props}
                 {...register('description')}
                 rows={5}
-                placeholder="Ne zaman başladı, daha önce müdahale edildi mi, ulaşmak için özel bir durum var mı?"
+                placeholder={t('job.descriptionPlaceholder')}
               />
             )}
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="İşin büyüklüğü" error={errors.size?.message}>
+            <Field label={t('job.size')} error={errors.size?.message}>
               {(props) => (
                 <Select {...props} {...register('size')}>
-                  {SIZE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  {SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size}>
+                      {t(`jobSize.${size}`)}
                     </option>
                   ))}
                 </Select>
@@ -181,7 +183,7 @@ export function CreateJobForm() {
 
             <Field
               label={t('job.budget')}
-              hint="İsteğe bağlı. TL cinsinden yaklaşık bir rakam yazabilirsiniz."
+              hint={t('job.budgetHint')}
               error={errors.budgetMinor?.message}
             >
               {(props) => (
@@ -233,7 +235,7 @@ export function CreateJobForm() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Şehir" required error={errors.address?.cityId?.message}>
+            <Field label={t('job.city')} required error={errors.address?.cityId?.message}>
               {(props) => (
                 <Select {...props} {...register('address.cityId')} disabled={cities.isPending}>
                   <option value="">{t('common.selectPlaceholder')}</option>
@@ -247,9 +249,9 @@ export function CreateJobForm() {
             </Field>
 
             <Field
-              label="İlçe"
+              label={t('job.district')}
               required
-              hint={selectedCityId ? undefined : 'Önce şehir seçin'}
+              hint={selectedCityId ? undefined : t('job.selectCityFirst')}
               error={errors.address?.districtId?.message}
             >
               {(props) => (
@@ -270,8 +272,8 @@ export function CreateJobForm() {
           </div>
 
           <Field
-            label="Açık adres"
-            hint="İsteğe bağlı. Yalnızca teklifini kabul ettiğiniz satıcıyla paylaşılır."
+            label={t('job.addressLine')}
+            hint={t('job.addressLineHint')}
             error={errors.address?.addressLine?.message}
           >
             {(props) => (
@@ -280,7 +282,7 @@ export function CreateJobForm() {
                 {...register('address.addressLine', {
                   setValueAs: (value: string) => (value.trim() === '' ? undefined : value),
                 })}
-                placeholder="Mahalle, cadde, bina ve daire no"
+                placeholder={t('job.addressLinePlaceholder')}
               />
             )}
           </Field>
@@ -292,7 +294,7 @@ export function CreateJobForm() {
           <CardTitle>{t('job.stepSchedule')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Tercih ettiğiniz gün" error={errors.preferredDate?.message}>
+          <Field label={t('job.preferredDay')} error={errors.preferredDate?.message}>
             {(props) => (
               <Input
                 {...props}
@@ -302,12 +304,12 @@ export function CreateJobForm() {
             )}
           </Field>
 
-          <Field label="Tercih ettiğiniz zaman" error={errors.preferredTimeSlot?.message}>
+          <Field label={t('job.preferredTime')} error={errors.preferredTimeSlot?.message}>
             {(props) => (
               <Select {...props} {...register('preferredTimeSlot')}>
-                {TIME_SLOT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                {TIME_SLOT_OPTIONS.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {t(`jobTimeSlot.${slot}`)}
                   </option>
                 ))}
               </Select>

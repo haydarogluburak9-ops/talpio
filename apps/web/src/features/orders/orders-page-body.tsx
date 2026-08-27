@@ -18,7 +18,7 @@ export function OrdersPageBody() {
     if (session.isSuccess && user === null) router.replace('/giris');
   }, [session.isSuccess, user, router]);
 
-  if (session.isPending || user === null) return <LoadingState label="Siparişler yükleniyor" />;
+  if (session.isPending || user === null) return <LoadingState label={t('order.listLoading')} />;
 
   return (
     <>

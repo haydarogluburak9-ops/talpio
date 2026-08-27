@@ -120,9 +120,7 @@ export function RequestDetail({ id }: { id: string }) {
             ) : myBusinesses[0] ? (
               <OfferForm requestId={id} businessId={myBusinesses[0].id} />
             ) : (
-              <p className="text-sm text-foreground-muted">
-                Teklif için önce işletme kaydı gerekir.
-              </p>
+              <p className="text-sm text-foreground-muted">{t('commerce.businessRequired')}</p>
             )}
           </div>
         </section>

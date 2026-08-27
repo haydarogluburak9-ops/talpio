@@ -12,10 +12,10 @@ import { useMyJobs } from './use-jobs';
 
 /** Uzun durum listesi yerine müşterinin gerçekten ayırdığı üç küme. */
 const FILTERS = [
-  { id: 'all', label: 'Tümü', status: undefined },
+  { id: 'all', labelKey: 'jobFilter.all', status: undefined },
   {
     id: 'open',
-    label: 'Açık',
+    labelKey: 'jobFilter.open',
     status: [
       JobRequestStatus.DRAFT,
       JobRequestStatus.PUBLISHED,
@@ -27,7 +27,11 @@ const FILTERS = [
       JobRequestStatus.AWAITING_CUSTOMER_APPROVAL,
     ],
   },
-  { id: 'closed', label: 'Kapanmış', status: [JobRequestStatus.COMPLETED, JobRequestStatus.CANCELLED] },
+  {
+    id: 'closed',
+    labelKey: 'jobFilter.closed',
+    status: [JobRequestStatus.COMPLETED, JobRequestStatus.CANCELLED],
+  },
 ] as const;
 
 export function JobList() {
@@ -37,7 +41,7 @@ export function JobList() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Talep durumu süzgeci">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('job.statusFilterLabel')}>
         {FILTERS.map((item) => (
           <button
             key={item.id}
@@ -50,7 +54,7 @@ export function JobList() {
                 : 'rounded-full border border-border px-4 py-1.5 text-sm text-foreground-muted hover:bg-surface-muted'
             }
           >
-            {item.label}
+            {t(item.labelKey)}
           </button>
         ))}
       </div>
@@ -60,7 +64,7 @@ export function JobList() {
       {jobs.isError ? (
         <ErrorState
           title={t('status.errorTitle')}
-          description="Talepleriniz yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+          description={t('job.listLoadFailed')}
           action={{ label: t('common.retry'), onClick: () => void jobs.refetch() }}
         />
       ) : null}
@@ -69,11 +73,9 @@ export function JobList() {
         <div className="flex flex-col items-center gap-4">
           {/* Süzgeç açıkken "hiç talep yok" demek yanıltıcı olur; talep vardır, o kümede yoktur. */}
           <EmptyState
-            title={filterId === 'all' ? t('status.emptyJobs') : 'Bu süzgeçte talep yok'}
+            title={filterId === 'all' ? t('status.emptyJobs') : t('job.emptyFiltered')}
             description={
-              filterId === 'all'
-                ? 'Talebinizi anlatın, doğrulanmış satıcılar size teklif göndersin.'
-                : 'Başka bir durum seçerek diğer taleplerinizi görebilirsiniz.'
+              filterId === 'all' ? t('job.emptyDescription') : t('job.emptyFilteredDescription')
             }
             className="w-full"
           />

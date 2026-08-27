@@ -32,7 +32,7 @@ export function ProviderProfileBody({ providerId }: { providerId: string }) {
     return (
       <ErrorState
         title={t('status.errorTitle')}
-        description="Satıcı profili yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+        description={t('provider.profileLoadFailed')}
         action={{ label: t('common.retry'), onClick: () => void provider.refetch() }}
       />
     );
@@ -64,7 +64,7 @@ function ProviderCard({ provider }: { provider: ProviderSummary }) {
           <div className="flex flex-wrap gap-2">
             {provider.isVerified ? <Badge tone="success">{t('provider.verified')}</Badge> : null}
             {publicEnv.featurePremium && provider.isPremium ? (
-              <Badge tone="accent">Öncelikli satıcı</Badge>
+              <Badge tone="accent">{t('offer.premiumBadge')}</Badge>
             ) : null}
           </div>
         </div>

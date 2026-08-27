@@ -33,7 +33,7 @@ import {
 } from './use-orders';
 
 /** İşin ilerleyişi dört adımda okunur; sipariş durumu bu adımlara eşlenir. */
-const STEPS = ['Ödeme', 'İşe başlama', 'Teslim', 'Onay'] as const;
+const STEP_KEYS = ['orderStep.pay', 'orderStep.start', 'orderStep.complete', 'orderStep.approve'] as const;
 
 const COMPLETED_STEP_COUNT: Record<OrderStatus, number> = {
   [OrderStatus.PENDING_PAYMENT]: 0,
@@ -53,13 +53,13 @@ export function OrderDetail({ orderId }: { orderId: string }) {
     return (
       <ErrorState
         title={t('status.errorTitle')}
-        description="Sipariş yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+        description={t('order.loadFailed')}
         action={{ label: t('common.retry'), onClick: () => void order.refetch() }}
       />
     );
   }
 
-  if (!order.data) return <LoadingState label="Sipariş yükleniyor" />;
+  if (!order.data) return <LoadingState label={t('order.loading')} />;
 
   return <OrderDetailView order={order.data} />;
 }
@@ -131,7 +131,9 @@ function OrderDetailView({ order }: { order: Order }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{isProviderSide ? 'Hakediş' : 'Ödeme'}</CardTitle>
+          <CardTitle>
+            {isProviderSide ? t('order.payoutSectionTitle') : t('order.paymentSectionTitle')}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -149,7 +151,7 @@ function OrderDetailView({ order }: { order: Order }) {
               </>
             ) : null}
             <DetailRow
-              label={isProviderSide ? 'Müşteri' : 'Satıcı'}
+              label={isProviderSide ? t('order.customer') : t('order.provider')}
               value={(isProviderSide ? order.customer?.displayName : order.provider?.displayName) ?? '—'}
             />
             <DetailRow
@@ -170,7 +172,7 @@ function OrderDetailView({ order }: { order: Order }) {
             />
             {order.job?.address.addressLine ? (
               <DetailRow
-                label="Adres"
+                label={t('job.address')}
                 value={order.job.address.addressLine}
                 className="sm:col-span-2"
               />
@@ -321,14 +323,14 @@ function ProgressTrail({ status }: { status: OrderStatus }) {
   const stopped = status === OrderStatus.CANCELLED || status === OrderStatus.REFUNDED;
 
   return (
-    <ol className="flex flex-wrap gap-2" aria-label="İş ilerlemesi">
-      {STEPS.map((step, index) => {
+    <ol className="flex flex-wrap gap-2" aria-label={t('order.progressLabel')}>
+      {STEP_KEYS.map((stepKey, index) => {
         const isDone = !stopped && index < done;
         const isCurrent = !stopped && index === done;
 
         return (
           <li
-            key={step}
+            key={stepKey}
             aria-current={isCurrent ? 'step' : undefined}
             className={
               isDone
@@ -338,7 +340,7 @@ function ProgressTrail({ status }: { status: OrderStatus }) {
                   : 'rounded-full border border-border px-3 py-1 text-xs text-foreground-muted'
             }
           >
-            {step}
+            {t(stepKey)}
           </li>
         );
       })}

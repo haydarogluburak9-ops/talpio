@@ -54,14 +54,14 @@ export function AccountOverview() {
   if (session.isError) {
     return (
       <ErrorState
-        title="Hesap bilgileri alınamadı"
-        description="Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin."
-        action={{ label: 'Tekrar dene', onClick: () => void session.refetch() }}
+        title={t('profile.accountLoadFailed')}
+        description={t('auth.networkError')}
+        action={{ label: t('common.retry'), onClick: () => void session.refetch() }}
       />
     );
   }
 
-  if (!user) return <LoadingState label="Hesap bilgileri yükleniyor" />;
+  if (!user) return <LoadingState label={t('profile.accountLoading')} />;
 
   const displayName = me.data?.displayName?.trim() || user.fullName?.trim() || user.email;
   const username = me.data?.username;
@@ -72,7 +72,7 @@ export function AccountOverview() {
     {
       key: 'request',
       href: '/talep-olustur',
-      label: 'Talep oluştur',
+      label: t('social.quickRequest'),
       icon: ClipboardPlus,
       tone: 'bg-accent-500 text-white shadow-[0_6px_16px_rgb(255_106_0_/_0.35)]',
       featured: true,
@@ -94,7 +94,7 @@ export function AccountOverview() {
     {
       key: 'categories',
       href: '/kategoriler',
-      label: 'Keşfet',
+      label: t('nav.discover'),
       icon: Compass,
       tone: 'bg-sky-50 text-sky-600',
     },
@@ -193,7 +193,7 @@ export function AccountOverview() {
               <span className="grid size-9 place-items-center rounded-xl bg-white text-foreground-muted shadow-sm">
                 <LogOut className="size-4" aria-hidden />
               </span>
-              {logout.isPending ? 'Çıkış yapılıyor…' : t('nav.logout')}
+              {logout.isPending ? t('auth.signingOut') : t('nav.logout')}
             </button>
             <div className="h-px bg-border/70" />
             <button
@@ -220,10 +220,10 @@ export function AccountOverview() {
       <section className="social-panel p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
-            Taleplerim
+            {t('nav.myJobs')}
           </h2>
           <Link href="/taleplerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
-            Tümünü gör
+            {t('common.seeAll')}
           </Link>
         </div>
         <RecentJobs />
@@ -232,10 +232,10 @@ export function AccountOverview() {
       <section className="social-panel p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
-            Ticaret taleplerim
+            {t('commerce.myListTitle')}
           </h2>
           <Link href="/tedariklerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
-            Tümünü gör
+            {t('common.seeAll')}
           </Link>
         </div>
         <RecentCommerceRequests />
@@ -247,7 +247,7 @@ export function AccountOverview() {
             {t('order.listTitle')}
           </h2>
           <Link href="/siparislerim" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
-            Tümünü gör
+            {t('common.seeAll')}
           </Link>
         </div>
         <RecentOrders />
@@ -298,9 +298,9 @@ function RecentJobs() {
   if (jobs.isError) {
     return (
       <p className="text-sm text-foreground-muted">
-        Talepleriniz şu anda yüklenemedi.{' '}
+        {t('job.listLoadFailed')}{' '}
         <button type="button" onClick={() => void jobs.refetch()} className="underline">
-          Tekrar dene
+          {t('common.retry')}
         </button>
       </p>
     );
@@ -308,10 +308,7 @@ function RecentJobs() {
 
   if (jobs.data.items.length === 0) {
     return (
-      <p className="text-sm text-foreground-muted">
-        Henüz bir talep oluşturmadınız. İlk talebinizi oluşturarak satıcılardan teklif
-        alabilirsiniz.
-      </p>
+      <p className="text-sm text-foreground-muted">{t('job.emptyHint')}</p>
     );
   }
 
@@ -335,9 +332,9 @@ function RecentOrders() {
   if (orders.isError) {
     return (
       <p className="text-sm text-foreground-muted">
-        Siparişleriniz şu anda yüklenemedi.{' '}
+        {t('order.listLoadFailed')}{' '}
         <button type="button" onClick={() => void orders.refetch()} className="underline">
-          Tekrar dene
+          {t('common.retry')}
         </button>
       </p>
     );
@@ -364,14 +361,14 @@ function RecentCommerceRequests() {
 
   if (requests.isPending) return <ListSkeleton rows={2} />;
   if (requests.isError) {
-    return <p className="text-sm text-foreground-muted">Ticaret talepleri yüklenemedi.</p>;
+    return <p className="text-sm text-foreground-muted">{t('commerce.listLoadFailed')}</p>;
   }
   if (items.length === 0) {
     return (
       <p className="text-sm text-foreground-muted">
-        Henüz ticaret talebi yok.{' '}
+        {t('commerce.emptyList')}{' '}
         <Link href="/tedarik" className="underline">
-          Talep oluştur
+          {t('social.quickRequest')}
         </Link>
       </p>
     );

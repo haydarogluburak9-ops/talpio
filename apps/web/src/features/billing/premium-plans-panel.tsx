@@ -43,11 +43,11 @@ export function PremiumPlansPanel() {
                 {plan.name}
               </p>
               <p className="mt-1 text-sm font-semibold text-accent-600">
-                {plan.monthlyCredits} AI kredi / ay
+                {t('billing.creditsPerMonth', { count: plan.monthlyCredits })}
               </p>
               <p className="mt-1 text-xs text-foreground-muted">
                 {plan.code}
-                {!plan.isActive ? ' · pasif' : ''}
+                {!plan.isActive ? ` · ${t('billing.planInactive')}` : ''}
               </p>
             </li>
           ))}

@@ -54,7 +54,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
     return (
       <ErrorState
         title={t('status.errorTitle')}
-        description="Teklifler yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+        description={t('offer.loadFailed')}
         action={{ label: t('common.retry'), onClick: () => void offers.refetch() }}
       />
     );
@@ -66,7 +66,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
     return (
       <EmptyState
         title={t('job.noOffers')}
-        description="Talebiniz satıcılara gösteriliyor. Teklif geldiğinde burada listelenir."
+        description={t('offer.emptyDescription')}
       />
     );
   }
@@ -92,7 +92,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
 
       {acceptOffer.isError || rejectOffer.isError ? (
         <p role="alert" className="rounded-[--radius-control] bg-danger-surface p-3 text-sm text-danger-on-surface">
-          İşlem tamamlanamadı. Teklif geri çekilmiş veya süresi dolmuş olabilir.
+          {t('offer.decisionFailed')}
         </p>
       ) : null}
 
@@ -112,7 +112,7 @@ export function OfferList({ jobId, decidable }: { jobId: string; decidable: bool
 
       {total > sorted.length ? (
         <p className="text-sm text-foreground-muted">
-          {total} teklifin ilk {sorted.length} tanesi gösteriliyor.
+          {t('offer.shownOfTotal', { shown: sorted.length, total })}
         </p>
       ) : null}
     </div>

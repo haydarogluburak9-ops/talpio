@@ -33,13 +33,13 @@ export function ProfilePageBody() {
     return (
       <ErrorState
         title={t('profile.loadFailed')}
-        description="Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin."
-        action={{ label: 'Tekrar dene', onClick: () => void session.refetch() }}
+        description={t('auth.networkError')}
+        action={{ label: t('common.retry'), onClick: () => void session.refetch() }}
       />
     );
   }
 
-  if (!user) return <LoadingState label="Profil yükleniyor" />;
+  if (!user) return <LoadingState label={t('profile.loading')} />;
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,7 +61,7 @@ function ProviderSections() {
     return (
       <ErrorState
         title={t('profile.loadFailed')}
-        action={{ label: 'Tekrar dene', onClick: () => void profile.refetch() }}
+        action={{ label: t('common.retry'), onClick: () => void profile.refetch() }}
       />
     );
   }

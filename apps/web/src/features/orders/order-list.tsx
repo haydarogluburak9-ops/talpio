@@ -11,10 +11,10 @@ import { useMyOrders } from './use-orders';
 
 /** Uzun durum listesi yerine tarafların gerçekten ayırdığı üç küme. */
 const FILTERS = [
-  { id: 'all', label: 'Tümü', status: undefined },
+  { id: 'all', labelKey: 'orderFilter.all', status: undefined },
   {
     id: 'active',
-    label: 'Devam eden',
+    labelKey: 'orderFilter.active',
     status: [
       OrderStatus.PENDING_PAYMENT,
       OrderStatus.PAID,
@@ -24,7 +24,7 @@ const FILTERS = [
   },
   {
     id: 'closed',
-    label: 'Kapanmış',
+    labelKey: 'orderFilter.closed',
     status: [OrderStatus.COMPLETED, OrderStatus.CANCELLED, OrderStatus.REFUNDED],
   },
 ] as const;
@@ -36,7 +36,7 @@ export function OrderList() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Sipariş durumu süzgeci">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('order.statusFilterLabel')}>
         {FILTERS.map((item) => (
           <button
             key={item.id}
@@ -49,7 +49,7 @@ export function OrderList() {
                 : 'rounded-full border border-border px-4 py-1.5 text-sm text-foreground-muted hover:bg-surface-muted'
             }
           >
-            {item.label}
+            {t(item.labelKey)}
           </button>
         ))}
       </div>
@@ -59,18 +59,18 @@ export function OrderList() {
       {orders.isError ? (
         <ErrorState
           title={t('status.errorTitle')}
-          description="Siparişleriniz yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin."
+          description={t('order.listLoadFailed')}
           action={{ label: t('common.retry'), onClick: () => void orders.refetch() }}
         />
       ) : null}
 
       {orders.isSuccess && orders.data.items.length === 0 ? (
         <EmptyState
-          title={filterId === 'all' ? t('order.empty') : 'Bu süzgeçte sipariş yok'}
+          title={filterId === 'all' ? t('order.empty') : t('order.emptyFiltered')}
           description={
             filterId === 'all'
               ? t('order.emptyDescription')
-              : 'Başka bir durum seçerek diğer siparişlerinizi görebilirsiniz.'
+              : t('order.emptyFilteredDescription')
           }
         />
       ) : null}

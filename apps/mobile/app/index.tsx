@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Text } from '@/components/text';
 import { useSession } from '@/features/auth/session-provider';
+import { useT } from '@/lib/i18n';
 import { palette } from '@/theme/tokens';
 
 /**
@@ -13,6 +14,7 @@ import { palette } from '@/theme/tokens';
  */
 export default function Index() {
   const { status } = useSession();
+  const t = useT();
 
   useEffect(() => {
     if (status !== 'loading') void SplashScreen.hideAsync();
@@ -22,10 +24,10 @@ export default function Index() {
     return (
       <View style={styles.splash}>
         <Text variant="displaySm" tone="onBrand">
-          Talpio
+          {t('common.appName')}
         </Text>
         <Text variant="caption" style={styles.tagline}>
-          Doğru satıcı. Doğru fiyat. Güvenli hizmet.
+          {t('common.trustTagline')}
         </Text>
         <ActivityIndicator color={palette.accent[400]} />
       </View>

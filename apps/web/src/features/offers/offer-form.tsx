@@ -21,7 +21,7 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
     setError(null);
     const amountMinor = Math.round(Number(amount.replace(',', '.')) * 100);
     if (!Number.isFinite(amountMinor) || amountMinor <= 0) {
-      setError('Geçerli bir tutar girin.');
+      setError(t('offer.invalidAmount'));
       return;
     }
     if (!locationText.trim()) {
@@ -48,13 +48,13 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
       setLocationText('');
       setShippingIncluded(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Teklif gönderilemedi.');
+      setError(err instanceof ApiError ? err.message : t('offer.submitFailed'));
     }
   }
 
   return (
     <form onSubmit={(e) => void submit(e)} className="grid gap-3 sm:grid-cols-2">
-      <Field label="Tutar (TL)" required>
+      <Field label={t('offer.amount')} required>
         {(props) => (
           <Input {...props} value={amount} onChange={(e) => setAmount(e.target.value)} required />
         )}
@@ -97,7 +97,7 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
           </button>
         </div>
       </fieldset>
-      <Field label="Not">
+      <Field label={t('offer.note')}>
         {(props) => (
           <Textarea {...props} value={note} onChange={(e) => setNote(e.target.value)} rows={1} />
         )}

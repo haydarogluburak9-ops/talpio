@@ -130,7 +130,7 @@ export default function CustomerJobsScreen() {
             {filterRow}
             {commerceItems.length > 0 ? (
               <View style={{ marginBottom: spacing.md, gap: spacing.xs }}>
-                <Text variant="caption">Ticaret talepleri</Text>
+                <Text variant="caption">{t('commerce.myListTitle')}</Text>
                 {commerceItems.slice(0, 5).map((row) => (
                   <Card key={row.id}>
                     <Text variant="caption">{row.status}</Text>
