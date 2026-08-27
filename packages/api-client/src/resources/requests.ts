@@ -41,6 +41,13 @@ export function createRequestsResource(http: HttpClient) {
       });
     },
 
+    listMyOffers(limit = 20, signal?: AbortSignal): Promise<RequestOffer[]> {
+      return http.get<RequestOffer[]>(API_ROUTES.requests.myOffers, {
+        query: { limit },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
     listNearby(limit = 5, signal?: AbortSignal): Promise<CommerceRequest[]> {
       return http.get<CommerceRequest[]>(API_ROUTES.requests.nearby, {
         query: { limit },

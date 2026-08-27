@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
+import { CommerceHub } from '@/features/requests/commerce-hub';
 import { ReviewList } from '@/features/reviews/review-list';
 import { useProviderReviews } from '@/features/reviews/use-reviews';
 import { DiscoverGrid } from '@/features/social/discover-grid';
@@ -34,7 +35,8 @@ type ProfileTab =
   | 'about'
   | 'followers'
   | 'following'
-  | 'saved';
+  | 'saved'
+  | 'commerce';
 
 export function SocialProfileView() {
   const params = useParams<{ username: string }>();
@@ -74,8 +76,13 @@ export function SocialProfileView() {
   }
 
   const store = profile.data.business;
+  // Ticaret ve kaydedilenler yalnızca profil sahibinindir; başkasının
+  // taleplerini ve aldığı teklifleri kimse göremez.
   const ownTabs: { id: ProfileTab; label: string }[] = isOwn
-    ? [{ id: 'saved', label: t('nav.saved') }]
+    ? [
+        { id: 'commerce', label: t('commerce.hubTitle') },
+        { id: 'saved', label: t('nav.saved') },
+      ]
     : [];
   const tabs: { id: ProfileTab; label: string }[] = isStore
     ? [
@@ -192,6 +199,10 @@ function ProfileTabContent({
   reviews: ReturnType<typeof useProviderReviews>;
   providerId: string;
 }) {
+  if (tab === 'commerce' && isOwn) {
+    return <CommerceHub />;
+  }
+
   if (tab === 'saved' && isOwn) {
     return (
       <PostGrid

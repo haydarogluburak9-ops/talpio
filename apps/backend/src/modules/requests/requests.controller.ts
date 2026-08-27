@@ -58,6 +58,16 @@ export class RequestsController {
     return this.requests.listMatched(user, query);
   }
 
+  @Get('mine/offers')
+  @RequirePermissions(Permission.REQUEST_READ_OWN)
+  @ApiOperation({ summary: 'Alıcının tüm taleplerine gelen teklifleri listeler' })
+  listMyOffers(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ListRequestsQueryDto,
+  ): Promise<RequestOffer[]> {
+    return this.requests.listMyOffers(user, query.limit);
+  }
+
   @Get('nearby')
   @RequirePermissions(Permission.REQUEST_READ_OWN, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'Kullanıcının şehrindeki açık talepleri listeler' })

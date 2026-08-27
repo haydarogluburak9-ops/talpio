@@ -25,6 +25,13 @@ export function useMatchedRequests() {
   });
 }
 
+export function useMyRequestOffers(limit = 20) {
+  return useQuery({
+    queryKey: queryKeys.requests.myOffers(limit),
+    queryFn: ({ signal }) => apiClient.requests.listMyOffers(limit, signal),
+  });
+}
+
 export function useNearbyRequests(limit = 5, enabled = true) {
   return useQuery({
     queryKey: queryKeys.requests.nearby(limit),

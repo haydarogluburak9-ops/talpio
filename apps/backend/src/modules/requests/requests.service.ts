@@ -129,7 +129,84 @@ export class RequestsService {
       }),
     ]);
 
-    return PaginatedResult.of(rows.map(toCommerceRequest), total, page, limit);
+    // Teklif sayısı listeyle birlikte gelmezse alıcı her talebi tek tek açmak
+    // zorunda kalır; hangisinin cevap aldığını listeden göremez.
+    const counts = await this.countOffersByRequest(rows.map((row) => row.id));
+
+    return PaginatedResult.of(
+      rows.map((row) =>
+        toCommerceRequest({
+          ...row,
+          offerCount: counts.get(row.id)?.total ?? 0,
+          pendingOfferCount: counts.get(row.id)?.pending ?? 0,
+        }),
+      ),
+      total,
+      page,
+      limit,
+    );
+  }
+
+  private async countOffersByRequest(
+    requestIds: string[],
+  ): Promise<Map<string, { total: number; pending: number }>> {
+    const counts = new Map<string, { total: number; pending: number }>();
+    if (requestIds.length === 0) return counts;
+
+    const groups = await this.prisma.requestOffer.groupBy({
+      by: ['requestId', 'status'],
+      where: { requestId: { in: requestIds }, deletedAt: null },
+      _count: { _all: true },
+    });
+
+    for (const group of groups) {
+      const current = counts.get(group.requestId) ?? { total: 0, pending: 0 };
+      current.total += group._count._all;
+      if (group.status === RequestOfferStatus.SUBMITTED) {
+        current.pending += group._count._all;
+      }
+      counts.set(group.requestId, current);
+    }
+
+    return counts;
+  }
+
+  /**
+   * Alıcının tüm taleplerine gelen teklifler.
+   *
+   * Talep bazlı `listOffers` bir alıcının genel görünümünü kuramaz: kaç talebi
+   * varsa o kadar istek atması gerekir. Bu uç profildeki ticaret alanını
+   * besler, en yeni teklif başta gelir.
+   */
+  async listMyOffers(user: AuthenticatedUser, limit = 20): Promise<RequestOffer[]> {
+    const rows = await this.prisma.requestOffer.findMany({
+      where: {
+        deletedAt: null,
+        request: { buyerUserId: user.id, deletedAt: null },
+      },
+      include: {
+        business: {
+          select: {
+            name: true,
+            slug: true,
+            verificationStatus: true,
+            socialProfile: { select: { username: true } },
+          },
+        },
+        request: { select: { id: true, title: true, status: true } },
+      },
+      orderBy: [{ submittedAt: 'desc' }, { createdAt: 'desc' }],
+      take: Math.min(limit, 100),
+    });
+
+    return rows.map((row) => ({
+      ...toRequestOffer(row, row.business),
+      request: {
+        id: row.request.id,
+        title: row.request.title,
+        status: row.request.status as RequestStatus,
+      },
+    }));
   }
 
   async listMatched(
@@ -702,7 +779,10 @@ export class RequestsService {
       include: {
         business: {
           select: {
+            name: true,
+            slug: true,
             verificationStatus: true,
+            socialProfile: { select: { username: true } },
             providerProfile: {
               select: {
                 averageRating: true,
@@ -730,7 +810,7 @@ export class RequestsService {
     );
 
     return rows.map((row) => ({
-      ...toRequestOffer(row),
+      ...toRequestOffer(row, row.business),
       badges: comparison.badgesByOfferId[row.id] ?? [],
     }));
   }

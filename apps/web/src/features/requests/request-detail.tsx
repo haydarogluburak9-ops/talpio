@@ -2,7 +2,9 @@
 
 import { compareOffers } from '@talpio/business-logic';
 import { formatMoneyMinor } from '@talpio/localization';
+import type { RequestOffer } from '@talpio/types';
 import { Button, ListSkeleton, LoadingState } from '@talpio/ui';
+import { BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
@@ -142,6 +144,7 @@ export function RequestDetail({ id }: { id: string }) {
                   <table className="w-full min-w-[640px] text-left text-sm">
                     <thead>
                       <tr className="border-b border-border text-xs uppercase tracking-wide text-foreground-muted">
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.seller')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.amount')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.delivery')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.location')}</th>
@@ -152,6 +155,9 @@ export function RequestDetail({ id }: { id: string }) {
                     <tbody>
                       {(offers.data ?? []).map((offer) => (
                         <tr key={offer.id} className="border-b border-border/60 align-top">
+                          <td className="py-3 pr-3">
+                            <SellerName offer={offer} />
+                          </td>
                           <td className="py-3 pr-3 font-semibold text-accent-600">
                             {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
                           </td>
@@ -187,7 +193,9 @@ export function RequestDetail({ id }: { id: string }) {
                                 {t('offer.accept')}
                               </Button>
                             ) : (
-                              <span className="text-xs text-foreground-muted">{offer.status}</span>
+                              <span className="text-xs text-foreground-muted">
+                                {t(`offerStatus.${offer.status}`)}
+                              </span>
                             )}
                           </td>
                         </tr>
@@ -203,11 +211,12 @@ export function RequestDetail({ id }: { id: string }) {
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
+                          <SellerName offer={offer} />
                           <p className="text-lg font-semibold text-accent-600">
                             {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
                           </p>
                           <p className="text-sm text-foreground-muted">
-                            {offer.status}
+                            {t(`offerStatus.${offer.status}`)}
                             {offer.deliveryDays != null ? ` · ${offer.deliveryDays} gün` : ''}
                             {offer.locationText ? ` · ${offer.locationText}` : ''}
                             {offer.shippingIncluded != null
@@ -246,6 +255,27 @@ export function RequestDetail({ id }: { id: string }) {
         </section>
       ) : null}
     </div>
+  );
+}
+
+/** Teklifi veren mağaza; sosyal profili varsa profiline bağlanır. */
+function SellerName({ offer }: { offer: RequestOffer }) {
+  const seller = offer.seller;
+  if (!seller) return null;
+
+  return (
+    <span className="flex items-center gap-1.5">
+      {seller.username ? (
+        <Link href={`/u/${seller.username}`} className="font-semibold hover:underline">
+          {seller.name}
+        </Link>
+      ) : (
+        <span className="font-semibold">{seller.name}</span>
+      )}
+      {seller.isVerified ? (
+        <BadgeCheck className="size-4 shrink-0 text-info-600" aria-label={t('commerce.hubVerified')} />
+      ) : null}
+    </span>
   );
 }
 

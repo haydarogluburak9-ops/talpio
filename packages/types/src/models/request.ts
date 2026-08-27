@@ -35,6 +35,20 @@ export interface CommerceRequest extends BaseEntity {
   matchReasons?: string[] | null;
   /** publish ve getById (yalnızca alıcı/moderatör) yanıtında doldurulur. */
   matchCount?: number | null;
+  /** listMine yanıtında doldurulur: talebe gelen toplam teklif. */
+  offerCount?: number | null;
+  /** listMine yanıtında doldurulur: henüz karara bağlanmamış teklif. */
+  pendingOfferCount?: number | null;
+}
+
+/** Teklif kartında satıcıyı tanıtan özet. */
+export interface RequestOfferSeller {
+  businessId: string;
+  name: string;
+  slug?: string | null;
+  /** Mağaza profiline bağlantı için; sosyal profili yoksa boştur. */
+  username?: string | null;
+  isVerified: boolean;
 }
 
 export interface RequestMatch {
@@ -61,6 +75,10 @@ export interface RequestOffer extends BaseEntity {
   submittedAt?: string | null;
   amount?: Money;
   badges?: string[];
+  /** listOffers ve listMyOffers yanıtlarında doldurulur. */
+  seller?: RequestOfferSeller | null;
+  /** Yalnızca listMyOffers yanıtında: teklifin ait olduğu talep. */
+  request?: { id: string; title: string; status: RequestStatus } | null;
 }
 
 export interface RequestOrderLink {

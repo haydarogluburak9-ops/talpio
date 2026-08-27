@@ -38,6 +38,8 @@ export function toCommerceRequest(row: {
   matchScore?: number | null;
   matchReasons?: string[] | null;
   matchCount?: number | null;
+  offerCount?: number | null;
+  pendingOfferCount?: number | null;
 }): CommerceRequest {
   return {
     id: row.id,
@@ -69,28 +71,55 @@ export function toCommerceRequest(row: {
     matchScore: row.matchScore ?? null,
     matchReasons: row.matchReasons ?? null,
     matchCount: row.matchCount ?? null,
+    offerCount: row.offerCount ?? null,
+    pendingOfferCount: row.pendingOfferCount ?? null,
   };
 }
 
-export function toRequestOffer(row: {
-  id: string;
-  requestId: string;
-  businessId: string;
-  createdByUserId: string;
-  status: string;
-  amountMinor: number;
-  currency: string;
-  deliveryDays: number | null;
-  shippingIncluded: boolean | null;
-  locationText: string | null;
-  note: string | null;
-  validUntil: Date;
-  submittedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
-}): RequestOffer {
+/**
+ * Teklif kartında satıcıyı gösterebilmek için gereken alanlar. `businessId`
+ * tek başına bir kimlik; alıcıya "kimden geldi" sorusunu cevaplamaz.
+ */
+export interface RequestOfferSellerRow {
+  name: string;
+  slug: string | null;
+  verificationStatus: string;
+  socialProfile: { username: string } | null;
+}
+
+export function toRequestOffer(
+  row: {
+    id: string;
+    requestId: string;
+    businessId: string;
+    createdByUserId: string;
+    status: string;
+    amountMinor: number;
+    currency: string;
+    deliveryDays: number | null;
+    shippingIncluded: boolean | null;
+    locationText: string | null;
+    note: string | null;
+    validUntil: Date;
+    submittedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  },
+  seller?: RequestOfferSellerRow | null,
+): RequestOffer {
   return {
+    ...(seller
+      ? {
+          seller: {
+            businessId: row.businessId,
+            name: seller.name,
+            slug: seller.slug,
+            username: seller.socialProfile?.username ?? null,
+            isVerified: seller.verificationStatus === 'VERIFIED',
+          },
+        }
+      : {}),
     id: row.id,
     requestId: row.requestId,
     businessId: row.businessId,

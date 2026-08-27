@@ -7,6 +7,7 @@ export const queryKeys = {
   requests: {
     all: () => ['requests'] as const,
     mine: () => ['requests', 'mine'] as const,
+    myOffers: (limit: number) => ['requests', 'my-offers', limit] as const,
     matched: () => ['requests', 'matched'] as const,
     nearby: (limit: number) => ['requests', 'nearby', limit] as const,
     detail: (id: string) => ['requests', 'detail', id] as const,

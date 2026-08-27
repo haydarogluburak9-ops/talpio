@@ -65,6 +65,7 @@ describe('RequestsService tenant isolation', () => {
   const requestMatch = prisma.requestMatch as { findFirst: jest.Mock };
   const requestOffer = prisma.requestOffer as {
     findFirst: jest.Mock;
+    findMany: jest.Mock;
     update: jest.Mock;
     updateMany: jest.Mock;
   };
@@ -240,6 +241,54 @@ describe('RequestsService tenant isolation', () => {
     const published = await service.publish(buyer, 'req-1');
 
     expect(published.matchCount).toBe(REQUEST_MATCHING.maxMatchesWithoutCategory + 5);
+  });
+
+  it('listMyOffers yalnızca alıcının taleplerini kapsar ve satıcıyı döner', async () => {
+    requestOffer.findMany.mockResolvedValue([
+      {
+        id: 'offer-1',
+        requestId: 'req-1',
+        businessId: 'biz-1',
+        createdByUserId: 'supplier-1',
+        status: RequestOfferStatus.SUBMITTED,
+        amountMinor: 100_000,
+        currency: 'TRY',
+        deliveryDays: 3,
+        shippingIncluded: true,
+        locationText: 'İstanbul',
+        note: null,
+        validUntil: new Date(),
+        submittedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        business: {
+          name: 'Alfa Tedarik',
+          slug: 'alfa',
+          verificationStatus: 'VERIFIED',
+          socialProfile: { username: 'alfa' },
+        },
+        request: { id: 'req-1', title: 'Yağ talebi', status: RequestStatus.QUOTING },
+      },
+    ]);
+
+    const offers = await service.listMyOffers(buyer);
+
+    expect(requestOffer.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          request: { buyerUserId: 'buyer-a', deletedAt: null },
+        }),
+      }),
+    );
+    expect(offers[0]!.seller).toEqual({
+      businessId: 'biz-1',
+      name: 'Alfa Tedarik',
+      slug: 'alfa',
+      username: 'alfa',
+      isVerified: true,
+    });
+    expect(offers[0]!.request?.title).toBe('Yağ talebi');
   });
 
   it('publish davetli talebi yalnızca hedef işletmeye dağıtır', async () => {
