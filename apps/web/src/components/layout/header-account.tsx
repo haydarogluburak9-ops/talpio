@@ -59,7 +59,7 @@ export function HeaderAccount({
 
   if (user) {
     const href = '/akis';
-    const label = 'Akış';
+    const label = t('nav.feed');
 
     return (
       <Link
@@ -84,7 +84,7 @@ export function HeaderAccount({
         <span className="grid size-8 place-items-center rounded-full bg-surface-muted text-foreground-muted">
           <UserRound className="size-4" />
         </span>
-        Giriş yap
+        {t('nav.login')}
       </Link>
     );
   }
@@ -95,10 +95,10 @@ export function HeaderAccount({
         href="/giris"
         className={cn(buttonVariants({ size: 'sm', variant: 'ghost' }), linkBase)}
       >
-        Giriş yap
+        {t('nav.login')}
       </Link>
       <Link href="/kayit" className={cn(buttonVariants({ size: 'sm' }), linkBase)}>
-        Kaydol
+        {t('nav.register')}
       </Link>
     </div>
   );
