@@ -110,11 +110,13 @@ export function SocialProfileView() {
       <div
         className={cn(
           'grid items-start gap-4',
-          isPersonal && 'md:grid-cols-[minmax(240px,300px)_minmax(0,1fr)]',
+          // Yan sütun 1024px altında tam genişlikte yığılır: 768–1024 arasında
+          // 240px'e sıkışınca kartların içindeki metin okunmaz hâle geliyordu.
+          isPersonal && 'lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)] lg:gap-5',
         )}
       >
         {isPersonal ? (
-          <aside className="md:sticky md:top-20">
+          <aside className="lg:sticky lg:top-20">
             <ProfileSidebar profile={profile.data} isOwn={isOwn} />
           </aside>
         ) : null}

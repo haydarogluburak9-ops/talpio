@@ -13,6 +13,14 @@ export function useMyCommerceRequests() {
   });
 }
 
+/** Alıcının tüm taleplerine gelen teklifler; profildeki ticaret alanı besler. */
+export function useMyRequestOffers(limit = 20) {
+  return useQuery({
+    queryKey: queryKeys.requests.myOffers(limit),
+    queryFn: ({ signal }) => apiClient.requests.listMyOffers(limit, signal),
+  });
+}
+
 export function useMatchedRequests() {
   return useQuery({
     queryKey: queryKeys.requests.matched(),

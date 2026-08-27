@@ -18,8 +18,9 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getLocale, t } from '@/lib/i18n';
 
@@ -55,13 +56,19 @@ export function ProfileSidebar({
   if (!isOwn && !hasContent) return null;
 
   return (
-    <aside className="flex flex-col gap-3">
-      {isOwn ? <ProfileStrengthCard profile={profile} /> : null}
+    // Sütun 1024px altında tam genişliğe yığılıyor; orada tek kolon uzayıp
+    // gitmesin diye kartlar ikişerli dizilir.
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+      {isOwn ? (
+        <div className="sm:col-span-2 lg:col-span-1">
+          <ProfileStrengthCard profile={profile} />
+        </div>
+      ) : null}
       <AboutCard profile={profile} isOwn={isOwn} />
       <ExperienceSection profile={profile} items={experiences} isOwn={isOwn} />
       <EducationSection profile={profile} items={education} isOwn={isOwn} />
       <SkillsSection profile={profile} items={skills} isOwn={isOwn} />
-    </aside>
+    </div>
   );
 }
 
@@ -276,35 +283,7 @@ function AboutCard({ profile, isOwn }: { profile: SocialProfile; isOwn: boolean 
         ) : null
       }
     >
-      {editing ? (
-        <div className="space-y-3">
-          <textarea
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            rows={4}
-            className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-accent-500"
-            placeholder={t('social.personalAboutEmpty')}
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              disabled={update.isPending}
-              onClick={() =>
-                update.mutate(
-                  { bio: value.trim() || null },
-                  { onSuccess: () => setEditing(false) },
-                )
-              }
-            >
-              {t('common.save')}
-            </Button>
-            <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>
-              {t('common.cancel')}
-            </Button>
-          </div>
-        </div>
-      ) : profile.bio?.trim() ? (
+      {profile.bio?.trim() ? (
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{profile.bio}</p>
       ) : (
         <SectionEmptyState
@@ -317,6 +296,36 @@ function AboutCard({ profile, isOwn }: { profile: SocialProfile; isOwn: boolean 
           }}
         />
       )}
+
+      {editing ? (
+        <CareerFormShell
+          title={t('social.editAbout')}
+          icon={<UserRound className="size-5" aria-hidden />}
+          tint="info"
+          onClose={() => setEditing(false)}
+        >
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">{t('social.aboutTab')}</span>
+            <textarea
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              rows={8}
+              autoFocus
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm leading-relaxed text-foreground outline-none focus:border-accent-500"
+              placeholder={t('social.personalAboutEmpty')}
+            />
+          </label>
+          <p className="text-xs text-foreground-muted">{t('social.aboutEmptyHint')}</p>
+          <FormActions
+            busy={update.isPending}
+            disabled={false}
+            onClose={() => setEditing(false)}
+            onSave={() =>
+              update.mutate({ bio: value.trim() || null }, { onSuccess: () => setEditing(false) })
+            }
+          />
+        </CareerFormShell>
+      ) : null}
     </SidebarCard>
   );
 }
@@ -501,7 +510,7 @@ function SkillsSection({
         isOwn ? <SidebarAddButton label={t('social.addSkill')} onClick={() => setAdding(true)} /> : null
       }
     >
-      {items.length === 0 && !adding ? (
+      {items.length === 0 ? (
         <SectionEmptyState
           icon={<Sparkles className="size-5" aria-hidden />}
           hint={t('social.skillsEmptyHint')}
@@ -536,32 +545,75 @@ function SkillsSection({
       )}
 
       {adding ? (
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const trimmed = name.trim();
-            if (!trimmed) return;
-            create.mutate({ name: trimmed }, { onSuccess: () => {
-              setName('');
-              setAdding(false);
-            } });
+        <CareerFormShell
+          title={t('social.addSkill')}
+          icon={<Sparkles className="size-5" aria-hidden />}
+          tint="warning"
+          onClose={() => {
+            setName('');
+            setAdding(false);
           }}
         >
-          <Input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder={t('social.skillPlaceholder')}
-            aria-label={t('social.skillName')}
-            className="h-9 flex-1"
-          />
-          <Button type="submit" size="sm" disabled={create.isPending || !name.trim()}>
-            {t('common.save')}
-          </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={() => setAdding(false)}>
-            {t('common.cancel')}
-          </Button>
-        </form>
+          {/*
+           * Pencere her kayıttan sonra kapanmaz: yetkinlik tek tek eklenir ve
+           * her seferinde yeniden açtırmak gereksiz sürtünme yaratır.
+           */}
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const trimmed = name.trim();
+              if (!trimmed) return;
+              create.mutate({ name: trimmed }, { onSuccess: () => setName('') });
+            }}
+          >
+            <Input
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={t('social.skillPlaceholder')}
+              aria-label={t('social.skillName')}
+              autoFocus
+              className="flex-1"
+            />
+            <Button type="submit" disabled={create.isPending || !name.trim()} isLoading={create.isPending}>
+              {t('social.addSkillShort')}
+            </Button>
+          </form>
+
+          {items.length > 0 ? (
+            <ul className="flex flex-wrap gap-1.5 pt-1">
+              {items.map((item) => (
+                <li key={item.id}>
+                  <span className="profile-skill-chip inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-[0.8125rem] font-semibold text-foreground">
+                    {item.name}
+                    <button
+                      type="button"
+                      className="grid size-5 place-items-center rounded-full text-foreground-muted transition-colors hover:bg-danger-surface hover:text-danger-on-surface"
+                      aria-label={t('common.delete')}
+                      onClick={() => void remove.mutate(item.id)}
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-foreground-muted">{t('social.skillsEmptyHint')}</p>
+          )}
+
+          <div className="sticky bottom-0 -mx-5 -mb-4 flex justify-end border-t border-border/70 bg-surface px-5 py-3">
+            <Button
+              type="button"
+              onClick={() => {
+                setName('');
+                setAdding(false);
+              }}
+            >
+              {t('common.done')}
+            </Button>
+          </div>
+        </CareerFormShell>
       ) : null}
     </SidebarCard>
   );
@@ -683,7 +735,12 @@ function ExperienceForm({
   const [isCurrent, setIsCurrent] = useState(initial?.isCurrent ?? false);
 
   return (
-    <CareerFormShell title={initial ? t('social.editExperience') : t('social.addExperience')} onClose={onClose}>
+    <CareerFormShell
+      title={initial ? t('social.editExperience') : t('social.addExperience')}
+      icon={<Briefcase className="size-5" aria-hidden />}
+      tint="accent"
+      onClose={onClose}
+    >
       <FormField label={t('social.position')} value={title} onChange={setTitle} required />
       <FormField label={t('social.company')} value={company} onChange={setCompany} required />
       <FormField label={t('social.location')} value={locationText} onChange={setLocationText} />
@@ -762,7 +819,12 @@ function EducationForm({
   const [isCurrent, setIsCurrent] = useState(initial?.isCurrent ?? false);
 
   return (
-    <CareerFormShell title={initial ? t('social.editEducation') : t('social.addEducation')} onClose={onClose}>
+    <CareerFormShell
+      title={initial ? t('social.editEducation') : t('social.addEducation')}
+      icon={<GraduationCap className="size-5" aria-hidden />}
+      tint="success"
+      onClose={onClose}
+    >
       <FormField label={t('social.school')} value={school} onChange={setSchool} required />
       <FormField label={t('social.degree')} value={degree} onChange={setDegree} />
       <FormField label={t('social.fieldOfStudy')} value={fieldOfStudy} onChange={setFieldOfStudy} />
@@ -809,29 +871,79 @@ function EducationForm({
   );
 }
 
+/**
+ * Profil bölümlerinin ortak form penceresi.
+ *
+ * Kenar sütunu dar olduğu için formlar kart içinde açılmaz; ekranın ortasında
+ * kendi penceresini açar. Küçük ekranda alttan yükselen sayfa gibi davranır,
+ * masaüstünde ortalanır.
+ */
 function CareerFormShell({
   title,
+  icon,
+  tint,
   onClose,
   children,
 }: {
   title: string;
+  icon: React.ReactNode;
+  tint: SectionTint;
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  // Arkadaki sayfa kaymasın: mobilde modal açıkken kaydırma çok can sıkıcı.
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-brand-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4 dark:bg-black/60"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <div
         role="dialog"
         aria-modal="true"
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-xl"
+        aria-label={title}
+        className={cn(
+          'profile-panel flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl',
+          TINT_CLASS[tint],
+        )}
       >
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button type="button" className="text-sm text-foreground-muted hover:text-foreground" onClick={onClose}>
-            {t('common.cancel')}
+        <header className="flex items-center gap-3 border-b border-border/70 px-5 py-4">
+          <span
+            className="profile-section-icon grid size-10 shrink-0 place-items-center rounded-xl"
+            aria-hidden
+          >
+            {icon}
+          </span>
+          <h3 className="min-w-0 flex-1 truncate font-display text-lg font-semibold tracking-tight text-foreground">
+            {title}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.cancel')}
+            className="grid size-9 shrink-0 place-items-center rounded-xl text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+          >
+            <X className="size-4.5" aria-hidden />
           </button>
-        </div>
-        <div className="space-y-3">{children}</div>
+        </header>
+
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">{children}</div>
       </div>
     </div>
   );
@@ -912,7 +1024,8 @@ function FormActions({
   onSave: () => void;
 }) {
   return (
-    <div className="flex justify-end gap-2 pt-2">
+    // Uzun formlarda kaydırırken kaybolmasın diye gövdenin altına yapışır.
+    <div className="sticky bottom-0 -mx-5 -mb-4 flex justify-end gap-2 border-t border-border/70 bg-surface px-5 py-3">
       <Button type="button" variant="outline" onClick={onClose}>
         {t('common.cancel')}
       </Button>

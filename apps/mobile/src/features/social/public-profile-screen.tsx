@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { SOCIAL } from '@talpio/config';
 import type { SocialPost } from '@talpio/types';
@@ -10,6 +10,7 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
+import { CommerceHub } from '@/features/requests/commerce-hub';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -31,7 +32,7 @@ import { ProfileHighlightsSection } from './profile-highlights';
 import { ProfileSidebar } from './profile-career-section';
 import { EditableProfileAvatar, EditableProfileCover } from './profile-media-editor';
 
-type ProfileTab = 'posts' | 'followers' | 'following' | 'saved';
+type ProfileTab = 'posts' | 'followers' | 'following' | 'commerce' | 'saved';
 
 export function PublicProfileScreen({
   username,
@@ -78,11 +79,18 @@ export function PublicProfileScreen({
   const items = posts.data?.items ?? [];
   const isOwn = me.data?.username === row.username;
   const store = row.kind === 'BUSINESS' ? row.business : null;
+  // Ticaret ve kaydedilenler yalnızca profil sahibinindir; başkasının
+  // taleplerini ve aldığı teklifleri kimse göremez.
   const tabs: { id: ProfileTab; label: string }[] = [
     { id: 'posts', label: t('social.posts') },
     { id: 'followers', label: t('social.followersTab') },
     { id: 'following', label: t('social.followingTab') },
-    ...(isOwn ? [{ id: 'saved' as const, label: t('nav.saved') }] : []),
+    ...(isOwn
+      ? [
+          { id: 'commerce' as const, label: t('commerce.hubTitle') },
+          { id: 'saved' as const, label: t('nav.saved') },
+        ]
+      : []),
   ];
 
   return (
@@ -173,7 +181,12 @@ export function PublicProfileScreen({
 
       <ProfileHighlightsSection profile={row} />
 
-      <View style={styles.tabRow}>
+      {/* Profil sahibinde beş sekme oluyor; eşit bölünce etiketler kırpılıyordu. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabRow}
+      >
         {tabs.map((item) => {
           const active = tab === item.id;
           return (
@@ -197,7 +210,7 @@ export function PublicProfileScreen({
             </Pressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       {tab === 'followers' ? (
         <ProfileGraphList
@@ -217,6 +230,8 @@ export function PublicProfileScreen({
           searchLabel={t('social.searchFollowing')}
           variant={variant}
         />
+      ) : tab === 'commerce' && isOwn ? (
+        <CommerceHub variant={variant} />
       ) : tab === 'saved' ? (
         <PostGrid
           pending={saved.isPending}
@@ -353,9 +368,8 @@ const styles = StyleSheet.create({
   report: { marginTop: spacing.sm },
   statRow: { flexDirection: 'row', gap: spacing.xl, marginTop: spacing.md },
   stat: { alignItems: 'center', gap: 2 },
-  tabRow: { flexDirection: 'row', gap: spacing.xs },
+  tabRow: { flexDirection: 'row', gap: spacing.lg, paddingHorizontal: spacing.xs },
   tab: {
-    flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 2,
