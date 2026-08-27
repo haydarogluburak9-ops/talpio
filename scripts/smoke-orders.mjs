@@ -6,7 +6,7 @@
  * veritabanı gerektirir; her çalıştırmada kendi müşterisini ve talebini açar.
  */
 const BASE = process.env.API_URL ?? 'http://localhost:3000/api/v1';
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'Demo1234!';
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'yerel_demo_parolasi';
 
 let passed = 0;
 let failed = 0;

@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 
 import { RequestDetail } from '@/features/requests/request-detail';
 import { SocialShell } from '@/features/social/social-shell';
-import { t } from '@/lib/i18n';
-import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
+import { generatePageMetadata } from '@/lib/server-locale';
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata('commerce.detailTitle', { robots: { index: false, follow: false } });

@@ -7,7 +7,7 @@ import type { RbacService } from '@modules/rbac/rbac.service';
 
 import { BusinessOpsService } from './ops.service';
 
-const USER: AuthenticatedUser = { id: 'user-a', role: 'PROVIDER' as never, sessionId: 's1' };
+const USER: AuthenticatedUser = { id: 'user-a', role: 'PROVIDER', sessionId: 's1' };
 
 describe('BusinessOpsService tenant isolation', () => {
   it('CRM listesini assertBusinessAccess sonrası tenantId ile çeker', async () => {

@@ -144,11 +144,8 @@ export class AgentToolsService {
   ): Promise<AgentToolResult> {
     if (toolName === AGENT_TOOL_NAMES.CREATE_REMINDER_DRAFT) {
       const parsed = reminderDraftSchema.safeParse(args);
-      const input = parsed.success
-        ? parsed.data
-        : { title: 'Hatırlatma', body: null, dueAt: null };
-      const dueAt =
-        input.dueAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const input = parsed.success ? parsed.data : { title: 'Hatırlatma', body: null, dueAt: null };
+      const dueAt = input.dueAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       return this.createWriteProposal(ctx, toolName, `Hatırlatma: ${input.title} (${dueAt})`, {
         title: input.title,
         body: input.body ?? null,
@@ -216,10 +213,7 @@ export class AgentToolsService {
             OrderStatus.AWAITING_APPROVAL,
           ],
         },
-        OR: [
-          { scheduledAt: { gte: start, lt: end } },
-          { startedAt: { gte: start, lt: end } },
-        ],
+        OR: [{ scheduledAt: { gte: start, lt: end } }, { startedAt: { gte: start, lt: end } }],
       },
       select: {
         id: true,
@@ -240,8 +234,7 @@ export class AgentToolsService {
     }
 
     const lines = rows.map(
-      (row) =>
-        `• ${row.jobRequest?.title ?? 'Sipariş'} — ${row.customer.fullName} (${row.status})`,
+      (row) => `• ${row.jobRequest?.title ?? 'Sipariş'} — ${row.customer.fullName} (${row.status})`,
     );
     return {
       summary: lines.join('\n'),
@@ -343,7 +336,10 @@ export class AgentToolsService {
 
     return {
       summary: rows
-        .map((row) => `• ${row.jobRequest?.title ?? 'Sipariş'} — ${row.customer.fullName} (${row.status})`)
+        .map(
+          (row) =>
+            `• ${row.jobRequest?.title ?? 'Sipariş'} — ${row.customer.fullName} (${row.status})`,
+        )
         .join('\n'),
       data: rows,
       requiresApproval: false,
@@ -414,10 +410,7 @@ export class AgentToolsService {
     };
   }
 
-  private async searchCustomerOrOrder(
-    tenantId: string,
-    query: string,
-  ): Promise<AgentToolResult> {
+  private async searchCustomerOrOrder(tenantId: string, query: string): Promise<AgentToolResult> {
     const rows = await this.prisma.order.findMany({
       where: {
         providerProfileId: tenantId,
@@ -443,7 +436,10 @@ export class AgentToolsService {
 
     return {
       summary: rows
-        .map((row) => `• ${row.customer.fullName} — ${row.jobRequest?.title ?? 'Sipariş'} (${row.status})`)
+        .map(
+          (row) =>
+            `• ${row.customer.fullName} — ${row.jobRequest?.title ?? 'Sipariş'} (${row.status})`,
+        )
         .join('\n'),
       data: rows,
       requiresApproval: false,

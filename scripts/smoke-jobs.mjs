@@ -165,7 +165,7 @@ check(
 
 console.log('\nSatıcı havuzu:');
 const providerLogin = await call('POST', '/auth/login', {
-  body: { email: 'satici@talpio.com', password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
+  body: { email: 'satici@talpio.com', password: process.env.DEMO_PASSWORD ?? 'yerel_demo_parolasi' },
 });
 const providerToken = providerLogin.json?.data?.tokens?.accessToken;
 check('demo satıcı girişi', providerLogin.status === 200, `status=${providerLogin.status}`);

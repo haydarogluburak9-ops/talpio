@@ -154,7 +154,7 @@ export class AuthService {
       });
     }
 
-    await this.ensureMarketplaceAccess(user.id, user.role as UserRole);
+    await this.ensureMarketplaceAccess(user.id, user.role);
     const hydrated = await this.prisma.user.findUniqueOrThrow({
       where: { id: user.id },
       include: userInclude,

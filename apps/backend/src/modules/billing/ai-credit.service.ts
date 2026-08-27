@@ -11,7 +11,7 @@ import {
   type SubscriptionPlan,
 } from '@talpio/types';
 
-import type { AiFeatureCode as PrismaAiFeatureCode, Prisma } from '@/generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 import { AppException } from '@common/errors/app.exception';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
@@ -84,7 +84,7 @@ export class AiCreditService {
       periodEnd: wallet.periodEnd.toISOString(),
       lifetimeGranted: wallet.lifetimeGranted,
       lifetimeSpent: wallet.lifetimeSpent,
-      planCode: (plan?.code ?? SubscriptionPlanCode.FREE) as SubscriptionPlanCode,
+      planCode: plan?.code ?? SubscriptionPlanCode.FREE,
       monthlyCredits: plan?.monthlyCredits ?? MONETIZATION.freeTrialCreditsPerMonth,
     };
   }
@@ -99,7 +99,7 @@ export class AiCreditService {
     return rows.map((row) => ({
       id: row.id,
       walletId: row.walletId,
-      type: row.type as AiCreditTxType,
+      type: row.type,
       amountCredits: row.amountCredits,
       balanceAfter: row.balanceAfter,
       featureCode: row.featureCode,
@@ -147,7 +147,7 @@ export class AiCreditService {
     });
     return rows.map((row) => ({
       id: row.id,
-      code: row.code as SubscriptionPlanCode,
+      code: row.code,
       name: row.name,
       monthlyCredits: row.monthlyCredits,
       sortOrder: row.sortOrder,
@@ -183,7 +183,7 @@ export class AiCreditService {
     await this.assertFeatureInPlan(input.userId, input.featureCode);
 
     const feature = await this.prisma.aiFeature.findUnique({
-      where: { code: input.featureCode as PrismaAiFeatureCode },
+      where: { code: input.featureCode },
     });
     const cost =
       input.estimatedCredits ??
@@ -210,7 +210,7 @@ export class AiCreditService {
             userId: input.userId,
             businessId: input.businessId ?? null,
             tenantId: input.metadata?.tenantId ?? null,
-            featureCode: input.featureCode as PrismaAiFeatureCode,
+            featureCode: input.featureCode,
             provider: input.metadata?.provider ?? 'pending',
             model: input.metadata?.model ?? null,
             creditsCharged: cost,
@@ -236,7 +236,7 @@ export class AiCreditService {
             type: AiCreditTxType.DEBIT,
             amountCredits: cost,
             balanceAfter: updated.balanceCredits,
-            featureCode: input.featureCode as PrismaAiFeatureCode,
+            featureCode: input.featureCode,
             idempotencyKey: input.idempotencyKey,
             usageRecordId: usage.id,
           },
@@ -320,7 +320,7 @@ export class AiCreditService {
       return {
         id: existingRefund.id,
         walletId: existingRefund.walletId,
-        type: existingRefund.type as AiCreditTxType,
+        type: existingRefund.type,
         amountCredits: existingRefund.amountCredits,
         balanceAfter: existingRefund.balanceAfter,
         featureCode: existingRefund.featureCode,
@@ -379,7 +379,7 @@ export class AiCreditService {
     return {
       id: result.id,
       walletId: result.walletId,
-      type: result.type as AiCreditTxType,
+      type: result.type,
       amountCredits: result.amountCredits,
       balanceAfter: result.balanceAfter,
       featureCode: result.featureCode,
@@ -400,7 +400,7 @@ export class AiCreditService {
         plan: {
           include: {
             features: {
-              where: { featureCode: featureCode as PrismaAiFeatureCode, included: true },
+              where: { featureCode: featureCode, included: true },
             },
           },
         },
@@ -491,8 +491,7 @@ export class AiCreditService {
       include: { plan: true },
       orderBy: { createdAt: 'desc' },
     });
-    const monthly =
-      subscription?.plan.monthlyCredits ?? MONETIZATION.freeTrialCreditsPerMonth;
+    const monthly = subscription?.plan.monthlyCredits ?? MONETIZATION.freeTrialCreditsPerMonth;
     const { periodStart, periodEnd } = this.currentPeriodWindow();
     const grantKey = `grant:renew:${userId}:${periodStart.toISOString()}`;
 

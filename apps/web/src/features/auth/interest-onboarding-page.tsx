@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { InterestPicker } from '@/features/auth/interest-picker';
 import { useSession } from '@/features/auth/use-session';
 import { useCategoryFollows, useReplaceInterests } from '@/features/social/use-social';
-import { INTEREST_ONBOARDING_PATH, MIN_INTERESTS, needsInterestOnboarding } from '@/lib/interest-onboarding';
+import { MIN_INTERESTS, needsInterestOnboarding } from '@/lib/interest-onboarding';
 import { t } from '@/lib/i18n';
 
 /** Kayıt sonrası zorunlu ilgi alanı seçimi. */

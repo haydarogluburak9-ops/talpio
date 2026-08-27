@@ -19,11 +19,7 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
 import { toolDefinitionsForAi } from './agent-tool.registry';
 import { AgentToolsService } from './agent-tools.service';
-import {
-  toAgentAction,
-  toAgentChatResponse,
-  toAgentThread,
-} from './agent.mapper';
+import { toAgentAction, toAgentChatResponse, toAgentThread } from './agent.mapper';
 import type { CreateAgentThreadDto, PostAgentMessageDto } from './dto/agent.dto';
 
 @Injectable()
@@ -35,10 +31,7 @@ export class AgentService {
     private readonly audit: AuditLogService,
   ) {}
 
-  async createThread(
-    user: AuthenticatedUser,
-    dto: CreateAgentThreadDto,
-  ): Promise<AgentThread> {
+  async createThread(user: AuthenticatedUser, dto: CreateAgentThreadDto): Promise<AgentThread> {
     const tenantId = await this.requireTenantId(user);
     const row = await this.prisma.agentThread.create({
       data: {

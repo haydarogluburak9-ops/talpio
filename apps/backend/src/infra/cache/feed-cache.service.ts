@@ -33,7 +33,12 @@ export class FeedCacheService {
     return `${PREFIX}:${scope}:${hash}`;
   }
 
-  async get<T>(scope: string, userId: string, cursor: string | undefined, limit: number): Promise<T | null> {
+  async get<T>(
+    scope: string,
+    userId: string,
+    cursor: string | undefined,
+    limit: number,
+  ): Promise<T | null> {
     if (this.ttl() <= 0) return null;
     return this.redis.get<T>(await this.key(scope, userId, cursor, limit));
   }

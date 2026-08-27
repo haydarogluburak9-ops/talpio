@@ -29,11 +29,7 @@ export function computeTrendingScore(input: TrendingSignals): number {
 
   const hours = Math.max(1, input.freshnessHours);
   const engagement =
-    input.likeCount +
-    input.commentCount +
-    input.saveCount +
-    input.shareCount +
-    input.repostCount;
+    input.likeCount + input.commentCount + input.saveCount + input.shareCount + input.repostCount;
   const velocity = engagement / hours;
 
   let score = 0;

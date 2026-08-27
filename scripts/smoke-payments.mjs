@@ -8,7 +8,9 @@
 import { createHmac } from 'node:crypto';
 
 const BASE = process.env.API_URL ?? 'http://localhost:3000/api/v1';
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'Demo1234!';
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'yerel_demo_parolasi';
+// Yetkili hesaplar vitrin hesaplarıyla aynı parolayı paylaşmaz.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'yerel_admin_parolasi';
 const WEBHOOK_SECRET = process.env.PAYMENT_WEBHOOK_SECRET ?? 'change_me_payment_webhook_secret';
 
 /** Mock sağlayıcı kuruş hanesi 13 olan tutarları daima reddeder. */
@@ -142,7 +144,7 @@ const providerToken = providerLogin.json?.data?.tokens?.accessToken;
 if (!providerToken) abort('Satıcı girişi yapılamadı; ödeme akışı doğrulanamıyor.');
 
 const adminLogin = await call('POST', '/auth/login', {
-  body: { email: 'admin@talpio.com', password: DEMO_PASSWORD },
+  body: { email: 'admin@talpio.com', password: ADMIN_PASSWORD },
 });
 check('demo yönetici girişi', adminLogin.status === 200, `status=${adminLogin.status}`);
 const adminToken = adminLogin.json?.data?.tokens?.accessToken;

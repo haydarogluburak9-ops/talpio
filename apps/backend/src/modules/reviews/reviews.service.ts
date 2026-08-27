@@ -1,13 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { canReviewOrder } from '@talpio/business-logic';
 import { deepLinks } from '@talpio/config';
-import {
-  NotificationType,
-  OrderStatus,
-  ReviewStatus,
-  UserRole,
-  type Review,
-} from '@talpio/types';
+import { NotificationType, OrderStatus, ReviewStatus, UserRole, type Review } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaymentStatus } from '@/generated/prisma/client';
@@ -251,10 +245,7 @@ export class ReviewsService {
     });
 
     return {
-      OR: [
-        { customerId: user.id },
-        ...(profile ? [{ providerProfileId: profile.id }] : []),
-      ],
+      OR: [{ customerId: user.id }, ...(profile ? [{ providerProfileId: profile.id }] : [])],
     };
   }
 

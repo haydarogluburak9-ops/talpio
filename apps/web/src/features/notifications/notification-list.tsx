@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import { useSession } from '@/features/auth/use-session';
 import { t, getLocale } from '@/lib/i18n';
 
 import { resolveWebDeepLink } from './resolve-deep-link';
@@ -22,17 +21,17 @@ import { useMarkAllRead, useMarkRead, useNotifications } from './use-notificatio
 type Filter = 'all' | 'unread';
 
 export function NotificationList() {
-  const session = useSession();
   const notifications = useNotifications({ limit: 50 });
   const markAllRead = useMarkAllRead();
   const [filter, setFilter] = useState<Filter>('all');
 
-  const items = notifications.data?.items ?? [];
+  // `?? []` her render'da yeni dizi üretip memo'yu boşa çıkarır.
+  const rows = notifications.data?.items;
   const unreadCount = notifications.data?.meta.unreadCount ?? 0;
-  const visible = useMemo(
-    () => (filter === 'unread' ? items.filter((item) => !item.readAt) : items),
-    [items, filter],
-  );
+  const visible = useMemo(() => {
+    const all = rows ?? [];
+    return filter === 'unread' ? all.filter((item) => !item.readAt) : all;
+  }, [rows, filter]);
 
   if (notifications.isPending) return <ListSkeleton rows={4} />;
 
@@ -48,7 +47,7 @@ export function NotificationList() {
     );
   }
 
-  if (items.length === 0) {
+  if (!rows || rows.length === 0) {
     return (
       <div className="social-panel px-6 py-10">
         <EmptyState

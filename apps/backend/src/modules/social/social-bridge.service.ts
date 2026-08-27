@@ -60,9 +60,7 @@ export class SocialBridgeService {
     const description = clampText(rawDescription, 10, 5000, `${title} — akıştan oluşturuldu`);
 
     const requestType =
-      post.type === PostType.SERVICE_PROMOTION
-        ? RequestType.SERVICE
-        : RequestType.PRODUCT_SUPPLY;
+      post.type === PostType.SERVICE_PROMOTION ? RequestType.SERVICE : RequestType.PRODUCT_SUPPLY;
 
     const categoryId = deal?.categoryId ?? (await this.authorBusinessCategoryId(post.author));
 

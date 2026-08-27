@@ -61,9 +61,9 @@ describe('validateEnv', () => {
   });
 
   it('production ortamında demo hesaplarına izin vermez', () => {
-    expect(() =>
-      validateEnv({ ...productionBase, SEED_DEMO_ACCOUNTS: 'true' }),
-    ).toThrow(/Demo hesapları production/);
+    expect(() => validateEnv({ ...productionBase, SEED_DEMO_ACCOUNTS: 'true' })).toThrow(
+      /Demo hesapları production/,
+    );
   });
 
   it('production ortamında varsayılan gizli anahtarları reddeder', () => {
@@ -102,7 +102,10 @@ describe('validateEnv', () => {
 
   it('production ortamında varsayılan webhook anahtarını reddeder', () => {
     expect(() =>
-      validateEnv({ ...productionBase, PAYMENT_WEBHOOK_SECRET: 'change_me_payment_webhook_secret' }),
+      validateEnv({
+        ...productionBase,
+        PAYMENT_WEBHOOK_SECRET: 'change_me_payment_webhook_secret',
+      }),
     ).toThrow(/varsayılan webhook gizli anahtarı/);
   });
 
@@ -138,9 +141,9 @@ describe('validateEnv', () => {
   });
 
   it('production ortamında OpenAI anahtarı olmadan openai sürücüsünü reddeder', () => {
-    expect(() =>
-      validateEnv({ ...productionBase, AI_OPENAI_API_KEY: undefined }),
-    ).toThrow(/AI_OPENAI_API_KEY/);
+    expect(() => validateEnv({ ...productionBase, AI_OPENAI_API_KEY: undefined })).toThrow(
+      /AI_OPENAI_API_KEY/,
+    );
   });
 
   it('development ortamında demo hesaplarına izin verir', () => {

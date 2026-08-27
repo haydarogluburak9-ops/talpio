@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { SocialProfileEducation, SocialProfileExperience, SocialProfileSkill } from '@talpio/types';
+import type {
+  SocialProfileEducation,
+  SocialProfileExperience,
+  SocialProfileSkill,
+} from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -79,7 +83,9 @@ export class ProfileCareerService {
       data: {
         ...(dto.company !== undefined ? { company: dto.company.trim() } : {}),
         ...(dto.title !== undefined ? { title: dto.title.trim() } : {}),
-        ...(dto.locationText !== undefined ? { locationText: dto.locationText?.trim() || null } : {}),
+        ...(dto.locationText !== undefined
+          ? { locationText: dto.locationText?.trim() || null }
+          : {}),
         ...(dto.description !== undefined ? { description: dto.description?.trim() || null } : {}),
         ...(dto.startYear !== undefined ? { startYear: dto.startYear } : {}),
         ...(dto.startMonth !== undefined ? { startMonth: dto.startMonth } : {}),
@@ -150,7 +156,9 @@ export class ProfileCareerService {
       data: {
         ...(dto.school !== undefined ? { school: dto.school.trim() } : {}),
         ...(dto.degree !== undefined ? { degree: dto.degree?.trim() || null } : {}),
-        ...(dto.fieldOfStudy !== undefined ? { fieldOfStudy: dto.fieldOfStudy?.trim() || null } : {}),
+        ...(dto.fieldOfStudy !== undefined
+          ? { fieldOfStudy: dto.fieldOfStudy?.trim() || null }
+          : {}),
         ...(dto.description !== undefined ? { description: dto.description?.trim() || null } : {}),
         ...(dto.startYear !== undefined ? { startYear: dto.startYear } : {}),
         ...(dto.startMonth !== undefined ? { startMonth: dto.startMonth } : {}),
@@ -176,7 +184,10 @@ export class ProfileCareerService {
     await this.prisma.socialProfileEducation.delete({ where: { id } });
   }
 
-  async createSkill(user: AuthenticatedUser, dto: CreateProfileSkillDto): Promise<SocialProfileSkill> {
+  async createSkill(
+    user: AuthenticatedUser,
+    dto: CreateProfileSkillDto,
+  ): Promise<SocialProfileSkill> {
     const profile = await this.profiles.ensurePersonalProfile(user.id);
     await this.assertSkillLimit(profile.id);
     const name = dto.name.trim();
@@ -224,7 +235,10 @@ export class ProfileCareerService {
     await this.prisma.socialProfileSkill.delete({ where: { id } });
   }
 
-  private async findOwnedExperience(profileId: string, id: string): Promise<SocialProfileExperienceRow> {
+  private async findOwnedExperience(
+    profileId: string,
+    id: string,
+  ): Promise<SocialProfileExperienceRow> {
     const row = await this.prisma.socialProfileExperience.findFirst({
       where: { id, profileId },
     });
@@ -232,7 +246,10 @@ export class ProfileCareerService {
     return row;
   }
 
-  private async findOwnedEducation(profileId: string, id: string): Promise<SocialProfileEducationRow> {
+  private async findOwnedEducation(
+    profileId: string,
+    id: string,
+  ): Promise<SocialProfileEducationRow> {
     const row = await this.prisma.socialProfileEducation.findFirst({
       where: { id, profileId },
     });
@@ -275,7 +292,11 @@ export class ProfileCareerService {
     }
   }
 
-  private assertDateRange(startYear: number, endYear: number | null | undefined, isCurrent: boolean): void {
+  private assertDateRange(
+    startYear: number,
+    endYear: number | null | undefined,
+    isCurrent: boolean,
+  ): void {
     const now = new Date().getFullYear();
     if (startYear < 1950 || startYear > now + 1) {
       throw new AppException('VALIDATION_ERROR', { message: 'Başlangıç yılı geçersiz.' });

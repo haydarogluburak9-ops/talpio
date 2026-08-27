@@ -1,4 +1,4 @@
-import { Reflector } from '@nestjs/core';
+import { type Reflector } from '@nestjs/core';
 import { Permission, UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
@@ -65,7 +65,9 @@ describe('PermissionsGuard', () => {
       id: 'u1',
       role: UserRole.CUSTOMER,
     });
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Permission.REQUEST_CREATE]);
+    const getAllAndOverride = jest
+      .spyOn(reflector, 'getAllAndOverride')
+      .mockReturnValue([Permission.REQUEST_CREATE]);
     (rbac.getEffectivePermissions as jest.Mock).mockResolvedValue({
       permissionCodes: [Permission.REQUEST_CREATE],
       businessIds: [],
@@ -77,6 +79,6 @@ describe('PermissionsGuard', () => {
     expect((request.user as { permissionCodes?: string[] }).permissionCodes).toContain(
       Permission.REQUEST_CREATE,
     );
-    expect(reflector.getAllAndOverride).toHaveBeenCalledWith(PERMISSIONS_KEY, expect.any(Array));
+    expect(getAllAndOverride).toHaveBeenCalledWith(PERMISSIONS_KEY, expect.any(Array));
   });
 });

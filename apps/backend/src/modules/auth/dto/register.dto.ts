@@ -47,8 +47,12 @@ export class RegisterDto {
   @ApiProperty({ example: 'ayse.yilmaz', description: 'Profil kullanıcı adı (@handle)' })
   @IsString()
   @Length(3, 32)
-  @Matches(/^[a-z0-9._]+$/, { message: 'Kullanıcı adı yalnızca küçük harf, rakam, nokta ve alt çizgi içerebilir.' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
+  @Matches(/^[a-z0-9._]+$/, {
+    message: 'Kullanıcı adı yalnızca küçük harf, rakam, nokta ve alt çizgi içerebilir.',
+  })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
   username!: string;
 
   @ApiPropertyOptional({ example: '+905321234567', description: 'E.164 biçiminde' })
@@ -61,7 +65,12 @@ export class RegisterDto {
   @IsIn([...SUPPORTED_LOCALES])
   locale?: string;
 
-  @ApiPropertyOptional({ type: [String], minItems: 3, maxItems: 12, description: 'İlgi alanı kategori kimlikleri' })
+  @ApiPropertyOptional({
+    type: [String],
+    minItems: 3,
+    maxItems: 12,
+    description: 'İlgi alanı kategori kimlikleri',
+  })
   @IsOptional()
   @IsArray()
   @ArrayMinSize(3, { message: 'En az 3 ilgi alanı seçin.' })

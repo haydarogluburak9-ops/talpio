@@ -102,7 +102,7 @@ function createService(prisma: unknown, profiles?: ProfilesService) {
   };
 
   return new FeedService(
-    prisma as unknown as PrismaReadService,
+    prisma as PrismaReadService,
     feedCache as unknown as FeedCacheService,
     {
       fileBaseUrl: 'http://localhost:9000/x',
@@ -148,8 +148,9 @@ describe('FeedService', () => {
 
     expect(prisma.feedItem.findMany).toHaveBeenCalled();
     expect(page.items.length).toBeGreaterThan(0);
-    const where = (prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> })
-      .where;
+    const where = (
+      prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> }
+    ).where;
     expect(where.authorProfileId).not.toEqual({ in: [] });
   });
 
@@ -179,8 +180,9 @@ describe('FeedService', () => {
 
     const page = await createService(prisma).getHomeFeed(user, { limit: 20 });
 
-    const where = (prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> })
-      .where;
+    const where = (
+      prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> }
+    ).where;
     expect(where.authorProfileId).toEqual({ notIn: [PROFILE_ID] });
     expect(page.items).toHaveLength(1);
     expect(page.items[0]?.post?.body).toBe('Takip edilen mağaza');
@@ -216,8 +218,9 @@ describe('FeedService', () => {
       categoryFollows as unknown as CategoryFollowsService,
     ).getDiscoverFeed(user, { limit: 20 });
 
-    const where = (prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> })
-      .where;
+    const where = (
+      prisma.feedItem.findMany.mock.calls[0]?.[0] as { where: Record<string, unknown> }
+    ).where;
     expect(where.authorProfileId).toEqual({ notIn: [PROFILE_ID] });
     const post = where.post as { AND: Array<Record<string, unknown>> };
     expect(post.AND).toEqual(

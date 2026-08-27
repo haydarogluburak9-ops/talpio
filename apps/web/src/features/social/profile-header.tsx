@@ -320,8 +320,8 @@ function Stat({
 
 function ProfileAvatar({ name, url }: { name: string; url?: string | null }) {
   if (url) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
         alt=""

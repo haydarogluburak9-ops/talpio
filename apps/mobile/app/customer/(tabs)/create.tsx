@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
@@ -28,9 +28,7 @@ export default function CustomerCreateTab() {
               ← {t('common.back')}
             </Text>
           </Pressable>
-          <PostComposer
-            onPublished={() => router.push('/customer/(tabs)/feed')}
-          />
+          <PostComposer onPublished={() => router.push('/customer/(tabs)/feed')} />
         </>
       )}
     </Screen>

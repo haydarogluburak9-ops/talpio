@@ -80,10 +80,10 @@ function postMeta() {
 
 type PrismaMock = {
   post: { findFirst: jest.Mock; update: jest.Mock };
-    postLike: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
-    savedPost: { findUnique: jest.Mock };
-    postShare: { findUnique: jest.Mock };
-    $transaction: jest.Mock;
+  postLike: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
+  savedPost: { findUnique: jest.Mock };
+  postShare: { findUnique: jest.Mock };
+  $transaction: jest.Mock;
 };
 
 function createPrismaMock(): PrismaMock {

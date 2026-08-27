@@ -49,10 +49,7 @@ export class BusinessesController {
   )
   @ApiOperation({ summary: 'Tedarikçi işletmesi oluşturur' })
   @ApiCreatedResponse({ description: 'Oluşturulan işletme listesi' })
-  createSupplier(
-    @CurrentUser() user: AuthenticatedUser,
-    @Body() dto: CreateSupplierBusinessDto,
-  ) {
+  createSupplier(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateSupplierBusinessDto) {
     return this.businesses.createSupplier(user, dto);
   }
 
@@ -67,10 +64,7 @@ export class BusinessesController {
   @Get(':id/locale-settings')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE)
   @ApiOperation({ summary: 'İşletme locale / currency ayarları' })
-  getLocale(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  getLocale(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.businesses.getLocaleSettings(user, id);
   }
 
@@ -88,30 +82,21 @@ export class BusinessesController {
   @Get(':id/trust-score')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'İşletme güven skoru (premium bağımsız)' })
-  trustScore(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  trustScore(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.trust.recomputeForUser(user, id);
   }
 
   @Get(':id/dashboard')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'Satıcı paneli v2 özeti' })
-  dashboard(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  dashboard(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.dashboard(user, id);
   }
 
   @Get(':id/crm/customers')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'İşletme CRM müşteri listesi' })
-  crmCustomers(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  crmCustomers(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.listCrmCustomers(user, id);
   }
 
@@ -176,30 +161,21 @@ export class BusinessesController {
   @Get(':id/crm/analytics')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'CRM özet sayıları (LLM hesaplamaz)' })
-  crmAnalytics(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  crmAnalytics(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.crmAnalytics(user, id);
   }
 
   @Get(':id/work-orders')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'İş emirleri' })
-  workOrders(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  workOrders(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.listWorkOrders(user, id);
   }
 
   @Get(':id/work-orders/board')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'İş emri kanban kolonları' })
-  workOrderBoard(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  workOrderBoard(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.listWorkOrderBoard(user, id);
   }
 
@@ -241,10 +217,7 @@ export class BusinessesController {
   @Get(':id/tasks')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'Görevler' })
-  tasks(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  tasks(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.ops.listTasks(user, id);
   }
 
@@ -274,10 +247,7 @@ export class BusinessesController {
   @Get(':id/campaigns')
   @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE, Permission.REQUEST_READ_MATCHED)
   @ApiOperation({ summary: 'Kampanyalar' })
-  listCampaigns(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id', ParseUUIDPipe) id: string,
-  ) {
+  listCampaigns(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.campaigns.list(user, id);
   }
 

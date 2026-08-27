@@ -1,6 +1,5 @@
 'use client';
 
-import { ApiError } from '@talpio/api-client';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -11,20 +10,29 @@ import { t } from '@/lib/i18n';
 
 function VerifyBody() {
   const token = useSearchParams().get('token') ?? '';
-  const [status, setStatus] = useState<'working' | 'done' | 'failed'>('working');
+  // Kısa jeton hiç sunucuya gitmez; sonucu render sırasında türetiyoruz.
+  const hasToken = token.length >= 16;
+  const [result, setResult] = useState<'working' | 'done' | 'failed'>('working');
 
   useEffect(() => {
-    if (token.length < 16) {
-      setStatus('failed');
-      return;
-    }
+    if (!hasToken) return;
+
+    let cancelled = false;
     void apiClient.auth
       .verifyEmail(token)
-      .then(() => setStatus('done'))
-      .catch((error: unknown) => {
-        setStatus(error instanceof ApiError ? 'failed' : 'failed');
+      .then(() => {
+        if (!cancelled) setResult('done');
+      })
+      .catch(() => {
+        if (!cancelled) setResult('failed');
       });
-  }, [token]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, hasToken]);
+
+  const status = hasToken ? result : 'failed';
 
   return (
     <div className="flex flex-col gap-3">

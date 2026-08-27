@@ -46,7 +46,9 @@ function selectPushSender(
   if (driver === 'mock') return mock;
   if (driver === 'expo') return expo;
 
-  throw new Error(`Push sürücüsü adaptörü henüz yazılmadı: ${driver}`);
+  // Tüm sürücüler yukarıda ele alındığı için `driver` burada `never`; yine de
+  // şemaya yeni bir değer eklenirse açılışta net bir hata verir.
+  throw new Error(`Push sürücüsü adaptörü henüz yazılmadı: ${String(driver)}`);
 }
 
 function selectEmailSender(
@@ -60,7 +62,7 @@ function selectEmailSender(
   if (driver === 'mock') return mock;
   if (driver === 'smtp') return smtp;
 
-  throw new Error(`E-posta sürücüsü adaptörü henüz yazılmadı: ${driver}`);
+  throw new Error(`E-posta sürücüsü adaptörü henüz yazılmadı: ${String(driver)}`);
 }
 
 function selectSmsSender(
@@ -76,7 +78,7 @@ function selectSmsSender(
   if (driver === 'netgsm') return netgsm;
   if (driver === 'twilio') return twilio;
 
-  throw new Error(`SMS sürücüsü adaptörü henüz yazılmadı: ${driver}`);
+  throw new Error(`SMS sürücüsü adaptörü henüz yazılmadı: ${String(driver)}`);
 }
 
 @Global()

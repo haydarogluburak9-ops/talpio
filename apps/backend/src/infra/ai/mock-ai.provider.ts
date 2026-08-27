@@ -67,7 +67,12 @@ const KEYWORD_TOOLS: Array<{ patterns: RegExp[]; tool: AiToolCallSuggestion }> =
 export class MockAiProvider implements AiProvider {
   readonly name = 'mock';
 
-  async complete(request: AiCompletionRequest): Promise<AiCompletionResult> {
+  complete(request: AiCompletionRequest): Promise<AiCompletionResult> {
+    // Sahte sağlayıcı ağa çıkmaz; arayüz sözleşmesi için söz döndürür.
+    return Promise.resolve(this.build(request));
+  }
+
+  private build(request: AiCompletionRequest): AiCompletionResult {
     const started = Date.now();
     const lastUser = [...request.messages].reverse().find((message) => message.role === 'user');
     const text = lastUser?.content ?? '';
@@ -123,7 +128,9 @@ export class MockAiProvider implements AiProvider {
       }
 
       if (entry.tool.name === AGENT_TOOL_NAMES.SEARCH_CUSTOMER_OR_ORDER) {
-        const nameMatch = text.match(/\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)?)\b/);
+        const nameMatch = text.match(
+          /\b([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+)?)\b/,
+        );
         matched.push({
           name: entry.tool.name,
           arguments: { query: nameMatch?.[1] ?? 'Ali' },

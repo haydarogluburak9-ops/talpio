@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import { AccountOverview } from '@/features/auth/account-overview';
 import { SocialShell } from '@/features/social/social-shell';
-import { t } from '@/lib/i18n';
 import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
 export async function generateMetadata(): Promise<Metadata> {

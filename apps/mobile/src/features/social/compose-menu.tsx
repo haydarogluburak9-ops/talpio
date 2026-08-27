@@ -21,13 +21,13 @@ export function ComposeMenu({
   const colors = useColors();
   const router = useRouter();
 
-  const items: Array<{
+  const items: {
     key: ComposeAction;
     label: string;
     icon: keyof typeof Ionicons.glyphMap;
     tone: string;
     onPress: () => void;
-  }> = [
+  }[] = [
     {
       key: 'post',
       label: t('social.quickPost'),

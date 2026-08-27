@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 
 import { TicketDetailBody } from '@/features/support/support-page-body';
-import { t } from '@/lib/i18n';
-import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
+import { generatePageMetadata } from '@/lib/server-locale';
 
 export async function generateMetadata(): Promise<Metadata> {
   return generatePageMetadata('support.detailTitle', { robots: { index: false, follow: false } });

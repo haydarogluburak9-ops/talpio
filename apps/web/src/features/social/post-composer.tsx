@@ -46,9 +46,9 @@ export function PostComposer({
   const [businessId, setBusinessId] = useState<string>('');
   const [body, setBody] = useState('');
   const [mediaFileIds, setMediaFileIds] = useState<string[]>([]);
-  const [showMedia, setShowMedia] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
-  const [storyMode, setStoryMode] = useState(false);
+  const [showMedia, setShowMedia] = useState(expand === 'media' || expand === 'story');
+  const [showPromo, setShowPromo] = useState(expand === 'promo');
+  const [storyMode, setStoryMode] = useState(expand === 'story');
   const [promoLabel, setPromoLabel] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [promoPrice, setPromoPrice] = useState('');
@@ -66,13 +66,14 @@ export function PostComposer({
   const currency =
     selectedBusiness?.localeSettings?.defaultCurrency?.toUpperCase() || DEFAULT_CURRENCY;
 
-  useEffect(() => {
-    if (!businessId && businessList[0]?.id) {
-      setBusinessId(businessList[0].id);
-    }
-  }, [businessId, businessList]);
-
-  useEffect(() => {
+  /**
+   * `expand`, dışarıdan gelen tek seferlik bir komut. Hangi komutun işlendiğini
+   * saklayıp panelleri render sırasında açıyoruz; effect'te açmak kullanıcıya
+   * bir kare boyunca kapalı panel gösteriyordu.
+   */
+  const [handledExpand, setHandledExpand] = useState(expand ?? null);
+  if ((expand ?? null) !== handledExpand) {
+    setHandledExpand(expand ?? null);
     if (expand === 'media') setShowMedia(true);
     if (expand === 'promo') setShowPromo(true);
     if (expand === 'story') {
@@ -80,10 +81,12 @@ export function PostComposer({
       setShowMedia(true);
       setShowPromo(false);
     }
-    if (expand) {
-      document.getElementById('social-composer')?.focus();
-      onExpandConsumed?.();
-    }
+  }
+
+  useEffect(() => {
+    if (!expand) return;
+    document.getElementById('social-composer')?.focus();
+    onExpandConsumed?.();
   }, [expand, onExpandConsumed]);
 
   const canSubmit =

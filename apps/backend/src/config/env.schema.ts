@@ -153,7 +153,10 @@ export const envSchema = z
 
     // Seed
     SEED_DEMO_ACCOUNTS: booleanFromString.default(false),
-    DEMO_PASSWORD: z.string().default('Demo1234!'),
+    // Varsayılanı yok: koda gömülü parola, depo herkese açıkken doğrudan giriş
+    // demektir. Tanımsızsa seed rastgele üretip bir kez log'a yazar.
+    DEMO_PASSWORD: z.string().min(12).optional(),
+    ADMIN_PASSWORD: z.string().min(12).optional(),
 
     /** Açılışta bekleyen Prisma migrasyonu varsa süreci durdur. Testte kapalı. */
     STRICT_MIGRATION_CHECK: booleanFromString.default(true),

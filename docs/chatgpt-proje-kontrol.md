@@ -79,12 +79,14 @@ Paketler `dist` tüketir. Turbopack panik olursa `apps/web/.next` ve `apps/admin
 
 ### Demo (yalnızca `SEED_DEMO_ACCOUNTS=true`; production’da yasak)
 
-| Rol       | E-posta              | Parola    |
-| --------- | -------------------- | --------- |
-| Kullanıcı | kullanici@talpio.com | Demo1234! |
-| Satıcı    | satici@talpio.com    | Demo1234! |
-| Yönetici  | admin@talpio.com     | Demo1234! |
-| Destek    | destek@talpio.com    | Demo1234! |
+| Rol       | E-posta              | Parola           |
+| --------- | -------------------- | ---------------- |
+| Kullanıcı | kullanici@talpio.com | `DEMO_PASSWORD`  |
+| Satıcı    | satici@talpio.com    | `DEMO_PASSWORD`  |
+| Yönetici  | admin@talpio.com     | `ADMIN_PASSWORD` |
+| Destek    | destek@talpio.com    | `ADMIN_PASSWORD` |
+
+Parolalar `.env`'den gelir, depoda tutulmaz.
 
 Girişli web `/` → otomatik `/akis`.
 

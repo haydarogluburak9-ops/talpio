@@ -1196,20 +1196,16 @@ export class AdminService {
     ];
     const rows = await this.prisma.systemSetting.findMany({ where: { key: { in: keys } } });
     const map = new Map(rows.map((row) => [row.key, row.value]));
-    const lastVerifiedAt =
-      typeof map.get('ops.backup.last_verified_at') === 'string'
-        ? String(map.get('ops.backup.last_verified_at'))
-        : null;
+    // Ayar değerleri JSON; metin bekleyen alanlarda yalnızca string kabul edilir.
+    const readText = (key: string): string | null => {
+      const value = map.get(key);
+      return typeof value === 'string' ? value : null;
+    };
+
     return {
-      lastVerifiedAt,
-      lastVerifiedBy:
-        typeof map.get('ops.backup.last_verified_by') === 'string'
-          ? String(map.get('ops.backup.last_verified_by'))
-          : null,
-      lastNote:
-        typeof map.get('ops.backup.last_note') === 'string'
-          ? String(map.get('ops.backup.last_note'))
-          : null,
+      lastVerifiedAt: readText('ops.backup.last_verified_at'),
+      lastVerifiedBy: readText('ops.backup.last_verified_by'),
+      lastNote: readText('ops.backup.last_note'),
       checklist: [
         'PostgreSQL dump alındı ve dosya boyutu > 0',
         'Dump ayrı bir ortamda restore denendi',

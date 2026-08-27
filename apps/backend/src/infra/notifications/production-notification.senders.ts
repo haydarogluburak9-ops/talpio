@@ -86,10 +86,9 @@ export class SmtpEmailSender implements EmailSender {
 }
 
 function smsBody(message: NotificationMessage): string {
-  const code =
-    message.params && 'ticketSubject' in message.params
-      ? String(message.params.ticketSubject)
-      : message.type;
+  // Parametre değeri sözlük de olabilir; SMS'e yalnızca düz metin girer.
+  const subject = message.params?.ticketSubject;
+  const code = typeof subject === 'string' ? subject : message.type;
   return `Talpio: ${code}`;
 }
 
@@ -116,15 +115,18 @@ export class TwilioSmsSender implements SmsSender {
       From: from,
       Body: smsBody(message),
     });
-    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body,
+        signal: AbortSignal.timeout(15_000),
       },
-      body,
-      signal: AbortSignal.timeout(15_000),
-    });
+    );
 
     this.outbox.record({
       channel: NotificationChannel.SMS,

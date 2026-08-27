@@ -28,7 +28,7 @@ export function RequestDetail({ id }: { id: string }) {
   const session = useSession();
   const request = useCommerceRequest(id);
   const offers = useRequestOffers(id);
-  const accept = useAcceptRequestOffer(id);
+  const accept = useAcceptRequestOffer();
   const publish = usePublishCommerceRequest(id);
   const share = useShareRequestToFeed();
   const viewer = session.data ?? null;

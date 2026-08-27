@@ -135,6 +135,7 @@ export function StoriesRail() {
 
       {openIndex != null && groups[openIndex] ? (
         <StoryViewer
+          key={openIndex}
           groups={groups}
           startGroup={openIndex}
           onClose={() => setOpenIndex(null)}

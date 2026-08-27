@@ -194,10 +194,7 @@ describe('AiCreditService', () => {
 
     const prisma = {
       aiCreditTransaction: {
-        findUnique: jest
-          .fn()
-          .mockResolvedValueOnce(debit)
-          .mockResolvedValueOnce(null),
+        findUnique: jest.fn().mockResolvedValueOnce(debit).mockResolvedValueOnce(null),
         findFirst: jest.fn(),
       },
       aiUsageRecord: {

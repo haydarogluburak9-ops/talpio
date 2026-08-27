@@ -48,7 +48,7 @@ function orderRow(overrides: Partial<OrderRow> = {}): OrderRow {
     customerId: CUSTOMER_ID,
     providerProfileId: PROFILE_ID,
     status: OrderStatus.PENDING_PAYMENT,
-    source: 'MARKETPLACE' as OrderRow['source'],
+    source: 'MARKETPLACE',
     totalMinor: 250000,
     commissionMinor: 25000,
     payoutMinor: 225000,

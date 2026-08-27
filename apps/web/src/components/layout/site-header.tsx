@@ -21,10 +21,9 @@ export function SiteHeader() {
   const landingMode = pathname === '/';
   const minimalHeader = isMinimalHeaderPath(pathname);
   const authPage = isAuthPath(pathname);
+  const [query, setQuery] = useState('');
 
   if (authPage) return null;
-
-  const [query, setQuery] = useState('');
 
   return (
     <header

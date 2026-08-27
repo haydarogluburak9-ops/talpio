@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 
 import { NewTicketPageBody } from '@/features/support/support-page-body';
-import { t } from '@/lib/i18n';
 import { applyRequestLocale, generatePageMetadata } from '@/lib/server-locale';
 
 export async function generateMetadata(): Promise<Metadata> {

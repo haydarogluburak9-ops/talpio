@@ -120,8 +120,8 @@ export class BusinessOpsService {
       workOrders: row.workOrders.map((wo) => ({
         id: wo.id,
         title: wo.title,
-        stage: wo.stage as WorkOrderStage,
-        source: wo.source as WorkOrderSource,
+        stage: wo.stage,
+        source: wo.source,
         createdAt: wo.createdAt.toISOString(),
       })),
     };
@@ -539,8 +539,7 @@ export class BusinessOpsService {
       pendingPayments,
       openRequests,
       leadCount,
-      conversionRate:
-        totalOffers > 0 ? Math.round((acceptedOffers / totalOffers) * 100) : null,
+      conversionRate: totalOffers > 0 ? Math.round((acceptedOffers / totalOffers) * 100) : null,
       revenueMinor: revenue._sum.payoutMinor ?? 0,
       currency: 'TRY',
       social: {

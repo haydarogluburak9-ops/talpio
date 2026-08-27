@@ -1,10 +1,4 @@
-import {
-  Controller,
-  MessageEvent,
-  Query,
-  Req,
-  Sse,
-} from '@nestjs/common';
+import { Controller, MessageEvent, Query, Req, Sse } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { RealtimeEvent } from '@talpio/types';
 import type { Request } from 'express';

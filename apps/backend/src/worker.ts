@@ -164,7 +164,9 @@ async function bootstrap(): Promise<void> {
     };
     run();
     setInterval(run, intervalMs);
-    logger.log(`Demo hikâye yenileme zamanlayıcısı aktif (${Math.round(intervalMs / 3_600_000)} saat)`);
+    logger.log(
+      `Demo hikâye yenileme zamanlayıcısı aktif (${Math.round(intervalMs / 3_600_000)} saat)`,
+    );
   };
   scheduleDemoStoryRefresh();
 

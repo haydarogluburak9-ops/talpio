@@ -81,7 +81,7 @@ export class BusinessesService {
           serviceAreas: {
             create:
               districtIds.length > 0
-                ? districtIds.map((districtId) => ({ cityId: cityId!, districtId }))
+                ? districtIds.map((districtId) => ({ cityId: cityId, districtId }))
                 : [{ cityId }],
           },
           localeSettings: {

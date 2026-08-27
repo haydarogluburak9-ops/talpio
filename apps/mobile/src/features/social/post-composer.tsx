@@ -1,6 +1,6 @@
 import { FilePurpose } from '@talpio/types';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Image, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -14,13 +14,7 @@ import { radius, spacing } from '@/theme/tokens';
 
 import { useCreatePost } from './use-social';
 
-export function PostComposer({
-  onPublished,
-  mediaTrigger,
-}: {
-  onPublished?: () => void;
-  mediaTrigger?: number;
-}) {
+export function PostComposer({ onPublished }: { onPublished?: () => void }) {
   const { t } = useI18n();
   const colors = useColors();
   const { user } = useSession();
@@ -54,12 +48,6 @@ export function PostComposer({
       1,
     );
   }
-
-  useEffect(() => {
-    if (mediaTrigger) void pickPhoto();
-    // mediaTrigger sayacı yalnızca dış tetikleyici; pickPhoto her render'da yeniden bağlanmaz.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaTrigger]);
 
   function publish() {
     const trimmed = body.trim();

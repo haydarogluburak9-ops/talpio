@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CampaignAudience,
-  CampaignStatus,
-  type CampaignRow,
-} from '@talpio/types';
+import { CampaignAudience, CampaignStatus, type CampaignRow } from '@talpio/types';
 
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { AuditLogService } from '@modules/admin/audit-log.service';

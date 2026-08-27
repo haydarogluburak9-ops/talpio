@@ -43,6 +43,15 @@ import { TrendingService } from './trending.service';
     StoryHighlightsService,
     ProfileCareerService,
   ],
-  exports: [ProfilesService, PostsService, FeedService, SocialBridgeService, CategoryFollowsService, SocialRealtimeService, StoryHighlightsService, ProfileCareerService],
+  exports: [
+    ProfilesService,
+    PostsService,
+    FeedService,
+    SocialBridgeService,
+    CategoryFollowsService,
+    SocialRealtimeService,
+    StoryHighlightsService,
+    ProfileCareerService,
+  ],
 })
 export class SocialModule {}

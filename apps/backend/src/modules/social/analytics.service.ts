@@ -74,7 +74,10 @@ export class SocialAnalyticsService {
     };
   }
 
-  async getForBusiness(user: AuthenticatedUser, businessId: string): Promise<SocialAnalyticsSummary> {
+  async getForBusiness(
+    user: AuthenticatedUser,
+    businessId: string,
+  ): Promise<SocialAnalyticsSummary> {
     const member = await this.prisma.businessMembership.findFirst({
       where: { businessId, userId: user.id },
       select: { id: true },

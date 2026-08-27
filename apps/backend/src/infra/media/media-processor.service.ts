@@ -48,11 +48,7 @@ export class MediaProcessorService {
     }
   }
 
-  private async processImage(
-    fileId: string,
-    storageKey: string,
-    sizeBytes: number,
-  ): Promise<void> {
+  private async processImage(fileId: string, storageKey: string, sizeBytes: number): Promise<void> {
     const object = await this.storage.downloadBuffer(storageKey);
     const pipeline = sharp(object, { failOn: 'none' });
     const meta = await pipeline.metadata();
@@ -94,10 +90,7 @@ export class MediaProcessorService {
 
   private async processVideo(fileId: string, storageKey: string, sizeBytes: number): Promise<void> {
     const ffmpeg = this.config.ffmpegPath;
-    const metadata: FileAssetMetadata = {
-      processedAt: new Date().toISOString(),
-      originalSizeBytes: sizeBytes,
-    };
+    let thumbStorageKey: string | null = null;
 
     if (ffmpeg) {
       try {
@@ -120,7 +113,7 @@ export class MediaProcessorService {
         );
         const thumbKey = storageKey.replace(/(\.[^./]+)?$/, '-thumb.webp');
         await this.storage.uploadRaw(thumbKey, thumbBuffer, 'image/webp');
-        metadata.thumbStorageKey = thumbKey;
+        thumbStorageKey = thumbKey;
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         this.logger.warn(`Video küçük resmi üretilemedi (${fileId}): ${msg}`);
@@ -129,7 +122,13 @@ export class MediaProcessorService {
 
     await this.prisma.fileAsset.update({
       where: { id: fileId },
-      data: { metadata: metadata as object },
+      data: {
+        metadata: {
+          processedAt: new Date().toISOString(),
+          originalSizeBytes: sizeBytes,
+          ...(thumbStorageKey ? { thumbStorageKey } : {}),
+        },
+      },
     });
   }
 }

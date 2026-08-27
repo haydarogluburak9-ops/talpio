@@ -194,7 +194,9 @@ export class VerificationService {
       },
     });
     if (!row) {
-      throw new AppException('TOKEN_INVALID', { message: 'Bağlantı veya kod geçersiz / süresi dolmuş.' });
+      throw new AppException('TOKEN_INVALID', {
+        message: 'Bağlantı veya kod geçersiz / süresi dolmuş.',
+      });
     }
     await this.prisma.verificationToken.update({
       where: { id: row.id },

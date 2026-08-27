@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 
 import * as argon2 from 'argon2';
@@ -350,22 +351,60 @@ async function removeLegacyDemoAccounts(): Promise<void> {
   }
 }
 
-async function seedDemoAccounts(password: string): Promise<void> {
-  await removeLegacyDemoAccounts();
+/** Yetkili demo hesapları vitrin hesaplarıyla aynı parolayı paylaşamaz. */
+function isPrivileged(role: UserRole): boolean {
+  return role === UserRole.SUPER_ADMIN || role === UserRole.SUPPORT;
+}
 
-  const passwordHash = await argon2.hash(password, {
+/**
+ * Seed parolasını ortamdan okur; yoksa rastgele üretip bir kez yazdırır.
+ *
+ * Koda gömülü bir yedek parola, depo herkese açık olduğunda doğrudan giriş
+ * anlamına gelir. Üretmek dağıtımı kırmaz ama tahmin edilebilir parola bırakmaz.
+ */
+function resolveSeedPassword(variable: string, label: string): string {
+  const fromEnv = process.env[variable]?.trim();
+
+  if (fromEnv) {
+    if (fromEnv.length < 12) {
+      throw new Error(`${variable} en az 12 karakter olmalı.`);
+    }
+    return fromEnv;
+  }
+
+  const generated = randomBytes(18).toString('base64url');
+  console.warn(`  UYARI: ${variable} tanımlı değil.`);
+  console.warn(`  ${label} için rastgele parola üretildi: ${generated}`);
+  console.warn('  Bu parolayı şimdi kaydedin; bir daha gösterilmeyecek.');
+  return generated;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  return argon2.hash(password, {
     type: argon2.argon2id,
     memoryCost: 19_456,
     timeCost: 2,
     parallelism: 1,
   });
+}
+
+async function seedDemoAccounts(): Promise<void> {
+  await removeLegacyDemoAccounts();
+
+  const [demoHash, adminHash] = await Promise.all([
+    hashPassword(resolveSeedPassword('DEMO_PASSWORD', 'Demo hesapları')),
+    hashPassword(resolveSeedPassword('ADMIN_PASSWORD', 'Yönetici hesapları')),
+  ]);
 
   const now = new Date();
 
   for (const account of DEMO_ACCOUNTS) {
+    const passwordHash = isPrivileged(account.role) ? adminHash : demoHash;
     const user = await prisma.user.upsert({
       where: { email: account.email },
-      update: { passwordHash, fullName: account.fullName, role: account.role, isDemo: true },
+      // Parola yalnızca hesap ilk kez oluşturulurken yazılır. Aksi hâlde her
+      // dağıtımdaki seed, panelden yapılan parola değişikliğini geri alırdı.
+      update: { fullName: account.fullName, role: account.role, isDemo: true },
       create: {
         email: account.email,
         phone: account.phone,
@@ -527,7 +566,7 @@ async function main(): Promise<void> {
     }
 
     console.log('Demo hesapları:');
-    await seedDemoAccounts(process.env.DEMO_PASSWORD ?? 'Demo1234!');
+    await seedDemoAccounts();
     console.log('Sosyal ticaret ağı:');
     await seedSocialNetwork(prisma);
   }

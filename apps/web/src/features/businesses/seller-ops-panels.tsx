@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@talpio/config';
 import { Button, EmptyState, Input, ListSkeleton } from '@talpio/ui';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useMyBusinesses } from '@/features/requests/use-requests';
 import { apiClient } from '@/lib/api';
@@ -16,11 +16,8 @@ export function SellerOpsPanels() {
     name: string;
     socialProfile?: { username?: string | null } | null;
   }> | undefined) ?? [];
+  // Seçim boşken ilk işletmeye düşülür; ayrıca state'e yazmaya gerek yok.
   const [businessId, setBusinessId] = useState('');
-
-  useEffect(() => {
-    if (!businessId && list[0]?.id) setBusinessId(list[0].id);
-  }, [businessId, list]);
 
   if (businesses.isPending) return <ListSkeleton rows={2} />;
   if (list.length === 0) {
@@ -88,13 +85,19 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
   const [timezone, setTimezone] = useState('Europe/Istanbul');
   const [taxId, setTaxId] = useState('');
 
-  useEffect(() => {
-    if (!settings.data) return;
-    setCurrency(settings.data.defaultCurrency);
-    setCountry(settings.data.defaultCountryCode);
-    setTimezone(settings.data.defaultTimezone);
-    setTaxId(settings.data.taxId ?? '');
-  }, [settings.data]);
+  /**
+   * Sunucudan gelen ayarları forma yansıtır. Effect yerine render sırasında
+   * düzeltiyoruz: kullanıcı boş alanları bir kare boyunca görmüyor.
+   */
+  const loaded = settings.data;
+  const [syncedFrom, setSyncedFrom] = useState(loaded);
+  if (loaded && loaded !== syncedFrom) {
+    setSyncedFrom(loaded);
+    setCurrency(loaded.defaultCurrency);
+    setCountry(loaded.defaultCountryCode);
+    setTimezone(loaded.defaultTimezone);
+    setTaxId(loaded.taxId ?? '');
+  }
 
   const save = useMutation({
     mutationFn: () =>

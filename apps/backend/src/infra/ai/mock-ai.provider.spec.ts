@@ -34,8 +34,8 @@ describe('MockAiProvider', () => {
       messages: [{ role: AiChatRole.USER, content: 'Yarın keşif için hatırlatma kur' }],
     });
 
-    expect(result.toolCalls.some((call) => call.name === AGENT_TOOL_NAMES.CREATE_REMINDER_DRAFT)).toBe(
-      true,
-    );
+    expect(
+      result.toolCalls.some((call) => call.name === AGENT_TOOL_NAMES.CREATE_REMINDER_DRAFT),
+    ).toBe(true);
   });
 });

@@ -124,7 +124,9 @@ function createPrismaMock(): PrismaMock {
     },
     $transaction: jest.fn(),
   };
-  mock.$transaction.mockImplementation(async (fn: (tx: PrismaMock) => unknown) => fn(mock));
+  mock.$transaction.mockImplementation((fn: (tx: PrismaMock) => unknown) =>
+    Promise.resolve(fn(mock)),
+  );
   return mock;
 }
 
@@ -137,12 +139,19 @@ function createService(
   profileId = PROFILE_ID,
   notifications: { dispatchAll: jest.Mock } = notificationsMock(),
 ) {
-  const files = { assertOwnedBy: jest.fn().mockResolvedValue(undefined) } as unknown as FilesService;
+  const files = {
+    assertOwnedBy: jest.fn().mockResolvedValue(undefined),
+  } as unknown as FilesService;
   const profiles = {
-    ensurePersonalProfile: jest
+    ensurePersonalProfile: jest.fn().mockResolvedValue(
+      authorProfile({
+        id: profileId,
+        userId: profileId === PROFILE_ID ? USER_ID : OTHER_USER_ID,
+      }),
+    ),
+    ensureBusinessProfile: jest
       .fn()
-      .mockResolvedValue(authorProfile({ id: profileId, userId: profileId === PROFILE_ID ? USER_ID : OTHER_USER_ID })),
-    ensureBusinessProfile: jest.fn().mockResolvedValue(authorProfile({ id: profileId, kind: 'BUSINESS' })),
+      .mockResolvedValue(authorProfile({ id: profileId, kind: 'BUSINESS' })),
   } as unknown as ProfilesService;
   const config = { fileBaseUrl: 'http://localhost:9000/talpio' } as unknown as AppConfigService;
   const rbac = { assertBusinessAccess: jest.fn().mockResolvedValue(undefined) };

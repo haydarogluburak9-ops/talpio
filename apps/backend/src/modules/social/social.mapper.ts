@@ -33,18 +33,48 @@ export const socialProfileSelect = {
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-  avatar: { select: { id: true, storageKey: true, mimeType: true, sizeBytes: true, originalName: true, isPublic: true, createdAt: true } },
-  cover: { select: { id: true, storageKey: true, mimeType: true, sizeBytes: true, originalName: true, isPublic: true, createdAt: true } },
+  avatar: {
+    select: {
+      id: true,
+      storageKey: true,
+      mimeType: true,
+      sizeBytes: true,
+      originalName: true,
+      isPublic: true,
+      createdAt: true,
+    },
+  },
+  cover: {
+    select: {
+      id: true,
+      storageKey: true,
+      mimeType: true,
+      sizeBytes: true,
+      originalName: true,
+      isPublic: true,
+      createdAt: true,
+    },
+  },
 } satisfies Prisma.SocialProfileSelect;
 
-export type SocialProfileRow = Prisma.SocialProfileGetPayload<{ select: typeof socialProfileSelect }>;
+export type SocialProfileRow = Prisma.SocialProfileGetPayload<{
+  select: typeof socialProfileSelect;
+}>;
 
 export const profileCareerOrder = {
   experiences: {
-    orderBy: [{ isCurrent: 'desc' as const }, { startYear: 'desc' as const }, { sortOrder: 'asc' as const }],
+    orderBy: [
+      { isCurrent: 'desc' as const },
+      { startYear: 'desc' as const },
+      { sortOrder: 'asc' as const },
+    ],
   },
   education: {
-    orderBy: [{ isCurrent: 'desc' as const }, { startYear: 'desc' as const }, { sortOrder: 'asc' as const }],
+    orderBy: [
+      { isCurrent: 'desc' as const },
+      { startYear: 'desc' as const },
+      { sortOrder: 'asc' as const },
+    ],
   },
 } satisfies Pick<Prisma.SocialProfileInclude, 'experiences' | 'education'>;
 
@@ -91,7 +121,9 @@ export type SocialProfileSkillRow = {
   updatedAt: Date;
 };
 
-export function toSocialProfileExperience(row: SocialProfileExperienceRow): SocialProfileExperience {
+export function toSocialProfileExperience(
+  row: SocialProfileExperienceRow,
+): SocialProfileExperience {
   return {
     id: row.id,
     profileId: row.profileId,
@@ -298,9 +330,7 @@ export function toSocialProfile(
   };
 }
 
-function toDealMetadata(
-  row: NonNullable<PostRow['dealMetadata']>,
-): DealMetadata {
+function toDealMetadata(row: NonNullable<PostRow['dealMetadata']>): DealMetadata {
   return {
     productName: row.productName,
     title: row.title,
@@ -320,18 +350,14 @@ function toDealMetadata(
     subcategoryId: row.subcategoryId,
     brand: row.brand,
     maxQuantity: row.maxQuantity,
-    deliveryRegions: Array.isArray(row.deliveryRegions)
-      ? (row.deliveryRegions as string[])
-      : [],
+    deliveryRegions: Array.isArray(row.deliveryRegions) ? (row.deliveryRegions as string[]) : [],
   };
 }
 
 function toPromoFromRow(row: PostRow): SocialPostPromo | null {
   const deal = row.dealMetadata;
   const hasLegacy =
-    row.promoLabel != null ||
-    row.promoPriceMinor != null ||
-    row.originalPriceMinor != null;
+    row.promoLabel != null || row.promoPriceMinor != null || row.originalPriceMinor != null;
 
   if (!deal && !hasLegacy) return null;
 
@@ -373,7 +399,7 @@ export function toSocialPost(
           originalPost: null,
           hashtags: [],
           mentions: [],
-        } as PostRow,
+        },
         fileBaseUrl,
         { followedProfileIds: extras.followedProfileIds },
       )

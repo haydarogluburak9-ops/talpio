@@ -32,6 +32,11 @@ export function groupStories(posts: SocialPost[], meId?: string): StoryGroup[] {
   });
 }
 
+/**
+ * `startGroup` yalnızca ilk konumu belirler. Farklı bir gruptan başlatmak için
+ * çağıran taraf `key={startGroup}` verir; bileşen o zaman baştan kurulur ve
+ * ilerleme durumu doğal olarak sıfırlanır.
+ */
 export function StoryViewer({
   groups,
   startGroup,
@@ -67,11 +72,6 @@ export function StoryViewer({
         .toUpperCase(),
     [group?.author.displayName],
   );
-
-  useEffect(() => {
-    setGroupIndex(startGroup);
-    setItemIndex(0);
-  }, [startGroup]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {

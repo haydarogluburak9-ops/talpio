@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PostVisibility, type SocialPost, type StoryHighlight, type StoryHighlightDetail } from '@talpio/types';
+import {
+  PostVisibility,
+  type SocialPost,
+  type StoryHighlight,
+  type StoryHighlightDetail,
+} from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
@@ -108,7 +113,10 @@ export class StoryHighlightsService {
     return { ...base, items };
   }
 
-  async create(user: AuthenticatedUser, dto: CreateStoryHighlightDto): Promise<StoryHighlightDetail> {
+  async create(
+    user: AuthenticatedUser,
+    dto: CreateStoryHighlightDto,
+  ): Promise<StoryHighlightDetail> {
     const profile = await this.profiles.ensurePersonalProfile(user.id);
     const count = await this.prisma.storyHighlight.count({ where: { profileId: profile.id } });
     if (count >= MAX_HIGHLIGHTS) {
@@ -203,7 +211,11 @@ export class StoryHighlightsService {
     return this.getDetail(profile.username, highlightId);
   }
 
-  async removeItem(user: AuthenticatedUser, highlightId: string, postId: string): Promise<StoryHighlightDetail> {
+  async removeItem(
+    user: AuthenticatedUser,
+    highlightId: string,
+    postId: string,
+  ): Promise<StoryHighlightDetail> {
     const profile = await this.profiles.ensurePersonalProfile(user.id);
     await this.assertOwnHighlight(profile.id, highlightId);
 

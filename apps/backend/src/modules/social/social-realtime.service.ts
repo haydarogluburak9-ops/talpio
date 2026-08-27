@@ -25,10 +25,7 @@ export class SocialRealtimeService {
     await Promise.all(
       userIds.map(async (userId) => {
         await this.feedCache.bumpUserVersion(userId);
-        await this.bus.publishToUser(
-          userId,
-          this.event('social.feed.invalidate', {}),
-        );
+        await this.bus.publishToUser(userId, this.event('social.feed.invalidate', {}));
       }),
     );
   }
@@ -42,7 +39,11 @@ export class SocialRealtimeService {
   }
 
   async invalidateProfile(username: string, userIds: string[]): Promise<void> {
-    const payload: SocialPostCreatedPayload = { postId: '', authorProfileId: '', authorUsername: username };
+    const payload: SocialPostCreatedPayload = {
+      postId: '',
+      authorProfileId: '',
+      authorUsername: username,
+    };
     await Promise.all(
       userIds.map((userId) =>
         this.bus.publishToUser(

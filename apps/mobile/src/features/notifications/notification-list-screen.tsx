@@ -9,7 +9,6 @@ import { Card } from '@/components/card';
 import { Screen } from '@/components/screen';
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
-import { useSession } from '@/features/auth/session-provider';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';

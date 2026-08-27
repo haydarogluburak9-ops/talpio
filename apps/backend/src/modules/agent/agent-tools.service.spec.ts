@@ -21,7 +21,11 @@ describe('AgentToolsService', () => {
     });
 
     await expect(
-      service.execute('dropAllTables', {}, { tenantId: TENANT_A, userId: USER_A, threadId: THREAD }),
+      service.execute(
+        'dropAllTables',
+        {},
+        { tenantId: TENANT_A, userId: USER_A, threadId: THREAD },
+      ),
     ).rejects.toBeInstanceOf(AppException);
   });
 

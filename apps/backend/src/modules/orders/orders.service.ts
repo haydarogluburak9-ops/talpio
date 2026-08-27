@@ -1,13 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { canTransitionOrderStatus } from '@talpio/business-logic';
 import { deepLinks } from '@talpio/config';
-import {
-  NotificationType,
-  OrderStatus,
-  PaymentStatus,
-  UserRole,
-  type Order,
-} from '@talpio/types';
+import { NotificationType, OrderStatus, PaymentStatus, UserRole, type Order } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
@@ -369,10 +363,7 @@ export class OrdersService {
     });
 
     return {
-      OR: [
-        { customerId: user.id },
-        ...(profile ? [{ providerProfileId: profile.id }] : []),
-      ],
+      OR: [{ customerId: user.id }, ...(profile ? [{ providerProfileId: profile.id }] : [])],
     };
   }
 

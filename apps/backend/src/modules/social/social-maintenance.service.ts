@@ -65,7 +65,10 @@ export class SocialMaintenanceService {
     for (const post of candidates) {
       for (const media of post.media) {
         const file = media.file;
-        const meta = file.metadata as { storyMediaPurged?: boolean; thumbStorageKey?: string } | null;
+        const meta = file.metadata as {
+          storyMediaPurged?: boolean;
+          thumbStorageKey?: string;
+        } | null;
         if (meta?.storyMediaPurged) continue;
 
         await this.storage.remove(file.storageKey);

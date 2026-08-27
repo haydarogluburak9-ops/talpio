@@ -1,9 +1,5 @@
 import { Injectable, Optional } from '@nestjs/common';
-import {
-  calculateCommission,
-  compareOffers,
-  selectCommissionRule,
-} from '@talpio/business-logic';
+import { calculateCommission, compareOffers, selectCommissionRule } from '@talpio/business-logic';
 import { REQUEST_MATCHING, deepLinks } from '@talpio/config';
 import {
   DOMAIN_EVENT_TYPES,
@@ -204,7 +200,7 @@ export class RequestsService {
       request: {
         id: row.request.id,
         title: row.request.title,
-        status: row.request.status as RequestStatus,
+        status: row.request.status,
       },
     }));
   }

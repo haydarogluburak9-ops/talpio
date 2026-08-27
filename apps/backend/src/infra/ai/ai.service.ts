@@ -82,11 +82,9 @@ export class AiService implements OnModuleInit {
       null;
 
     if (request.userId) {
-      const featureCode = (request.featureCode ??
-        AiFeatureCode.GENERIC_COMPLETE) as AiFeatureCode;
+      const featureCode = (request.featureCode ?? AiFeatureCode.GENERIC_COMPLETE) as AiFeatureCode;
       const idempotencyKey =
-        request.idempotencyKey ??
-        `ai-complete:${request.userId}:${featureCode}:${Date.now()}`;
+        request.idempotencyKey ?? `ai-complete:${request.userId}:${featureCode}:${Date.now()}`;
       debit = await this.credits.reserveAndDebit({
         userId: request.userId,
         businessId: request.businessId,
@@ -210,7 +208,7 @@ export class AiService implements OnModuleInit {
         })
         .catch((error: unknown) => {
           clearTimeout(timer);
-          reject(error);
+          reject(error instanceof Error ? error : new Error(String(error)));
         });
     });
   }

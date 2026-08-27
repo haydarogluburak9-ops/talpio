@@ -6,12 +6,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type {
-  Complaint,
-  SupportMessage,
-  SupportTicket,
-  SupportTicketDetail,
-} from '@talpio/types';
+import type { Complaint, SupportMessage, SupportTicket, SupportTicketDetail } from '@talpio/types';
 
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';

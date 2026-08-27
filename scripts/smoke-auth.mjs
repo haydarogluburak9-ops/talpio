@@ -119,7 +119,7 @@ check('çıkıştan sonra erişim jetonu geçersiz', staleAccess.status === 401,
 console.log('\nDemo hesapları:');
 for (const account of ['kullanici@talpio.com', 'satici@talpio.com']) {
   const demo = await call('POST', '/auth/login', {
-    body: { email: account, password: process.env.DEMO_PASSWORD ?? 'Demo1234!' },
+    body: { email: account, password: process.env.DEMO_PASSWORD ?? 'yerel_demo_parolasi' },
   });
   check(`${account} giriş yapabiliyor`, demo.status === 200, `status=${demo.status}`);
 }

@@ -100,6 +100,7 @@ export function StoriesRail() {
       {composing ? <StoryComposer onDone={() => setComposing(false)} /> : null}
       {openIndex != null && groups[openIndex] ? (
         <StoryViewer
+          key={openIndex}
           groups={groups}
           startGroup={openIndex}
           meId={me.data?.id}

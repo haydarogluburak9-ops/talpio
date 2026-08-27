@@ -6,7 +6,8 @@
  * (`SEED_DEMO_ACCOUNTS=true`) veritabanı gerektirir.
  */
 const BASE = process.env.API_URL ?? 'http://localhost:3000/api/v1';
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'Demo1234!';
+// Bu betik yalnızca yetkili hesaplarla giriş yapar; onlar ayrı parola kullanır.
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'yerel_admin_parolasi';
 
 let passed = 0;
 let failed = 0;
@@ -43,7 +44,7 @@ function abort(message, payload) {
 
 async function login(email, label) {
   const result = await call('POST', '/auth/login', {
-    body: { email, password: DEMO_PASSWORD },
+    body: { email, password: ADMIN_PASSWORD },
   });
 
   const token = result.json?.data?.tokens?.accessToken;

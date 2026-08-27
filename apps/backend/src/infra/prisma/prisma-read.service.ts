@@ -25,7 +25,9 @@ export class PrismaReadService extends PrismaClient implements OnModuleInit, OnM
   async onModuleInit(): Promise<void> {
     await this.$connect();
     this.logger.log(
-      this.isReplica ? 'PostgreSQL read replica bağlantısı kuruldu' : 'PostgreSQL read (primary) bağlantısı kuruldu',
+      this.isReplica
+        ? 'PostgreSQL read replica bağlantısı kuruldu'
+        : 'PostgreSQL read (primary) bağlantısı kuruldu',
     );
   }
 

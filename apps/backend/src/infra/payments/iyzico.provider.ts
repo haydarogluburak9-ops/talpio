@@ -31,9 +31,17 @@ export function iyzicoAuthorizationHeader(
   return `IYZWSv2 ${Buffer.from(auth).toString('base64')}`;
 }
 
+/** Gövde doğrulanmamış JSON; nesne gelirse `[object Object]` yazmayalım. */
+function text(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
+}
+
 function toOutcome(json: Record<string, unknown>, fallbackRef: string | null): PaymentOutcome {
-  const status = String(json.status ?? '').toLowerCase();
-  const paymentId = json.paymentId != null ? String(json.paymentId) : fallbackRef;
+  const status = text(json.status).toLowerCase();
+  const paymentId = json.paymentId != null ? text(json.paymentId) : fallbackRef;
   if (status === 'success') {
     return {
       status: PaymentStatus.AUTHORIZED,
@@ -44,7 +52,7 @@ function toOutcome(json: Record<string, unknown>, fallbackRef: string | null): P
   return {
     status: PaymentStatus.FAILED,
     providerReference: paymentId,
-    failureReason: String(json.errorMessage ?? json.errorCode ?? 'iyzico işlem başarısız'),
+    failureReason: text(json.errorMessage) || text(json.errorCode) || 'iyzico işlem başarısız',
   };
 }
 

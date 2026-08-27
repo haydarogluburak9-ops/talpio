@@ -1,10 +1,15 @@
 import { Logger } from '@nestjs/common';
-import { QUEUE_NAMES, type QueueName, type QueueJobEnvelope, type QueuePayloadByName } from '@talpio/types';
+import {
+  QUEUE_NAMES,
+  type QueueName,
+  type QueueJobEnvelope,
+  type QueuePayloadByName,
+} from '@talpio/types';
 import { Worker, type Processor, type WorkerOptions } from 'bullmq';
 
-import { AppConfigService } from '@config/app-config.service';
+import { type AppConfigService } from '@config/app-config.service';
 
-import { QueueService } from './queue.service';
+import { type QueueService } from './queue.service';
 
 const logger = new Logger('WorkerFactory');
 
@@ -35,7 +40,7 @@ export function createQueueWorker<N extends QueueName>(
     if (queueName !== QUEUE_NAMES.DEAD_LETTER && job?.id && made >= attempts) {
       void queueService
         .enqueueDeadLetter({
-          sourceQueue: queueName as Exclude<QueueName, 'dead-letter'>,
+          sourceQueue: queueName,
           originalJobId: String(job.id),
           failedReason: error.message,
           attemptsMade: made,

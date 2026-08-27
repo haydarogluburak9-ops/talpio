@@ -123,7 +123,12 @@ export class FeedService {
    * Kategoriye kilitlenmez; sinyal yoksa popüler genel havuz gelir.
    */
   async getDiscoverFeed(user: AuthenticatedUser, query: DiscoverFeedQueryDto): Promise<FeedPage> {
-    const cached = await this.feedCache.get<FeedPage>('discover', user.id, query.cursor, query.limit);
+    const cached = await this.feedCache.get<FeedPage>(
+      'discover',
+      user.id,
+      query.cursor,
+      query.limit,
+    );
     if (cached) return cached;
 
     const me = await this.profiles.ensurePersonalProfile(user.id);

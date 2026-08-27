@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  LEGACY_ROLE_TO_PLATFORM,
-  mergeLegacyAndPlatformPermissions,
-} from '@talpio/business-logic';
+import { LEGACY_ROLE_TO_PLATFORM, mergeLegacyAndPlatformPermissions } from '@talpio/business-logic';
 import {
   BusinessMembershipStatus,
   PlatformRoleCode,
@@ -26,13 +23,19 @@ export class RbacService {
         id: true,
         role: true,
         platformRoleAssignments: {
-          select: { role: { select: { code: true, permissions: { select: { permissionCode: true } } } } },
+          select: {
+            role: { select: { code: true, permissions: { select: { permissionCode: true } } } },
+          },
         },
         businessMemberships: {
           where: { status: BusinessMembershipStatus.ACTIVE },
           select: {
             businessId: true,
-            roles: { select: { role: { select: { code: true, permissions: { select: { permissionCode: true } } } } } },
+            roles: {
+              select: {
+                role: { select: { code: true, permissions: { select: { permissionCode: true } } } },
+              },
+            },
           },
         },
       },
@@ -60,7 +63,7 @@ export class RbacService {
     }
 
     const codes = [...platformRoleCodes];
-    const merged = mergeLegacyAndPlatformPermissions(user.role as UserRole, codes);
+    const merged = mergeLegacyAndPlatformPermissions(user.role, codes);
 
     // DB RolePermission kayıtları da birleşime eklenir (seed / admin override).
     for (const code of dbPermissionCodes) {

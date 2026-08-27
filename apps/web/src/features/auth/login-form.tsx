@@ -5,7 +5,7 @@ import { ApiError } from '@talpio/api-client';
 import { cn } from '@talpio/ui';
 import { loginSchema, type LoginInput } from '@talpio/validation';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { t } from '@/lib/i18n';
 
@@ -19,15 +19,16 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: { identifier: '', password: '' },
   });
 
-  const identifier = watch('identifier');
-  const password = watch('password');
+  // `watch()` her render'da yeni fonksiyon döndürüp memoizasyonu bozuyor.
+  const identifier = useWatch({ control, name: 'identifier' });
+  const password = useWatch({ control, name: 'password' });
   const canSubmit = identifier.trim().length > 0 && password.length > 0 && !login.isPending;
 
   const onSubmit = handleSubmit((values) => {

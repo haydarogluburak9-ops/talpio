@@ -81,20 +81,23 @@ export function ProfileHighlightsSection({
     },
   });
 
-  const activeItems = activeStories.data?.items ?? [];
+  // Sorgu verisi doğrudan okunur; `?? []` her render'da yeni dizi üretip
+  // aşağıdaki memo'yu boşa çıkarıyordu.
+  const activeItems = activeStories.data?.items;
+  const highlightPosts = highlightDetail.data?.items;
   const highlightItems = highlights.data?.items ?? [];
-  const hasActive = activeItems.length > 0;
+  const hasActive = (activeItems?.length ?? 0) > 0;
   const hasHighlights = highlightItems.length > 0;
 
   const viewerGroups: StoryGroup[] = useMemo(() => {
     if (viewer?.kind === 'active') {
-      return groupStories(activeItems, profile.id);
+      return groupStories(activeItems ?? [], profile.id);
     }
-    if (viewer?.kind === 'highlight' && highlightDetail.data?.items.length) {
-      return [{ author: profile, posts: highlightDetail.data.items }];
+    if (viewer?.kind === 'highlight' && highlightPosts?.length) {
+      return [{ author: profile, posts: highlightPosts }];
     }
     return [];
-  }, [viewer, activeItems, highlightDetail.data?.items, profile]);
+  }, [viewer, activeItems, highlightPosts, profile]);
 
   if (!hasActive && !hasHighlights && !isOwn) return null;
 

@@ -25,9 +25,7 @@ export class PermissionsGuard implements CanActivate {
 
     if (!required || required.length === 0) return true;
 
-    const request = context.switchToHttp().getRequest<
-      Request & { user?: AuthenticatedUser }
-    >();
+    const request = context.switchToHttp().getRequest<Request & { user?: AuthenticatedUser }>();
     const user = request.user;
 
     if (!user) {
@@ -44,7 +42,7 @@ export class PermissionsGuard implements CanActivate {
       user.platformRoleCodes = [...effective.platformRoleCodes];
     }
 
-    const allowed = required.some((permission) => hasEffectivePermission(codes!, permission));
+    const allowed = required.some((permission) => hasEffectivePermission(codes, permission));
     if (!allowed) {
       throw new AppException('FORBIDDEN', {
         message: 'Bu işlem için yetkiniz yok.',

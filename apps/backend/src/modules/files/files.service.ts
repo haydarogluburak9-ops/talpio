@@ -27,10 +27,7 @@ const RULES: Record<FilePurpose, PurposeRule> = {
   [FilePurpose.MESSAGE_ATTACHMENT]: {
     folder: 'messages',
     maxSizeBytes: UPLOAD.maxAudioSizeBytes,
-    allowedMimeTypes: [
-      ...UPLOAD.allowedImageMimeTypes,
-      ...UPLOAD.allowedAudioMimeTypes,
-    ],
+    allowedMimeTypes: [...UPLOAD.allowedImageMimeTypes, ...UPLOAD.allowedAudioMimeTypes],
     isPublic: true,
   },
   [FilePurpose.AVATAR]: {

@@ -18,7 +18,7 @@ export class OutboxService {
           tenantId: event.tenantId,
           aggregateType: event.aggregateType,
           aggregateId: event.aggregateId,
-          payload: event.payload as unknown as Prisma.InputJsonValue,
+          payload: event.payload,
           status: 'PENDING',
         },
         select: { id: true },

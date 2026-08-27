@@ -118,9 +118,13 @@ function HeaderAccountMenu({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // Sayfa değişince menü kapanır. Render sırasında düzeltmek effect'e göre bir
+  // kare önce çalışır; menü açık hâliyle yanıp sönmez.
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     function onPointer(event: MouseEvent) {

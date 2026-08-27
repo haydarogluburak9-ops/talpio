@@ -34,7 +34,10 @@ export class TrustScoreService {
     return this.recompute(businessId);
   }
 
-  async recomputeForUser(user: AuthenticatedUser, businessId: string): Promise<BusinessTrustScoreView> {
+  async recomputeForUser(
+    user: AuthenticatedUser,
+    businessId: string,
+  ): Promise<BusinessTrustScoreView> {
     await this.rbac.assertBusinessAccess(user.id, businessId);
     return this.recompute(businessId);
   }
@@ -188,9 +191,9 @@ export class TrustScoreService {
 
     const identityVerified = Boolean(
       owner?.emailVerifiedAt ||
-        owner?.phoneVerifiedAt ||
-        business.providerProfile?.user.emailVerifiedAt ||
-        business.providerProfile?.user.phoneVerifiedAt,
+      owner?.phoneVerifiedAt ||
+      business.providerProfile?.user.emailVerifiedAt ||
+      business.providerProfile?.user.phoneVerifiedAt,
     );
 
     const rating = business.providerProfile?.averageRating;

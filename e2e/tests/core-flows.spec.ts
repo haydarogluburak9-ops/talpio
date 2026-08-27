@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-const password = 'Demo1234!';
+// Seed parolası ortamdan gelir; depoda sabit parola tutulmaz.
+const password = process.env.DEMO_PASSWORD ?? 'ci_demo_password_not_a_secret';
 
 type Envelope<T> = { data: T };
 

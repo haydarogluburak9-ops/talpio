@@ -28,6 +28,13 @@ const STORY_MS = 5500;
 const SWIPE_THRESHOLD = 60;
 const TAP_SLOP = 14;
 
+/**
+ * Tam ekran hikâye görüntüleyici.
+ *
+ * `startGroup` yalnızca ilk konumu belirler. Farklı bir gruptan başlatmak için
+ * çağıran taraf `key={startGroup}` verir; bileşen o zaman baştan kurulur ve
+ * ilerleme durumu doğal olarak sıfırlanır.
+ */
 export function StoryViewer({
   groups,
   startGroup,
@@ -54,22 +61,14 @@ export function StoryViewer({
 
   const group = groups[groupIndex];
   const post = group?.posts[itemIndex];
+  const postId = post?.id;
   const media = post?.media[0];
+  const authorUsername = group?.author.username;
   const isOwnStory = Boolean(meId && group?.author.id === meId);
-  const canReply = Boolean(group?.author.username && !isOwnStory);
+  const canReply = Boolean(authorUsername && !isOwnStory);
 
   const openMessage = useMessageProfile();
   const send = useSendMessage(conversationId ?? '');
-
-  useEffect(() => {
-    setGroupIndex(startGroup);
-    setItemIndex(0);
-    setPlayKey((value) => value + 1);
-    setMessageOpen(false);
-    setDraft('');
-    setConversationId(null);
-    setPaused(false);
-  }, [startGroup]);
 
   const goNext = useCallback(() => {
     const currentGroup = groups[groupIndex];
@@ -109,17 +108,17 @@ export function StoryViewer({
   }, []);
 
   const openMessageSheet = useCallback(async () => {
-    if (!canReply || !group?.author.username) return;
+    if (!canReply || !authorUsername) return;
     setPaused(true);
     setMessageOpen(true);
     try {
-      const conversation = await openMessage.mutateAsync(group.author.username);
+      const conversation = await openMessage.mutateAsync(authorUsername);
       setConversationId(conversation.id);
     } catch {
       setMessageOpen(false);
       setPaused(false);
     }
-  }, [canReply, group?.author.username, openMessage]);
+  }, [canReply, authorUsername, openMessage]);
 
   const handleInteractionEnd = useCallback(
     (dx: number, dy: number, x: number) => {
@@ -166,11 +165,12 @@ export function StoryViewer({
     );
   }
 
+  // playKey her ilerlemede artar; sayaç aynı karede yeniden kurulur.
   useEffect(() => {
-    if (!post || paused || messageOpen) return;
+    if (!postId || paused || messageOpen) return;
     const timer = setTimeout(goNext, STORY_MS);
     return () => clearTimeout(timer);
-  }, [groupIndex, itemIndex, post?.id, paused, messageOpen, playKey, goNext]);
+  }, [postId, paused, messageOpen, playKey, goNext]);
 
   const panGesture = useMemo(
     () =>

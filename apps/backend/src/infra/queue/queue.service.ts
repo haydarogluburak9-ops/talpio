@@ -1,5 +1,10 @@
 import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
-import { QUEUE_NAMES, type QueueJobEnvelope, type QueueName, type QueuePayloadByName } from '@talpio/types';
+import {
+  QUEUE_NAMES,
+  type QueueJobEnvelope,
+  type QueueName,
+  type QueuePayloadByName,
+} from '@talpio/types';
 import { Queue, type ConnectionOptions, type JobsOptions } from 'bullmq';
 
 import { AppConfigService } from '@config/app-config.service';
@@ -10,6 +15,8 @@ export type QueueCounts = Record<
   string,
   { waiting: number; active: number; completed: number; failed: number; delayed: number }
 >;
+
+type DeadLetterPayload = QueuePayloadByName[typeof QUEUE_NAMES.DEAD_LETTER];
 
 @Injectable()
 export class QueueService implements OnModuleDestroy {
@@ -126,9 +133,14 @@ export class QueueService implements OnModuleDestroy {
       failedAt: string;
     }>
   > {
-    const jobs = await this.getQueue(QUEUE_NAMES.DEAD_LETTER).getJobs(['waiting', 'completed'], 0, limit - 1);
+    const jobs = await this.getQueue(QUEUE_NAMES.DEAD_LETTER).getJobs(
+      ['waiting', 'completed'],
+      0,
+      limit - 1,
+    );
     return jobs.map((job) => {
-      const payload = job.data.payload;
+      // BullMQ iş verisini `any` olarak döner; zarf tipini biz biliyoruz.
+      const { payload } = job.data as QueueJobEnvelope<DeadLetterPayload>;
       return {
         id: String(job.id ?? ''),
         sourceQueue: payload.sourceQueue,

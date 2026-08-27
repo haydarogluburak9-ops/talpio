@@ -329,9 +329,15 @@ Aşağıdaki kararlar ücretli servis veya harici hesap gerektirdiği için MVP 
 
 Yalnızca `SEED_DEMO_ACCOUNTS=true` iken oluşturulur; şema bu değerin production ortamında true olmasını reddeder.
 
-| Rol       | E-posta              | Parola    |
-| --------- | -------------------- | --------- |
-| Kullanıcı | kullanici@talpio.com | Demo1234! |
-| Satıcı    | satici@talpio.com    | Demo1234! |
-| Yönetici  | admin@talpio.com     | Demo1234! |
-| Destek    | destek@talpio.com    | Demo1234! |
+| Rol       | E-posta              | Parola           |
+| --------- | -------------------- | ---------------- |
+| Kullanıcı | kullanici@talpio.com | `DEMO_PASSWORD`  |
+| Satıcı    | satici@talpio.com    | `DEMO_PASSWORD`  |
+| Yönetici  | admin@talpio.com     | `ADMIN_PASSWORD` |
+| Destek    | destek@talpio.com    | `ADMIN_PASSWORD` |
+
+Parolalar `.env` dosyasından okunur ve **depoya yazılmaz**. Tanımlı değillerse seed
+rastgele üretir ve yalnızca bir kez konsola yazar — o anda kaydedin.
+
+Seed mevcut hesapların parolasını değiştirmez; yalnızca hesabı ilk kez oluştururken
+yazar. Böylece panelden yapılan parola değişikliği sonraki dağıtımlarda korunur.

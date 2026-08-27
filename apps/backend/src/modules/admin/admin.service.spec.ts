@@ -334,10 +334,15 @@ describe('AdminService', () => {
           update: jest.fn().mockResolvedValue({}),
         },
         postComment: { findMany: jest.fn().mockResolvedValue([]) },
-        socialProfile: { update: jest.fn().mockResolvedValue({}), findMany: jest.fn().mockResolvedValue([]) },
+        socialProfile: {
+          update: jest.fn().mockResolvedValue({}),
+          findMany: jest.fn().mockResolvedValue([]),
+        },
         feedItem: { deleteMany: jest.fn().mockResolvedValue({ count: 1 }) },
       };
-      prisma.$transaction = jest.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma));
+      prisma.$transaction = jest.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
+        fn(prisma),
+      );
 
       const result = await createService(prisma).updateContentReport(
         admin,

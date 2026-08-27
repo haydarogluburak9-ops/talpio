@@ -115,7 +115,7 @@ export function useCreateRequestOffer(requestId: string) {
   });
 }
 
-export function useAcceptRequestOffer(requestId: string) {
+export function useAcceptRequestOffer() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
