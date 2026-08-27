@@ -228,9 +228,10 @@ function SuggestedRow({
   const follow = useFollow(username);
   const unfollow = useUnfollow(username);
   const pending = follow.isPending || unfollow.isPending;
-  // Sunucu bayrağı tazelenene kadar mutasyonun hedef durumu gösterilir; bekleme
-  // süresi boyunca da onay görünür kalsın diye `held` üstünlük taşır.
-  const followed = pending ? follow.isPending : held || isFollowing;
+  // Takip bayrağı önbellekte tıklama anında güncellendiği için ayrı bir bekleme
+  // durumu tutmak gerekmiyor; `held` yalnızca satırın listede kalma süresini
+  // korur.
+  const followed = held || isFollowing;
 
   return (
     <li className="flex items-center gap-3">
@@ -260,11 +261,17 @@ function SuggestedRow({
             : 'bg-accent-500 text-white hover:bg-accent-600'
         }
         disabled={pending}
-        onClick={() =>
-          followed
-            ? unfollow.mutate(undefined, { onSuccess: onUnfollowed })
-            : follow.mutate(undefined, { onSuccess: onFollowed })
-        }
+        onClick={() => {
+          if (followed) {
+            onUnfollowed();
+            unfollow.mutate();
+            return;
+          }
+          // İyimser bayrak satırı öneri filtresinden hemen düşürebileceği için
+          // bekletme tıklamayla başlar; istek reddedilirse bırakılır.
+          onFollowed();
+          follow.mutate(undefined, { onError: onUnfollowed });
+        }}
       >
         {followed ? t('social.followingCta') : t('social.followCta')}
       </Button>

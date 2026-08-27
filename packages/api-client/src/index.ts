@@ -2,6 +2,7 @@ export * from './errors';
 export * from './token-store';
 export * from './http-client';
 export * from './client';
+export * from './social-cache';
 export * from './resources/health';
 export * from './resources/auth';
 export * from './resources/catalog';

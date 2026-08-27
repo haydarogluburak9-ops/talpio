@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { RealtimeEvent, SocialPostUpdatedPayload } from '@talpio/types';
+import { patchSocialPostCounters } from '@talpio/api-client';
 import { API_ROUTES, queryKeys } from '@talpio/config';
 
 import { env } from '@/lib/env';
@@ -42,8 +43,10 @@ async function consumeSse(
 
 export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: boolean }) {
   const queryClient = useQueryClient();
-  const watchPostIds = options?.watchPostIds ?? [];
   const enabled = options?.enabled ?? true;
+  // Dizi kimliği her render'da değişir; akış yalnızca izlenen gönderi listesi
+  // gerçekten farklılaştığında yeniden kurulsun diye tek dizeye indirilir.
+  const watchPosts = (options?.watchPostIds ?? []).slice(0, 40).join(',');
 
   useEffect(() => {
     if (!enabled) return;
@@ -53,10 +56,7 @@ export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: b
       const token = await tokenStore.getAccessToken();
       if (!token) return;
 
-      const params =
-        watchPostIds.length > 0
-          ? `?watchPosts=${encodeURIComponent(watchPostIds.slice(0, 40).join(','))}`
-          : '';
+      const params = watchPosts.length > 0 ? `?watchPosts=${encodeURIComponent(watchPosts)}` : '';
       const url = `${env.apiUrl}${API_ROUTES.realtime.stream}${params}`;
 
       const apply = (event: RealtimeEvent) => {
@@ -70,9 +70,12 @@ export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: b
             void queryClient.invalidateQueries({ queryKey: queryKeys.social.stories() });
             break;
           case 'social.post.updated': {
-            const payload = event.payload as unknown as SocialPostUpdatedPayload;
-            void queryClient.invalidateQueries({ queryKey: queryKeys.social.post(payload.postId) });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
+            const { postId, ...counters } = event.payload as unknown as SocialPostUpdatedPayload;
+            // Tek sayaç değişikliği için 30 gönderilik akışı çekmek yerine
+            // gönderi yerinde yamalanır; taşımayan sorgulara dokunulmaz.
+            queryClient.setQueriesData({ queryKey: queryKeys.social.all() }, (old: unknown) =>
+              patchSocialPostCounters(old, postId, counters),
+            );
             break;
           }
           case 'notification.new':
@@ -94,5 +97,5 @@ export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: b
     })();
 
     return () => controller.abort();
-  }, [enabled, queryClient, watchPostIds.join(',')]);
+  }, [enabled, queryClient, watchPosts]);
 }

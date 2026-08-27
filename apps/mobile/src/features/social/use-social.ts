@@ -1,7 +1,112 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import {
+  patchSocialFollow,
+  patchSocialPostCounters,
+  patchSocialPostInteraction,
+  socialPostCountersOf,
+} from '@talpio/api-client';
 import { queryKeys } from '@talpio/config';
+import type { SocialPost, SocialProfile } from '@talpio/types';
 
 import { apiClient } from '@/lib/api';
+
+/** İyimser yamada dokunulan sorguların önceki verisi; `onError` bunu geri yazar. */
+type SocialCacheSnapshot = [readonly unknown[], unknown][];
+
+/**
+ * Yamayı `['social']` altındaki bütün sorgulara dener ama yalnızca hedefi
+ * gerçekten taşıyanlara yazar: yama fonksiyonu değişiklik olmayan önbellek için
+ * `undefined` döner ve TanStack Query o sorguya hiç dokunmaz.
+ */
+function applySocialPatch(
+  queryClient: QueryClient,
+  patch: (old: unknown) => unknown,
+): SocialCacheSnapshot {
+  const snapshot: SocialCacheSnapshot = [];
+  for (const [queryKey, data] of queryClient.getQueriesData({ queryKey: queryKeys.social.all() })) {
+    const next = patch(data);
+    if (next === undefined) continue;
+    snapshot.push([queryKey, data]);
+    queryClient.setQueryData(queryKey, next);
+  }
+  return snapshot;
+}
+
+/**
+ * İyimser yamanın başlangıcı. Aynı kaydı taşıyan ve uçuşta olan tazelemeler
+ * iptal edilir; yoksa geç gelen yanıt yamayı ezer ve düğme durumu geri seker.
+ */
+async function beginSocialPatch(
+  queryClient: QueryClient,
+  patch: (old: unknown) => unknown,
+): Promise<SocialCacheSnapshot> {
+  await queryClient.cancelQueries({
+    queryKey: queryKeys.social.all(),
+    predicate: (query) =>
+      query.state.fetchStatus === 'fetching' && patch(query.state.data) !== undefined,
+  });
+  return applySocialPatch(queryClient, patch);
+}
+
+/** Sunucu reddederse arayüzün yalan söylememesi için önceki durumu geri yükler. */
+function rollbackSocialPatch(queryClient: QueryClient, snapshot?: SocialCacheSnapshot): void {
+  for (const [queryKey, data] of snapshot ?? []) {
+    queryClient.setQueryData(queryKey, data);
+  }
+}
+
+/**
+ * Beğeni / kaydetme / paylaşma mutasyonlarının ortak iskeleti: iyimser yama,
+ * hatada geri alma, yanıttaki kesin sayaçlarla uzlaşma. Bu üç işlem yalnızca
+ * kendi gönderisini etkilediği için hiçbir listeyi yeniden çekmez.
+ */
+function usePostInteraction(
+  interaction: { kind: 'like' | 'save' | 'share'; active: boolean },
+  run: (postId: string) => Promise<SocialPost>,
+  settle?: (queryClient: QueryClient) => void,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: run,
+    onMutate: (postId: string) =>
+      beginSocialPatch(queryClient, (old) => patchSocialPostInteraction(old, postId, interaction)),
+    onError: (_error, _postId, snapshot) => rollbackSocialPatch(queryClient, snapshot),
+    onSuccess: (post, postId) => {
+      applySocialPatch(queryClient, (old) =>
+        patchSocialPostCounters(old, postId, socialPostCountersOf(post)),
+      );
+      settle?.(queryClient);
+    },
+  });
+}
+
+/** Kaydedilenler listesi yalnızca kaydetme/kaldırma ile değişir. */
+function settleSaved(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.saved() });
+}
+
+/** Akışa yeni içerik giren ya da çıkan mutasyonların ortak geçersiz kılması. */
+function settleFeedContent(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.discover() });
+}
+
+/**
+ * Takipten gerçekten etkilenenler: akış ve hikâye içeriği, kendi profil
+ * sayaçlarım, hedefin takipçi listesi ve kendi takip listem. Hedef profilin
+ * kendisi yanıttan yazıldığı için çekilmez.
+ */
+function settleFollow(queryClient: QueryClient, username: string): void {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.stories() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.social.followers(username) });
+  const me = queryClient.getQueryData<SocialProfile>(queryKeys.social.me());
+  if (me) {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.social.following(me.username) });
+  }
+}
 
 export function useSocialFeed(enabled = true) {
   return useQuery({
@@ -57,57 +162,46 @@ export function useUnfollowCategory() {
   });
 }
 
-function invalidateFeed(queryClient: ReturnType<typeof useQueryClient>) {
-  void queryClient.invalidateQueries({ queryKey: queryKeys.social.feed() });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.social.discover() });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.social.stories() });
-}
-
 export function useLikePost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.social.like(id),
-    onSuccess: () => invalidateFeed(queryClient),
-  });
+  return usePostInteraction({ kind: 'like', active: true }, (id) => apiClient.social.like(id));
 }
 
 export function useUnlikePost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.social.unlike(id),
-    onSuccess: () => invalidateFeed(queryClient),
-  });
+  return usePostInteraction({ kind: 'like', active: false }, (id) => apiClient.social.unlike(id));
 }
 
 export function useSavePost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.social.save(id),
-    onSuccess: () => invalidateFeed(queryClient),
-  });
+  return usePostInteraction(
+    { kind: 'save', active: true },
+    (id) => apiClient.social.save(id),
+    settleSaved,
+  );
 }
 
 export function useUnsavePost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.social.unsave(id),
-    onSuccess: () => invalidateFeed(queryClient),
-  });
+  return usePostInteraction(
+    { kind: 'save', active: false },
+    (id) => apiClient.social.unsave(id),
+    settleSaved,
+  );
 }
 
 export function useSharePost() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => apiClient.social.share(id),
-    onSuccess: () => invalidateFeed(queryClient),
-  });
+  return usePostInteraction({ kind: 'share', active: true }, (id) => apiClient.social.share(id));
 }
 
 export function useFollow() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (username: string) => apiClient.social.follow(username),
-    onSuccess: () => invalidateFeed(queryClient),
+    onMutate: (username) =>
+      beginSocialPatch(queryClient, (old) => patchSocialFollow(old, username, true)),
+    onError: (_error, _username, snapshot) => rollbackSocialPatch(queryClient, snapshot),
+    onSuccess: (profile, username) => {
+      // Yanıt profil uç noktasının şeklinin aynısı; ayrıca çekmeye gerek yok.
+      queryClient.setQueryData(queryKeys.social.profile(username), profile);
+      settleFollow(queryClient, username);
+    },
   });
 }
 
@@ -124,9 +218,14 @@ export function useCreateComment(postId: string) {
   return useMutation({
     mutationFn: (body: { body: string; parentId?: string }) =>
       apiClient.social.comment(postId, body),
+    // Yorum sayacı kartta anında artar; listeyi yalnızca ilgili gönderi çeker.
+    onMutate: () =>
+      beginSocialPatch(queryClient, (old) =>
+        patchSocialPostInteraction(old, postId, { kind: 'comment', delta: 1 }),
+      ),
+    onError: (_error, _body, snapshot) => rollbackSocialPatch(queryClient, snapshot),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.social.comments(postId) });
-      invalidateFeed(queryClient);
     },
   });
 }
@@ -139,11 +238,11 @@ export function useReportContent() {
       targetId: string;
       reason: string;
     }) => apiClient.social.report(body),
-    onSuccess: (_report, body) => {
-      if (body.targetType === 'POST') {
-        void apiClient.social.hide(body.targetId);
-      }
-      invalidateFeed(queryClient);
+    onSuccess: async (_report, body) => {
+      if (body.targetType !== 'POST') return;
+      // Gizleme tamamlanmadan çekilen akış, şikâyet edilen gönderiyi geri getirir.
+      await apiClient.social.hide(body.targetId);
+      settleFeedContent(queryClient);
     },
   });
 }
@@ -153,7 +252,19 @@ export function useCreatePost() {
   return useMutation({
     mutationFn: (body: { originalPostId?: string; body?: string; mediaFileIds?: string[]; type?: 'IMAGE' | 'MULTI_IMAGE' }) =>
       apiClient.social.createPost(body),
-    onSuccess: () => invalidateFeed(queryClient),
+    onSuccess: (post) => {
+      settleFeedContent(queryClient);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.stories() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.trending() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
+      const username = post.author?.username;
+      if (username) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(username) });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.social.postsByUsername(username),
+        });
+      }
+    },
   });
 }
 
@@ -182,7 +293,11 @@ export function useUpdateSocialProfile() {
     onSuccess: (profile) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.social.me() });
       void queryClient.invalidateQueries({ queryKey: queryKeys.social.profile(profile.username) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.social.all() });
+      // Ad / avatar bütün yazar kartlarında görünür.
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.social.postsByUsername(profile.username),
+      });
+      settleFeedContent(queryClient);
     },
   });
 }

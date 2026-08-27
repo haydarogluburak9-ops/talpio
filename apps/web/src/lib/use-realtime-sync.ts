@@ -3,17 +3,15 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { RealtimeEvent, SocialPostUpdatedPayload } from '@talpio/types';
+import { patchSocialPostCounters } from '@talpio/api-client';
 import { API_ROUTES, queryKeys } from '@talpio/config';
 
 import { publicEnv } from '@/lib/env';
 
-function streamUrl(watchPostIds: string[]): string {
+function streamUrl(watchPosts: string): string {
   const base = `${publicEnv.apiUrl}${API_ROUTES.realtime.stream}`;
-  if (watchPostIds.length === 0) return base;
-  const params = new URLSearchParams({
-    watchPosts: watchPostIds.slice(0, 40).join(','),
-  });
-  return `${base}?${params.toString()}`;
+  if (watchPosts.length === 0) return base;
+  return `${base}?${new URLSearchParams({ watchPosts }).toString()}`;
 }
 
 /**
@@ -22,13 +20,15 @@ function streamUrl(watchPostIds: string[]): string {
  */
 export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: boolean }) {
   const queryClient = useQueryClient();
-  const watchPostIds = options?.watchPostIds ?? [];
   const enabled = options?.enabled ?? true;
+  // Dizi kimliği her render'da değişir; akış yalnızca izlenen gönderi listesi
+  // gerçekten farklılaştığında yeniden kurulsun diye tek dizeye indirilir.
+  const watchPosts = (options?.watchPostIds ?? []).slice(0, 40).join(',');
 
   useEffect(() => {
     if (!enabled || typeof EventSource === 'undefined') return;
 
-    const source = new EventSource(streamUrl(watchPostIds), { withCredentials: true });
+    const source = new EventSource(streamUrl(watchPosts), { withCredentials: true });
 
     const handle = (raw: MessageEvent<string>) => {
       let event: RealtimeEvent;
@@ -56,14 +56,12 @@ export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: b
           break;
         }
         case 'social.post.updated': {
-          const payload = event.payload as unknown as SocialPostUpdatedPayload;
-          queryClient.setQueriesData({ queryKey: queryKeys.social.feed() }, (old: unknown) =>
-            patchFeedPost(old, payload),
+          const { postId, ...counters } = event.payload as unknown as SocialPostUpdatedPayload;
+          // Sunucu sayaçları kesin olduğu için iyimser yamanın üzerine yazılır;
+          // gönderiyi taşımayan sorgular `undefined` alıp hiç dokunulmaz.
+          queryClient.setQueriesData({ queryKey: queryKeys.social.all() }, (old: unknown) =>
+            patchSocialPostCounters(old, postId, counters),
           );
-          queryClient.setQueriesData({ queryKey: queryKeys.social.discover() }, (old: unknown) =>
-            patchFeedPost(old, payload),
-          );
-          void queryClient.invalidateQueries({ queryKey: queryKeys.social.post(payload.postId) });
           break;
         }
         case 'notification.new':
@@ -90,24 +88,5 @@ export function useRealtimeSync(options?: { watchPostIds?: string[]; enabled?: b
     return () => {
       source.close();
     };
-  }, [enabled, queryClient, watchPostIds.join(',')]);
-}
-
-function patchFeedPost(old: unknown, payload: SocialPostUpdatedPayload): unknown {
-  if (!old || typeof old !== 'object' || !('items' in old)) return old;
-  const page = old as { items: Array<{ post?: { id: string; likeCount?: number; commentCount?: number } }> };
-  return {
-    ...page,
-    items: page.items.map((item) => {
-      if (!item.post || item.post.id !== payload.postId) return item;
-      return {
-        ...item,
-        post: {
-          ...item.post,
-          ...(payload.likeCount !== undefined ? { likeCount: payload.likeCount } : {}),
-          ...(payload.commentCount !== undefined ? { commentCount: payload.commentCount } : {}),
-        },
-      };
-    }),
-  };
+  }, [enabled, queryClient, watchPosts]);
 }
