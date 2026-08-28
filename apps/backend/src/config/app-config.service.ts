@@ -27,6 +27,18 @@ export class AppConfigService {
     return this.nodeEnv === 'development';
   }
 
+  /**
+   * Ortam internete açık bir sunucuda mı çalışıyor?
+   *
+   * Sertleştirme kararları `isProduction` yerine buna bakmalı: `staging` de
+   * gerçek bir alan adı ve gerçek kullanıcılarla yayında olabilir. Bu ayrım
+   * yapılmadığında çerezler `Secure` bayrağını kaybediyor ve API dokümanı
+   * herkese açık kalıyordu.
+   */
+  get isDeployed(): boolean {
+    return this.nodeEnv === 'staging' || this.nodeEnv === 'production';
+  }
+
   get isTest(): boolean {
     return this.nodeEnv === 'test';
   }

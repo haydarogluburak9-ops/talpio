@@ -44,7 +44,10 @@ const REDACTED_PATHS = [
             ignore: (req: IncomingMessage) => req.url?.startsWith('/health') ?? false,
           },
           customProps: () => ({ service: 'talpio-api' }),
-          ...(config.isProduction
+          // Renkli biçimlendirme yalnızca yerelde. Yayındaki sunucuda her log
+          // satırını ayrı bir süreçte biçimlendirmek hem yavaşlatır hem de
+          // makine tarafından ayrıştırılamayan çıktı üretir.
+          ...(config.isDeployed
             ? {}
             : {
                 transport: {

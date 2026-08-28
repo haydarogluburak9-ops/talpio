@@ -218,7 +218,10 @@ export class AuthController {
   private cookieOptions() {
     return {
       httpOnly: true,
-      secure: this.config.isProduction,
+      // Yayındaki her ortam HTTPS üzerinden sunulur. Bayrak yalnızca
+      // `production`'a bağlanırsa `staging`'de oturum çerezi düz HTTP ile de
+      // gönderilir ve ağdaki biri oturumu ele geçirebilir.
+      secure: this.config.isDeployed,
       sameSite: 'lax' as const,
       // Yenileme çerezi yalnızca kimlik uçlarına gönderilir.
       path: `/${this.config.apiPrefix}/auth`,

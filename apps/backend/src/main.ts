@@ -64,7 +64,9 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
 
-  if (!config.isProduction) {
+  // Doküman yalnızca yerelde açılır. Yayındaki bir sunucuda `/docs-json`,
+  // saldırgana tüm uçların ve gövde şemalarının haritasını verir.
+  if (!config.isDeployed) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Talpio API')
       .setDescription('Hizmet pazaryeri platformu API dokümantasyonu')
@@ -95,7 +97,7 @@ async function bootstrap(): Promise<void> {
   logger.log(
     `Talpio API ${config.nodeEnv} modunda http://localhost:${config.port}/${config.apiPrefix} adresinde çalışıyor`,
   );
-  if (!config.isProduction) {
+  if (!config.isDeployed) {
     logger.log(`Swagger: http://localhost:${config.port}/docs`);
   }
 }

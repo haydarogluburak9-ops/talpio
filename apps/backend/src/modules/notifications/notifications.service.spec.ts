@@ -97,7 +97,10 @@ function createPrismaMock(): PrismaMock {
 
 function createConfig(): AppConfigService {
   return {
+    nodeEnv: 'development',
     isProduction: false,
+    isDevelopment: true,
+    isDeployed: false,
     defaultLocale: 'tr',
     notifications: {
       pushDriver: 'mock',
@@ -370,11 +373,38 @@ describe('NotificationsService', () => {
   });
 
   describe('mock tamponu', () => {
+    it('geliştirme ortamında okunabilir', () => {
+      const { service: devService } = createService(prisma);
+
+      expect(() => devService.listOutbox()).not.toThrow();
+    });
+
     it('production ortamında kapalıdır', () => {
-      const config = { ...createConfig(), isProduction: true } as AppConfigService;
+      const config = {
+        ...createConfig(),
+        nodeEnv: 'production',
+        isProduction: true,
+        isDevelopment: false,
+        isDeployed: true,
+      } as AppConfigService;
       const { service: productionService } = createService(prisma, config);
 
       expect(() => productionService.listOutbox()).toThrow(AppException);
+    });
+
+    it('staging ortamında da kapalıdır', () => {
+      // Yayındaki sunucu `staging` çalışıyordu; `!isProduction` kontrolü bu
+      // ortamı kapsamadığı için tampon internete açıktı.
+      const config = {
+        ...createConfig(),
+        nodeEnv: 'staging',
+        isProduction: false,
+        isDevelopment: false,
+        isDeployed: true,
+      } as AppConfigService;
+      const { service: stagingService } = createService(prisma, config);
+
+      expect(() => stagingService.listOutbox()).toThrow(AppException);
     });
   });
 });
