@@ -152,6 +152,7 @@ function createService(prisma: PrismaMock, files: FilesMock = createFilesMock())
   const notifications = {
     dispatch: jest.fn().mockResolvedValue(undefined),
     dispatchAll: jest.fn().mockResolvedValue(undefined),
+    dispatchDetached: jest.fn(),
   };
 
   return new MessagesService(

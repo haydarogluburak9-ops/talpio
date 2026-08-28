@@ -210,7 +210,17 @@ export class MessagesService {
       orderBy: { lastMessageAt: 'desc' },
       take: 50,
     });
-    return Promise.all(rows.map((row) => this.presentConversation(row, user.id)));
+
+    // Sohbet başına ayrı sayım yerine tek gruplu sorgu: 50 grup, 50 ekstra
+    // COUNT yerine bir sorguyla okunmamış sayılarını verir.
+    const unreadCounts = await this.unreadCountsFor(rows, user.id);
+
+    return rows.map((row) =>
+      toConversation(row, {
+        unreadCount: unreadCounts.get(row.id) ?? 0,
+        fileBaseUrl: this.config.fileBaseUrl,
+      }),
+    );
   }
 
   /**
@@ -414,16 +424,14 @@ export class MessagesService {
       dto.type === MessageType.VOICE,
     );
 
-    if (recipients.length > 0) {
-      await this.notifications.dispatchAll(
-        recipients.map((recipient) => ({
-          userId: recipient.userId,
-          type: NotificationType.MESSAGE_RECEIVED,
-          params: { senderName, preview },
-          deepLink: deepLinks.conversation(conversationId),
-        })),
-      );
-    }
+    this.notifications.dispatchDetached(
+      recipients.map((recipient) => ({
+        userId: recipient.userId,
+        type: NotificationType.MESSAGE_RECEIVED,
+        params: { senderName, preview },
+        deepLink: deepLinks.conversation(conversationId),
+      })),
+    );
 
     this.fraud?.observeMessages(user.id, created.id);
     return this.presentMessage(created);

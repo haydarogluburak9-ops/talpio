@@ -673,6 +673,15 @@ export class AddGroupMembersDto {
   memberIds!: string[];
 }
 
+export class RecordViewsDto {
+  @ApiProperty({ type: [String], minItems: 1, maxItems: 100 })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @IsUUID('all', { each: true })
+  postIds!: string[];
+}
+
 export class ReplaceInterestsDto {
   @ApiProperty({ type: [String], minItems: 3, maxItems: 12 })
   @IsArray()

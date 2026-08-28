@@ -2711,6 +2711,9 @@ model Post {
   @@index([deletedAt])
   @@index([type, createdAt])
   @@index([originalPostId])
+  /// Hikâye şeridi görünürlüğe göre süzüp tarihe göre sıralıyor; indeks olmadan
+  /// akışın üst bandı tablo büyüdükçe geç doluyordu.
+  @@index([visibility, createdAt])
   @@map("posts")
 }
 
@@ -2845,6 +2848,8 @@ model FeedItem {
 
   @@index([createdAt])
   @@index([authorProfileId, createdAt])
+  /// Ana akış sorgusunun tam filtresi: türe göre süz, tarihe göre sırala.
+  @@index([kind, createdAt])
   @@map("feed_items")
 }
 

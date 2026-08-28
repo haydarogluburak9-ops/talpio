@@ -119,6 +119,28 @@ export class NotificationsService {
     await Promise.all(inputs.map((input) => this.dispatch(input)));
   }
 
+  /**
+   * Gönderimi istek yolundan çıkarır.
+   *
+   * Bildirim, kullanıcının yaptığı işin sonucu değil yan etkisidir: mesaj
+   * kaydedildikten sonra push/e-posta sağlayıcısı beklenirse "Gönder" tuşu
+   * sağlayıcı yavaşladığı kadar basılı kalır. Burada yanıt hemen döner,
+   * gönderim arka planda sürer.
+   *
+   * Hata yutulmaz, log'lanır: çağıran zaten yanıtı döndürdüğü için yukarı
+   * fırlatmak yakalanmamış reddetmeye ve sürecin çökmesine yol açardı.
+   */
+  dispatchDetached(inputs: DispatchInput[]): void {
+    if (inputs.length === 0) return;
+
+    void this.dispatchAll(inputs).catch((error: unknown) => {
+      this.logger.error(
+        { err: error, count: inputs.length, type: inputs[0]?.type },
+        'Arka plan bildirim gönderimi başarısız',
+      );
+    });
+  }
+
   // -------------------------------------------------------------------------
   // Uçlar
   // -------------------------------------------------------------------------

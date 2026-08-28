@@ -19,6 +19,9 @@ import { apiClient } from '@/lib/api';
 /** İyimser yamada dokunulan sorguların önceki verisi; `onError` bunu geri yazar. */
 type SocialCacheSnapshot = [readonly unknown[], unknown][];
 
+/** Görüntüleme kayıtlarının biriktirileceği süre. */
+const VIEW_FLUSH_MS = 1000;
+
 /**
  * Yamayı `['social']` altındaki bütün sorgulara dener ama yalnızca hedefi
  * gerçekten taşıyanlara yazar: yama fonksiyonu değişiklik olmayan önbellek için
@@ -521,10 +524,35 @@ export function useReportContent() {
   });
 }
 
+/**
+ * Görüntüleme kayıtlarını biriktirip tek istekte gönderir.
+ *
+ * Kart başına istek atıldığında otuz kartlık bir akış sayfası otuz eşzamanlı
+ * POST demekti; tarayıcının bağlantı havuzu dolduğu için asıl içerik istekleri
+ * de sıraya giriyor ve akış donuk açılıyordu. Kuyruk modül düzeyinde tutulur:
+ * kartlar birbirinden bağımsız mount olduğu için ortak bir tampon gerekir.
+ */
+const viewQueue = new Set<string>();
+let viewTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushViewQueue(): void {
+  viewTimer = null;
+  if (viewQueue.size === 0) return;
+
+  const postIds = [...viewQueue];
+  viewQueue.clear();
+
+  // Gösterim sayacı ikincil veridir; başarısızlığı kullanıcıya yansıtılmaz.
+  void apiClient.social.recordViews(postIds).catch(() => undefined);
+}
+
 export function useRecordPostView() {
-  return useMutation({
-    mutationFn: (postId: string) => apiClient.social.recordView(postId),
-  });
+  return {
+    mutate: (postId: string) => {
+      viewQueue.add(postId);
+      viewTimer ??= setTimeout(flushViewQueue, VIEW_FLUSH_MS);
+    },
+  };
 }
 
 export function useTrending(enabled = true) {

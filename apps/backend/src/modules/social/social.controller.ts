@@ -58,6 +58,7 @@ import {
   DiscoverFeedQueryDto,
   FeedQueryDto,
   ListSocialQueryDto,
+  RecordViewsDto,
   ReplaceInterestsDto,
   SearchProfilesQueryDto,
   ShareRequestToFeedDto,
@@ -501,6 +502,18 @@ export class SocialController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<SocialPost> {
     return this.interactions.share(user, id);
+  }
+
+  // Sabit yol parametreli yoldan önce tanımlanır; aksi hâlde `:id` "views"
+  // değerini yakalar ve UUID doğrulaması hata verir.
+  @Post('posts/views')
+  @RequirePermissions(Permission.SOCIAL_INTERACT)
+  @ApiOperation({ summary: 'Birden çok gönderi görüntülemesini tek turda kaydeder' })
+  recordViews(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: RecordViewsDto,
+  ): Promise<{ recorded: number }> {
+    return this.interactions.recordViews(user, dto.postIds);
   }
 
   @Post('posts/:id/view')

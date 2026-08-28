@@ -14,6 +14,9 @@ import { ProfilesService } from './profiles.service';
 import { SocialRealtimeService } from './social-realtime.service';
 import { commentInclude, postInclude, toSocialComment, toSocialPost } from './social.mapper';
 
+/** Tek istekte kaydedilecek en fazla görüntüleme sayısı. */
+const VIEW_BATCH_LIMIT = 100;
+
 @Injectable()
 export class InteractionsService {
   constructor(
@@ -242,6 +245,57 @@ export class InteractionsService {
     }
 
     return this.loadPost(postId, me.id);
+  }
+
+  /**
+   * Birden çok gönderinin görüntülenmesini tek turda kaydeder.
+   *
+   * Akış açılırken her kart kendi isteğini attığında otuz kartlık bir sayfa
+   * otuz POST demekti ve her biri profil çözümü + doğrulama + transaction
+   * çalıştırdığı için akış saniyelerce donuk kalıyordu. Buradaki sorgu sayısı
+   * gönderi sayısından bağımsızdır.
+   */
+  async recordViews(user: AuthenticatedUser, postIds: string[]): Promise<{ recorded: number }> {
+    const unique = [...new Set(postIds)].slice(0, VIEW_BATCH_LIMIT);
+    if (unique.length === 0) return { recorded: 0 };
+
+    const me = await this.profiles.ensurePersonalProfile(user.id);
+
+    const posts = await this.prisma.post.findMany({
+      where: { id: { in: unique }, deletedAt: null },
+      select: { id: true },
+    });
+    if (posts.length === 0) return { recorded: 0 };
+
+    const ids = posts.map((post) => post.id);
+    const seen = await this.prisma.postView.findMany({
+      where: { profileId: me.id, postId: { in: ids } },
+      select: { postId: true },
+    });
+
+    const seenIds = new Set(seen.map((row) => row.postId));
+    const fresh = ids.filter((id) => !seenIds.has(id));
+
+    await this.prisma.$transaction([
+      ...(fresh.length > 0
+        ? [
+            this.prisma.postView.createMany({
+              data: fresh.map((postId) => ({ postId, profileId: me.id })),
+              skipDuplicates: true,
+            }),
+            this.prisma.post.updateMany({
+              where: { id: { in: fresh } },
+              data: { uniqueViewCount: { increment: 1 } },
+            }),
+          ]
+        : []),
+      this.prisma.post.updateMany({
+        where: { id: { in: ids } },
+        data: { viewCount: { increment: 1 } },
+      }),
+    ]);
+
+    return { recorded: fresh.length };
   }
 
   async recordView(user: AuthenticatedUser, postId: string): Promise<{ recorded: boolean }> {

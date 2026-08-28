@@ -79,8 +79,9 @@ function postMeta() {
 }
 
 type PrismaMock = {
-  post: { findFirst: jest.Mock; update: jest.Mock };
+  post: { findFirst: jest.Mock; findMany: jest.Mock; update: jest.Mock; updateMany: jest.Mock };
   postLike: { findUnique: jest.Mock; create: jest.Mock; delete: jest.Mock };
+  postView: { findMany: jest.Mock; createMany: jest.Mock };
   savedPost: { findUnique: jest.Mock };
   postShare: { findUnique: jest.Mock };
   $transaction: jest.Mock;
@@ -90,7 +91,13 @@ function createPrismaMock(): PrismaMock {
   const mock: PrismaMock = {
     post: {
       findFirst: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
       update: jest.fn().mockResolvedValue({}),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
+    postView: {
+      findMany: jest.fn().mockResolvedValue([]),
+      createMany: jest.fn().mockResolvedValue({ count: 0 }),
     },
     postLike: {
       findUnique: jest.fn().mockResolvedValue(null),
@@ -101,7 +108,10 @@ function createPrismaMock(): PrismaMock {
     postShare: { findUnique: jest.fn().mockResolvedValue(null) },
     $transaction: jest.fn(),
   };
-  mock.$transaction.mockImplementation((fn: (tx: PrismaMock) => unknown) => fn(mock));
+  // Servis hem geri çağrılı hem dizi biçimli işlem kullanır.
+  mock.$transaction.mockImplementation((arg: ((tx: PrismaMock) => unknown) | unknown[]) =>
+    typeof arg === 'function' ? arg(mock) : Promise.all(arg),
+  );
   return mock;
 }
 
@@ -158,6 +168,53 @@ describe('InteractionsService', () => {
     expect(prisma.post.update).toHaveBeenCalledWith({
       where: { id: POST_ID },
       data: { likeCount: { decrement: 1 } },
+    });
+  });
+
+  describe('toplu görüntüleme kaydı', () => {
+    const OTHER_POST_ID = '0194a1b2-c3d4-7000-8000-000000000011';
+
+    it('gönderi sayısından bağımsız sabit sayıda sorgu atar', async () => {
+      // Kart başına istek atıldığında akış sayfası kart sayısı kadar POST
+      // üretiyordu; buradaki asıl kazanç sorgu sayısının sabitlenmesi.
+      prisma.post.findMany.mockResolvedValue([{ id: POST_ID }, { id: OTHER_POST_ID }]);
+
+      const result = await service.recordViews(user, [POST_ID, OTHER_POST_ID]);
+
+      expect(prisma.post.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.postView.findMany).toHaveBeenCalledTimes(1);
+      expect(prisma.postView.createMany).toHaveBeenCalledTimes(1);
+      expect(result.recorded).toBe(2);
+    });
+
+    it('daha önce görülen gönderide tekil sayacı artırmaz', async () => {
+      prisma.post.findMany.mockResolvedValue([{ id: POST_ID }, { id: OTHER_POST_ID }]);
+      prisma.postView.findMany.mockResolvedValue([{ postId: POST_ID }]);
+
+      const result = await service.recordViews(user, [POST_ID, OTHER_POST_ID]);
+
+      expect(prisma.postView.createMany).toHaveBeenCalledWith({
+        data: [{ postId: OTHER_POST_ID, profileId: PROFILE_ID }],
+        skipDuplicates: true,
+      });
+      expect(result.recorded).toBe(1);
+    });
+
+    it('aynı gönderi birden çok kez gelirse tek sayar', async () => {
+      prisma.post.findMany.mockResolvedValue([{ id: POST_ID }]);
+
+      await service.recordViews(user, [POST_ID, POST_ID, POST_ID]);
+
+      expect(prisma.post.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ id: { in: [POST_ID] } }) }),
+      );
+    });
+
+    it('boş listede hiç sorgu atmaz', async () => {
+      const result = await service.recordViews(user, []);
+
+      expect(prisma.post.findMany).not.toHaveBeenCalled();
+      expect(result.recorded).toBe(0);
     });
   });
 });

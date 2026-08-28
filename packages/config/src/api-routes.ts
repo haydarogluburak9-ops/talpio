@@ -164,6 +164,7 @@ export const API_ROUTES = {
     save: (id: string) => `/social/posts/${id}/save`,
     share: (id: string) => `/social/posts/${id}/share`,
     view: (id: string) => `/social/posts/${id}/view`,
+    views: '/social/posts/views',
     hide: (id: string) => `/social/posts/${id}/hide`,
     feed: '/social/feed',
     discover: '/social/discover',

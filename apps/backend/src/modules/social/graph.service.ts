@@ -23,14 +23,29 @@ export class SocialGraphService {
     const mentionedUserIds: string[] = [];
     const mentionedNames = new Map<string, string>();
 
-    for (const tag of tags) {
-      const hashtag = await tx.hashtag.upsert({
-        where: { slug: tag.slug },
-        create: { slug: tag.slug, display: tag.display, postCount: 1 },
-        update: { postCount: { increment: 1 }, display: tag.display },
+    // Etiket sayısından bağımsız sabit sayıda sorgu. Etiket başına upsert +
+    // create yapıldığında 10 etiketli bir gönderi 20 gidiş-dönüş demekti ve
+    // paylaşım tuşu saniyelerce basılı kalıyordu.
+    if (tags.length > 0) {
+      await tx.hashtag.createMany({
+        data: tags.map((tag) => ({ slug: tag.slug, display: tag.display, postCount: 0 })),
+        skipDuplicates: true,
       });
-      await tx.postHashtag.create({
-        data: { postId, hashtagId: hashtag.id },
+
+      const slugs = tags.map((tag) => tag.slug);
+      const rows = await tx.hashtag.findMany({
+        where: { slug: { in: slugs } },
+        select: { id: true, slug: true },
+      });
+
+      await tx.hashtag.updateMany({
+        where: { slug: { in: slugs } },
+        data: { postCount: { increment: 1 } },
+      });
+
+      await tx.postHashtag.createMany({
+        data: rows.map((row) => ({ postId, hashtagId: row.id })),
+        skipDuplicates: true,
       });
     }
 
@@ -39,11 +54,16 @@ export class SocialGraphService {
         where: { username: { in: usernames }, deletedAt: null },
         select: { id: true, userId: true, username: true, displayName: true },
       });
-      for (const profile of profiles) {
-        if (profile.id === authorProfileId) continue;
-        await tx.postMention.create({
-          data: { postId, profileId: profile.id },
+      const mentioned = profiles.filter((profile) => profile.id !== authorProfileId);
+
+      if (mentioned.length > 0) {
+        await tx.postMention.createMany({
+          data: mentioned.map((profile) => ({ postId, profileId: profile.id })),
+          skipDuplicates: true,
         });
+      }
+
+      for (const profile of mentioned) {
         if (profile.userId) {
           mentionedUserIds.push(profile.userId);
           mentionedNames.set(profile.userId, profile.displayName);

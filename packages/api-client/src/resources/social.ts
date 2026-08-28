@@ -320,6 +320,10 @@ export function createSocialResource(http: HttpClient) {
       return http.post<{ recorded: boolean }>(API_ROUTES.social.view(id));
     },
 
+    recordViews(postIds: string[]): Promise<{ recorded: number }> {
+      return http.post<{ recorded: number }>(API_ROUTES.social.views, { postIds });
+    },
+
     hide(id: string): Promise<{ ok: true }> {
       return http.post<{ ok: true }>(API_ROUTES.social.hide(id));
     },

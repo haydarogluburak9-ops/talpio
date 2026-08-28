@@ -26,6 +26,9 @@ const OPEN_TO_PROVIDERS: JobRequestStatus[] = [
 
 const SORTABLE_FIELDS = ['createdAt', 'publishedAt', 'updatedAt'] as const;
 
+/** Tek ilan yayınında bilgilendirilecek en fazla satıcı sayısı. */
+const MATCH_NOTIFY_LIMIT = 500;
+
 @Injectable()
 export class JobsService {
   constructor(
@@ -291,11 +294,16 @@ export class JobsService {
         serviceAreas: { some: { districtId: job.districtId } },
       },
       select: { userId: true },
+      // Popüler kategorilerde eşleşen satıcı sayısı binleri bulabilir; sınırsız
+      // çekmek ilan yayınlama isteğini kilitler.
+      take: MATCH_NOTIFY_LIMIT,
     });
 
     if (providers.length === 0) return;
 
-    await this.notifications.dispatchAll(
+    // Gönderim beklenmez: "İlanı yayınla" tuşu push/e-posta sağlayıcısının
+    // hızına bağlı kalmasın.
+    this.notifications.dispatchDetached(
       providers.map((provider) => ({
         userId: provider.userId,
         type: NotificationType.JOB_MATCHED,

@@ -19,6 +19,16 @@ export interface FeedPage {
   meta: CursorMeta;
 }
 
+/**
+ * Sıralama bağlamı için okunan en fazla kayıt sayısı.
+ *
+ * Bu listeler her akış isteğinde (önbellek ıskası) baştan çekiliyor. Sınırsız
+ * bırakıldığında çok takip eden veya çok gönderi gizleyen bir hesapta ana sayfa
+ * on saniyeye kadar boş kalabiliyordu. Sınır sıralamayı yaklaşık yapar; en yeni
+ * kayıtlar alındığı için kullanıcının güncel ilgisi korunur.
+ */
+const CONTEXT_LIMIT = 2000;
+
 @Injectable()
 export class FeedService {
   constructor(
@@ -318,6 +328,8 @@ export class FeedService {
       this.read.follow.findMany({
         where: { followerProfileId: profileId },
         select: { followingProfileId: true },
+        take: CONTEXT_LIMIT,
+        orderBy: { createdAt: 'desc' },
       }),
       this.categoryFollows.followedCategoryIds(profileId),
       this.blockedUserIds(userId),
@@ -328,6 +340,8 @@ export class FeedService {
       this.read.postHide.findMany({
         where: { profileId },
         select: { postId: true },
+        take: CONTEXT_LIMIT,
+        orderBy: { createdAt: 'desc' },
       }),
       this.read.postView.findMany({
         where: { profileId },
@@ -444,6 +458,8 @@ export class FeedService {
         OR: [{ blockerUserId: userId }, { blockedUserId: userId }],
       },
       select: { blockerUserId: true, blockedUserId: true },
+      take: CONTEXT_LIMIT,
+      orderBy: { createdAt: 'desc' },
     });
 
     const ids = new Set<string>();

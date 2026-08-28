@@ -20,6 +20,9 @@ import {
   useThread,
 } from './use-messages';
 
+/** Bu mesafeden yakınsa liste "en altta" sayılır ve yeni mesajda takip eder. */
+const STICKY_BOTTOM_PX = 120;
+
 export function ChatThread({
   conversationId,
   currentUserId,
@@ -217,11 +220,21 @@ function MessageScroller({
   currentUserId: string;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
+  // Kullanıcı yukarı kaydırıp geçmişi okuyorsa yeni mesaj onu aşağı çekmemeli.
+  const nearBottomRef = useRef(true);
   const lastId = messages.at(-1)?.id;
 
   useEffect(() => {
+    if (!nearBottomRef.current) return;
     bottomRef.current?.scrollIntoView({ block: 'end' });
   }, [lastId]);
+
+  const handleScroll = () => {
+    const list = listRef.current;
+    if (!list) return;
+    nearBottomRef.current = list.scrollHeight - list.scrollTop - list.clientHeight < STICKY_BOTTOM_PX;
+  };
 
   if (messages.length === 0) {
     return (
@@ -232,7 +245,11 @@ function MessageScroller({
   }
 
   return (
-    <ol className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-3">
+    <ol
+      ref={listRef}
+      onScroll={handleScroll}
+      className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-3"
+    >
       {messages.map((message, index) => (
         <MessageRow
           key={message.id}

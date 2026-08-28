@@ -6,7 +6,7 @@ import { EmptyState, ErrorState, ListSkeleton } from '@talpio/ui';
 import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { t } from '@/lib/i18n';
@@ -20,6 +20,9 @@ export function DiscoverFeed() {
   const router = useRouter();
   const loggedIn = Boolean(session.data);
   const [query, setQuery] = useState('');
+  // Girdi her tuşta güncellenir, ızgara filtresi ertelenir: aksi hâlde yazarken
+  // her harf tüm kareleri yeniden çizdiriyor ve klavye takılıyordu.
+  const deferredQuery = useDeferredValue(query);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const feed = useDiscoverFeed(loggedIn);
 
@@ -41,7 +44,7 @@ export function DiscoverFeed() {
     (feed.data?.items ?? [])
       .map((item) => item.post)
       .filter((post): post is NonNullable<typeof post> => Boolean(post)),
-    query,
+    deferredQuery,
   );
 
   return (

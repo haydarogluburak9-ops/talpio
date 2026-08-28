@@ -49,6 +49,9 @@ import { toCommerceRequest, toRequestOffer } from './request.mapper';
  */
 const UNCATEGORIZED_MATCH_LABEL = { tr: 'Talep', en: 'Request' } as const;
 
+/** Tek eşleştirme turunda belleğe alınacak en fazla işletme sayısı. */
+const MATCHER_POOL_LIMIT = 2000;
+
 @Injectable()
 export class RequestsService {
   constructor(
@@ -316,6 +319,7 @@ export class RequestsService {
 
     const { matcherInput, membershipsByBusiness } = await this.loadMatcherBusinesses(
       row.buyerUserId,
+      row.categoryId,
     );
 
     const spec =
@@ -548,14 +552,28 @@ export class RequestsService {
     return toCommerceRequest({ ...updated, matchCount: matches.length });
   }
 
-  private async loadMatcherBusinesses(buyerUserId: string): Promise<{
+  private async loadMatcherBusinesses(
+    buyerUserId: string,
+    categoryId: string | null,
+  ): Promise<{
     matcherInput: MatcherBusiness[];
     membershipsByBusiness: Map<string, string[]>;
   }> {
     const businesses = await this.prisma.business.findMany({
       // Demo işletmeler akışta vitrin olarak durur ama teklif veremez; eşleşme
       // havuzuna girerlerse gerçek alıcı cevapsız kalacak bir satıcıyla eşleşir.
-      where: { deletedAt: null, isActive: true, isDemo: false },
+      where: {
+        deletedAt: null,
+        isActive: true,
+        isDemo: false,
+        // Eşleştirici kategoriyi taşımayan işletmeyi zaten eliyor. Filtreyi
+        // SQL'e taşımak sonucu değiştirmez ama tüm işletmeleri derin ilişkilerle
+        // belleğe çekmeyi önler; "talebi yayınla" bu yüzden dakikalarca
+        // yanıtsız kalabiliyordu.
+        ...(categoryId ? { categories: { some: { categoryId } } } : {}),
+      },
+      // Kategorisiz talepte filtre uygulanamaz; havuz yine de sınırlanır.
+      take: MATCHER_POOL_LIMIT,
       include: {
         categories: { select: { categoryId: true } },
         serviceAreas: { select: { cityId: true, districtId: true } },
