@@ -376,15 +376,7 @@ export function PostCard({
               </div>
             ) : null}
           </div>
-        ) : (
-          <button
-            type="button"
-            className="rounded-full p-2 text-foreground-muted hover:bg-surface-muted"
-            aria-label={t('social.moreActions')}
-          >
-            <MoreHorizontal className="size-5" />
-          </button>
-        )}
+        ) : null}
       </header>
 
       {post.media.length > 0 ? (
