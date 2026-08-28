@@ -404,7 +404,11 @@ async function seedDemoAccounts(): Promise<void> {
       where: { email: account.email },
       // Parola yalnızca hesap ilk kez oluşturulurken yazılır. Aksi hâlde her
       // dağıtımdaki seed, panelden yapılan parola değişikliğini geri alırdı.
-      update: { fullName: account.fullName, role: account.role, isDemo: true },
+      update: {
+        fullName: account.fullName,
+        role: account.role,
+        isDemo: !isPrivileged(account.role),
+      },
       create: {
         email: account.email,
         phone: account.phone,
@@ -414,7 +418,10 @@ async function seedDemoAccounts(): Promise<void> {
         status: UserStatus.ACTIVE,
         emailVerifiedAt: now,
         phoneVerifiedAt: now,
-        isDemo: true,
+        // Yetkili hesaplar vitrin hesabı değildir. İkisi aynı bayrağı
+        // paylaşırsa demo hesaplarını hedefleyen toplu bir işlem personel
+        // hesaplarını da süpürür; parola sıfırlamada bu bir kez yaşandı.
+        isDemo: !isPrivileged(account.role),
       },
     });
 

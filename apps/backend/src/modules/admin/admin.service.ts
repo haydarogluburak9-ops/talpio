@@ -131,7 +131,14 @@ export class AdminService {
   async dashboard(): Promise<AdminDashboard> {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     // Vitrin hesapları gerçek kayıt sayısını şişirir; ayrı kalemde raporlanır.
-    const activeUser = { deletedAt: null, isDemo: false };
+    // Personel hesapları da gerçek kayıt değildir, ancak `isDemo` taşımazlar:
+    // o bayrak yalnızca vitrin içeriğini işaretler, bu yüzden rol üzerinden
+    // ayrıca dışarıda bırakılırlar.
+    const activeUser = {
+      deletedAt: null,
+      isDemo: false,
+      role: { notIn: [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.SUPPORT] },
+    };
 
     const [
       totalUsers,
