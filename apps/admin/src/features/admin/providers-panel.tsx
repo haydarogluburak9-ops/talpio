@@ -12,7 +12,7 @@ import { canWrite, useSession } from '@/features/auth/use-session';
 import { VERIFICATION_LABELS, VERIFICATION_TONES } from '@/lib/labels';
 
 import { FilterBar, FilterSelect, SearchField } from './filter-bar';
-import { useAdminProviders, useUpdateProviderVerification } from './use-admin';
+import { useAdminProviders, useProviderDocuments, useUpdateProviderVerification } from './use-admin';
 
 const VERIFICATION_OPTIONS = Object.values(VerificationStatus).map((status) => ({
   value: status,
@@ -37,6 +37,7 @@ export function ProvidersPanel({ title, description, lockedStatus }: ProvidersPa
   const [q, setQ] = useState('');
   const [status, setStatus] = useState<VerificationStatus | 'all'>('all');
   const [rejecting, setRejecting] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState<string | null>(null);
   // Arama kutusunu sıfırlamak için kullanılan sayaç; artınca kutu yenilenir.
   const [filterVersion, setFilterVersion] = useState(0);
 
@@ -77,9 +78,13 @@ export function ProvidersPanel({ title, description, lockedStatus }: ProvidersPa
             tone={VERIFICATION_TONES[provider.verificationStatus]}
           />
           {provider.pendingDocumentCount > 0 ? (
-            <span className="text-xs text-foreground-muted">
+            <button
+              type="button"
+              className="text-left text-xs text-accent-600 hover:underline"
+              onClick={() => setPreviewing((current) => (current === provider.id ? null : provider.id))}
+            >
               {provider.pendingDocumentCount} belge bekliyor
-            </span>
+            </button>
           ) : null}
         </div>
       ),
@@ -206,6 +211,8 @@ export function ProvidersPanel({ title, description, lockedStatus }: ProvidersPa
           onPageChange={setPage}
           isFetching={providers.isFetching}
         />
+
+        {previewing ? <ProviderDocumentsPreview providerId={previewing} /> : null}
       </CardContent>
     </Card>
   );
@@ -263,5 +270,42 @@ function VerificationActions({
         </Button>
       )}
     </div>
+  );
+}
+
+function ProviderDocumentsPreview({ providerId }: { providerId: string }) {
+  const documents = useProviderDocuments(providerId);
+
+  if (documents.isPending) {
+    return <p className="text-sm text-foreground-muted">Belgeler yükleniyor…</p>;
+  }
+  if (documents.isError) {
+    return <p className="text-sm text-danger-on-surface">Belgeler okunamadı.</p>;
+  }
+  if ((documents.data?.length ?? 0) === 0) {
+    return <p className="text-sm text-foreground-muted">Yüklü belge yok.</p>;
+  }
+
+  return (
+    <ul className="divide-y divide-border rounded-xl border border-border">
+      {documents.data?.map((document: { id: string; type: string; status: string; originalName: string | null; url: string }) => (
+        <li key={document.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{document.originalName ?? document.type}</p>
+            <p className="text-xs text-foreground-muted">
+              {document.type} · {document.status}
+            </p>
+          </div>
+          <a
+            href={document.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-medium text-accent-600 hover:underline"
+          >
+            Aç
+          </a>
+        </li>
+      ))}
+    </ul>
   );
 }

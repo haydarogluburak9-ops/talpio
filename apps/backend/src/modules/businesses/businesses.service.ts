@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DEFAULT_COUNTRY_CODE, DEFAULT_TIMEZONE } from '@talpio/config';
-import { PlatformRoleCode, VerificationStatus } from '@talpio/types';
+import { BusinessMembershipStatus, PlatformRoleCode, VerificationStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { CurrencyService } from '@infra/currency/currency.service';
@@ -126,6 +126,142 @@ export class BusinessesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /**
+   * Onaylı işletmeleri ada göre arar.
+   *
+   * Çalışan bağlantısı yalnızca tik almış firmalara kurulabilir; arama da
+   * o yüzden doğrulanmamış kayıtları göstermez.
+   */
+  async searchVerified(query: string) {
+    const q = query.trim();
+    if (q.length < 2) return [];
+
+    return this.prisma.business.findMany({
+      where: {
+        deletedAt: null,
+        isActive: true,
+        verificationStatus: VerificationStatus.VERIFIED,
+        name: { contains: q, mode: 'insensitive' },
+      },
+      take: 12,
+      select: {
+        id: true,
+        name: true,
+        verificationStatus: true,
+        socialProfile: { select: { username: true, displayName: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async claimEmployment(user: AuthenticatedUser, businessId: string) {
+    const business = await this.requireVerifiedBusiness(businessId);
+    if (business.ownerUserId === user.id) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Kendi firmanız için çalışan başvurusu gerekmez.',
+      });
+    }
+
+    const existing = await this.prisma.businessMembership.findUnique({
+      where: { businessId_userId: { businessId, userId: user.id } },
+    });
+    if (existing?.status === BusinessMembershipStatus.ACTIVE) {
+      throw new AppException('CONFLICT', { message: 'Bu firmada zaten çalışıyorsunuz.' });
+    }
+
+    return this.prisma.businessMembership.upsert({
+      where: { businessId_userId: { businessId, userId: user.id } },
+      create: {
+        businessId,
+        userId: user.id,
+        status: BusinessMembershipStatus.INVITED,
+      },
+      update: { status: BusinessMembershipStatus.INVITED },
+    });
+  }
+
+  async listEmploymentClaims(user: AuthenticatedUser, businessId: string) {
+    await this.assertVerifiedOwner(user.id, businessId);
+
+    return this.prisma.businessMembership.findMany({
+      where: { businessId, status: BusinessMembershipStatus.INVITED },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        user: { select: { id: true, fullName: true, email: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async decideEmployment(
+    user: AuthenticatedUser,
+    businessId: string,
+    memberUserId: string,
+    approve: boolean,
+  ) {
+    await this.assertVerifiedOwner(user.id, businessId);
+    if (memberUserId === user.id) {
+      throw new AppException('VALIDATION_ERROR', {
+        message: 'Kendi başvurunuzu karara bağlayamazsınız.',
+      });
+    }
+
+    const membership = await this.prisma.businessMembership.findUnique({
+      where: { businessId_userId: { businessId, userId: memberUserId } },
+    });
+    if (!membership || membership.status !== BusinessMembershipStatus.INVITED) {
+      throw AppException.notFound('Çalışan başvurusu', memberUserId);
+    }
+
+    await this.prisma.businessMembership.update({
+      where: { id: membership.id },
+      data: {
+        status: approve ? BusinessMembershipStatus.ACTIVE : BusinessMembershipStatus.SUSPENDED,
+      },
+    });
+
+    if (approve) {
+      await this.rbac.ensureMembership({
+        businessId,
+        userId: memberUserId,
+        roleCodes: [PlatformRoleCode.ENTERPRISE_MEMBER],
+      });
+      // Profil yoksa tik yazılacak satır olmaz; önce kişisel profili kur.
+      await this.profiles.ensurePersonalProfile(memberUserId);
+      await this.prisma.socialProfile.updateMany({
+        where: { userId: memberUserId, kind: 'PERSONAL', deletedAt: null },
+        data: { isVerifiedDisplay: true },
+      });
+    }
+
+    return { decided: true as const, approved: approve };
+  }
+
+  private async requireVerifiedBusiness(businessId: string) {
+    const business = await this.prisma.business.findFirst({
+      where: { id: businessId, deletedAt: null },
+      select: { id: true, ownerUserId: true, verificationStatus: true },
+    });
+    if (!business) throw AppException.notFound('İşletme', businessId);
+    if (business.verificationStatus !== VerificationStatus.VERIFIED) {
+      throw new AppException('FORBIDDEN', {
+        message: 'Yalnızca onaylı firmalara başvurulabilir.',
+      });
+    }
+    return business;
+  }
+
+  private async assertVerifiedOwner(userId: string, businessId: string): Promise<void> {
+    const business = await this.requireVerifiedBusiness(businessId);
+    if (business.ownerUserId !== userId) {
+      throw new AppException('FORBIDDEN', {
+        message: 'Çalışan tikini yalnızca firma sahibi verebilir.',
+      });
+    }
   }
 
   async getLocaleSettings(user: AuthenticatedUser, businessId: string) {

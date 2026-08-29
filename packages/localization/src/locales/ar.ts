@@ -1248,6 +1248,17 @@ export const ar: Messages = {
     disclaimer:
       'هذه الصفحات ملخصات منتج وليست مستندات قانونية معتمدة من محامٍ. راجعها قانونياً قبل الإطلاق الإنتاجي.',
   },
+  authEmail: {
+    ...en.authEmail,
+    greeting: 'مرحباً {name}،',
+    verifySubject: 'أكد عنوان بريدك في Talpio',
+    verifyBody:
+      'أكد عنوان بريدك الإلكتروني لبدء استخدام حسابك في Talpio:\n{link}\n\nالرابط صالح لمدة {hours} ساعة. إذا لم تنشئ هذا الحساب يمكنك تجاهل هذه الرسالة.',
+    resetSubject: 'أعد تعيين كلمة مرور Talpio',
+    resetBody:
+      'افتح الرابط أدناه لتعيين كلمة مرور جديدة:\n{link}\n\nالرابط صالح لمدة {hours} ساعة. إذا لم تطلب ذلك تبقى كلمة مرورك كما هي.',
+  },
+  verification: { ...en.verification },
   admin: {
     ...en.admin,
     panel: 'لوحة الإدارة',

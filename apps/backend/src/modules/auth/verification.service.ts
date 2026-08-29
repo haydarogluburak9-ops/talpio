@@ -1,13 +1,17 @@
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { NotificationChannel, NotificationType } from '@talpio/types';
+import { createTranslator } from '@talpio/localization';
+import { NotificationType } from '@talpio/types';
 
 import { writeAudit } from '@common/audit/write-audit';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
-import { NotificationOutbox } from '@infra/notifications/notification-outbox';
-import { SMS_SENDER, type SmsSender } from '@infra/notifications/notification-sender';
-import { sendSmtpMail } from '@infra/notifications/smtp-client';
+import {
+  EMAIL_SENDER,
+  SMS_SENDER,
+  type EmailSender,
+  type SmsSender,
+} from '@infra/notifications/notification-sender';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 import { PasswordService } from './password.service';
@@ -23,7 +27,7 @@ export class VerificationService {
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
     private readonly passwords: PasswordService,
-    private readonly outbox: NotificationOutbox,
+    @Inject(EMAIL_SENDER) private readonly email: EmailSender,
     @Inject(SMS_SENDER) private readonly sms: SmsSender,
   ) {}
 
@@ -37,14 +41,7 @@ export class VerificationService {
     const { token, hash } = opaqueToken();
     await this.replaceToken(user.id, 'EMAIL_VERIFICATION', hash, EMAIL_TTL_MS);
     const link = `${this.webAppUrl()}/dogrula-eposta?token=${encodeURIComponent(token)}`;
-    await this.sendMail(
-      user.email,
-      user.fullName,
-      user.locale,
-      'Verify your Talpio email',
-      `Confirm your email: ${link}`,
-      link,
-    );
+    await this.sendAuthMail(user.email, user.fullName, user.locale, 'verify', link, 24);
     return { sent: true };
   }
 
@@ -129,14 +126,7 @@ export class VerificationService {
       const { token, hash } = opaqueToken();
       await this.replaceToken(user.id, 'PASSWORD_RESET', hash, RESET_TTL_MS);
       const link = `${this.webAppUrl()}/sifre-sifirla?token=${encodeURIComponent(token)}`;
-      await this.sendMail(
-        user.email,
-        user.fullName,
-        user.locale,
-        'Reset your Talpio password',
-        `Reset your password: ${link}`,
-        link,
-      );
+      await this.sendAuthMail(user.email, user.fullName, user.locale, 'reset', link, 1);
     }
     return { sent: true };
   }
@@ -213,44 +203,40 @@ export class VerificationService {
     return row;
   }
 
-  private async sendMail(
+  /**
+   * Kimlik e-postasını seçili sürücüden gönderir.
+   *
+   * Metin alıcının diliyle çözülür; sürücü (Resend, SMTP veya mock) gövdeyi
+   * olduğu gibi iletir. Gönderim başarısızsa çağıran taraf hata alır: aksi
+   * halde kullanıcı bağlantının gittiğini sanır ve bekler.
+   */
+  private async sendAuthMail(
     email: string,
     name: string,
     locale: string,
-    subject: string,
-    text: string,
+    kind: 'verify' | 'reset',
     link: string,
+    hours: number,
   ): Promise<void> {
-    const smtp = this.config.notifications;
-    if (smtp.mailDriver === 'smtp' && smtp.smtpHost) {
-      await sendSmtpMail({
-        host: smtp.smtpHost,
-        port: smtp.smtpPort,
-        secure: smtp.smtpSecure,
-        user: smtp.smtpUser,
-        pass: smtp.smtpPass,
-        from: smtp.mailFrom,
-        to: email,
-        subject,
-        text,
-      });
-    } else {
-      this.logger.log({ email, subject, link }, 'Auth e-postası (mock)');
-    }
-
-    // Tampona jeton taşıyan bağlantı yazılmaz. Duman testinin doğrulaması
-    // gereken şey gönderimin yapıldığı; sırrın kendisi değil.
-    this.outbox.record({
-      channel: NotificationChannel.EMAIL,
-      target: email,
-      type: NotificationType.SUPPORT_REPLY,
-      params: { ticketSubject: subject },
-      deepLink: null,
-      locale,
-      sentAt: new Date().toISOString(),
+    const t = createTranslator(locale);
+    const greeting = t.t('authEmail.greeting', { name: name.trim() || 'Talpio' });
+    const subject = t.t(kind === 'verify' ? 'authEmail.verifySubject' : 'authEmail.resetSubject');
+    const body = t.t(kind === 'verify' ? 'authEmail.verifyBody' : 'authEmail.resetBody', {
+      link,
+      hours,
     });
-    void name;
-    void link;
+
+    const result = await this.email.sendTransactional(
+      { email, name },
+      { subject, text: `${greeting}\n\n${body}`, locale },
+    );
+
+    if (!result.delivered) {
+      this.logger.warn(`Kimlik e-postası gönderilemedi: ${result.failureReason ?? 'bilinmeyen'}`);
+      throw new AppException('SERVICE_UNAVAILABLE', {
+        message: 'E-posta şu anda gönderilemiyor. Lütfen biraz sonra tekrar deneyin.',
+      });
+    }
   }
 }
 

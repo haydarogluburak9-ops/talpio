@@ -1,5 +1,11 @@
 import { API_ROUTES } from '@talpio/config';
-import type { ProviderProfile, ProviderService, ProviderSummary } from '@talpio/types';
+import type {
+  DocumentType,
+  ProviderDocument,
+  ProviderProfile,
+  ProviderService,
+  ProviderSummary,
+} from '@talpio/types';
 
 import type { HttpClient } from '../http-client';
 
@@ -50,6 +56,18 @@ export function createProvidersResource(http: HttpClient) {
     /** Listenin tamamı gönderilir; gönderilmeyen ilçeler kaldırılır. */
     replaceMyServiceAreas(districtIds: string[]): Promise<ProviderProfile> {
       return http.put<ProviderProfile>(API_ROUTES.providers.serviceAreas, { districtIds });
+    },
+
+    listMyDocuments(signal?: AbortSignal) {
+      return http.get<{
+        countryCode: string;
+        requiredTypes: DocumentType[];
+        documents: ProviderDocument[];
+      }>(API_ROUTES.providers.documents, { ...(signal ? { signal } : {}) });
+    },
+
+    uploadDocument(body: { type: DocumentType; fileId: string; expiresAt?: string }) {
+      return http.post<ProviderDocument>(API_ROUTES.providers.documents, body);
     },
   };
 }

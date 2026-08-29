@@ -1,10 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import type { ProviderProfile, ProviderService, ProviderSummary } from '@talpio/types';
+import { requiredIncorporationDocuments } from '@talpio/config';
+import {
+  DocumentStatus,
+  DocumentType,
+  VerificationStatus,
+  type ProviderDocument,
+  type ProviderProfile,
+  type ProviderService,
+  type ProviderSummary,
+} from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { FilesService } from '@modules/files/files.service';
 
 import type {
   ProviderServiceInputDto,
@@ -25,6 +35,7 @@ export class ProvidersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
+    private readonly files: FilesService,
   ) {}
 
   async getMe(user: AuthenticatedUser): Promise<ProviderProfile> {
@@ -155,6 +166,99 @@ export class ProvidersService {
     return toProviderProfile(await this.requireOwnProfile(user));
   }
 
+  /**
+   * Satıcının ülkesine göre istenen kuruluş belgeleri ve mevcut yüklemeler.
+   *
+   * Ülke, bağlı işletmenin locale ayarından, yoksa kullanıcının ülke
+   * tercihinden okunur. Paket eksikken profil `PENDING` olmaz: belge
+   * yüklendiğinde geçer.
+   */
+  async listMyDocuments(user: AuthenticatedUser): Promise<{
+    countryCode: string;
+    requiredTypes: readonly DocumentType[];
+    documents: ProviderDocument[];
+  }> {
+    const profile = await this.requireOwnProfile(user);
+    const countryCode = await this.resolveCountryCode(user.id, profile.id);
+    const documents = await this.prisma.providerDocument.findMany({
+      where: { providerProfileId: profile.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      countryCode,
+      requiredTypes: requiredIncorporationDocuments(countryCode),
+      documents: documents.map(toProviderDocument),
+    };
+  }
+
+  async uploadDocument(
+    user: AuthenticatedUser,
+    input: { type: DocumentType; fileId: string; expiresAt?: string },
+  ): Promise<ProviderDocument> {
+    const profile = await this.requireOwnProfile(user);
+    await this.files.assertOwnedBy(user.id, [input.fileId]);
+
+    const existing = await this.prisma.providerDocument.findFirst({
+      where: {
+        providerProfileId: profile.id,
+        fileId: input.fileId,
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new AppException('CONFLICT', {
+        message: 'Bu dosya zaten bir belge olarak kayıtlı.',
+      });
+    }
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const document = await tx.providerDocument.create({
+        data: {
+          providerProfileId: profile.id,
+          type: input.type,
+          fileId: input.fileId,
+          status: DocumentStatus.PENDING,
+          ...(input.expiresAt ? { expiresAt: new Date(input.expiresAt) } : {}),
+        },
+      });
+
+      // Reddedilmiş veya henüz başlamamış bir inceleme, belge gelince kuyruğa
+      // düşer. Onaylı profili belge eklemek tek başına düşürmez: aksi halde
+      // satıcı her yeni dosyada rozetini kaybederdi.
+      if (profile.verificationStatus !== VerificationStatus.VERIFIED) {
+        await tx.providerProfile.update({
+          where: { id: profile.id },
+          data: { verificationStatus: VerificationStatus.PENDING },
+        });
+        await tx.business.updateMany({
+          where: { providerProfileId: profile.id, deletedAt: null },
+          data: { verificationStatus: VerificationStatus.PENDING },
+        });
+      }
+
+      return document;
+    });
+
+    return toProviderDocument(created);
+  }
+
+  private async resolveCountryCode(userId: string, providerProfileId: string): Promise<string> {
+    const [settings, user] = await Promise.all([
+      this.prisma.businessLocaleSettings.findFirst({
+        where: { business: { providerProfileId, deletedAt: null } },
+        select: { defaultCountryCode: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { countryCode: true },
+      }),
+    ]);
+
+    return settings?.defaultCountryCode?.toUpperCase() ?? user?.countryCode?.toUpperCase() ?? 'TR';
+  }
+
   private async requireOwnProfile(user: AuthenticatedUser): Promise<ProviderRow> {
     const existing = await this.prisma.providerProfile.findFirst({
       where: { userId: user.id, deletedAt: null },
@@ -241,4 +345,30 @@ function dedupeServices(services: ProviderServiceInputDto[]): ProviderServiceInp
 
 function serviceKey(service: { categoryId: string; subcategoryId?: string | null }): string {
   return `${service.categoryId}:${service.subcategoryId ?? ''}`;
+}
+
+function toProviderDocument(row: {
+  id: string;
+  providerProfileId: string;
+  type: DocumentType;
+  status: DocumentStatus;
+  fileId: string;
+  expiresAt: Date | null;
+  reviewedAt: Date | null;
+  rejectionReason: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): ProviderDocument {
+  return {
+    id: row.id,
+    providerProfileId: row.providerProfileId,
+    type: row.type,
+    status: row.status,
+    fileId: row.fileId,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    reviewedAt: row.reviewedAt?.toISOString() ?? null,
+    rejectionReason: row.rejectionReason,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }

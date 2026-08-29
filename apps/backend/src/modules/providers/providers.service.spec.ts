@@ -105,7 +105,9 @@ function createPrismaMock(): PrismaMock {
 function createService(prisma: PrismaMock): ProvidersService {
   const config = { fileBaseUrl: FILE_BASE_URL } as unknown as AppConfigService;
 
-  return new ProvidersService(prisma as unknown as PrismaService, config);
+  return new ProvidersService(prisma as unknown as PrismaService, config, {
+    assertOwnedBy: jest.fn().mockResolvedValue(undefined),
+  } as never);
 }
 
 describe('ProvidersService', () => {

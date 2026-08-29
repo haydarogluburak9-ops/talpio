@@ -6,3 +6,4 @@ export * from './api-routes';
 export * from './deep-links';
 export * from './query-keys';
 export * from './status-tones';
+export * from './verification-documents';

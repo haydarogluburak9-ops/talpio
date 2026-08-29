@@ -244,5 +244,42 @@ export function createBusinessesResource(http: HttpClient) {
     createCampaign(businessId: string, body: { title: string; description?: string | null }) {
       return http.post(API_ROUTES.businesses.campaigns(businessId), body);
     },
+
+    searchVerified(q: string, signal?: AbortSignal) {
+      return http.get<
+        Array<{
+          id: string;
+          name: string;
+          verificationStatus: string;
+          socialProfile: { username: string | null; displayName: string | null } | null;
+        }>
+      >(API_ROUTES.businesses.search, {
+        query: { q },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    claimEmployment(businessId: string) {
+      return http.post(API_ROUTES.businesses.employmentClaims(businessId));
+    },
+
+    listEmploymentClaims(businessId: string, signal?: AbortSignal) {
+      return http.get<
+        Array<{
+          id: string;
+          status: string;
+          createdAt: string;
+          user: { id: string; fullName: string; email: string };
+        }>
+      >(API_ROUTES.businesses.employmentClaims(businessId), {
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    decideEmployment(businessId: string, userId: string, approve: boolean) {
+      return http.patch(API_ROUTES.businesses.employmentClaimByUser(businessId, userId), {
+        approve,
+      });
+    },
   };
 }

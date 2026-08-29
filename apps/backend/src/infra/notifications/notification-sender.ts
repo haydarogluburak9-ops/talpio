@@ -52,10 +52,33 @@ export interface PushSender {
   send(target: PushTarget, message: NotificationMessage): Promise<SendResult>;
 }
 
+/**
+ * Bildirim kataloğunda karşılığı olmayan, tek seferlik e-posta.
+ *
+ * Kimlik e-postaları (doğrulama bağlantısı, şifre sıfırlama) bildirim türü
+ * değildir: alıcıya bir sır taşırlar, bildirim merkezinde listelenmezler ve
+ * kullanıcı tercihleriyle kapatılamazlar. Bu yüzden metni çağıran taraf çözer.
+ */
+export interface TransactionalMessage {
+  subject: string;
+  /** Düz metin gövde; sürücü gerekiyorsa kendi biçimine sarar. */
+  text: string;
+  locale: string;
+}
+
 export interface EmailSender {
   readonly name: string;
 
   send(target: EmailTarget, message: NotificationMessage): Promise<SendResult>;
+
+  /**
+   * Katalog dışı ileti gönderir.
+   *
+   * Kimlik e-postaları da seçili sürücüden geçsin diye ayrı bir yol yerine
+   * aynı arayüze eklendi; aksi hâlde `MAIL_DRIVER` değiştirmek bu e-postaları
+   * etkilemezdi.
+   */
+  sendTransactional(target: EmailTarget, message: TransactionalMessage): Promise<SendResult>;
 }
 
 export interface SmsSender {

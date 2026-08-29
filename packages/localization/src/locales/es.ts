@@ -1262,6 +1262,17 @@ export const es: Messages = {
     disclaimer:
       'Estas páginas son resúmenes de producto, no documentos legales aprobados por un abogado. Hazlos revisar antes del lanzamiento a producción.',
   },
+  authEmail: {
+    ...en.authEmail,
+    greeting: 'Hola {name},',
+    verifySubject: 'Verifica tu correo de Talpio',
+    verifyBody:
+      'Confirma tu dirección de correo para empezar a usar tu cuenta de Talpio:\n{link}\n\nEl enlace es válido durante {hours} horas. Si no creaste esta cuenta, puedes ignorar este mensaje.',
+    resetSubject: 'Restablece tu contraseña de Talpio',
+    resetBody:
+      'Abre el siguiente enlace para establecer una nueva contraseña:\n{link}\n\nEl enlace es válido durante {hours} horas. Si no lo solicitaste, tu contraseña no cambia.',
+  },
+  verification: { ...en.verification },
   admin: {
     ...en.admin,
     panel: 'Panel de administración',

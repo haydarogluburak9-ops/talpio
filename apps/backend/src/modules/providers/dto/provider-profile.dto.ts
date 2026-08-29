@@ -1,11 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
+import { DocumentType } from '@talpio/types';
 import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
   IsUUID,
@@ -111,4 +114,19 @@ export class ReplaceProviderServiceAreasDto {
   @ArrayMaxSize(MAX_PROVIDER_SERVICE_AREAS)
   @IsUUID(undefined, { each: true })
   districtIds!: string[];
+}
+
+export class UploadProviderDocumentDto {
+  @ApiProperty({ enum: DocumentType })
+  @IsIn(Object.values(DocumentType))
+  type!: DocumentType;
+
+  @ApiProperty()
+  @IsUUID()
+  fileId!: string;
+
+  @ApiPropertyOptional({ description: 'ISO 8601. Süresi dolan belgeler incelemede reddedilir.' })
+  @IsOptional()
+  @IsISO8601()
+  expiresAt?: string;
 }

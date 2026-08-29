@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { AuthSession, CurrentUser } from '@talpio/types';
 import type { Request, Response } from 'express';
 
@@ -72,6 +72,9 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(200)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  // Jeton yenileme parola denemesi değil; birden fazla sekme açık olan normal
+  // bir kullanıcı dar kimlik limitine kolayca takılırdı.
+  @SkipThrottle({ auth: true })
   @ApiOperation({ summary: 'Yenileme jetonuyla yeni erişim jetonu üretir' })
   async refresh(
     @Body() dto: RefreshDto,

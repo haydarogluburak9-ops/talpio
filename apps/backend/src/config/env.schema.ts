@@ -105,7 +105,7 @@ export const envSchema = z
 
     // Bildirim
     PUSH_DRIVER: z.enum(['mock', 'expo']).default('mock'),
-    MAIL_DRIVER: z.enum(['mock', 'smtp']).default('mock'),
+    MAIL_DRIVER: z.enum(['mock', 'smtp', 'resend']).default('mock'),
     SMS_DRIVER: z.enum(['mock', 'netgsm', 'twilio']).default('mock'),
     MAIL_FROM: z.string().default('Talpio <no-reply@talpio.com>'),
     SMS_SENDER: z.string().default('TALPIO'),
@@ -119,6 +119,8 @@ export const envSchema = z
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
     SMTP_SECURE: booleanFromString.default(false),
+    /** Resend API anahtarı; `MAIL_DRIVER=resend` seçildiğinde zorunludur. */
+    RESEND_API_KEY: z.string().optional(),
     TWILIO_ACCOUNT_SID: z.string().optional(),
     TWILIO_AUTH_TOKEN: z.string().optional(),
     TWILIO_FROM: z.string().optional(),
@@ -134,7 +136,12 @@ export const envSchema = z
     OTP_TTL_MINUTES: z.coerce.number().int().positive().default(5),
 
     // Ödeme
-    PAYMENT_DRIVER: z.enum(['mock', 'iyzico', 'paytr']).default('mock'),
+    /**
+     * `disabled`, platform üzerinden tahsilat yapılmayan sürümler içindir ve
+     * her ödeme denemesini açıkça reddeder. `mock` ise denemeyi başarılı sayar;
+     * bu yüzden yalnızca geliştirme ortamında kullanılabilir.
+     */
+    PAYMENT_DRIVER: z.enum(['mock', 'disabled', 'iyzico', 'paytr']).default('mock'),
     /**
      * Ödeme sağlayıcısının mutabakat para birimi; ilan fiyatlarıyla ilgisi yok.
      * iyzico yalnızca lira ile çalıştığı için varsayılan TRY kaldı.
@@ -186,11 +193,13 @@ export const envSchema = z
       }
       // Mock sağlayıcı para hareketi yapmadan ödemeyi başarılı sayar; canlıda
       // seçilmesi tahsil edilmemiş siparişlerin ödenmiş görünmesi demektir.
+      // Tahsilat yapılmayacaksa doğru değer `disabled`.
       if (env.PAYMENT_DRIVER === 'mock') {
         ctx.addIssue({
           code: 'custom',
           path: ['PAYMENT_DRIVER'],
-          message: 'Mock ödeme sağlayıcısı production ortamında kullanılamaz.',
+          message:
+            'Mock ödeme sağlayıcısı production ortamında kullanılamaz. Tahsilat alınmayacaksa PAYMENT_DRIVER=disabled kullanın.',
         });
       }
       if (env.AI_DRIVER === 'mock') {
@@ -249,6 +258,16 @@ export const envSchema = z
           message: 'SMTP sürücüsü için SMTP_HOST zorunludur.',
         });
       }
+      // Anahtarsız Resend sürücüsü hata fırlatmaz, gönderimi başarısız sayar;
+      // e-posta doğrulama ve şifre sıfırlama buna bağlı olduğu için eksiklik
+      // ancak kullanıcı bağlantıyı bekleyip alamayınca fark edilirdi.
+      if (env.MAIL_DRIVER === 'resend' && !env.RESEND_API_KEY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['RESEND_API_KEY'],
+          message: 'Resend sürücüsü için RESEND_API_KEY zorunludur.',
+        });
+      }
       if (env.PAYMENT_DRIVER === 'iyzico' && (!env.IYZICO_API_KEY || !env.IYZICO_SECRET_KEY)) {
         ctx.addIssue({
           code: 'custom',
@@ -263,7 +282,39 @@ export const envSchema = z
           message: 'Mock SMS sürücüsü production ortamında kullanılamaz.',
         });
       }
-      if (weakSecret(env.PAYMENT_WEBHOOK_SECRET)) {
+      // Kimlik bilgisi eksik olan SMS sürücüsü hata fırlatmaz; gönderimi
+      // "başarısız" işaretleyip sessizce geçer. Telefon doğrulaması buna bağlı
+      // olduğu için eksiklik ancak kullanıcı kaydolamayınca fark edilirdi.
+      if (env.SMS_DRIVER === 'netgsm' && (!env.NETGSM_USER || !env.NETGSM_PASS)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['NETGSM_USER'],
+          message: 'Netgsm sürücüsü için NETGSM_USER ve NETGSM_PASS zorunludur.',
+        });
+      }
+      if (
+        env.SMS_DRIVER === 'twilio' &&
+        (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN || !env.TWILIO_FROM)
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['TWILIO_ACCOUNT_SID'],
+          message:
+            'Twilio sürücüsü için TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN ve TWILIO_FROM zorunludur.',
+        });
+      }
+      // Depolama anahtarları örnek dosyada CHANGE_ME ile geliyor; canlıda
+      // kalırsa medya kovası varsayılan kimlikle erişilebilir olur.
+      if (weakSecret(env.S3_ACCESS_KEY) || weakSecret(env.S3_SECRET_KEY)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['S3_SECRET_KEY'],
+          message: 'Production ortamında varsayılan depolama anahtarları kullanılamaz.',
+        });
+      }
+      // Tahsilat kapalıyken webhook zaten reddedildiği için anahtar aranmaz;
+      // aksi hâlde hiç kullanılmayacak bir sır üretmek zorunlu kılınırdı.
+      if (env.PAYMENT_DRIVER !== 'disabled' && weakSecret(env.PAYMENT_WEBHOOK_SECRET)) {
         ctx.addIssue({
           code: 'custom',
           path: ['PAYMENT_WEBHOOK_SECRET'],

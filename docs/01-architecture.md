@@ -92,7 +92,8 @@ Kesişen ilgi alanları (cross-cutting):
 | Yanıt formatı  | Global `ResponseInterceptor` → `{ success, data, meta, error }`        |
 | Hata           | Global `AllExceptionsFilter` → makine-okunur `code` + kullanıcı mesajı |
 | Log            | `pino` (JSON, request-id korelasyonu, PII maskeleme)                   |
-| Rate limit     | `@nestjs/throttler` + Redis store                                      |
+| Rate limit     | `@nestjs/throttler` + Redis store; kimlik uçlarına ayrı `auth` limiti  |
+| CSRF           | `CsrfGuard` → çerezli yazma isteklerinde `Origin`/`Referer` kontrolü   |
 | Dosya          | `FilesModule` → S3/MinIO presigned URL, MIME + magic-byte doğrulaması  |
 | İzlenebilirlik | `AuditLogModule` (kim, ne, ne zaman, önce/sonra)                       |
 

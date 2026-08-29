@@ -100,6 +100,12 @@ export function SettingsContent() {
       <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/kvkk`)}>
         <Text variant="bodyStrong">{t('settings.legalKvkk')}</Text>
       </Card>
+      <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/mesafeli-satis`)}>
+        <Text variant="bodyStrong">{t('nav.distanceSales')}</Text>
+      </Card>
+      <Card onPress={() => void Linking.openURL(`${WEB_ORIGIN}/yasal/cerez-politikasi`)}>
+        <Text variant="bodyStrong">{t('nav.cookies')}</Text>
+      </Card>
 
       <Text variant="title">{t('settings.about')}</Text>
       <Card>

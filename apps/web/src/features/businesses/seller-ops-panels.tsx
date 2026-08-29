@@ -11,6 +11,8 @@ import { Button, EmptyState, Input, ListSkeleton } from '@talpio/ui';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { EmploymentClaimsPanel } from '@/features/businesses/employment-claims-panel';
+import { VerificationDocumentsPanel } from '@/features/businesses/verification-documents-panel';
 import { CurrencySelect } from '@/features/currency/currency-select';
 import { useMyCurrency } from '@/features/currency/use-currency';
 import { useMyBusinesses } from '@/features/requests/use-requests';
@@ -71,6 +73,8 @@ export function SellerOpsPanels() {
         ) : null}
       </div>
 
+      <VerificationDocumentsPanel />
+      <EmploymentClaimsPanel businessId={selected.id} />
       <LocaleSettingsForm businessId={selected.id} />
       <DashboardV2 businessId={selected.id} />
       <CrmAnalyticsStrip businessId={selected.id} />

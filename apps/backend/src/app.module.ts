@@ -20,11 +20,14 @@ import { PaymentProviderModule } from '@infra/payments/payment-provider.module';
 import { CurrencyModule } from '@infra/currency/currency.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { QueueModule } from '@infra/queue/queue.module';
+import { RedisThrottlerStorage } from '@infra/redis/redis-throttler.storage';
 import { RedisModule } from '@infra/redis/redis.module';
 import { StorageModule } from '@infra/storage/storage.module';
 import { AdminModule } from '@modules/admin/admin.module';
 import { AgentModule } from '@modules/agent/agent.module';
+import { AuthController } from '@modules/auth/auth.controller';
 import { AuthModule } from '@modules/auth/auth.module';
+import { CsrfGuard } from '@modules/auth/guards/csrf.guard';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@modules/auth/guards/permissions.guard';
 import { RolesGuard } from '@modules/auth/guards/roles.guard';
@@ -55,14 +58,25 @@ import { UsersModule } from '@modules/users/users.module';
     LoggerModule,
     EventEmitterModule.forRoot({ global: true, delimiter: '.' }),
     ThrottlerModule.forRootAsync({
-      imports: [AppConfigModule],
-      inject: [AppConfigService],
-      useFactory: (config: AppConfigService) => ({
+      imports: [AppConfigModule, RedisModule],
+      inject: [AppConfigService, RedisThrottlerStorage],
+      useFactory: (config: AppConfigService, storage: RedisThrottlerStorage) => ({
+        // Sayaçlar Redis'te tutulur; süreç belleğinde tutulsaydı her API kopyası
+        // kendi limitini uygular ve sınır kopya sayısı kadar katlanırdı.
+        storage,
         throttlers: [
           {
             name: 'default',
             ttl: config.throttle.ttlSeconds * 1000,
             limit: config.throttle.limit,
+          },
+          {
+            // Kimlik uçları için ayrı ve daha dar pencere. Yalnızca
+            // AuthController'a uygulanır; aksi hâlde tüm API bu limite tabi olurdu.
+            name: 'auth',
+            ttl: config.throttle.ttlSeconds * 1000,
+            limit: config.throttle.authLimit,
+            skipIf: (context) => context.getClass() !== AuthController,
           },
         ],
       }),
@@ -106,6 +120,9 @@ import { UsersModule } from '@modules/users/users.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Çerezle gelen yazma isteklerinin kaynağını doğrular; kimlik kontrolünden
+    // önce çalışır ki sahte kaynaklı istek oturumu hiç kullanamasın.
+    { provide: APP_GUARD, useClass: CsrfGuard },
     // Kimlik doğrulama varsayılan olarak açıktır; herkese açık uçlar
     // `@Public()` ile işaretlenir. Rol kontrolü kimlikten sonra çalışır;
     // @RequirePermissions varsa PermissionsGuard ek kontrol uygular.

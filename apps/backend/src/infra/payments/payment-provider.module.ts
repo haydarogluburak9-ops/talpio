@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 
 import { AppConfigService } from '@config/app-config.service';
 
+import { DisabledPaymentProvider } from './disabled-payment.provider';
 import { IyzicoPaymentProvider } from './iyzico.provider';
 import { MockPaymentProvider } from './mock-payment.provider';
 import { PAYMENT_PROVIDER, type PaymentProvider } from './payment-provider';
@@ -16,11 +17,13 @@ function selectProvider(
   config: AppConfigService,
   mock: MockPaymentProvider,
   iyzico: IyzicoPaymentProvider,
+  disabled: DisabledPaymentProvider,
 ): PaymentProvider {
   const driver = config.payment.driver;
 
   if (driver === 'mock') return mock;
   if (driver === 'iyzico') return iyzico;
+  if (driver === 'disabled') return disabled;
 
   throw new Error(`Ödeme sağlayıcısı adaptörü henüz yazılmadı: ${driver}`);
 }
@@ -30,9 +33,15 @@ function selectProvider(
   providers: [
     MockPaymentProvider,
     IyzicoPaymentProvider,
+    DisabledPaymentProvider,
     {
       provide: PAYMENT_PROVIDER,
-      inject: [AppConfigService, MockPaymentProvider, IyzicoPaymentProvider],
+      inject: [
+        AppConfigService,
+        MockPaymentProvider,
+        IyzicoPaymentProvider,
+        DisabledPaymentProvider,
+      ],
       useFactory: selectProvider,
     },
   ],

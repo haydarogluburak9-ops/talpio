@@ -57,6 +57,9 @@ type PrismaMock = {
   verificationToken: { updateMany: jest.Mock };
   providerProfile: { findFirst: jest.Mock; update: jest.Mock };
   providerDocument: { updateMany: jest.Mock };
+  business: { updateMany: jest.Mock };
+  socialProfile: { updateMany: jest.Mock; update?: jest.Mock; findMany?: jest.Mock };
+  businessMembership: { findMany: jest.Mock };
   $transaction: jest.Mock;
 };
 
@@ -77,6 +80,9 @@ function createPrismaMock(): PrismaMock {
     verificationToken: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     providerProfile,
     providerDocument: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    business: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    socialProfile: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    businessMembership: { findMany: jest.fn().mockResolvedValue([]) },
     // Servis dizi biçimli işlem kullanır; mock çağrıları olduğu gibi bekler.
     $transaction: jest.fn((operations: Promise<unknown>[]) => Promise.all(operations)),
   };
@@ -102,6 +108,7 @@ function createService(
     config,
     audit as unknown as AuditLogService,
     notifications as never,
+    { signedUrl: jest.fn().mockResolvedValue('http://cdn/signed') } as never,
   );
 }
 
@@ -356,6 +363,7 @@ describe('AdminService', () => {
         postComment: { findMany: jest.fn().mockResolvedValue([]) },
         socialProfile: {
           update: jest.fn().mockResolvedValue({}),
+          updateMany: jest.fn().mockResolvedValue({ count: 0 }),
           findMany: jest.fn().mockResolvedValue([]),
         },
         feedItem: { deleteMany: jest.fn().mockResolvedValue({ count: 1 }) },

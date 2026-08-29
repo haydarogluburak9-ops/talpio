@@ -182,6 +182,21 @@ export function createAdminResource(http: HttpClient) {
       });
     },
 
+    listProviderDocuments(id: string, signal?: AbortSignal) {
+      return http.get<
+        Array<{
+          id: string;
+          type: string;
+          status: string;
+          mimeType: string;
+          originalName: string | null;
+          url: string;
+          createdAt: string;
+          rejectionReason: string | null;
+        }>
+      >(API_ROUTES.admin.providerDocumentsById(id), { ...(signal ? { signal } : {}) });
+    },
+
     updateProviderVerification(
       id: string,
       verificationStatus: VerificationStatus,

@@ -41,6 +41,8 @@ export const en: Messages = {
     terms: 'Terms of use',
     kvkk: 'KVKK',
     gdpr: 'GDPR',
+    distanceSales: 'Distance sales contract',
+    cookies: 'Cookie policy',
     becomeProvider: 'Business panel',
     myJobs: 'My service requests',
     serviceRequests: 'Service requests',
@@ -1518,8 +1520,45 @@ export const en: Messages = {
       'Talpio processes personal data to match requests with sellers and to keep payments and messages on the platform.',
     dataBody:
       'Depending on your location this notice covers GDPR and, for Türkiye, KVKK. Data is used for accounts, matching, messaging, payments, and fraud prevention. Contact support to exercise your rights. Counsel-reviewed notices will replace this summary before production launch.',
+    distanceSalesTitle: 'Distance sales contract',
+    distanceSalesIntro:
+      'This page summarises the distance contract formed between buyer and seller for orders placed through Talpio.',
+    distanceSalesBody:
+      'Talpio is a marketplace: the contract is formed between the buyer who places the order and the seller who provides the product or service, while Talpio acts as an intermediary service provider. The seller’s trade name, address, and contact details appear on the order page. Before you confirm an order, the nature of the work, the total price, taxes, and any additional charges are shown to you. Payment is made through the method agreed on the platform and is transferred to the seller after commission is deducted. Consumers may withdraw within fourteen days of delivery without giving a reason; the right does not apply to services already started and completed with the consumer’s consent, to goods prepared to personal specification, or in the other cases set out in the applicable distance selling rules. Withdrawal notices are sent through support, and refunds are issued to the original payment method within the statutory period. Disputes may be taken to the consumer arbitration committee or consumer court according to the monetary thresholds. Counsel-reviewed copy will replace this summary before production launch.',
+    cookiesTitle: 'Cookie policy',
+    cookiesIntro: 'This page explains which cookies Talpio sets and why.',
+    cookiesBody:
+      'Talpio only uses cookies that are strictly necessary for the service to work. The session cookies (talpio_access and talpio_refresh) identify a signed-in user; they cannot be read by JavaScript and are sent only to our own domain. The language cookie (talpio_locale) remembers the interface language you picked. We do not use advertising, profiling, or third-party tracking cookies, which is why no consent banner is shown. You can delete these cookies in your browser settings, but doing so ends your session and resets your language preference. If a new cookie category is ever added, this page will be updated and your explicit consent will be requested where required. Counsel-reviewed copy will replace this summary before production launch.',
     disclaimer:
       'These pages are product summaries, not lawyer-approved legal documents. Have counsel review them before production launch.',
+  },
+  authEmail: {
+    greeting: 'Hello {name},',
+    verifySubject: 'Verify your Talpio email address',
+    verifyBody:
+      'Confirm your email address to start using your Talpio account:\n{link}\n\nThe link is valid for {hours} hours. If you did not create this account, you can ignore this message.',
+    resetSubject: 'Reset your Talpio password',
+    resetBody:
+      'Open the link below to set a new password:\n{link}\n\nThe link is valid for {hours} hours. If you did not request this, your password stays unchanged and you can ignore this message.',
+  },
+  verification: {
+    title: 'Verified badge',
+    hint: 'Upload the incorporation documents required in your country. After we approve them, your profile shows a blue check and you can verify your employees.',
+    upload: 'Upload document',
+    uploading: 'Uploading…',
+    pending: 'Under review',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    required: 'Required for {country}',
+    empty: 'No documents uploaded yet.',
+    claimCta: 'I work at this company',
+    claimSent: 'Your request was sent to the company owner.',
+    claimsTitle: 'Employee verification requests',
+    claimsHint: 'People who say they work here. Approving them adds a blue check to their profile.',
+    approve: 'Verify',
+    reject: 'Decline',
+    noClaims: 'No pending requests.',
+    searchHint: 'Search a verified company by name',
   },
   admin: {
     panel: 'Admin panel',

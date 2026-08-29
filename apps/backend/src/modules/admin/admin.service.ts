@@ -37,6 +37,7 @@ import { AppException } from '@common/errors/app.exception';
 import { parseNameTranslations } from '@common/i18n/localized-text';
 import { AppConfigService } from '@config/app-config.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
+import { StorageService } from '@infra/storage/storage.service';
 import { QueueService } from '@infra/queue/queue.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { NotificationsService } from '@modules/notifications/notifications.service';
@@ -115,6 +116,7 @@ export class AdminService {
     private readonly config: AppConfigService,
     private readonly audit: AuditLogService,
     private readonly notifications: NotificationsService,
+    private readonly storage: StorageService,
     @Optional() private readonly queues?: QueueService,
   ) {}
 
@@ -447,7 +449,40 @@ export class AdminService {
           ...(approved ? {} : { rejectionReason }),
         },
       }),
+      this.prisma.business.updateMany({
+        where: { providerProfileId: id, deletedAt: null },
+        data: { verificationStatus: dto.verificationStatus },
+      }),
     ]);
+
+    // Rozet, satıcı profilinden bağımsız bir alanda duruyordu; onay burada
+    // yazılmazsa admin tik verse bile sosyal profilde görünmezdi.
+    await this.prisma.socialProfile.updateMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { userId: current.userId, kind: 'PERSONAL' },
+          { business: { providerProfileId: id, deletedAt: null } },
+        ],
+      },
+      data: { isVerifiedDisplay: approved },
+    });
+
+    if (!approved) {
+      // Firma tikini kaybedince çalışanların sahibi tarafından verilen tikleri
+      // de düşer: aksi halde reddedilmiş bir firma hâlâ onaylı görünürdü.
+      const members = await this.prisma.businessMembership.findMany({
+        where: { business: { providerProfileId: id, deletedAt: null } },
+        select: { userId: true },
+      });
+      const memberIds = members.map((row) => row.userId);
+      if (memberIds.length > 0) {
+        await this.prisma.socialProfile.updateMany({
+          where: { userId: { in: memberIds }, kind: 'PERSONAL', deletedAt: null },
+          data: { isVerifiedDisplay: false },
+        });
+      }
+    }
 
     await this.audit.record(
       this.entry(actor, context, {
@@ -479,6 +514,39 @@ export class AdminService {
     }
 
     return toAdminProvider(updated, this.config.fileBaseUrl);
+  }
+
+  /**
+   * İnceleme kuyruğundaki belgeleri imzalı adresle döner.
+   *
+   * Belgeler herkese açık sunulmaz; yönetim önizlemesi olmadan onay kararı
+   * yalnızca sayıya bakılarak verilirdi.
+   */
+  async listProviderDocuments(providerId: string) {
+    const profile = await this.prisma.providerProfile.findFirst({
+      where: { id: providerId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!profile) throw AppException.notFound('Satıcı profili', providerId);
+
+    const rows = await this.prisma.providerDocument.findMany({
+      where: { providerProfileId: providerId },
+      include: { file: { select: { storageKey: true, mimeType: true, originalName: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return Promise.all(
+      rows.map(async (row) => ({
+        id: row.id,
+        type: row.type,
+        status: row.status,
+        mimeType: row.file.mimeType,
+        originalName: row.file.originalName,
+        url: await this.storage.signedUrl(row.file.storageKey),
+        createdAt: row.createdAt.toISOString(),
+        rejectionReason: row.rejectionReason,
+      })),
+    );
   }
 
   async listNotifications(

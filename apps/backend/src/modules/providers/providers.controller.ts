@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   MARKETPLACE_ROLES,
@@ -20,6 +30,7 @@ import {
   ReplaceProviderServiceAreasDto,
   ReplaceProviderServicesDto,
   UpdateProviderProfileDto,
+  UploadProviderDocumentDto,
 } from './dto/provider-profile.dto';
 import { ProvidersService } from './providers.service';
 
@@ -83,6 +94,20 @@ export class ProvidersController {
     @Body() dto: ReplaceProviderServiceAreasDto,
   ): Promise<ProviderProfile> {
     return this.providers.replaceMyServiceAreas(user, dto);
+  }
+
+  @Get('me/documents')
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Kuruluş belgelerini ve ülke paketini listeler' })
+  listMyDocuments(@CurrentUser() user: AuthenticatedUser) {
+    return this.providers.listMyDocuments(user);
+  }
+
+  @Post('me/documents')
+  @Roles(...MARKETPLACE_ROLES)
+  @ApiOperation({ summary: 'Kuruluş belgesi yükler ve incelemeye gönderir' })
+  uploadDocument(@CurrentUser() user: AuthenticatedUser, @Body() dto: UploadProviderDocumentDto) {
+    return this.providers.uploadDocument(user, dto);
   }
 
   /** Kart ve yorumlar aynı sayfada durur; biri ziyaretçiye açıksa diğeri de açık olmalı. */

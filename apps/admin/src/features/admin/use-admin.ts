@@ -259,6 +259,14 @@ export function useRevokeUserSessions() {
   });
 }
 
+export function useProviderDocuments(providerId: string | null) {
+  return useQuery({
+    queryKey: ['admin', 'providers', providerId, 'documents'],
+    queryFn: ({ signal }) => apiClient.admin.listProviderDocuments(providerId!, signal),
+    enabled: Boolean(providerId),
+  });
+}
+
 export function useUpdateProviderVerification() {
   const queryClient = useQueryClient();
 

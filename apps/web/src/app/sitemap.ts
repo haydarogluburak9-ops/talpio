@@ -20,6 +20,8 @@ const ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.S
     { path: '/yasal/kullanim-kosullari', priority: 0.3, changeFrequency: 'yearly' },
     { path: '/yasal/gizlilik', priority: 0.3, changeFrequency: 'yearly' },
     { path: '/yasal/kvkk', priority: 0.3, changeFrequency: 'yearly' },
+    { path: '/yasal/mesafeli-satis', priority: 0.3, changeFrequency: 'yearly' },
+    { path: '/yasal/cerez-politikasi', priority: 0.3, changeFrequency: 'yearly' },
   ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

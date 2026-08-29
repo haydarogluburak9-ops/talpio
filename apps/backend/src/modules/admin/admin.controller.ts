@@ -155,6 +155,13 @@ export class AdminController {
     return this.admin.listProviders(query);
   }
 
+  @Get('providers/:id/documents')
+  @Roles(...READ_ROLES)
+  @ApiOperation({ summary: 'Satıcının kuruluş belgelerini imzalı adresle listeler' })
+  listProviderDocuments(@Param('id', ParseUUIDPipe) id: string) {
+    return this.admin.listProviderDocuments(id);
+  }
+
   @Patch('providers/:id/verification')
   @Roles(...WRITE_ROLES)
   @ApiOperation({ summary: 'Satıcı doğrulama kararını uygular' })

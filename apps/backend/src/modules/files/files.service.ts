@@ -8,6 +8,8 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 import { StorageService } from '@infra/storage/storage.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 
+import { matchesDeclaredType } from './file-signature';
+
 /** Yükleme türüne göre depo klasörü, boyut sınırı ve görünürlük. */
 interface PurposeRule {
   folder: string;
@@ -96,6 +98,15 @@ export class FilesService {
       throw new AppException('UNSUPPORTED_FILE_TYPE', {
         message: 'Bu dosya türü kabul edilmiyor.',
         context: { mimeType: input.mimeType, allowed },
+      });
+    }
+
+    // Başlıktaki tür istemcinin iddiası; dosyalar herkese açık sunulduğu için
+    // içeriğin de aynı türde olduğunu doğrulamadan kabul edemeyiz.
+    if (!matchesDeclaredType(input.buffer, input.mimeType)) {
+      throw new AppException('UNSUPPORTED_FILE_TYPE', {
+        message: 'Dosya içeriği belirtilen türle uyuşmuyor.',
+        context: { mimeType: input.mimeType },
       });
     }
 

@@ -1275,6 +1275,17 @@ export const de: Messages = {
     disclaimer:
       'Diese Seiten sind Produktzusammenfassungen, keine anwaltlich geprüften Rechtsdokumente. Lassen Sie sie vor dem Produktionsstart rechtlich prüfen.',
   },
+  authEmail: {
+    ...en.authEmail,
+    greeting: 'Hallo {name},',
+    verifySubject: 'Bestätigen Sie Ihre Talpio-E-Mail-Adresse',
+    verifyBody:
+      'Bestätigen Sie Ihre E-Mail-Adresse, um Ihr Talpio-Konto zu nutzen:\n{link}\n\nDer Link ist {hours} Stunden gültig. Wenn Sie dieses Konto nicht erstellt haben, können Sie diese Nachricht ignorieren.',
+    resetSubject: 'Setzen Sie Ihr Talpio-Passwort zurück',
+    resetBody:
+      'Öffnen Sie den folgenden Link, um ein neues Passwort festzulegen:\n{link}\n\nDer Link ist {hours} Stunden gültig. Wenn Sie dies nicht angefordert haben, bleibt Ihr Passwort unverändert.',
+  },
+  verification: { ...en.verification },
   admin: {
     ...en.admin,
     panel: 'Admin-Panel',

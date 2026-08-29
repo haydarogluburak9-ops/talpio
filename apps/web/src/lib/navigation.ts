@@ -17,6 +17,8 @@ export const footerNav: { titleKey: string; items: NavItem[] }[] = [
       { href: '/yasal/gizlilik', labelKey: 'nav.privacy' },
       { href: '/yasal/kullanim-kosullari', labelKey: 'nav.terms' },
       { href: '/yasal/kvkk', labelKey: 'nav.gdpr' },
+      { href: '/yasal/mesafeli-satis', labelKey: 'nav.distanceSales' },
+      { href: '/yasal/cerez-politikasi', labelKey: 'nav.cookies' },
     ],
   },
 ];

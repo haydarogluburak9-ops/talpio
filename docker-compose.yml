@@ -130,6 +130,7 @@ services:
       SMS_DRIVER: ${SMS_DRIVER:-mock}
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
       MAIL_FROM: "${MAIL_FROM:-Talpio <no-reply@talpio.com>}"
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
       SMS_SENDER: ${SMS_SENDER:-TALPIO}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -189,6 +190,7 @@ services:
       SMS_DRIVER: ${SMS_DRIVER:-mock}
       EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN:-}
       MAIL_FROM: "${MAIL_FROM:-Talpio <no-reply@talpio.com>}"
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
       SMS_SENDER: ${SMS_SENDER:-TALPIO}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}

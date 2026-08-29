@@ -67,10 +67,22 @@ function createService(prisma: PrismaMock, storage: StorageMock): FilesService {
   );
 }
 
+/** İmza doğrulamasından geçmesi için türüne uygun başlık baytları taşıyan gövde. */
+const HEADERS: Record<string, number[]> = {
+  'image/jpeg': [0xff, 0xd8, 0xff],
+  'application/pdf': [0x25, 0x50, 0x44, 0x46],
+};
+
+function bodyFor(mimeType: string): Buffer {
+  return Buffer.concat([Buffer.from(HEADERS[mimeType] ?? []), Buffer.from('icerik')]);
+}
+
 function imageInput(overrides: Record<string, unknown> = {}) {
+  const mimeType = (overrides.mimeType as string | undefined) ?? 'image/jpeg';
+
   return {
-    buffer: Buffer.from('fake'),
-    mimeType: 'image/jpeg',
+    buffer: bodyFor(mimeType),
+    mimeType,
     sizeBytes: 1024,
     originalName: 'mutfak.jpg',
     ...overrides,
@@ -155,6 +167,32 @@ describe('FilesService', () => {
       await expect(
         codeOfRejection(() =>
           service.upload(owner, FilePurpose.JOB_PHOTO, imageInput({ mimeType: 'application/pdf' })),
+        ),
+      ).resolves.toBe('UNSUPPORTED_FILE_TYPE');
+    });
+
+    it('resim gibi işaretlenmiş HTML içeriğini reddeder', async () => {
+      await expect(
+        codeOfRejection(() =>
+          service.upload(
+            owner,
+            FilePurpose.JOB_PHOTO,
+            imageInput({ buffer: Buffer.from('<html><script>alert(1)</script>') }),
+          ),
+        ),
+      ).resolves.toBe('UNSUPPORTED_FILE_TYPE');
+
+      expect(storage.upload).not.toHaveBeenCalled();
+    });
+
+    it('PDF diye işaretlenmiş resmi belge amacında reddeder', async () => {
+      await expect(
+        codeOfRejection(() =>
+          service.upload(
+            owner,
+            FilePurpose.PROVIDER_DOCUMENT,
+            imageInput({ mimeType: 'application/pdf', buffer: bodyFor('image/jpeg') }),
+          ),
         ),
       ).resolves.toBe('UNSUPPORTED_FILE_TYPE');
     });

@@ -43,6 +43,8 @@ export const tr = {
     terms: 'Kullanım koşulları',
     kvkk: 'KVKK',
     gdpr: 'GDPR',
+    distanceSales: 'Mesafeli satış sözleşmesi',
+    cookies: 'Çerez politikası',
     becomeProvider: 'İş paneli',
     myJobs: 'Hizmet taleplerim',
     serviceRequests: 'Hizmet talepleri',
@@ -1532,8 +1534,45 @@ export const tr = {
       'Talpio kişisel verileri talepleri satıcılarla eşleştirmek, mesajları ve ödemeleri platformda tutmak için işler.',
     dataBody:
       'Konumunuza göre bu metin GDPR’yi ve Türkiye için KVKK’yı kapsar. Veriler hesap, eşleştirme, mesajlaşma, ödeme ve dolandırıcılık önleme için kullanılır. Haklarınızı kullanmak için destek ile iletişime geçebilirsiniz. Üretim lansmanı öncesi avukat onaylı aydınlatma metni bu özetin yerini alacaktır.',
+    distanceSalesTitle: 'Mesafeli satış sözleşmesi',
+    distanceSalesIntro:
+      'Bu metin, Talpio üzerinden verilen siparişlerde alıcı ile satıcı arasında kurulan mesafeli sözleşmenin koşullarını özetler.',
+    distanceSalesBody:
+      'Talpio bir pazaryeridir: sözleşme, siparişi veren alıcı ile ürünü veya hizmeti sunan satıcı arasında kurulur; Talpio 6563 sayılı kanun kapsamında aracı hizmet sağlayıcı sıfatıyla yer alır. Satıcının unvanı, adresi ve iletişim bilgileri sipariş sayfasında gösterilir. Siparişi onaylamadan önce işin niteliği, toplam bedel, vergiler ve varsa ek masraflar size sunulur. Ödeme, platform üzerinden anlaşılan yöntemle alınır ve komisyon düşüldükten sonra satıcıya aktarılır. Tüketici, 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği uyarınca teslimden itibaren on dört gün içinde gerekçe göstermeksizin cayma hakkına sahiptir. Tüketicinin onayıyla ifasına başlanan ve tamamlanan hizmetlerde, kişiye özel hazırlanan ürünlerde ve yönetmelikte sayılan diğer hâllerde cayma hakkı kullanılamaz. Cayma bildirimi destek kanalları üzerinden iletilir; iade, yasal süre içinde ödemenin yapıldığı yöntemle gerçekleştirilir. Uyuşmazlıklarda alıcı, parasal sınırlara göre tüketici hakem heyetine veya tüketici mahkemesine başvurabilir. Üretim lansmanı öncesi avukat onaylı sözleşme bu özetin yerini alacaktır.',
+    cookiesTitle: 'Çerez politikası',
+    cookiesIntro: 'Bu sayfa Talpio’nun hangi çerezleri kullandığını ve neden kullandığını açıklar.',
+    cookiesBody:
+      'Talpio yalnızca hizmetin çalışması için zorunlu olan çerezleri kullanır. Oturum çerezleri (talpio_access ve talpio_refresh) giriş yapmış kullanıcıyı tanır; JavaScript tarafından okunamaz ve yalnızca kendi alan adımıza gönderilir. Dil çerezi (talpio_locale) seçtiğiniz arayüz dilini hatırlar. Reklam, profilleme veya üçüncü taraf takip çerezi kullanmadığımız için onay bandı gösterilmez. Bu çerezleri tarayıcı ayarlarınızdan silebilirsiniz; sildiğinizde oturumunuz sonlanır ve dil tercihiniz sıfırlanır. İleride yeni bir çerez türü eklenirse bu sayfa güncellenir ve gereken hâllerde açık rızanız istenir. Üretim lansmanı öncesi avukat onaylı metin bu özetin yerini alacaktır.',
     disclaimer:
       'Bu sayfalar ürün özetidir; avukat onaylı hukuki belge değildir. Üretim lansmanı öncesi hukuki inceleme gerekir.',
+  },
+  authEmail: {
+    greeting: 'Merhaba {name},',
+    verifySubject: 'Talpio e-posta adresinizi doğrulayın',
+    verifyBody:
+      'Talpio hesabınızı kullanmaya başlamak için e-posta adresinizi doğrulayın:\n{link}\n\nBağlantı {hours} saat geçerlidir. Bu hesabı siz oluşturmadıysanız bu iletiyi yok sayabilirsiniz.',
+    resetSubject: 'Talpio şifrenizi sıfırlayın',
+    resetBody:
+      'Yeni şifrenizi belirlemek için aşağıdaki bağlantıya gidin:\n{link}\n\nBağlantı {hours} saat geçerlidir. Bu isteği siz yapmadıysanız şifreniz değişmez, iletiyi yok sayabilirsiniz.',
+  },
+  verification: {
+    title: 'Onaylı hesap (mavi tik)',
+    hint: 'Ülkenizin istediği kuruluş belgelerini yükleyin. Onayladığımızda profilinizde mavi tik görünür ve çalışanlarınıza da tik verebilirsiniz.',
+    upload: 'Belge yükle',
+    uploading: 'Yükleniyor…',
+    pending: 'İncelemede',
+    approved: 'Onaylandı',
+    rejected: 'Reddedildi',
+    required: '{country} için istenen belgeler',
+    empty: 'Henüz belge yüklenmedi.',
+    claimCta: 'Bu firmada çalışıyorum',
+    claimSent: 'Başvurunuz firma sahibine iletildi.',
+    claimsTitle: 'Çalışan doğrulama başvuruları',
+    claimsHint: 'Bu firmada çalıştığını söyleyen kişiler. Onayladığınızda profillerine mavi tik eklenir.',
+    approve: 'Onayla',
+    reject: 'Reddet',
+    noClaims: 'Bekleyen başvuru yok.',
+    searchHint: 'Onaylı bir firmayı adıyla arayın',
   },
   admin: {
     panel: 'Yönetim paneli',

@@ -150,6 +150,7 @@ export class AppConfigService {
     netgsmUser?: string;
     netgsmPass?: string;
     netgsmHeader?: string;
+    resendApiKey?: string;
   } {
     const expoAccessToken = this.get('EXPO_ACCESS_TOKEN');
     const smtpHost = this.get('SMTP_HOST');
@@ -161,6 +162,7 @@ export class AppConfigService {
     const netgsmUser = this.get('NETGSM_USER');
     const netgsmPass = this.get('NETGSM_PASS');
     const netgsmHeader = this.get('NETGSM_HEADER');
+    const resendApiKey = this.get('RESEND_API_KEY');
     return {
       pushDriver: this.get('PUSH_DRIVER'),
       mailDriver: this.get('MAIL_DRIVER'),
@@ -180,6 +182,7 @@ export class AppConfigService {
       ...(netgsmUser ? { netgsmUser } : {}),
       ...(netgsmPass ? { netgsmPass } : {}),
       ...(netgsmHeader ? { netgsmHeader } : {}),
+      ...(resendApiKey ? { resendApiKey } : {}),
     };
   }
 

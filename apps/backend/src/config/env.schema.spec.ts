@@ -14,6 +14,8 @@ const productionBase = {
   PAYMENT_DRIVER: 'iyzico',
   PAYMENT_WEBHOOK_SECRET: 'c'.repeat(32),
   SMS_DRIVER: 'netgsm',
+  NETGSM_USER: 'netgsm-kullanici',
+  NETGSM_PASS: 'netgsm-parola',
   AI_DRIVER: 'openai',
   AI_OPENAI_API_KEY: 'sk-test',
   PUSH_DRIVER: 'expo',
@@ -86,6 +88,20 @@ describe('validateEnv', () => {
     ).toThrow(/Mock ödeme sağlayıcısı production/);
   });
 
+  it('tahsilat kapalıyken ödeme anahtarı istemez', () => {
+    // İlk sürümde platform üzerinden tahsilat yok; kullanılmayacak bir webhook
+    // sırrı ya da iyzico anahtarı zorunlu kılınmamalı.
+    const env = validateEnv({
+      ...productionBase,
+      PAYMENT_DRIVER: 'disabled',
+      PAYMENT_WEBHOOK_SECRET: undefined,
+      IYZICO_API_KEY: undefined,
+      IYZICO_SECRET_KEY: undefined,
+    });
+
+    expect(env.PAYMENT_DRIVER).toBe('disabled');
+  });
+
   it('production ortamında mock AI sürücüsünü reddeder', () => {
     expect(() =>
       validateEnv({
@@ -118,6 +134,50 @@ describe('validateEnv', () => {
         SMS_DRIVER: 'mock',
       }),
     ).toThrow(/Mock SMS sürücüsü production/);
+  });
+
+  it('production ortamında kimlik bilgisi olmayan SMS sürücüsünü reddeder', () => {
+    expect(() => validateEnv({ ...productionBase, NETGSM_PASS: undefined })).toThrow(
+      /NETGSM_USER ve NETGSM_PASS/,
+    );
+    // Twilio üç değer ister; yalnızca SID verilmesi yetmez.
+    expect(() =>
+      validateEnv({ ...productionBase, SMS_DRIVER: 'twilio', TWILIO_ACCOUNT_SID: 'AC1' }),
+    ).toThrow(/TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN ve TWILIO_FROM/);
+  });
+
+  it('kimlik bilgisi tam olan SMS sürücüsünü kabul eder', () => {
+    const env = validateEnv({
+      ...productionBase,
+      SMS_DRIVER: 'twilio',
+      TWILIO_ACCOUNT_SID: 'AC1',
+      TWILIO_AUTH_TOKEN: 'token',
+      TWILIO_FROM: '+15550000000',
+    });
+
+    expect(env.SMS_DRIVER).toBe('twilio');
+  });
+
+  it('production ortamında varsayılan depolama anahtarlarını reddeder', () => {
+    expect(() =>
+      validateEnv({ ...productionBase, S3_SECRET_KEY: 'CHANGE_ME_MINIO_PASSWORD' }),
+    ).toThrow(/varsayılan depolama anahtarları/);
+  });
+
+  it('production ortamında anahtarsız Resend sürücüsünü reddeder', () => {
+    expect(() => validateEnv({ ...productionBase, MAIL_DRIVER: 'resend' })).toThrow(
+      /RESEND_API_KEY/,
+    );
+  });
+
+  it('anahtarı olan Resend sürücüsünü kabul eder', () => {
+    const env = validateEnv({
+      ...productionBase,
+      MAIL_DRIVER: 'resend',
+      RESEND_API_KEY: 're_test',
+    });
+
+    expect(env.MAIL_DRIVER).toBe('resend');
   });
 
   it('production ortamında mock push ve e-posta sürücülerini reddeder', () => {

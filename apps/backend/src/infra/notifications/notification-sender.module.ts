@@ -15,6 +15,7 @@ import {
 } from './notification-sender';
 import {
   NetgsmSmsSender,
+  ResendEmailSender,
   SmtpEmailSender,
   TwilioSmsSender,
 } from './production-notification.senders';
@@ -55,12 +56,14 @@ function selectEmailSender(
   config: AppConfigService,
   mock: MockEmailSender,
   smtp: SmtpEmailSender,
+  resend: ResendEmailSender,
 ): EmailSender {
   const driver = config.notifications.mailDriver;
   warnIfMock(new Logger('NotificationSenderModule'), 'E-posta', driver);
 
   if (driver === 'mock') return mock;
   if (driver === 'smtp') return smtp;
+  if (driver === 'resend') return resend;
 
   throw new Error(`E-posta sürücüsü adaptörü henüz yazılmadı: ${String(driver)}`);
 }
@@ -90,6 +93,7 @@ function selectSmsSender(
     MockSmsSender,
     ExpoPushSender,
     SmtpEmailSender,
+    ResendEmailSender,
     NetgsmSmsSender,
     TwilioSmsSender,
     {
@@ -99,7 +103,7 @@ function selectSmsSender(
     },
     {
       provide: EMAIL_SENDER,
-      inject: [AppConfigService, MockEmailSender, SmtpEmailSender],
+      inject: [AppConfigService, MockEmailSender, SmtpEmailSender, ResendEmailSender],
       useFactory: selectEmailSender,
     },
     {

@@ -88,6 +88,10 @@ export const API_ROUTES = {
   businesses: {
     supplier: '/businesses/supplier',
     mine: '/businesses/mine',
+    search: '/businesses/search',
+    employmentClaims: (id: string) => `/businesses/${id}/employment-claims`,
+    employmentClaimByUser: (id: string, userId: string) =>
+      `/businesses/${id}/employment-claims/${userId}`,
     localeSettings: (id: string) => `/businesses/${id}/locale-settings`,
     crmCustomers: (id: string) => `/businesses/${id}/crm/customers`,
     crmCustomer: (id: string, customerId: string) =>
@@ -252,6 +256,7 @@ export const API_ROUTES = {
     providers: '/admin/providers',
     providerVerification: (id: string) => `/admin/providers/${id}/verification`,
     providerDocuments: '/admin/provider-documents',
+    providerDocumentsById: (id: string) => `/admin/providers/${id}/documents`,
     jobs: '/admin/jobs',
     offers: '/admin/offers',
     orders: '/admin/orders',

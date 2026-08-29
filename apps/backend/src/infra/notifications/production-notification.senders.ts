@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { renderNotification } from '@talpio/localization';
-import { NotificationChannel } from '@talpio/types';
+import { NotificationChannel, NotificationType } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
 
@@ -12,6 +12,7 @@ import type {
   SendResult,
   SmsSender,
   SmsTarget,
+  TransactionalMessage,
 } from './notification-sender';
 import { sendSmtpMail } from './smtp-client';
 
@@ -80,6 +81,144 @@ export class SmtpEmailSender implements EmailSender {
       locale: message.locale,
       sentAt: new Date().toISOString(),
     });
+
+    return { delivered: true, failureReason: null };
+  }
+
+  async sendTransactional(target: EmailTarget, message: TransactionalMessage): Promise<SendResult> {
+    const host = this.config.notifications.smtpHost;
+    if (!host) return { delivered: false, failureReason: 'SMTP_HOST yapılandırılmadı.' };
+
+    try {
+      await sendSmtpMail({
+        host,
+        port: this.config.notifications.smtpPort,
+        secure: this.config.notifications.smtpSecure,
+        user: this.config.notifications.smtpUser,
+        pass: this.config.notifications.smtpPass,
+        from: this.config.notifications.mailFrom,
+        to: target.email,
+        subject: message.subject,
+        text: message.text,
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'SMTP gönderimi başarısız.';
+      this.logger.warn(reason);
+      return { delivered: false, failureReason: reason };
+    }
+
+    recordTransactional(this.outbox, target, message);
+    return { delivered: true, failureReason: null };
+  }
+}
+
+/**
+ * Kimlik e-postasını tampona yazar.
+ *
+ * Gövde jeton taşıyan bağlantı içerdiği için tampona yalnızca konu geçer:
+ * duman testinin doğrulaması gereken şey gönderimin yapıldığı, sırrın kendisi
+ * değil.
+ */
+function recordTransactional(
+  outbox: NotificationOutbox,
+  target: EmailTarget,
+  message: TransactionalMessage,
+): void {
+  outbox.record({
+    channel: NotificationChannel.EMAIL,
+    target: target.email,
+    type: NotificationType.SUPPORT_REPLY,
+    params: { ticketSubject: message.subject },
+    deepLink: null,
+    locale: message.locale,
+    sentAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Resend HTTP API sürücüsü.
+ *
+ * SDK yerine doğrudan `fetch` kullanılır: tek uç nokta çağrılıyor ve depodaki
+ * diğer sağlayıcılar (Twilio, Netgsm, Expo) da aynı şekilde bağlanmış durumda.
+ */
+@Injectable()
+export class ResendEmailSender implements EmailSender {
+  readonly name = 'resend';
+  private readonly logger = new Logger(ResendEmailSender.name);
+
+  constructor(
+    private readonly config: AppConfigService,
+    private readonly outbox: NotificationOutbox,
+  ) {}
+
+  async send(target: EmailTarget, message: NotificationMessage): Promise<SendResult> {
+    const { title, body } = renderNotification(message.type, message.params, message.locale);
+    const result = await this.deliver(
+      target.email,
+      `Talpio · ${title}`,
+      [
+        `Merhaba${target.name ? ` ${target.name}` : ''},`,
+        body,
+        message.deepLink ? `Bağlantı: ${message.deepLink}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    );
+
+    if (!result.delivered) return result;
+
+    this.outbox.record({
+      channel: NotificationChannel.EMAIL,
+      target: target.email,
+      type: message.type,
+      params: message.params,
+      deepLink: message.deepLink,
+      locale: message.locale,
+      sentAt: new Date().toISOString(),
+    });
+
+    return result;
+  }
+
+  async sendTransactional(target: EmailTarget, message: TransactionalMessage): Promise<SendResult> {
+    const result = await this.deliver(target.email, message.subject, message.text);
+    if (!result.delivered) return result;
+
+    recordTransactional(this.outbox, target, message);
+    return result;
+  }
+
+  private async deliver(to: string, subject: string, text: string): Promise<SendResult> {
+    const apiKey = this.config.notifications.resendApiKey;
+    if (!apiKey) return { delivered: false, failureReason: 'RESEND_API_KEY yapılandırılmadı.' };
+
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: this.config.notifications.mailFrom,
+          to: [to],
+          subject,
+          text,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (!response.ok) {
+        // Yanıt gövdesi alıcı adresini içerebilir; yalnızca kısa bir kesit alınır.
+        const detail = (await response.text()).slice(0, 200);
+        this.logger.warn(`Resend HTTP ${response.status}: ${detail}`);
+        return { delivered: false, failureReason: `Resend HTTP ${response.status}` };
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Resend gönderimi başarısız.';
+      this.logger.warn(reason);
+      return { delivered: false, failureReason: reason };
+    }
 
     return { delivered: true, failureReason: null };
   }

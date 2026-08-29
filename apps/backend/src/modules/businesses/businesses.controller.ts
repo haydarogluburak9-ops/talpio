@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -15,6 +15,7 @@ import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { BusinessesService } from './businesses.service';
 import { CampaignsService } from './campaigns.service';
 import { CreateSupplierBusinessDto } from './dto/create-supplier.dto';
+import { DecideEmploymentDto, SearchBusinessesQueryDto } from './dto/employment.dto';
 import { UpdateBusinessLocaleSettingsDto } from './dto/locale-settings.dto';
 import {
   CreateBusinessTaskDto,
@@ -59,6 +60,40 @@ export class BusinessesController {
   @ApiOkResponse({ description: 'İşletme listesi' })
   mine(@CurrentUser() user: AuthenticatedUser) {
     return this.businesses.getMine(user);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Onaylı firmaları ada göre arar' })
+  search(@Query() query: SearchBusinessesQueryDto) {
+    return this.businesses.searchVerified(query.q ?? '');
+  }
+
+  @Post(':id/employment-claims')
+  @ApiOperation({ summary: 'Onaylı bir firmada çalıştığını beyan eder' })
+  claimEmployment(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.businesses.claimEmployment(user, id);
+  }
+
+  @Get(':id/employment-claims')
+  @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Firma sahibine bekleyen çalışan başvurularını listeler' })
+  listEmploymentClaims(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.businesses.listEmploymentClaims(user, id);
+  }
+
+  @Patch(':id/employment-claims/:userId')
+  @RequirePermissions(Permission.SUPPLIER_PROFILE_MANAGE)
+  @ApiOperation({ summary: 'Çalışan başvurusunu onaylar veya reddeder' })
+  decideEmployment(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @Body() dto: DecideEmploymentDto,
+  ) {
+    return this.businesses.decideEmployment(user, id, userId, dto.approve);
   }
 
   @Get(':id/locale-settings')

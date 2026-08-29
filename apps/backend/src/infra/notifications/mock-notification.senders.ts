@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NotificationChannel } from '@talpio/types';
+import { NotificationChannel, NotificationType } from '@talpio/types';
 
 import { AppConfigService } from '@config/app-config.service';
 
@@ -13,6 +13,7 @@ import type {
   SendResult,
   SmsSender,
   SmsTarget,
+  TransactionalMessage,
 } from './notification-sender';
 
 /**
@@ -65,6 +66,25 @@ export class MockEmailSender implements EmailSender {
     this.logger.debug(
       `E-posta gönderildi: ${message.type} → ${target.email} (${this.config.notifications.mailFrom})`,
     );
+
+    return Promise.resolve({ delivered: true, failureReason: null });
+  }
+
+  sendTransactional(target: EmailTarget, message: TransactionalMessage): Promise<SendResult> {
+    // Gövde jeton taşıyan bağlantı içerir; günlüğe yalnızca konu yazılır.
+    this.logger.log(
+      `Kimlik e-postası (mock): ${message.subject} → ${target.email} (${message.locale})`,
+    );
+
+    this.outbox.record({
+      channel: NotificationChannel.EMAIL,
+      target: target.email,
+      type: NotificationType.SUPPORT_REPLY,
+      params: { ticketSubject: message.subject },
+      deepLink: null,
+      locale: message.locale,
+      sentAt: new Date().toISOString(),
+    });
 
     return Promise.resolve({ delivered: true, failureReason: null });
   }

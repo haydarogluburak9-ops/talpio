@@ -1265,6 +1265,17 @@ export const fr: Messages = {
     disclaimer:
       'Ces pages sont des résumés produit, pas des documents juridiques validés par un avocat. Faites-les relire avant le lancement en production.',
   },
+  authEmail: {
+    ...en.authEmail,
+    greeting: 'Bonjour {name},',
+    verifySubject: 'Vérifiez votre adresse e-mail Talpio',
+    verifyBody:
+      'Confirmez votre adresse e-mail pour commencer à utiliser votre compte Talpio :\n{link}\n\nLe lien est valable {hours} heures. Si vous n’avez pas créé ce compte, ignorez ce message.',
+    resetSubject: 'Réinitialisez votre mot de passe Talpio',
+    resetBody:
+      'Ouvrez le lien ci-dessous pour définir un nouveau mot de passe :\n{link}\n\nLe lien est valable {hours} heures. Si vous n’avez pas fait cette demande, votre mot de passe reste inchangé.',
+  },
+  verification: { ...en.verification },
   admin: {
     ...en.admin,
     panel: 'Panneau d’administration',

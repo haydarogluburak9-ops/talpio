@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryKeys, SOCIAL } from '@talpio/config';
 import type { SocialProfile } from '@talpio/types';
 import { SocialProfileKind } from '@talpio/types';
@@ -37,7 +37,12 @@ export function ProfileHeader({
   const message = useMessageProfile(profile.username);
   const isOwnProfile = isOwn || me.data?.id === profile.id;
   const [reportOpen, setReportOpen] = useState(false);
+  const [claimSent, setClaimSent] = useState(false);
   const store = profile.kind === 'BUSINESS' ? profile.business : null;
+  const claim = useMutation({
+    mutationFn: () => apiClient.businesses.claimEmployment(store!.businessId),
+    onSuccess: () => setClaimSent(true),
+  });
 
   const followingCheck = useQuery({
     queryKey: queryKeys.social.following(me.data?.username ?? '', { target: profile.id }),
@@ -142,6 +147,16 @@ export function ProfileHeader({
                 onClick={() => router.push(`/tedarik?magaza=${encodeURIComponent(profile.username)}`)}
               >
                 {t('social.requestQuoteCta')}
+              </Button>
+            ) : null}
+            {store?.isVerified && store.businessId ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={claim.isPending || claimSent}
+                onClick={() => claim.mutate()}
+              >
+                {claimSent ? t('verification.claimSent') : t('verification.claimCta')}
               </Button>
             ) : null}
             <Button size="sm" variant="outline" onClick={() => setReportOpen(true)}>
