@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ApiError } from '@talpio/api-client';
-import { JOB, UPLOAD } from '@talpio/config';
+import { JOB, UPLOAD, minorUnitFactor } from '@talpio/config';
 import { JobSize, JobTimeSlot } from '@talpio/types';
 
 import { Badge } from '@/components/badge';
@@ -19,6 +19,7 @@ import { Text } from '@/components/text';
 import { CategoryIcon } from '@/features/catalog/category-icon';
 import { useCategories } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { usePhotoUpload } from '@/features/files/use-upload';
 import { useCreateJob } from '@/features/jobs/use-jobs';
 import { useI18n } from '@/lib/i18n';
@@ -71,6 +72,7 @@ const EMPTY_DRAFT: Draft = {
 export default function NewJobScreen() {
   const params = useLocalSearchParams<{ categoryId?: string }>();
   const { t, categoryName } = useI18n();
+  const currency = useMyCurrency();
   const colors = useColors();
   const router = useRouter();
 
@@ -151,9 +153,9 @@ export default function NewJobScreen() {
         size: draft.size,
         isUrgent: draft.isUrgent,
         inspectionRequired: draft.inspectionRequired,
-        // Kullanıcı lirayı girer, sözleşme kuruş bekler.
+        // Kullanıcı tam birimi girer, sözleşme alt birimi bekler.
         ...(draft.budgetLira.trim() !== '' && Number.isFinite(budget) && budget > 0
-          ? { budgetMinor: Math.round(budget * 100) }
+          ? { budgetMinor: Math.round(budget * minorUnitFactor(currency)) }
           : {}),
         preferredTimeSlot: draft.preferredSlot,
         attachmentFileIds: photos.fileIds,

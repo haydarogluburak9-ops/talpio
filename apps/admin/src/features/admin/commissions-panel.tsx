@@ -1,5 +1,6 @@
 'use client';
 
+import { DEFAULT_CURRENCY } from '@talpio/config';
 import { formatDate, formatMoney, toLocaleTag } from '@talpio/localization';
 import { StatusPill } from '@talpio/ui';
 import type { AdminCommissionRuleSummary } from '@talpio/types';
@@ -74,7 +75,10 @@ export function CommissionsPanel() {
           <p className="font-medium">{formatRate(rule.rateBps)}</p>
           {rule.fixedMinor > 0 ? (
             <p className="text-xs text-foreground-muted">
-              + {formatMoney({ amountMinor: rule.fixedMinor, currency: 'TRY' })}
+              {/* Komisyon kuralı para birimi taşımıyor; platform varsayılanıyla
+                  etiketlenir. Kural başına para birimi gerekirse şemaya alan
+                  eklenmeli, burada tahmin yürütülmemeli. */}
+              + {formatMoney({ amountMinor: rule.fixedMinor, currency: DEFAULT_CURRENCY })}
             </p>
           ) : null}
         </div>

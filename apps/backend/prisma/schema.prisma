@@ -797,6 +797,12 @@ model User {
   role            UserRole   @default(CUSTOMER)
   status          UserStatus @default(PENDING_VERIFICATION)
   locale          String     @default("tr")
+  /// Fiyatların gösterileceği para birimi (ISO 4217). Boşsa ülke, sonra dil
+  /// üzerinden türetilir; kullanıcıyı kayıt sırasında seçim yapmaya zorlamamak
+  /// için zorunlu değildir.
+  currency        String?    @db.Char(3)
+  /// ISO 3166-1 alpha-2. Para birimi ve telefon önekinin varsayılanını belirler.
+  countryCode     String?    @map("country_code") @db.Char(2)
   avatarFileId    String?    @map("avatar_file_id")
   emailVerifiedAt DateTime?  @map("email_verified_at")
   phoneVerifiedAt DateTime?  @map("phone_verified_at")
@@ -2579,14 +2585,26 @@ model SocialProfileEducation {
   @@map("social_profile_education")
 }
 
+/// Yetkinlik ustalik derecesi.
+///
+/// Isteğe bağlıdır: mevcut kayıtlarda derece yok ve kullanıcıyı geriye dönüp
+/// hepsini doldurmaya zorlamak, yetkinlik eklemeyi bırakmasına yol açar.
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
 /// Yetkinlikler (LinkedIn Skills).
 model SocialProfileSkill {
-  id        String   @id @default(uuid(7))
-  profileId String   @map("profile_id")
+  id        String      @id @default(uuid(7))
+  profileId String      @map("profile_id")
   name      String
-  sortOrder Int      @default(0) @map("sort_order")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  level     SkillLevel?
+  sortOrder Int         @default(0) @map("sort_order")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
 
   profile SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 

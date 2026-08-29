@@ -1,3 +1,5 @@
+import { DEFAULT_CURRENCY } from '@talpio/config';
+
 import type { Prisma } from '@/generated/prisma/client';
 import type {
   DealMetadata,
@@ -365,7 +367,9 @@ function toPromoFromRow(row: PostRow): SocialPostPromo | null {
     label: deal?.title ?? deal?.productName ?? row.promoLabel,
     originalPriceMinor: deal?.listPriceMinor ?? row.originalPriceMinor,
     promoPriceMinor: deal?.dealPriceMinor ?? row.promoPriceMinor,
-    currency: deal?.currency ?? row.promoCurrency ?? 'TRY',
+    // Yalnızca para birimi hiç yazılmamış eski promo kayıtları için; yeni
+    // gönderilerde yazarın para birimi kayıt anında belirlenir.
+    currency: deal?.currency ?? row.promoCurrency ?? DEFAULT_CURRENCY,
     validUntil: (deal?.endsAt ?? row.promoValidUntil)?.toISOString() ?? null,
   };
 }

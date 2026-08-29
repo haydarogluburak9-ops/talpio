@@ -1,9 +1,9 @@
 import {
-  CURRENCY_MINOR_UNITS,
   DEFAULT_COUNTRY_CODE,
   DEFAULT_CURRENCY,
   DEFAULT_PHONE_COUNTRY_CODE,
   DEFAULT_TIMEZONE,
+  isKnownCurrency,
 } from '@talpio/config';
 
 /**
@@ -33,9 +33,9 @@ export const LOCALE_EXTENSION_DEFAULTS = {
   phoneCountryCode: DEFAULT_PHONE_COUNTRY_CODE,
 } as const;
 
-export function isKnownCurrency(currency: string): boolean {
-  return currency in CURRENCY_MINOR_UNITS;
-}
+// Katalog `@talpio/config` içinde; buradan yeniden dışa aktarılır ki bu modülü
+// kullanan çağıranlar ikinci bir paket bağımlılığı eklemek zorunda kalmasın.
+export { isKnownCurrency };
 
 /** E.164 iskeleti: + ve rakam. Ülke numaralandırma planı uydurulmaz. */
 export function looksLikeE164(phone: string): boolean {

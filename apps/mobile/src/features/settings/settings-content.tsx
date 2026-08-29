@@ -9,6 +9,9 @@ import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { useLogout } from '@/features/auth/use-auth-mutations';
 import { apiClient } from '@/lib/api';
+import { CurrencyPicker } from '@/features/currency/currency-picker';
+import { useMyCurrency } from '@/features/currency/use-currency';
+import { useUpdateUserProfile } from '@/features/profile/use-profile';
 import { useI18n } from '@/lib/i18n';
 import { useTheme } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
@@ -23,6 +26,12 @@ export function SettingsContent() {
   const { t, locale, setLocale } = useI18n();
   const { colors, isDark } = useTheme();
   const logout = useLogout();
+  const currency = useMyCurrency();
+  const updateProfile = useUpdateUserProfile();
+
+  // Seçim anında kaydedilir; ayrı bir "kaydet" düğmesi olmayan bu ekranda
+  // kullanıcı değişikliğin uygulandığını başka türlü göremezdi.
+  const saveCurrency = (code: string) => updateProfile.mutate({ currency: code });
 
   const confirmDelete = () => {
     Alert.alert(t('settings.deleteAccount'), t('settings.deleteAccountConfirm'), [
@@ -58,6 +67,11 @@ export function SettingsContent() {
           </Card>
         );
       })}
+
+      <Text variant="title">{t('currency.label')}</Text>
+      <Card>
+        <CurrencyPicker value={currency} onChange={(code) => saveCurrency(code)} />
+      </Card>
 
       <Text variant="title">{t('settings.theme')}</Text>
       <Card>

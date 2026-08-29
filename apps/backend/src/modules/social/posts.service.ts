@@ -12,6 +12,7 @@ import {
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { AppConfigService } from '@config/app-config.service';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
@@ -61,6 +62,7 @@ export class PostsService {
     private readonly notifications: NotificationsService,
     private readonly graph: SocialGraphService,
     private readonly realtime: SocialRealtimeService,
+    private readonly currency: CurrencyService,
   ) {}
 
   async create(user: AuthenticatedUser, dto: CreatePostDto): Promise<SocialPost> {
@@ -111,9 +113,17 @@ export class PostsService {
       dealInput?.title?.trim() || dealInput?.productName?.trim() || dto.promoLabel?.trim() || null;
     const originalPriceMinor = dealInput?.listPriceMinor ?? dto.originalPriceMinor ?? null;
     const promoPriceMinor = dealInput?.dealPriceMinor ?? dto.promoPriceMinor ?? null;
+    // Fiyat etiketi yazarın para biriminde durur. Sabit bir yedek yazıldığında
+    // Berlin'deki bir mağazanın ilanı lira olarak işaretleniyordu.
+    const authorCurrency =
+      dealInput != null || hasPromoLegacy
+        ? await this.currency.forAuthor(dto.businessId ?? null, user.id)
+        : null;
     const promoCurrency =
       dealInput != null || hasPromoLegacy
-        ? (dealInput?.currency ?? dto.promoCurrency?.toUpperCase() ?? 'TRY')
+        ? (this.currency.normalize(dealInput?.currency) ??
+          this.currency.normalize(dto.promoCurrency) ??
+          authorCurrency)
         : null;
     const promoValidUntil = dealInput?.endsAt
       ? new Date(dealInput.endsAt)
@@ -181,7 +191,10 @@ export class PostsService {
                       dealInput.listPriceMinor ?? null,
                       dealInput.dealPriceMinor ?? null,
                     ),
-                    currency: (dealInput.currency ?? 'TRY').toUpperCase(),
+                    currency:
+                      this.currency.normalize(dealInput.currency) ??
+                      promoCurrency ??
+                      this.currency.fallback,
                     unit: dealInput.unit?.trim() || null,
                     minQuantity: dealInput.minQuantity?.trim() || null,
                     maxQuantity: dealInput.maxQuantity?.trim() || null,
@@ -514,11 +527,15 @@ export class PostsService {
     if (!hasPromo) return null;
 
     // Legacy promo alanlarından DealMetadata üret (dual-write / ranking).
+    //
+    // Para birimi burada belirlenmez: bu yardımcı yazarı bilmiyor ve sabit bir
+    // değer yazsaydı çağıranın çözümlemesini geçersiz kılardı. Boş bırakılır,
+    // `create` yazarın para birimine düşer.
     return {
       title: dto.promoLabel?.trim() || null,
       listPriceMinor: dto.originalPriceMinor ?? null,
       dealPriceMinor: dto.promoPriceMinor ?? null,
-      currency: dto.promoCurrency?.toUpperCase() ?? 'TRY',
+      ...(dto.promoCurrency ? { currency: dto.promoCurrency.toUpperCase() } : {}),
       endsAt: dto.promoValidUntil ?? null,
     };
   }

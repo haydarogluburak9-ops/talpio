@@ -1,12 +1,13 @@
 'use client';
 
-import { DEFAULT_CURRENCY, UPLOAD, minorUnitFactor } from '@talpio/config';
+import { UPLOAD, minorUnitFactor } from '@talpio/config';
 import { ApiError } from '@talpio/api-client';
 import { Button, cn } from '@talpio/ui';
 import { BadgePercent, ImagePlus, SendHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useCategories } from '@/features/catalog/use-categories';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { MediaUploader } from '@/features/files/media-uploader';
 import { useSession } from '@/features/auth/use-session';
 import { useMyBusinesses } from '@/features/requests/use-requests';
@@ -39,6 +40,7 @@ export function PostComposer({
   onPublished?: () => void;
 } = {}) {
   const session = useSession();
+  const myCurrency = useMyCurrency();
   const me = useSocialMe(Boolean(session.data));
   const businesses = useMyBusinesses(Boolean(session.data));
   const categories = useCategories();
@@ -63,8 +65,10 @@ export function PostComposer({
   const selectedBusiness =
     businessList.find((b) => b.id === businessId) ?? businessList[0] ?? null;
   const effectiveBusinessId = selectedBusiness?.id;
+  // Mağaza ayarı yoksa kişisel tercihe düşer. Sabit varsayılana düşmek, yurt
+  // dışındaki satıcının ilanını lira olarak etiketliyordu.
   const currency =
-    selectedBusiness?.localeSettings?.defaultCurrency?.toUpperCase() || DEFAULT_CURRENCY;
+    selectedBusiness?.localeSettings?.defaultCurrency?.toUpperCase() || myCurrency;
 
   /**
    * `expand`, dışarıdan gelen tek seferlik bir komut. Hangi komutun işlendiğini

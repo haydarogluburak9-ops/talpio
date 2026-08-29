@@ -11,6 +11,17 @@ export interface User extends BaseEntity {
   role: UserRole;
   status: UserStatus;
   locale: string;
+  /**
+   * Fiyatların gösterileceği para birimi (ISO 4217).
+   *
+   * Daima doludur: kullanıcı seçim yapmamışsa ülkesinden, o da yoksa dilinden
+   * türetilir. İstemcinin ayrıca çözümleme yapması gerekmez.
+   */
+  currency: string;
+  /** Para birimi kullanıcının kendi seçimi mi, yoksa türetildi mi. */
+  currencyIsExplicit: boolean;
+  /** ISO 3166-1 alpha-2. Seçilmemişse null. */
+  countryCode?: string | null;
   emailVerifiedAt?: string | null;
   phoneVerifiedAt?: string | null;
   lastActiveAt?: string | null;

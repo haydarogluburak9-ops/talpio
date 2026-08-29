@@ -85,7 +85,10 @@ export class SocialBridgeService {
         brand: deal?.brand ?? null,
         productName: deal?.productName ?? null,
         dealTitle: deal?.title ?? null,
-        currency: deal?.currency ?? post.promoCurrency ?? 'TRY',
+        // Kaynak gönderide para birimi yoksa uydurulmaz: talebin kendi para
+        // birimi alıcıdan çözülüyor ve buraya yanlış bir kod yazmak alıcıya
+        // satıcının hiç vermediği bir fiyat birimini gösterirdi.
+        currency: deal?.currency ?? post.promoCurrency ?? null,
         listPriceMinor: deal?.listPriceMinor ?? post.originalPriceMinor ?? null,
         dealPriceMinor: deal?.dealPriceMinor ?? post.promoPriceMinor ?? null,
       },

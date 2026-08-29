@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '@talpio/api-client';
+import { minorUnitFactor } from '@talpio/config';
 import { JobSize, JobTimeSlot } from '@talpio/types';
 import { Button, Card, CardContent, CardHeader, CardTitle, Field, Input, Select, Textarea } from '@talpio/ui';
 import {
@@ -12,6 +13,7 @@ import {
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { useCategories } from '@/features/catalog/use-categories';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
 import { PhotoUploader } from '@/features/files/photo-uploader';
 import { categoryName, t } from '@/lib/i18n';
@@ -32,11 +34,16 @@ const TIME_SLOT_OPTIONS = [
   JobTimeSlot.EVENING,
 ] as const;
 
-/** Kullanıcı lirayı girer, sözleşme kuruş bekler. */
-function liraToMinor(value: string): number | undefined {
+/**
+ * Kullanıcı tam birimi girer, sözleşme alt birimi bekler.
+ *
+ * Çarpan para birimine bağlı: yen'de kuruş yok, dinar'da üç basamak var. Sabit
+ * 100 bu para birimlerinde tutarı yüz kat kaydırıyordu.
+ */
+function majorToMinor(value: string, currency: string): number | undefined {
   if (value.trim() === '') return undefined;
   const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : Number.NaN;
+  return Number.isFinite(parsed) ? Math.round(parsed * minorUnitFactor(currency)) : Number.NaN;
 }
 
 /**
@@ -52,6 +59,7 @@ export function CreateJobForm() {
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
   const createJob = useCreateJob();
+  const currency = useMyCurrency();
 
   const {
     register,
@@ -189,7 +197,9 @@ export function CreateJobForm() {
               {(props) => (
                 <Input
                   {...props}
-                  {...register('budgetMinor', { setValueAs: liraToMinor })}
+                  {...register('budgetMinor', {
+                    setValueAs: (value: string) => majorToMinor(value, currency),
+                  })}
                   type="number"
                   min={0}
                   step={10}

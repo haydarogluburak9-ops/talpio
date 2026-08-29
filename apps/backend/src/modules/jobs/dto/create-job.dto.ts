@@ -116,6 +116,14 @@ export class CreateJobDto {
   @IsPositive()
   budgetMinor?: number;
 
+  // Belirtilmezse müşterinin para birimine düşülür; eski istemciler kod
+  // göndermiyor ve zorunlu kılmak onları kırardı.
+  @ApiPropertyOptional({ example: 'EUR' })
+  @IsOptional()
+  @IsString()
+  @Length(3, 3)
+  currency?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsISO8601()

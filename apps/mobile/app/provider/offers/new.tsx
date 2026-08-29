@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError } from '@talpio/api-client';
-import { OFFER } from '@talpio/config';
+import { OFFER, minorUnitFactor } from '@talpio/config';
 import { formatMoney } from '@talpio/localization';
 import { OfferPriceType } from '@talpio/types';
 
@@ -17,6 +17,7 @@ import { Screen } from '@/components/screen';
 import { ErrorState, LoadingState } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { useJob } from '@/features/jobs/use-jobs';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { useCreateOffer } from '@/features/offers/use-offers';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
@@ -42,6 +43,7 @@ export default function CreateOfferScreen() {
   const job = useJob(jobId);
   const createOffer = useCreateOffer();
 
+  const currency = useMyCurrency();
   const [amountLira, setAmountLira] = useState('');
   const [priceType, setPriceType] = useState<OfferPriceType>(OfferPriceType.FIXED);
   const [durationMinutes, setDurationMinutes] = useState('');
@@ -49,7 +51,7 @@ export default function CreateOfferScreen() {
   const [validityHours, setValidityHours] = useState<number>(OFFER.defaultValidityHours);
   const [materialsIncluded, setMaterialsIncluded] = useState(false);
 
-  const amountMinor = toMinor(amountLira);
+  const amountMinor = toMinor(amountLira, currency);
   const noteRequired = priceType === OfferPriceType.AFTER_INSPECTION;
 
   const amountValid =
@@ -208,15 +210,18 @@ export default function CreateOfferScreen() {
   );
 }
 
-/** Kullanıcı lirayı girer, sözleşme kuruş bekler. */
-function toMinor(lira: string): number | null {
-  const trimmed = lira.trim().replace(',', '.');
+/**
+ * Kullanıcı tam birimi girer, sözleşme alt birimi bekler. Çarpan para birimine
+ * bağlıdır; sabit 100 kuruşsuz para birimlerinde tutarı yüz kat kaydırıyordu.
+ */
+function toMinor(amount: string, currency: string): number | null {
+  const trimmed = amount.trim().replace(',', '.');
   if (trimmed === '') return null;
 
   const value = Number(trimmed);
   if (!Number.isFinite(value) || value <= 0) return null;
 
-  return Math.round(value * 100);
+  return Math.round(value * minorUnitFactor(currency));
 }
 
 const styles = StyleSheet.create({

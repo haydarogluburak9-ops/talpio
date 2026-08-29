@@ -1,7 +1,19 @@
 import { permissionsForRole } from '@talpio/business-logic';
+import {
+  COUNTRY_CURRENCY,
+  DEFAULT_CURRENCY,
+  LOCALE_CURRENCY,
+  isKnownCurrency,
+} from '@talpio/config';
 import type { CurrentUser } from '@talpio/types';
 
 import type { Prisma } from '@/generated/prisma/client';
+
+/** `Char(3)` alanı sağa boşlukla dolabilir; kırpılmadan katalogda bulunmaz. */
+function normalizeCurrency(value: string | null): string | undefined {
+  const code = value?.trim().toUpperCase();
+  return code && isKnownCurrency(code) ? code : undefined;
+}
 
 /**
  * Kullanıcı sorgularında daima çekilen ilişkiler.
@@ -29,6 +41,15 @@ export function toCurrentUser(user: UserRow, fileBaseUrl: string): CurrentUser {
     role,
     status: user.status,
     locale: user.locale,
+    // Açık tercih yoksa ülke, sonra dil üzerinden türetilir; istemci "hangi
+    // para biriminde gösterelim" sorusunu tekrar sormak zorunda kalmasın.
+    currency:
+      normalizeCurrency(user.currency) ??
+      (user.countryCode ? COUNTRY_CURRENCY[user.countryCode.toUpperCase()] : undefined) ??
+      LOCALE_CURRENCY[user.locale.toLowerCase().split('-')[0] ?? ''] ??
+      DEFAULT_CURRENCY,
+    currencyIsExplicit: normalizeCurrency(user.currency) != null,
+    countryCode: user.countryCode ?? null,
     emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
     phoneVerifiedAt: user.phoneVerifiedAt?.toISOString() ?? null,
     lastActiveAt: user.lastActiveAt?.toISOString() ?? null,

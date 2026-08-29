@@ -1,3 +1,4 @@
+import { CURRENCY_CODES, SUPPORTED_LOCALES } from '@talpio/config';
 import { DocumentType } from '@talpio/types';
 import { z } from 'zod';
 
@@ -15,7 +16,15 @@ export const updateUserProfileSchema = z.object({
   fullName: fullNameSchema.optional(),
   phone: optionalPhoneSchema,
   avatarFileId: uuidSchema.nullish(),
-  locale: z.string().min(2).max(5).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
+  // `null` açık tercihi kaldırır ve ülke/dil üzerinden türetmeye döner.
+  currency: z.enum(CURRENCY_CODES).nullish(),
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, 'Ülke kodu iki harfli olmalıdır')
+    .nullish(),
 });
 
 export const updateProviderProfileSchema = z.object({

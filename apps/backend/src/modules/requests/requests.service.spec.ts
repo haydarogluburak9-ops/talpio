@@ -2,6 +2,7 @@ import { REQUEST_MATCHING } from '@talpio/config';
 import { Permission, RequestOfferStatus, RequestStatus, UserRole } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { currencyDouble } from '@infra/currency/currency.test-double';
 
 import { RequestsService } from './requests.service';
 
@@ -57,6 +58,7 @@ describe('RequestsService tenant isolation', () => {
     notifications as never,
     outbox as never,
     audit as never,
+    currencyDouble(),
   );
 
   const commerceRequest = prisma.commerceRequest as {

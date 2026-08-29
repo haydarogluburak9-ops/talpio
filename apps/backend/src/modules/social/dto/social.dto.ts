@@ -17,9 +17,12 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { ContentReportTarget, PostType } from '@talpio/types';
+
+import { SkillLevel } from '@/generated/prisma/enums';
 
 export class DealMetadataDto {
   @ApiPropertyOptional()
@@ -56,7 +59,7 @@ export class DealMetadataDto {
   @Max(100)
   discountPercent?: number | null;
 
-  @ApiPropertyOptional({ default: 'TRY' })
+  @ApiPropertyOptional({ description: 'ISO 4217. Bos birakilirsa yazarin para birimi uygulanir.' })
   @IsOptional()
   @IsString()
   @MaxLength(3)
@@ -183,7 +186,7 @@ export class CreatePostDto {
   @Min(0)
   promoPriceMinor?: number;
 
-  @ApiPropertyOptional({ default: 'TRY' })
+  @ApiPropertyOptional({ description: 'ISO 4217. Bos birakilirsa yazarin para birimi uygulanir.' })
   @IsOptional()
   @IsString()
   @MaxLength(3)
@@ -560,6 +563,11 @@ export class CreateProfileSkillDto {
   @MaxLength(80)
   name!: string;
 
+  @ApiPropertyOptional({ enum: SkillLevel })
+  @IsOptional()
+  @IsEnum(SkillLevel)
+  level?: SkillLevel;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsInt()
@@ -573,6 +581,13 @@ export class UpdateProfileSkillDto {
   @MinLength(1)
   @MaxLength(80)
   name?: string;
+
+  // `null` derece temizlemek icindir; `undefined` alani hic degistirmez.
+  @ApiPropertyOptional({ enum: SkillLevel, nullable: true })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsEnum(SkillLevel)
+  level?: SkillLevel | null;
 
   @ApiPropertyOptional()
   @IsOptional()

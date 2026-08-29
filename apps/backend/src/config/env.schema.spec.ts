@@ -29,7 +29,9 @@ describe('validateEnv', () => {
 
     expect(env.NODE_ENV).toBe('development');
     expect(env.API_PORT).toBe(3000);
-    expect(env.DEFAULT_CURRENCY).toBe('TRY');
+    // Son çare para birimi tek bir ülkeye bağlı olmamalı: kullanıcının ülkesi
+    // ve dili çözülemediğinde herkese lira etiketi gösteriliyordu.
+    expect(env.DEFAULT_CURRENCY).toBe('USD');
     expect(env.DEFAULT_LOCALE).toBe('en');
     expect(env.SUPPORTED_LOCALES).toEqual(['en', 'tr', 'de', 'es', 'fr', 'ar']);
   });

@@ -1,5 +1,6 @@
 'use client';
 
+import { minorUnitFactor } from '@talpio/config';
 import type { ProviderService } from '@talpio/types';
 import {
   Button,
@@ -13,20 +14,24 @@ import {
 import { useState } from 'react';
 
 import { useCategories } from '@/features/catalog/use-categories';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { categoryName, t } from '@/lib/i18n';
 
 import { FormStatus } from './account-profile-form';
 import { useReplaceMyServices } from './use-profile';
 
-/** Kullanıcı lirayı girer, sözleşme kuruş bekler. */
-function liraToMinor(value: string): number | null {
+/**
+ * Kullanıcı tam birimi girer, sözleşme alt birimi bekler. Çarpan para birimine
+ * bağlıdır; sabit 100 kuruşsuz para birimlerinde tutarı bozuyordu.
+ */
+function majorToMinor(value: string, currency: string): number | null {
   if (value.trim() === '') return null;
   const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;
+  return Number.isFinite(parsed) ? Math.round(parsed * minorUnitFactor(currency)) : null;
 }
 
-function minorToLira(value: number | null | undefined): string {
-  return value === null || value === undefined ? '' : String(value / 100);
+function minorToMajor(value: number | null | undefined, currency: string): string {
+  return value === null || value === undefined ? '' : String(value / minorUnitFactor(currency));
 }
 
 /**
@@ -39,9 +44,16 @@ function minorToLira(value: number | null | undefined): string {
 export function ProviderServicesForm({ services }: { services: ProviderService[] }) {
   const categories = useCategories();
   const replace = useReplaceMyServices();
+  const currency = useMyCurrency();
 
   const [selected, setSelected] = useState<Map<string, string>>(
-    () => new Map(services.map((service) => [service.categoryId, minorToLira(service.startingPriceMinor)])),
+    () =>
+      new Map(
+        services.map((service) => [
+          service.categoryId,
+          minorToMajor(service.startingPriceMinor, currency),
+        ]),
+      ),
   );
 
   function toggle(categoryId: string) {
@@ -61,7 +73,7 @@ export function ProviderServicesForm({ services }: { services: ProviderService[]
     replace.mutate(
       [...selected].map(([categoryId, price]) => ({
         categoryId,
-        startingPriceMinor: liraToMinor(price),
+        startingPriceMinor: majorToMinor(price, currency),
       })),
     );
   }

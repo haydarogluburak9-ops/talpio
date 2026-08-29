@@ -2,7 +2,12 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '@talpio/api-client';
-import { LOCALE_META, SUPPORTED_LOCALES, isSupportedLocale } from '@talpio/config';
+import {
+  LOCALE_META,
+  SUPPORTED_LOCALES,
+  isKnownCurrency,
+  isSupportedLocale,
+} from '@talpio/config';
 import type { CurrentUser } from '@talpio/types';
 import {
   Badge,
@@ -23,6 +28,7 @@ import {
 import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 
+import { CurrencySelect } from '@/features/currency/currency-select';
 import { apiClient } from '@/lib/api';
 import { hydrateLocale, t } from '@/lib/i18n';
 import { persistLocale } from '@/lib/locale';
@@ -48,7 +54,13 @@ export function AccountProfileForm({ user }: { user: CurrentUser }) {
       fullName: user.fullName,
       phone: user.phone ?? '',
       avatarFileId: undefined,
-      locale: user.locale,
+      // Sunucudan gelen kodlar düz metin; forma yerleşmeden önce katalogda
+      // doğrulanır, tanınmayan bir kod alanı geçersiz duruma sokardı.
+      locale: isSupportedLocale(user.locale) ? user.locale : undefined,
+      // Türetilmiş değer değil, yalnızca açık tercih gönderilir; aksi halde
+      // kullanıcı dokunmadığı halde para birimi kalıcı olarak sabitlenirdi.
+      currency:
+        user.currencyIsExplicit && isKnownCurrency(user.currency) ? user.currency : undefined,
     },
   });
 
@@ -61,7 +73,9 @@ export function AccountProfileForm({ user }: { user: CurrentUser }) {
           fullName: saved.fullName,
           phone: saved.phone ?? '',
           avatarFileId: undefined,
-          locale: saved.locale,
+          locale: isSupportedLocale(saved.locale) ? saved.locale : undefined,
+          currency:
+            saved.currencyIsExplicit && isKnownCurrency(saved.currency) ? saved.currency : undefined,
         }),
     }),
   );
@@ -137,7 +151,27 @@ export function AccountProfileForm({ user }: { user: CurrentUser }) {
                 </Select>
               )}
             </Field>
+
+            <Field label={t('currency.label')} error={errors.currency?.message}>
+              {(props) => (
+                <Controller
+                  control={control}
+                  name="currency"
+                  render={({ field }) => (
+                    <CurrencySelect
+                      id={props.id}
+                      // Kullanıcı hiç seçmediyse türetilmiş değer gösterilir;
+                      // boş bir kutu "para birimim yok" izlenimi veriyordu.
+                      value={field.value ?? user.currency}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              )}
+            </Field>
           </div>
+
+          <p className="text-xs text-foreground-muted">{t('currency.help')}</p>
 
           {user.phone && !user.phoneVerifiedAt ? (
             <div>

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_COUNTRY_CODE, DEFAULT_TIMEZONE } from '@talpio/config';
 import { PlatformRoleCode, VerificationStatus } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { RbacService } from '@modules/rbac/rbac.service';
@@ -16,6 +18,7 @@ export class BusinessesService {
     private readonly prisma: PrismaService,
     private readonly rbac: RbacService,
     private readonly profiles: ProfilesService,
+    private readonly currency: CurrencyService,
   ) {}
 
   /**
@@ -84,13 +87,9 @@ export class BusinessesService {
                 ? districtIds.map((districtId) => ({ cityId: cityId, districtId }))
                 : [{ cityId }],
           },
-          localeSettings: {
-            create: {
-              defaultCurrency: 'TRY',
-              defaultCountryCode: 'TR',
-              defaultTimezone: 'Europe/Istanbul',
-            },
-          },
+          // Para birimi sahibinin tercihinden gelir; sabit yazıldığında yurt
+          // dışındaki her yeni mağaza lira ile açılıyordu.
+          localeSettings: { create: await this.defaultLocaleSettings(user.id) },
         },
       });
 
@@ -137,13 +136,32 @@ export class BusinessesService {
     if (settings) return settings;
 
     return this.prisma.businessLocaleSettings.create({
-      data: {
-        businessId,
-        defaultCurrency: 'TRY',
-        defaultCountryCode: 'TR',
-        defaultTimezone: 'Europe/Istanbul',
-      },
+      data: { businessId, ...(await this.defaultLocaleSettings(user.id)) },
     });
+  }
+
+  /**
+   * Yeni mağazanın yerel ayar varsayılanları.
+   *
+   * Sahibin para birimi ve ülkesi esas alınır. Sabit "TR / TRY" yazıldığında
+   * Berlin'de açılan bir mağaza lira ile başlıyor ve satıcı bunu fark etmeden
+   * ilan yayınlıyordu.
+   */
+  private async defaultLocaleSettings(userId: string): Promise<{
+    defaultCurrency: string;
+    defaultCountryCode: string;
+    defaultTimezone: string;
+  }> {
+    const owner = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { countryCode: true },
+    });
+
+    return {
+      defaultCurrency: await this.currency.forUser(userId),
+      defaultCountryCode: owner?.countryCode?.toUpperCase() ?? DEFAULT_COUNTRY_CODE,
+      defaultTimezone: DEFAULT_TIMEZONE,
+    };
   }
 
   async updateLocaleSettings(
@@ -152,13 +170,15 @@ export class BusinessesService {
     dto: UpdateBusinessLocaleSettingsDto,
   ) {
     await this.rbac.assertBusinessAccess(user.id, businessId);
+    const defaults = await this.defaultLocaleSettings(user.id);
+
     return this.prisma.businessLocaleSettings.upsert({
       where: { businessId },
       create: {
         businessId,
-        defaultCurrency: dto.defaultCurrency ?? 'TRY',
-        defaultCountryCode: dto.defaultCountryCode ?? 'TR',
-        defaultTimezone: dto.defaultTimezone ?? 'Europe/Istanbul',
+        defaultCurrency: dto.defaultCurrency?.toUpperCase() ?? defaults.defaultCurrency,
+        defaultCountryCode: dto.defaultCountryCode?.toUpperCase() ?? defaults.defaultCountryCode,
+        defaultTimezone: dto.defaultTimezone ?? defaults.defaultTimezone,
         taxId: dto.taxId ?? null,
       },
       update: {

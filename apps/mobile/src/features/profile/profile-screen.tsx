@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 
 import { ApiError } from '@talpio/api-client';
+import { minorUnitFactor } from '@talpio/config';
 import type { CurrentUser, ProviderProfile } from '@talpio/types';
 import { isMarketplaceRole } from '@talpio/types';
 
@@ -16,6 +17,7 @@ import { Text } from '@/components/text';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { useCategories } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { spacing } from '@/theme/tokens';
@@ -140,6 +142,7 @@ function ProviderSections() {
   const { t } = useI18n();
   const profile = useProviderProfile();
   const services = useMyServices();
+  const currency = useMyCurrency();
 
   if (profile.isError) {
     return (
@@ -161,7 +164,7 @@ function ProviderSections() {
           new Map(
             services.data.map((service) => [
               service.categoryId,
-              minorToLira(service.startingPriceMinor),
+              minorToMajor(service.startingPriceMinor, currency),
             ]),
           )
         }
@@ -257,6 +260,7 @@ function ServicesSection({ selection }: { selection: Map<string, string> }) {
   const { t, categoryName } = useI18n();
   const categories = useCategories();
   const replace = useReplaceMyServices();
+  const currency = useMyCurrency();
 
   const [selected, setSelected] = useState(selection);
 
@@ -273,7 +277,7 @@ function ServicesSection({ selection }: { selection: Map<string, string> }) {
     replace.mutate(
       [...selected].map(([categoryId, price]) => ({
         categoryId,
-        startingPriceMinor: liraToMinor(price),
+        startingPriceMinor: majorToMinor(price, currency),
       })),
     );
   }
@@ -482,15 +486,18 @@ function SaveStatus({ error, isSuccess }: { error: unknown; isSuccess: boolean }
   return null;
 }
 
-/** Kullanıcı lirayı girer, sözleşme kuruş bekler. */
-function liraToMinor(value: string): number | null {
+/**
+ * Kullanıcı tam birimi girer, sözleşme alt birimi bekler. Çarpan para birimine
+ * bağlıdır; sabit 100 kuruşsuz para birimlerinde tutarı bozuyordu.
+ */
+function majorToMinor(value: string, currency: string): number | null {
   if (value.trim() === '') return null;
   const parsed = Number(value.replace(',', '.'));
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;
+  return Number.isFinite(parsed) ? Math.round(parsed * minorUnitFactor(currency)) : null;
 }
 
-function minorToLira(value: number | null | undefined): string {
-  return value === null || value === undefined ? '' : String(value / 100);
+function minorToMajor(value: number | null | undefined, currency: string): string {
+  return value === null || value === undefined ? '' : String(value / minorUnitFactor(currency));
 }
 
 const styles = StyleSheet.create({

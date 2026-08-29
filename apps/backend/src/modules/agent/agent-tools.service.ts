@@ -12,6 +12,7 @@ import { z } from 'zod';
 
 import type { Prisma } from '@/generated/prisma/client';
 import { AppException } from '@common/errors/app.exception';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 import { AGENT_TOOL_REGISTRY, isAllowedToolName } from './agent-tool.registry';
@@ -44,7 +45,10 @@ const searchSchema = z.object({
 
 @Injectable()
 export class AgentToolsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly currency: CurrencyService,
+  ) {}
 
   async execute(
     toolName: string,
@@ -395,7 +399,10 @@ export class AgentToolsService {
       month: now.getUTCMonth() + 1,
       collectedMinor,
       pendingMinor: pending._sum.totalMinor ?? 0,
-      currency: payments[0]?.currency ?? 'TRY',
+      // Tahsilat yoksa gösterilecek bir tutar da yok; etiketi satıcının
+      // fiyatlama para biriminden alıyoruz ki "0 TRY" gibi alakasız bir birim
+      // görünmesin.
+      currency: payments[0]?.currency ?? (await this.providerCurrency(tenantId)),
       orderCount: new Set(payments.map((row) => row.orderId)).size,
     };
 
@@ -444,6 +451,12 @@ export class AgentToolsService {
       data: rows,
       requiresApproval: false,
     };
+  }
+
+  /** Satıcının ilk işletmesinin para birimi; işletmesi yoksa kurulum varsayılanı. */
+  private async providerCurrency(providerProfileId: string): Promise<string> {
+    const [businessId] = await this.businessIdsForProvider(providerProfileId);
+    return businessId ? this.currency.forBusiness(businessId) : this.currency.fallback;
   }
 
   private async businessIdsForProvider(providerProfileId: string): Promise<string[]> {

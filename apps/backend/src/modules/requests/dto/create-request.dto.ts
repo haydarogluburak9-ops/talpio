@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   Max,
   MaxLength,
   Min,
@@ -64,6 +65,14 @@ export class CreateCommerceRequestDto {
   @IsInt()
   @Min(1)
   budgetMinor?: number;
+
+  // Belirtilmezse alıcının para birimine düşülür; istemciyi her talepte kod
+  // göndermeye zorlamak eski istemcileri kırardı.
+  @ApiPropertyOptional({ example: 'EUR' })
+  @IsOptional()
+  @IsString()
+  @Length(3, 3)
+  currency?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

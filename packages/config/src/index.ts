@@ -1,4 +1,5 @@
 export * from './app';
+export * from './currency';
 export * from './limits';
 export * from './monetization';
 export * from './api-routes';

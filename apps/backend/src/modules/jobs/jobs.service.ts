@@ -8,6 +8,7 @@ import { AppException } from '@common/errors/app.exception';
 import { parseNameTranslations } from '@common/i18n/localized-text';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppConfigService } from '@config/app-config.service';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import { FilesService } from '@modules/files/files.service';
@@ -36,6 +37,7 @@ export class JobsService {
     private readonly config: AppConfigService,
     private readonly files: FilesService,
     private readonly notifications: NotificationsService,
+    private readonly currency: CurrencyService,
     @Optional() private readonly fraud?: FraudService,
   ) {}
 
@@ -51,6 +53,8 @@ export class JobsService {
 
     // Adres satırı girildiyse kalıcı adres defterine yazılır; talep ona bağlanır.
     const addressId = await this.resolveAddressId(user.id, dto);
+    const jobCurrency =
+      this.currency.normalize(dto.currency) ?? (await this.currency.forUser(user.id));
 
     const created = await this.prisma.$transaction(async (tx) => {
       const job = await tx.jobRequest.create({
@@ -66,6 +70,10 @@ export class JobsService {
           materialsIncluded: dto.materialsIncluded ?? null,
           inspectionRequired: dto.inspectionRequired,
           budgetMinor: dto.budgetMinor ?? null,
+          // Zincirin tek kaynağı burası: teklif ilanın para birimini, sipariş
+          // teklifinkini, ödeme de siparişinkini devralıyor. Burada yazılmadığı
+          // için hepsi veritabanı varsayılanı olan liraya düşüyordu.
+          currency: jobCurrency,
           problemStartedAt: dto.problemStartedAt ? new Date(dto.problemStartedAt) : null,
           preferredDate: dto.preferredDate ? new Date(dto.preferredDate) : null,
           preferredTimeSlot: dto.preferredTimeSlot,

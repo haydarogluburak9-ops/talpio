@@ -28,7 +28,9 @@ export const envSchema = z
     DEFAULT_LOCALE: z.string().default('en'),
     SUPPORTED_LOCALES: csv('en,tr,de,es,fr,ar'),
     DEFAULT_COUNTRY_CODE: z.string().length(2).default('TR'),
-    DEFAULT_CURRENCY: z.string().length(3).default('TRY'),
+    // Yalnızca kullanıcının ülkesi, işletme ayarı ve dili çözülemediğinde
+    // kullanılan son çare. Tek bir ülkenin parası olmaması bilinçli.
+    DEFAULT_CURRENCY: z.string().length(3).default('USD'),
 
     // API
     API_PORT: z.coerce.number().int().positive().default(3000),
@@ -133,6 +135,10 @@ export const envSchema = z
 
     // Ödeme
     PAYMENT_DRIVER: z.enum(['mock', 'iyzico', 'paytr']).default('mock'),
+    /**
+     * Ödeme sağlayıcısının mutabakat para birimi; ilan fiyatlarıyla ilgisi yok.
+     * iyzico yalnızca lira ile çalıştığı için varsayılan TRY kaldı.
+     */
     PAYMENT_CURRENCY: z.string().length(3).default('TRY'),
     /** Sağlayıcı webhook'larının imzasını doğrulayan paylaşılan gizli anahtar. */
     PAYMENT_WEBHOOK_SECRET: z.string().min(16).default('change_me_payment_webhook_secret'),

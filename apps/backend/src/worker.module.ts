@@ -6,6 +6,7 @@ import { LoggerModule } from '@infra/logging/logger.module';
 import { NotificationSenderModule } from '@infra/notifications/notification-sender.module';
 import { MediaModule } from '@infra/media/media.module';
 import { StorageModule } from '@infra/storage/storage.module';
+import { CurrencyModule } from '@infra/currency/currency.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { QueueModule } from '@infra/queue/queue.module';
 import { RedisModule } from '@infra/redis/redis.module';
@@ -24,6 +25,7 @@ import { WorkerSocialModule } from '@modules/social/worker-social.module';
     AppConfigModule,
     LoggerModule,
     PrismaModule,
+    CurrencyModule,
     RedisModule,
     QueueModule,
     BillingModule,

@@ -16,6 +16,7 @@ import {
 } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { AuditLogService } from '@modules/admin/audit-log.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
@@ -27,6 +28,7 @@ export class BusinessOpsService {
     private readonly prisma: PrismaService,
     private readonly rbac: RbacService,
     private readonly audit: AuditLogService,
+    private readonly currency: CurrencyService,
   ) {}
 
   async listCrmCustomers(user: AuthenticatedUser, businessId: string): Promise<CrmCustomerRow[]> {
@@ -541,7 +543,7 @@ export class BusinessOpsService {
       leadCount,
       conversionRate: totalOffers > 0 ? Math.round((acceptedOffers / totalOffers) * 100) : null,
       revenueMinor: revenue._sum.payoutMinor ?? 0,
-      currency: 'TRY',
+      currency: await this.currency.forBusiness(businessId),
       social: {
         postCount: socialAgg._count._all,
         totalViews: socialAgg._sum.viewCount ?? 0,

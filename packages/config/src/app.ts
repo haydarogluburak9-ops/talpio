@@ -1,3 +1,5 @@
+import { currencyMinorDigits } from './currency';
+
 export const APP_NAME = 'Talpio';
 export const APP_TAGLINE_TR = 'Talebinizi yayınlayın. Doğru teklifi alın.';
 export const APP_TAGLINE_EN = 'Publish your request. Get the right offer.';
@@ -28,25 +30,20 @@ export function isSupportedLocale(value: string): value is SupportedLocale {
  * uygulanır; kodda şehre kilitli değildir.
  */
 export const DEFAULT_COUNTRY_CODE = 'TR';
-export const DEFAULT_CURRENCY = 'TRY';
 export const DEFAULT_TIMEZONE = 'Europe/Istanbul';
 export const DEFAULT_PHONE_COUNTRY_CODE = '+90';
 
-export const CURRENCY_MINOR_UNITS: Record<string, number> = {
-  TRY: 2,
-  USD: 2,
-  EUR: 2,
-  GBP: 2,
-  AED: 2,
-  JPY: 0,
-  INR: 2,
-  BRL: 2,
-  EGP: 2,
-  SGD: 2,
-};
+/**
+ * En son çare para birimi.
+ *
+ * Kullanıcının ülkesi, işletmenin ayarı ve dili sırayla denendikten sonra
+ * kullanılır; bu yüzden tek bir ülkenin parası değil, sınır ötesi ticarette
+ * ortak payda olan dolar seçildi. Önceden TRY'ydi ve Türkiye dışındaki her
+ * satıcının fiyatı yanlış para biriminde etiketleniyordu.
+ */
+export const DEFAULT_CURRENCY = 'USD';
 
 /** Verilen para biriminde 1 birimin kaç alt birime karşılık geldiği. */
 export function minorUnitFactor(currency: string): number {
-  const digits = CURRENCY_MINOR_UNITS[currency] ?? 2;
-  return 10 ** digits;
+  return 10 ** currencyMinorDigits(currency);
 }

@@ -6,6 +6,7 @@ import { AppException } from '@common/errors/app.exception';
 import { AiService } from '@infra/ai/ai.service';
 import { AiChatRole } from '@infra/ai/ai-provider';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 const requestDraftSchema = z.object({
@@ -35,6 +36,7 @@ export class AiAssistService {
   constructor(
     private readonly ai: AiService,
     private readonly prisma: PrismaService,
+    private readonly currency: CurrencyService,
   ) {}
 
   async draftRequest(user: AuthenticatedUser, prompt: string) {
@@ -72,7 +74,7 @@ export class AiAssistService {
       unitPriceMinor: input.unitPriceMinor ?? null,
       quantity: input.quantity ?? null,
       unit: input.unit ?? null,
-      currency: input.currency ?? 'TRY',
+      currency: input.currency ?? (await this.currency.forUser(user.id)),
     };
     const completion = await this.ai.complete({
       featureCode: AiFeatureCode.OFFER_DRAFT,

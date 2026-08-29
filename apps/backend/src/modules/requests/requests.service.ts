@@ -22,6 +22,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { parseNameTranslations } from '@common/i18n/localized-text';
+import { CurrencyService } from '@infra/currency/currency.service';
 import { OutboxService } from '@infra/outbox/outbox.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { AuditLogService } from '@modules/admin/audit-log.service';
@@ -60,6 +61,7 @@ export class RequestsService {
     private readonly notifications: NotificationsService,
     private readonly outbox: OutboxService,
     private readonly audit: AuditLogService,
+    private readonly currency: CurrencyService,
     @Optional() private readonly fraud?: FraudService,
   ) {}
 
@@ -86,6 +88,9 @@ export class RequestsService {
         unit: dto.unit ?? null,
         specifications: (dto.specifications ?? {}) as Prisma.InputJsonValue,
         budgetMinor: dto.budgetMinor ?? null,
+        // Bütçe alıcının para biriminde ifade edilir; satıcı teklifini kendi
+        // biriminde verir ve karşılaştırma ekranı ikisini de etiketiyle gösterir.
+        currency: this.currency.normalize(dto.currency) ?? (await this.currency.forUser(user.id)),
         deliveryCityId: dto.deliveryCityId ?? null,
         deliveryDistrictId: dto.deliveryDistrictId ?? null,
         deliveryAddressText: dto.deliveryAddressText ?? null,
@@ -734,6 +739,11 @@ export class RequestsService {
       select: { name: true },
     });
 
+    // Teklifi veren satıcının para birimi esas alınır; alıcının gördüğü etiket
+    // satıcının fiyatladığı birimle aynı olmalı.
+    const offerCurrency =
+      this.currency.normalize(dto.currency) ?? (await this.currency.forBusiness(dto.businessId));
+
     const offer = await this.prisma.$transaction(async (tx) => {
       const created = await tx.requestOffer.create({
         data: {
@@ -742,7 +752,7 @@ export class RequestsService {
           createdByUserId: user.id,
           status: RequestOfferStatus.SUBMITTED,
           amountMinor: dto.amountMinor,
-          currency: dto.currency ?? 'TRY',
+          currency: offerCurrency,
           deliveryDays: dto.deliveryDays ?? null,
           shippingIncluded: dto.shippingIncluded,
           locationText: dto.locationText.trim(),
@@ -769,7 +779,7 @@ export class RequestsService {
         requestTitle: request.title,
         businessName: business?.name ?? 'Tedarikçi',
         amountMinor: dto.amountMinor,
-        currency: dto.currency ?? 'TRY',
+        currency: offerCurrency,
       },
       deepLink: deepLinks.jobOffers(requestId),
     });

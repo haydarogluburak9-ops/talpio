@@ -50,6 +50,9 @@ export class UsersService {
         ...(phoneChanged ? { phone: dto.phone, phoneVerifiedAt: null } : {}),
         ...(dto.avatarFileId !== undefined ? { avatarFileId: dto.avatarFileId } : {}),
         ...(dto.locale !== undefined ? { locale: dto.locale } : {}),
+        // `null` "otomatik türet" demektir; alanı hiç göndermemekten farklıdır.
+        ...(dto.currency !== undefined ? { currency: dto.currency } : {}),
+        ...(dto.countryCode !== undefined ? { countryCode: dto.countryCode } : {}),
       },
       include: userInclude,
     });

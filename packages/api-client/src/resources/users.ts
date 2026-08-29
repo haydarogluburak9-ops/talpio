@@ -10,6 +10,10 @@ export interface UpdateUserProfileBody {
   /** `null` profil görselini kaldırır. */
   avatarFileId?: string | null;
   locale?: string;
+  /** ISO 4217. `null` seçimi kaldırır ve ülke/dil üzerinden türetmeye döner. */
+  currency?: string | null;
+  /** ISO 3166-1 alpha-2. `null` seçimi kaldırır. */
+  countryCode?: string | null;
 }
 
 export function createUsersResource(http: HttpClient) {

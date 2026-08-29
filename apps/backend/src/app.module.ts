@@ -17,6 +17,7 @@ import { RealtimeModule } from '@infra/realtime/realtime.module';
 import { NotificationSenderModule } from '@infra/notifications/notification-sender.module';
 import { OutboxModule } from '@infra/outbox/outbox.module';
 import { PaymentProviderModule } from '@infra/payments/payment-provider.module';
+import { CurrencyModule } from '@infra/currency/currency.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { QueueModule } from '@infra/queue/queue.module';
 import { RedisModule } from '@infra/redis/redis.module';
@@ -67,6 +68,7 @@ import { UsersModule } from '@modules/users/users.module';
       }),
     }),
     PrismaModule,
+    CurrencyModule,
     RedisModule,
     CacheModule,
     RealtimeModule,

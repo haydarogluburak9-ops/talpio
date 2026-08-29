@@ -1,15 +1,20 @@
 'use client';
 
 import { ApiError } from '@talpio/api-client';
-import { DEFAULT_CURRENCY } from '@talpio/config';
+import { minorUnitFactor } from '@talpio/config';
 import { Button, Field, Input, Textarea } from '@talpio/ui';
 import { useState } from 'react';
 
+import { CurrencySelect } from '@/features/currency/currency-select';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { useCreateRequestOffer } from '@/features/requests/use-requests';
 import { t } from '@/lib/i18n';
 
 export function OfferForm({ requestId, businessId }: { requestId: string; businessId: string }) {
   const create = useCreateRequestOffer(requestId);
+  const defaultCurrency = useMyCurrency();
+  const [currencyOverride, setCurrencyOverride] = useState<string | null>(null);
+  const currency = currencyOverride ?? defaultCurrency;
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [locationText, setLocationText] = useState('');
@@ -19,7 +24,9 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    const amountMinor = Math.round(Number(amount.replace(',', '.')) * 100);
+    // Çarpan para birimine bağlı: JPY'de kuruş yok, KWD'de üç basamak var.
+    // Sabit 100 ile çarpmak bu para birimlerinde tutarı 100 kat kaydırıyordu.
+    const amountMinor = Math.round(Number(amount.replace(',', '.')) * minorUnitFactor(currency));
     if (!Number.isFinite(amountMinor) || amountMinor <= 0) {
       setError(t('offer.invalidAmount'));
       return;
@@ -37,7 +44,7 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
       await create.mutateAsync({
         businessId,
         amountMinor,
-        currency: DEFAULT_CURRENCY,
+        currency,
         locationText: locationText.trim(),
         shippingIncluded,
         note: note || undefined,
@@ -57,6 +64,11 @@ export function OfferForm({ requestId, businessId }: { requestId: string; busine
       <Field label={t('offer.amount')} required>
         {(props) => (
           <Input {...props} value={amount} onChange={(e) => setAmount(e.target.value)} required />
+        )}
+      </Field>
+      <Field label={t('currency.label')}>
+        {(props) => (
+          <CurrencySelect id={props.id} value={currency} onChange={setCurrencyOverride} />
         )}
       </Field>
       <Field label={t('social.dealLocation')} required>

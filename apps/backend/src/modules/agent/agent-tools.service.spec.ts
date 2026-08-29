@@ -1,6 +1,7 @@
 import { AGENT_TOOL_NAMES } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { currencyDouble } from '@infra/currency/currency.test-double';
 import type { PrismaService } from '@infra/prisma/prisma.service';
 
 import { AgentToolsService } from './agent-tools.service';
@@ -11,7 +12,7 @@ const USER_A = 'user-a';
 const THREAD = 'thread-1';
 
 function createService(prisma: Record<string, unknown>) {
-  return new AgentToolsService(prisma as unknown as PrismaService);
+  return new AgentToolsService(prisma as unknown as PrismaService, currencyDouble());
 }
 
 describe('AgentToolsService', () => {

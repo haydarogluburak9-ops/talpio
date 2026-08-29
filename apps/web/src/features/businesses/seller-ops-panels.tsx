@@ -1,13 +1,21 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@talpio/config';
+import {
+  COUNTRY_CURRENCY,
+  DEFAULT_COUNTRY_CODE,
+  DEFAULT_TIMEZONE,
+  queryKeys,
+} from '@talpio/config';
 import { Button, EmptyState, Input, ListSkeleton } from '@talpio/ui';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { CurrencySelect } from '@/features/currency/currency-select';
+import { useMyCurrency } from '@/features/currency/use-currency';
 import { useMyBusinesses } from '@/features/requests/use-requests';
 import { apiClient } from '@/lib/api';
+import { t } from '@/lib/i18n';
 
 export function SellerOpsPanels() {
   const businesses = useMyBusinesses();
@@ -80,9 +88,10 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
     queryFn: ({ signal }) => apiClient.businesses.getLocaleSettings(businessId, signal),
     enabled: Boolean(businessId),
   });
-  const [currency, setCurrency] = useState('TRY');
-  const [country, setCountry] = useState('TR');
-  const [timezone, setTimezone] = useState('Europe/Istanbul');
+  const myCurrency = useMyCurrency();
+  const [currency, setCurrency] = useState(myCurrency);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY_CODE);
+  const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE);
   const [taxId, setTaxId] = useState('');
 
   /**
@@ -116,24 +125,36 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
   return (
     <section className="social-panel p-5 sm:p-6">
       <h3 className="font-display text-lg font-semibold text-brand-900 dark:text-foreground">
-        Locale / para birimi
+        {t('currency.businessLabel')}
       </h3>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {settings.isPending ? <ListSkeleton rows={2} /> : null}
+        <div className="flex flex-col gap-1 text-sm sm:col-span-2">
+          <span className="text-foreground-muted">{t('currency.label')}</span>
+          <CurrencySelect value={currency} onChange={setCurrency} />
+          <span className="text-xs text-foreground-muted">{t('currency.businessHelp')}</span>
+        </div>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-foreground-muted">Para birimi</span>
-          <Input value={currency} onChange={(e) => setCurrency(e.target.value)} maxLength={3} />
+          <span className="text-foreground-muted">{t('currency.countryLabel')}</span>
+          <Input
+            value={country}
+            onChange={(e) => {
+              const next = e.target.value.toUpperCase();
+              setCountry(next);
+              // Ülke değişince para birimi de takip eder; satıcı iki alanı ayrı
+              // ayrı düzeltmeyi unuttuğunda ilanlar yanlış birimde yayımlanıyordu.
+              const suggested = COUNTRY_CURRENCY[next];
+              if (suggested) setCurrency(suggested);
+            }}
+            maxLength={2}
+          />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-foreground-muted">Ülke</span>
-          <Input value={country} onChange={(e) => setCountry(e.target.value)} maxLength={2} />
-        </label>
-        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="text-foreground-muted">Saat dilimi</span>
+          <span className="text-foreground-muted">{t('currency.timezoneLabel')}</span>
           <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="text-foreground-muted">Vergi no</span>
+          <span className="text-foreground-muted">{t('currency.taxIdLabel')}</span>
           <Input value={taxId} onChange={(e) => setTaxId(e.target.value)} />
         </label>
         <div className="sm:col-span-2">

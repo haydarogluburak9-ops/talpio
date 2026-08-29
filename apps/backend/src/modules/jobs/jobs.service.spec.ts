@@ -3,6 +3,7 @@ import { JobRequestStatus, JobSize, JobTimeSlot, UserRole } from '@talpio/types'
 import { PaginationQueryDto } from '@common/dto/pagination-query.dto';
 import { AppException } from '@common/errors/app.exception';
 import type { AppConfigService } from '@config/app-config.service';
+import { currencyDouble } from '@infra/currency/currency.test-double';
 import type { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import type { FilesService } from '@modules/files/files.service';
@@ -134,6 +135,7 @@ function createService(prisma: PrismaMock, files: FilesMock = createFilesMock())
     config,
     files as unknown as FilesService,
     notifications as never,
+    currencyDouble(),
   );
 }
 

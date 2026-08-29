@@ -1,6 +1,7 @@
 import { CrmCustomerSource, WorkOrderSource, WorkOrderStage } from '@talpio/types';
 
 import { AppException } from '@common/errors/app.exception';
+import { currencyDouble } from '@infra/currency/currency.test-double';
 import type { PrismaService } from '@infra/prisma/prisma.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
 import type { RbacService } from '@modules/rbac/rbac.service';
@@ -17,6 +18,7 @@ describe('BusinessOpsService tenant isolation', () => {
       { crmCustomer: { findMany } } as unknown as PrismaService,
       { assertBusinessAccess } as unknown as RbacService,
       { record: jest.fn() } as never,
+      currencyDouble(),
     );
 
     await service.listCrmCustomers(USER, 'biz-a');
@@ -36,6 +38,7 @@ describe('BusinessOpsService tenant isolation', () => {
       } as unknown as PrismaService,
       { assertBusinessAccess: jest.fn().mockResolvedValue(undefined) } as unknown as RbacService,
       { record: jest.fn() } as never,
+      currencyDouble(),
     );
 
     await expect(service.addCrmNote(USER, 'biz-a', 'cust-x', 'not')).rejects.toBeInstanceOf(
@@ -66,6 +69,7 @@ describe('BusinessOpsService tenant isolation', () => {
       } as unknown as PrismaService,
       { assertBusinessAccess: jest.fn().mockResolvedValue(undefined) } as unknown as RbacService,
       { record: jest.fn() } as never,
+      currencyDouble(),
     );
 
     await service.createWorkOrder(USER, 'biz-a', {
@@ -103,6 +107,7 @@ describe('BusinessOpsService tenant isolation', () => {
       } as unknown as PrismaService,
       { assertBusinessAccess: jest.fn().mockResolvedValue(undefined) } as unknown as RbacService,
       { record: jest.fn() } as never,
+      currencyDouble(),
     );
 
     await service.addCrmFollowUp(USER, 'biz-a', 'cust-1', {
