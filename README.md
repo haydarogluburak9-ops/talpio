@@ -355,3 +355,26 @@ için arka plana alınır; ilerleme `/root/seed.log` dosyasından izlenir.
 Seed çalışma imajından çalıştırılamaz: `tsx` bir geliştirme bağımlılığıdır ve
 imaja yalnızca `dist` kopyalanır. `vps-seed.sh` bu yüzden Dockerfile'ın `build`
 aşamasından tek kullanımlık bir konteyner ayağa kaldırır.
+
+## Yedekleme
+
+```bash
+bash scripts/vps-backup.sh              # tek seferlik yedek
+bash scripts/vps-backup.sh --install    # her gece 03:00 için cron kurar
+```
+
+Veritabanı `pg_dump` ile, yüklenen dosyalar MinIO biriminden arşivlenir;
+`/root/backups` altında 14 gün saklanır. Boş veya kırpılmış yedek sessizce
+birikmesin diye boyut doğrulanır.
+
+Yedekler sunucunun kendi diskinde durur. Bu, hatalı migration ve yanlış silme
+vakalarını kurtarır ama sunucu kaybolursa yedek de kaybolur — dizinin sunucu
+dışına kopyalanması ayrıca yapılmalıdır.
+
+Geri yükleme:
+
+```bash
+zcat /root/backups/talpio-db-YYYYMMDD-HHMMSS.sql.gz \
+  | docker compose --env-file .env -f docker-compose.prod.yml exec -T postgres \
+    psql -U talpio -d talpio
+```
