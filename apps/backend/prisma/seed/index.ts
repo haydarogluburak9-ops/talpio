@@ -415,6 +415,9 @@ async function seedDemoAccounts(): Promise<void> {
         passwordHash,
         fullName: account.fullName,
         role: account.role,
+        // Yalnızca oluştururken yazılır: dil bir kullanıcı tercihidir ve her
+        // dağıtımdaki seed onu geri almamalı.
+        locale: account.locale,
         status: UserStatus.ACTIVE,
         emailVerifiedAt: now,
         phoneVerifiedAt: now,
