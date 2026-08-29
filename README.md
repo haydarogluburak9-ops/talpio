@@ -341,3 +341,17 @@ rastgele üretir ve yalnızca bir kez konsola yazar — o anda kaydedin.
 
 Seed mevcut hesapların parolasını değiştirmez; yalnızca hesabı ilk kez oluştururken
 yazar. Böylece panelden yapılan parola değişikliği sonraki dağıtımlarda korunur.
+
+## Sunucuda tohumlama
+
+```powershell
+./scripts/run-remote-seed.ps1          # katalog verisi (konumlar, kategoriler, planlar)
+./scripts/run-remote-seed.ps1 -Demo    # vitrin hesapları ve sosyal ağ da dahil
+```
+
+Sunucuda doğrudan `bash scripts/vps-seed.sh` de çalışır. Tohumlama uzun sürdüğü
+için arka plana alınır; ilerleme `/root/seed.log` dosyasından izlenir.
+
+Seed çalışma imajından çalıştırılamaz: `tsx` bir geliştirme bağımlılığıdır ve
+imaja yalnızca `dist` kopyalanır. `vps-seed.sh` bu yüzden Dockerfile'ın `build`
+aşamasından tek kullanımlık bir konteyner ayağa kaldırır.

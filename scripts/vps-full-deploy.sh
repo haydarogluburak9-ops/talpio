@@ -89,18 +89,11 @@ docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps bac
 log "Stack başlatılıyor"
 docker compose --env-file .env -f docker-compose.prod.yml up -d --force-recreate web admin backend worker
 
-# Çalışma imajı yalnızca `dist` taşır, ama seed `src/generated` ve
-# `src/modules/social/demo-story-refresh` yollarını TypeScript kaynağı olarak
-# import eder. Kaynakları host'taki checkout'tan bağlıyoruz; `tsconfig.json`
-# ise `@/*` alias'ını çözmek için gerekiyor. `prisma generate` bağlama yüzünden
-# root'a ait olan `src/` içine yazdığı için bu tek kullanımlık konteyner
-# root olarak çalışır.
+# Seed tek bir yerde durur: kurulum da, sonradan yapılan tazelemeler de aynı
+# script'i çağırır. Kaynakları çalışma imajına bağlayan eski yöntem, imajın
+# taşıdığı dosyalar her değiştiğinde sessizce bozuluyordu.
 log "Seed"
-docker compose --env-file .env -f docker-compose.prod.yml run --rm --no-deps --user root \
-  -v "$INSTALL_DIR/apps/backend/src/modules:/app/apps/backend/src/modules:ro" \
-  -v "$INSTALL_DIR/apps/backend/tsconfig.json:/app/apps/backend/tsconfig.json:ro" \
-  backend sh -c \
-  'cd /app/apps/backend && npx prisma generate && npx --yes tsx prisma/seed/index.ts' < /dev/null
+SEED_DEMO_ACCOUNTS="${SEED_DEMO_ACCOUNTS:-false}" bash "$INSTALL_DIR/scripts/vps-seed.sh" < /dev/null
 
 log "Sağlık kontrolü"
 sleep 10
