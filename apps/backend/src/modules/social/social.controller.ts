@@ -180,6 +180,12 @@ export class SocialController {
     return this.profileCareer.deleteEducation(user, id);
   }
 
+  @Get('skills/suggest')
+  @ApiOperation({ summary: 'Yetkinlik adı önerir' })
+  suggestSkills(@Query('q') query?: string): Promise<string[]> {
+    return this.profileCareer.suggestSkills(query ?? '');
+  }
+
   @Post('profiles/me/skills')
   @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
   @ApiOperation({ summary: 'Yetkinlik ekler' })

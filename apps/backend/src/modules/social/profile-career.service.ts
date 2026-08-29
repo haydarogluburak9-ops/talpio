@@ -31,6 +31,10 @@ const MAX_EXPERIENCES = 20;
 const MAX_EDUCATION = 20;
 const MAX_SKILLS = 50;
 
+/** Tek harfte tüm tabloyu taramak yerine kullanıcı biraz yazana kadar beklenir. */
+const SKILL_SUGGEST_MIN_LENGTH = 2;
+const SKILL_SUGGEST_LIMIT = 10;
+
 @Injectable()
 export class ProfileCareerService {
   constructor(
@@ -199,6 +203,7 @@ export class ProfileCareerService {
       data: {
         profileId: profile.id,
         name,
+        level: dto.level ?? null,
         sortOrder: dto.sortOrder ?? 0,
       },
     });
@@ -222,11 +227,37 @@ export class ProfileCareerService {
       where: { id },
       data: {
         name,
+        // `null` dereceyi temizler, `undefined` alana hiç dokunmaz.
+        ...(dto.level !== undefined ? { level: dto.level } : {}),
         ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
       },
     });
 
     return toSocialProfileSkill(row);
+  }
+
+  /**
+   * Yetkinlik adı önerileri.
+   *
+   * Öneriler platformda halihazırda kullanılan adlardan gelir; sabit bir
+   * katalog tutulsaydı altı dile elle çevrilmesi gerekir ve kullanıcının kendi
+   * sektöründeki terimi yine listede bulunmazdı. Kullanım sayısına göre
+   * sıralanır, böylece yaygın yazım öne çıkar ve aynı yetkinliğin farklı
+   * varyasyonları zamanla tek biçimde toplanır.
+   */
+  async suggestSkills(query: string): Promise<string[]> {
+    const needle = query.trim();
+    if (needle.length < SKILL_SUGGEST_MIN_LENGTH) return [];
+
+    const rows = await this.prisma.socialProfileSkill.groupBy({
+      by: ['name'],
+      where: { name: { contains: needle, mode: 'insensitive' } },
+      _count: { name: true },
+      orderBy: { _count: { name: 'desc' } },
+      take: SKILL_SUGGEST_LIMIT,
+    });
+
+    return rows.map((row) => row.name);
   }
 
   async deleteSkill(user: AuthenticatedUser, id: string): Promise<void> {

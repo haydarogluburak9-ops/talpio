@@ -12,6 +12,7 @@ import type {
   SocialProfileEducation,
   SocialProfileExperience,
   SocialProfileSkill,
+  SkillLevel,
   StoryHighlight,
 } from '@talpio/types';
 
@@ -118,6 +119,7 @@ export type SocialProfileSkillRow = {
   id: string;
   profileId: string;
   name: string;
+  level: SkillLevel | null;
   sortOrder: number;
   createdAt: Date;
   updatedAt: Date;
@@ -170,6 +172,7 @@ export function toSocialProfileSkill(row: SocialProfileSkillRow): SocialProfileS
     id: row.id,
     profileId: row.profileId,
     name: row.name,
+    level: row.level,
     sortOrder: row.sortOrder,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

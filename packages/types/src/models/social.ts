@@ -56,9 +56,19 @@ export interface SocialProfile extends BaseEntity {
   business?: SocialBusinessCard | null;
 }
 
+/**
+ * Yetkinlik ustalık derecesi.
+ *
+ * İsteğe bağlıdır: mevcut kayıtlarda derece yok ve kullanıcıyı geriye dönüp
+ * hepsini doldurmaya zorlamak, yetkinlik eklemeyi bırakmasına yol açardı.
+ */
+export const SKILL_LEVELS = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
+export type SkillLevel = (typeof SKILL_LEVELS)[number];
+
 export interface SocialProfileSkill extends BaseEntity {
   profileId: string;
   name: string;
+  level?: SkillLevel | null;
   sortOrder: number;
 }
 

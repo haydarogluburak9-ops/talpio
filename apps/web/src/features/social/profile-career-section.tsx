@@ -5,6 +5,7 @@ import type {
   SocialProfileEducation,
   SocialProfileExperience,
   SocialProfileSkill,
+  SkillLevel,
 } from '@talpio/types';
 import { SocialProfileKind } from '@talpio/types';
 import { Button, Input, cn } from '@talpio/ui';
@@ -26,6 +27,8 @@ import { createPortal } from 'react-dom';
 import { getLocale, t } from '@/lib/i18n';
 
 import { formatCareerPeriod } from './career-format';
+import { MonthYearField } from './month-year-field';
+import { SkillField, skillLevelLabel } from './skill-field';
 import {
   useCreateEducation,
   useCreateExperience,
@@ -496,6 +499,7 @@ function SkillsSection({
 }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
+  const [level, setLevel] = useState<SkillLevel | null>(null);
   const create = useCreateSkill(profile.username);
   const remove = useDeleteSkill(profile.username);
 
@@ -529,6 +533,11 @@ function SkillsSection({
                 )}
               >
                 {item.name}
+                {item.level ? (
+                  <span className="font-normal text-foreground-muted">
+                    · {skillLevelLabel(item.level)}
+                  </span>
+                ) : null}
                 {isOwn ? (
                   <button
                     type="button"
@@ -552,6 +561,7 @@ function SkillsSection({
           tint="warning"
           onClose={() => {
             setName('');
+            setLevel(null);
             setAdding(false);
           }}
         >
@@ -560,23 +570,34 @@ function SkillsSection({
            * her seferinde yeniden açtırmak gereksiz sürtünme yaratır.
            */}
           <form
-            className="flex gap-2"
+            className="space-y-3"
             onSubmit={(event) => {
               event.preventDefault();
               const trimmed = name.trim();
               if (!trimmed) return;
-              create.mutate({ name: trimmed }, { onSuccess: () => setName('') });
+              create.mutate(
+                { name: trimmed, ...(level ? { level } : {}) },
+                {
+                  onSuccess: () => {
+                    setName('');
+                    setLevel(null);
+                  },
+                },
+              );
             }}
           >
-            <Input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder={t('social.skillPlaceholder')}
-              aria-label={t('social.skillName')}
-              autoFocus
-              className="flex-1"
+            <SkillField
+              name={name}
+              level={level}
+              onNameChange={setName}
+              onLevelChange={setLevel}
             />
-            <Button type="submit" disabled={create.isPending || !name.trim()} isLoading={create.isPending}>
+            <Button
+              type="submit"
+              disabled={create.isPending || !name.trim()}
+              isLoading={create.isPending}
+              className="w-full"
+            >
               {t('social.addSkillShort')}
             </Button>
           </form>
@@ -587,6 +608,11 @@ function SkillsSection({
                 <li key={item.id}>
                   <span className="profile-skill-chip inline-flex items-center gap-1 rounded-full py-1 pr-1 pl-2.5 text-[0.8125rem] font-semibold text-foreground">
                     {item.name}
+                    {item.level ? (
+                      <span className="font-normal text-foreground-muted">
+                        · {skillLevelLabel(item.level)}
+                      </span>
+                    ) : null}
                     <button
                       type="button"
                       className="grid size-5 place-items-center rounded-full text-foreground-muted transition-colors hover:bg-danger-surface hover:text-danger-on-surface"
@@ -608,6 +634,7 @@ function SkillsSection({
               type="button"
               onClick={() => {
                 setName('');
+                setLevel(null);
                 setAdding(false);
               }}
             >
@@ -1001,19 +1028,32 @@ function DateFields({
   return (
     <div className="space-y-3 rounded-xl border border-border/70 p-3">
       <p className="text-sm font-medium">{t('social.dates')}</p>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label={t('social.startYear')} value={startYear} onChange={onStartYear} required />
-        <FormField label={t('social.startMonth')} value={startMonth} onChange={onStartMonth} />
-      </div>
+      {/* Ay ve yıl tek alanda toplandı: ikisi ayrı kutu olduğunda kullanıcı
+          yılı girip ayı boş bırakıyor, sonra dönemin yarısı eksik görünüyordu. */}
+      <MonthYearField
+        label={t('social.startDate')}
+        year={startYear}
+        month={startMonth}
+        onChange={(year, month) => {
+          onStartYear(year);
+          onStartMonth(month);
+        }}
+        required
+      />
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={isCurrent} onChange={(e) => onIsCurrent(e.target.checked)} />
         {t('social.currentRole')}
       </label>
       {!isCurrent ? (
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label={t('social.endYear')} value={endYear} onChange={onEndYear} />
-          <FormField label={t('social.endMonth')} value={endMonth} onChange={onEndMonth} />
-        </div>
+        <MonthYearField
+          label={t('social.endDate')}
+          year={endYear}
+          month={endMonth}
+          onChange={(year, month) => {
+            onEndYear(year);
+            onEndMonth(month);
+          }}
+        />
       ) : null}
     </div>
   );

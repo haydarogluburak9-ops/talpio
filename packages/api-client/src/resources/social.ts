@@ -15,6 +15,7 @@ import type {
   SocialProfileEducation,
   SocialProfileExperience,
   SocialProfileSkill,
+  SkillLevel,
   StoryHighlight,
   StoryHighlightDetail,
   TrendingTopic,
@@ -92,10 +93,14 @@ export type UpdateProfileEducationBody = Partial<CreateProfileEducationBody>;
 
 export interface CreateProfileSkillBody {
   name: string;
+  level?: SkillLevel;
   sortOrder?: number;
 }
 
-export type UpdateProfileSkillBody = Partial<CreateProfileSkillBody>;
+export type UpdateProfileSkillBody = Partial<Omit<CreateProfileSkillBody, 'level'>> & {
+  /** `null` dereceyi temizler. */
+  level?: SkillLevel | null;
+};
 
 export interface CreateCommentBody {
   body: string;
@@ -178,6 +183,14 @@ export function createSocialResource(http: HttpClient) {
 
     deleteSkill(id: string): Promise<void> {
       return http.delete<void>(API_ROUTES.social.profileSkill(id));
+    },
+
+    /** Platformda kullanılan yetkinlik adlarından öneri; boş sorguda boş dizi. */
+    suggestSkills(query: string, signal?: AbortSignal): Promise<string[]> {
+      return http.get<string[]>(API_ROUTES.social.skillSuggest, {
+        query: { q: query },
+        ...(signal ? { signal } : {}),
+      });
     },
 
     checkUsernameAvailability(
