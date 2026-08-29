@@ -23,18 +23,20 @@ $seedDemo = if ($Demo) { "true" } else { "false" }
 
 # Betik sunucudaki checkout'tan çalışır; önce depo güncellenir ki yerelde
 # yapılan tohum düzeltmeleri uygulansın.
+# git ilerleme çıktısı stderr'e gider; PowerShell bunu hata sayıp script'i
+# durdurduğu için sessize alınıp stdout'a yönlendirilir.
 $remote = @"
 set -euo pipefail
 cd /root/talpio
-git fetch origin main
-git reset --hard origin/main
+git fetch --quiet origin main 2>&1
+git reset --quiet --hard origin/main 2>&1
 nohup env SEED_DEMO_ACCOUNTS=$seedDemo bash scripts/vps-seed.sh > $LogPath 2>&1 &
 echo "baslatildi pid=`$!"
 "@
 
 # Satır sonları LF'e çevrilir; CRLF gönderilirse uzak bash `\r` hatası verir.
 $remote = $remote -replace "`r", ""
-$remote | ssh -i $Key -o StrictHostKeyChecking=accept-new "root@$Host_" "bash -s"
+$remote | ssh -i $Key -o StrictHostKeyChecking=accept-new "root@$Host_" "bash -s" 2>&1
 
 Write-Host ""
 Write-Host "Tohumlama arka planda calisiyor. Ilerleme:"
