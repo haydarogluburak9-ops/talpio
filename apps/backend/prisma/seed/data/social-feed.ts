@@ -7,6 +7,8 @@ import {
   RequestType,
 } from '../../../src/generated/prisma/enums';
 
+import { DEFAULT_CURRENCY, LOCALE_CURRENCY } from '@talpio/config';
+
 import { refreshDemoStories } from '../../../src/modules/social/demo-story-refresh';
 import { DEMO_ACCOUNTS } from './demo-accounts';
 
@@ -887,12 +889,44 @@ async function findCityId(prisma: PrismaClient, name?: string | null): Promise<s
   return city?.id ?? null;
 }
 
+/**
+ * Vitrin hesabının ülkesi ve para birimi.
+ *
+ * Şehir üzerinden ülkeye, oradan ülkenin para birimine gidilir. Önceden her
+ * kampanya sabit lira olarak yazılıyordu; Berlin'deki mağazanın vitrini de
+ * lira gösteriyor ve çok dilli ağın varlık sebebi olan "her ülke kendi
+ * parasıyla" davranışı tam da örnek hesaplarda görünmüyordu.
+ */
+async function resolveLocale(
+  prisma: PrismaClient,
+  cityName?: string | null,
+  locale?: string,
+): Promise<{ currency: string; countryCode: string | null }> {
+  const token = cityName?.split(/[/·,]/)[0]?.trim();
+  if (token) {
+    const city = await prisma.city.findFirst({
+      where: { name: { equals: token, mode: 'insensitive' } },
+      select: { country: { select: { code: true, currency: true } } },
+    });
+    if (city?.country) {
+      return { currency: city.country.currency, countryCode: city.country.code };
+    }
+  }
+
+  const fromLocale = locale ? LOCALE_CURRENCY[locale.toLowerCase()] : undefined;
+  return { currency: fromLocale ?? DEFAULT_CURRENCY, countryCode: null };
+}
+
 export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
   const usernames = new Set<string>();
   for (const account of DEMO_ACCOUNTS) {
     usernames.add(account.socialUsername);
     if (account.provider) usernames.add(account.provider.storeUsername);
   }
+
+  // Kişisel profil ve mağaza profili aynı para birimini paylaşır; gönderi
+  // hangisinden yayınlanırsa yayınlansın etiket tutarlı kalsın.
+  const currencyByUsername = new Map<string, string>();
 
   for (const account of DEMO_ACCOUNTS) {
     if (!account.provider) continue;
@@ -944,6 +978,33 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
 
     const locationText = account.locationText ?? account.provider.cityName;
     const locationCityId = await findCityId(prisma, locationText);
+
+    const { currency, countryCode } = await resolveLocale(
+      prisma,
+      account.provider.cityName,
+      account.locale,
+    );
+    currencyByUsername.set(account.socialUsername, currency);
+    currencyByUsername.set(account.provider.storeUsername, currency);
+
+    await prisma.businessLocaleSettings.upsert({
+      where: { businessId: business.id },
+      update: { defaultCurrency: currency, ...(countryCode ? { defaultCountryCode: countryCode } : {}) },
+      create: {
+        businessId: business.id,
+        defaultCurrency: currency,
+        ...(countryCode ? { defaultCountryCode: countryCode } : {}),
+      },
+    });
+
+    // Ülke kodu yalnızca boşsa yazılır: kullanıcı panelden değiştirdiyse her
+    // tohumlama onu geri almamalı.
+    if (countryCode) {
+      await prisma.user.updateMany({
+        where: { id: user.id, countryCode: null },
+        data: { countryCode },
+      });
+    }
 
     await prisma.socialProfile.upsert({
       where: { businessId: business.id },
@@ -1029,6 +1090,10 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
     if (!authorId) continue;
 
     const buyerUserId = userIdByUsername.get(item.author);
+    // Mağazanın kendi para birimi; `currencyByUsername` zaten şehrin ülkesinden
+    // türetiliyor. Sabit TRY yazıldığında Hamburg'daki mağazanın kampanyası
+    // lira olarak etiketleniyordu.
+    const postCurrency = currencyByUsername.get(item.author) ?? DEFAULT_CURRENCY;
     let commerceRequestId: string | null = null;
     if (item.request && buyerUserId) {
       const created = await prisma.commerceRequest.create({
@@ -1040,6 +1105,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
           quantity: item.request.quantity,
           unit: item.request.unit,
           budgetMinor: item.request.budgetMinor,
+          currency: postCurrency,
           deliveryAddressText: item.request.deliveryAddressText,
           status: RequestStatus.PUBLISHED,
           source: RequestSource.IMPORT,
@@ -1064,7 +1130,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
               promoLabel: item.deal.title,
               originalPriceMinor: item.deal.listPriceMinor,
               promoPriceMinor: item.deal.dealPriceMinor,
-              promoCurrency: 'TRY',
+              promoCurrency: postCurrency,
               dealMetadata: {
                 create: {
                   title: item.deal.title,
@@ -1072,7 +1138,7 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
                   listPriceMinor: item.deal.listPriceMinor,
                   dealPriceMinor: item.deal.dealPriceMinor,
                   discountPercent: item.deal.discountPercent,
-                  currency: 'TRY',
+                  currency: postCurrency,
                   unit: item.deal.unit,
                   stockQuantity: item.deal.stockQuantity,
                   locationText: item.deal.locationText,
