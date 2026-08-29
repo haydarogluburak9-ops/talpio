@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -11,6 +12,7 @@ import { Screen } from '@/components/screen';
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { CommerceHub } from '@/features/requests/commerce-hub';
+import { apiClient } from '@/lib/api';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -50,10 +52,19 @@ export function PublicProfileScreen({
   const follow = useFollow();
   const report = useReportContent();
   const [tab, setTab] = useState<ProfileTab>('posts');
+  const [claimSent, setClaimSent] = useState(false);
   const isOwnProfile = me.data?.username === username;
   const followers = useFollowers(username, tab === 'followers');
   const following = useFollowingList(username, tab === 'following');
   const saved = useSavedPosts(isOwnProfile && tab === 'saved');
+  const claim = useMutation({
+    mutationFn: () => {
+      const businessId = profile.data?.kind === 'BUSINESS' ? profile.data.business?.businessId : null;
+      if (!businessId) throw new Error('Mağaza profili değil.');
+      return apiClient.businesses.claimEmployment(businessId);
+    },
+    onSuccess: () => setClaimSent(true),
+  });
 
   if (profile.isPending) {
     return (
@@ -79,6 +90,7 @@ export function PublicProfileScreen({
   const items = posts.data?.items ?? [];
   const isOwn = me.data?.username === row.username;
   const store = row.kind === 'BUSINESS' ? row.business : null;
+  const verified = Boolean(row.isVerifiedDisplay) || Boolean(store?.isVerified);
   // Ticaret ve kaydedilenler yalnızca profil sahibinindir; başkasının
   // taleplerini ve aldığı teklifleri kimse göremez.
   const tabs: { id: ProfileTab; label: string }[] = [
@@ -107,7 +119,14 @@ export function PublicProfileScreen({
             )}
 
             <View style={styles.copy}>
-              <Text variant="title">{row.displayName}</Text>
+              <View style={styles.nameRow}>
+                <Text variant="title">{row.displayName}</Text>
+                {verified ? (
+                  <Text variant="caption" tone="success">
+                    ✓
+                  </Text>
+                ) : null}
+              </View>
               <Text variant="caption" tone="muted">
                 @{row.username}
                 {row.kind === 'BUSINESS' ? ` · ${t('social.storeBadge')}` : ''}
@@ -156,6 +175,16 @@ export function PublicProfileScreen({
                       params: { storeUsername: row.username },
                     })
                   }
+                  style={styles.quote}
+                />
+              ) : null}
+              {store?.isVerified && store.businessId && me.data ? (
+                <Button
+                  label={claimSent ? t('verification.claimSent') : t('verification.claimCta')}
+                  variant="outline"
+                  loading={claim.isPending}
+                  disabled={claimSent}
+                  onPress={() => claim.mutate()}
                   style={styles.quote}
                 />
               ) : null}
@@ -363,6 +392,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6A00',
   },
   copy: { flex: 1, gap: 4, paddingBottom: spacing.xs },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   action: { marginTop: spacing.md },
   quote: { marginTop: spacing.sm },
   report: { marginTop: spacing.sm },

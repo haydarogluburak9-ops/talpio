@@ -248,7 +248,7 @@ function VerificationActions({
           className="max-w-48"
         />
         <Button variant="outline" size="sm" disabled={disabled} onClick={() => onReject(reason)}>
-          Onayla
+          Reddet
         </Button>
         <Button variant="ghost" size="sm" onClick={onCancelReject}>
           Vazgeç

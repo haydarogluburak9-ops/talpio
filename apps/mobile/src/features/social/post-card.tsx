@@ -135,9 +135,16 @@ export function PostCard({ post, mediaHeight = 320 }: { post: SocialPost; mediaH
             <View style={[styles.avatar, { backgroundColor: colors.surfaceMuted }]} />
           )}
           <View style={styles.headerCopy}>
-            <Text variant="bodyStrong" numberOfLines={1}>
-              {post.author?.displayName ?? `@${username}`}
-            </Text>
+            <View style={styles.authorName}>
+              <Text variant="bodyStrong" numberOfLines={1}>
+                {post.author?.displayName ?? `@${username}`}
+              </Text>
+              {post.author?.isVerifiedDisplay ? (
+                <Text variant="caption" style={styles.verifiedMark}>
+                  ✓
+                </Text>
+              ) : null}
+            </View>
             <Text variant="caption" tone="muted" numberOfLines={1}>
               @{username}
               {post.author?.kind === 'BUSINESS' ? ` · ${t('social.storeBadge')}` : ''}
@@ -389,6 +396,8 @@ const styles = StyleSheet.create({
   },
   headerIdentity: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   headerCopy: { flex: 1 },
+  authorName: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  verifiedMark: { color: '#16A34A' },
   avatar: { width: 36, height: 36, borderRadius: 18 },
   menu: { marginHorizontal: spacing.lg, gap: spacing.xs, paddingBottom: spacing.sm },
   mediaWrap: { width: '100%', justifyContent: 'center' },
