@@ -928,6 +928,15 @@ export async function seedSocialNetwork(prisma: PrismaClient): Promise<void> {
   // hangisinden yayınlanırsa yayınlansın etiket tutarlı kalsın.
   const currencyByUsername = new Map<string, string>();
 
+  // Mağazası olmayan alıcılar da haritaya girer. Yalnızca satıcılar
+  // doldurulduğunda bu hesapların talepleri son çare olan dolara düşüyordu;
+  // İstanbul'daki bir alıcının talebi dolar olarak etiketleniyordu.
+  for (const account of DEMO_ACCOUNTS) {
+    if (account.provider) continue;
+    const { currency } = await resolveLocale(prisma, account.locationText, account.locale);
+    currencyByUsername.set(account.socialUsername, currency);
+  }
+
   for (const account of DEMO_ACCOUNTS) {
     if (!account.provider) continue;
     const user = await prisma.user.findUnique({
