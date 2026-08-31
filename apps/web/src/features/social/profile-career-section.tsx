@@ -1009,6 +1009,7 @@ function PositionSuggestField({
       value={value}
       onChange={onChange}
       required
+      autoFocus
       placeholder={t('social.positionPlaceholder')}
       hint={t('social.positionSuggestHint')}
       options={mergeSuggestions(
