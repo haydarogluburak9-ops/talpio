@@ -18,10 +18,13 @@ export function useMyCommerceRequests() {
   });
 }
 
-export function useMatchedRequests() {
+export function useMatchedRequests(enabled = true) {
   return useQuery({
     queryKey: queryKeys.requests.matched(),
     queryFn: ({ signal }) => apiClient.requests.listMatched({}, signal),
+    enabled,
+    // Alıcı-only hesaplarda 403 döner; ticaret kutusunu düşürmesin.
+    retry: false,
   });
 }
 

@@ -3,15 +3,13 @@
 import { formatMoneyMinor } from '@talpio/localization';
 import type { CommerceRequest, RequestOffer } from '@talpio/types';
 import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import { BadgeCheck, Clock, Lock, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, BadgeCheck, Clock, Lock, ShieldCheck, Truck } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { getLocale, localeTag, t } from '@/lib/i18n';
 
-import { useMyCommerceRequests, useMyRequestOffers } from './use-requests';
-
-type HubTab = 'requests' | 'offers';
+import { useMatchedRequests, useMyCommerceRequests, useMyRequestOffers } from './use-requests';
 
 /** Alıcının hâlâ cevap beklediği talepler. */
 const OPEN_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'MATCHING', 'QUOTING']);
@@ -19,14 +17,13 @@ const OPEN_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'MATCHING', 'QUOTING']);
 /**
  * Profildeki ticaret alanı.
  *
- * Alıcı bugüne kadar taleplerini `/tedariklerim`de, teklifleri ise her talebin
- * detay sayfasında ayrı ayrı görüyordu; kaç talebi varsa o kadar sayfa gezmesi
- * gerekiyordu. Bu panel ikisini tek yerde toplar.
+ * Alış ve satış aynı listede karışmasın diye iki ayrı kutu: senin açtığın
+ * talepler (satıcılar teklif yazar) ve sana gelen talepler (sen teklif verirsin).
  */
 export function CommerceHub() {
-  const [tab, setTab] = useState<HubTab>('requests');
   const requests = useMyCommerceRequests();
   const offers = useMyRequestOffers();
+  const incoming = useMatchedRequests();
 
   if (requests.isPending || offers.isPending) return <ListSkeleton rows={3} />;
 
@@ -40,6 +37,7 @@ export function CommerceHub() {
             onClick: () => {
               void requests.refetch();
               void offers.refetch();
+              void incoming.refetch();
             },
           }}
         />
@@ -49,20 +47,15 @@ export function CommerceHub() {
 
   const requestItems = requests.data?.items ?? [];
   const offerItems = offers.data ?? [];
+  const incomingItems = incoming.isError ? [] : (incoming.data?.items ?? []);
 
   const openCount = requestItems.filter((row) => OPEN_STATUSES.has(row.status)).length;
   const pendingCount = offerItems.filter((row) => row.status === 'SUBMITTED').length;
-  const acceptedCount = offerItems.filter((row) => row.status === 'ACCEPTED').length;
-
-  const tabs: { id: HubTab; label: string; count: number }[] = [
-    { id: 'requests', label: t('commerce.hubRequestsTab'), count: requestItems.length },
-    { id: 'offers', label: t('commerce.hubOffersTab'), count: offerItems.length },
-  ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <section className="social-panel overflow-hidden">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3 p-5">
           <div className="min-w-0">
             <h2 className="font-display text-lg font-semibold tracking-tight text-brand-900 dark:text-foreground">
               {t('commerce.hubTitle')}
@@ -76,104 +69,161 @@ export function CommerceHub() {
             {t('commerce.hubNewRequest')}
           </Link>
         </div>
-
-        <dl className="grid grid-cols-3 divide-x divide-border/70">
-          <Stat label={t('commerce.hubStatOpen')} value={openCount} />
-          <Stat label={t('commerce.hubStatPending')} value={pendingCount} accent />
-          <Stat label={t('commerce.hubStatAccepted')} value={acceptedCount} />
-        </dl>
       </section>
 
-      <div className="flex gap-1.5">
-        {tabs.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setTab(item.id)}
-            aria-current={tab === item.id}
-            className={cn(
-              'inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors',
-              tab === item.id
-                ? 'bg-brand-900 text-white dark:bg-foreground dark:text-surface'
-                : 'social-panel text-foreground-muted hover:text-foreground',
-            )}
-          >
-            {item.label}
-            <span
-              className={cn(
-                'rounded-full px-1.5 text-xs tabular-nums',
-                tab === item.id ? 'bg-white/20' : 'bg-surface-muted',
-              )}
-            >
-              {item.count}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {tab === 'requests' ? (
-        requestItems.length === 0 ? (
-          <div className="social-panel p-5">
-            <EmptyState
-              title={t('commerce.hubRequestsEmptyTitle')}
-              description={t('commerce.hubRequestsEmptyBody')}
-            />
-          </div>
+      <Lane
+        tone="buy"
+        icon={<ArrowUpRight className="size-4" aria-hidden />}
+        title={t('commerce.hubBuyLaneTitle')}
+        hint={t('commerce.hubBuyLaneHint')}
+        countLabel={t('commerce.hubStatOpen')}
+        count={openCount}
+      >
+        {requestItems.length === 0 ? (
+          <EmptyState
+            title={t('commerce.hubRequestsEmptyTitle')}
+            description={t('commerce.hubRequestsEmptyBody')}
+          />
         ) : (
           <ul className="space-y-2">
             {requestItems.map((row) => (
-              <RequestRow key={row.id} request={row} />
+              <RequestRow key={row.id} request={row} direction="out" />
             ))}
           </ul>
-        )
-      ) : offerItems.length === 0 ? (
-        <div className="social-panel p-5">
-          <EmptyState
-            title={t('commerce.hubOffersEmptyTitle')}
-            description={t('commerce.hubOffersEmptyBody')}
-          />
-        </div>
-      ) : (
-        <ul className="space-y-2">
-          {offerItems.map((row) => (
-            <OfferRow key={row.id} offer={row} />
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function Stat({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) {
-  return (
-    <div className="px-5 py-4">
-      <dt className="text-xs font-medium text-foreground-muted">{label}</dt>
-      <dd
-        className={cn(
-          'mt-0.5 font-display text-2xl font-semibold tabular-nums',
-          accent && value > 0 ? 'text-accent-600' : 'text-brand-900 dark:text-foreground',
         )}
+
+        <div className="mt-5 border-t border-border/70 pt-4">
+          <h3 className="text-sm font-semibold text-foreground">{t('commerce.hubOffersOnYoursTitle')}</h3>
+          <p className="mt-0.5 text-xs text-foreground-muted">{t('commerce.hubOffersOnYoursHint')}</p>
+          {offerItems.length === 0 ? (
+            <p className="mt-3 text-sm text-foreground-muted">{t('commerce.hubOffersEmptyBody')}</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {offerItems.map((row) => (
+                <OfferRow key={row.id} offer={row} />
+              ))}
+            </ul>
+          )}
+          {pendingCount > 0 ? (
+            <p className="mt-2 text-xs font-semibold text-accent-600">
+              {t('commerce.hubPendingBadge', { count: pendingCount })}
+            </p>
+          ) : null}
+        </div>
+      </Lane>
+
+      <Lane
+        tone="sell"
+        icon={<ArrowDownLeft className="size-4" aria-hidden />}
+        title={t('commerce.hubSellLaneTitle')}
+        hint={t('commerce.hubSellLaneHint')}
+        countLabel={t('commerce.hubSellLaneTitle')}
+        count={incoming.isPending ? undefined : incomingItems.length}
       >
-        {value}
-      </dd>
+        {incoming.isPending ? (
+          <ListSkeleton rows={2} />
+        ) : incomingItems.length === 0 ? (
+          <EmptyState
+            title={t('commerce.hubIncomingEmptyTitle')}
+            description={t('commerce.hubIncomingEmptyBody')}
+          />
+        ) : (
+          <ul className="space-y-2">
+            {incomingItems.map((row) => (
+              <RequestRow key={row.id} request={row} direction="in" />
+            ))}
+          </ul>
+        )}
+      </Lane>
     </div>
   );
 }
 
-function RequestRow({ request }: { request: CommerceRequest }) {
+function Lane({
+  tone,
+  icon,
+  title,
+  hint,
+  count,
+  countLabel,
+  children,
+}: {
+  tone: 'buy' | 'sell';
+  icon: ReactNode;
+  title: string;
+  hint: string;
+  count?: number;
+  countLabel: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        'social-panel overflow-hidden border-l-4',
+        tone === 'buy' ? 'border-l-accent-500' : 'border-l-info-600',
+      )}
+    >
+      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border/70 px-5 py-4">
+        <div className="min-w-0">
+          <p
+            className={cn(
+              'inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide',
+              tone === 'buy' ? 'text-accent-600' : 'text-info-600',
+            )}
+          >
+            {icon}
+            {tone === 'buy' ? t('commerce.hubYouOpened') : t('commerce.hubCameToYou')}
+          </p>
+          <h3 className="mt-1 font-display text-base font-semibold text-brand-900 dark:text-foreground">
+            {title}
+          </h3>
+          <p className="mt-1 text-sm text-foreground-muted">{hint}</p>
+        </div>
+        {count != null ? (
+          <p className="shrink-0 text-right">
+            <span className="block font-display text-2xl font-semibold tabular-nums text-brand-900 dark:text-foreground">
+              {count}
+            </span>
+            <span className="text-xs text-foreground-muted">{countLabel}</span>
+          </p>
+        ) : null}
+      </header>
+      <div className="p-4 sm:p-5">{children}</div>
+    </section>
+  );
+}
+
+function RequestRow({
+  request,
+  direction,
+}: {
+  request: CommerceRequest;
+  direction: 'out' | 'in';
+}) {
   const pending = request.pendingOfferCount ?? 0;
   const total = request.offerCount ?? 0;
   const isPrivate = request.visibility === 'INVITE_ONLY';
+  const dated = request.publishedAt ?? request.createdAt;
 
   return (
     <li>
       <Link
         href={`/tedarik/${request.id}`}
-        className="social-panel block p-4 transition-colors hover:bg-surface-muted"
+        className="block rounded-xl border border-border/80 bg-surface p-4 transition-colors hover:bg-surface-muted"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate font-semibold text-foreground">{request.title}</p>
+            <span
+              className={cn(
+                'inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide',
+                direction === 'out'
+                  ? 'bg-accent-500/12 text-accent-700 dark:text-accent-400'
+                  : 'bg-info-50 text-info-700 dark:bg-info-600/15 dark:text-info-400',
+              )}
+            >
+              {direction === 'out' ? t('commerce.hubYouOpened') : t('commerce.hubCameToYou')}
+            </span>
+            <p className="mt-2 truncate font-semibold text-foreground">{request.title}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <StatusChip label={t(`requestStatus.${request.status}`)} />
               {isPrivate ? (
@@ -185,13 +235,34 @@ function RequestRow({ request }: { request: CommerceRequest }) {
                   {t('commerce.hubPrivate')}
                 </span>
               ) : null}
-              <span className="text-xs text-foreground-muted">
-                {t('commerce.hubOfferCount', { count: total })}
-              </span>
+              {direction === 'out' ? (
+                <span className="text-xs text-foreground-muted">
+                  {t('commerce.hubOfferCount', { count: total })}
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-info-600">
+                  {t('commerce.hubAwaitingYourOffer')}
+                </span>
+              )}
+              {request.quantity ? (
+                <span className="text-xs text-foreground-muted">
+                  {request.quantity}
+                  {request.unit ? ` ${request.unit}` : ''}
+                </span>
+              ) : null}
+              {dated ? (
+                <span className="text-xs text-foreground-muted">
+                  {new Date(dated).toLocaleDateString(localeTag())}
+                </span>
+              ) : null}
             </div>
           </div>
 
-          {pending > 0 ? (
+          {direction === 'in' ? (
+            <span className="shrink-0 rounded-lg bg-info-600 px-2.5 py-1 text-xs font-semibold text-white">
+              {t('commerce.hubGiveOffer')}
+            </span>
+          ) : pending > 0 ? (
             <span className="shrink-0 rounded-full bg-accent-500 px-2.5 py-1 text-xs font-semibold text-white">
               {t('commerce.hubPendingBadge', { count: pending })}
             </span>
@@ -212,7 +283,7 @@ function OfferRow({ offer }: { offer: RequestOffer }) {
     .toUpperCase();
 
   return (
-    <li className="social-panel p-4">
+    <li className="rounded-xl border border-border/80 bg-surface p-4">
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-900/5 text-sm font-semibold text-brand-900 dark:bg-foreground/10 dark:text-foreground">
           {initials}
@@ -293,7 +364,7 @@ function StatusChip({ label }: { label: string }) {
   );
 }
 
-function Meta({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+function Meta({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1 text-xs text-foreground-muted">
       {icon}

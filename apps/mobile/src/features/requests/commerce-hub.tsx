@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { formatMoneyMinor } from '@talpio/localization';
@@ -13,9 +12,7 @@ import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
 
-import { useMyCommerceRequests, useMyRequestOffers } from './use-requests';
-
-type HubTab = 'requests' | 'offers';
+import { useMatchedRequests, useMyCommerceRequests, useMyRequestOffers } from './use-requests';
 
 /** Alıcının hâlâ cevap beklediği talepler. */
 const OPEN_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'MATCHING', 'QUOTING']);
@@ -30,9 +27,9 @@ export function CommerceHub({ variant }: { variant: 'customer' | 'provider' }) {
   const { t, locale } = useI18n();
   const colors = useColors();
   const router = useRouter();
-  const [tab, setTab] = useState<HubTab>('requests');
   const requests = useMyCommerceRequests();
   const offers = useMyRequestOffers();
+  const incoming = useMatchedRequests();
 
   if (requests.isPending || offers.isPending) return <ListSkeleton rows={3} />;
 
@@ -44,6 +41,7 @@ export function CommerceHub({ variant }: { variant: 'customer' | 'provider' }) {
         onRetry={() => {
           void requests.refetch();
           void offers.refetch();
+          void incoming.refetch();
         }}
       />
     );
@@ -51,15 +49,8 @@ export function CommerceHub({ variant }: { variant: 'customer' | 'provider' }) {
 
   const requestItems = requests.data?.items ?? [];
   const offerItems = offers.data ?? [];
-
+  const incomingItems = incoming.isError ? [] : (incoming.data?.items ?? []);
   const openCount = requestItems.filter((row) => OPEN_STATUSES.has(row.status)).length;
-  const pendingCount = offerItems.filter((row) => row.status === 'SUBMITTED').length;
-  const acceptedCount = offerItems.filter((row) => row.status === 'ACCEPTED').length;
-
-  const tabs: { id: HubTab; label: string; count: number }[] = [
-    { id: 'requests', label: t('commerce.hubRequestsTab'), count: requestItems.length },
-    { id: 'offers', label: t('commerce.hubOffersTab'), count: offerItems.length },
-  ];
 
   return (
     <View style={styles.root}>
@@ -86,109 +77,96 @@ export function CommerceHub({ variant }: { variant: 'customer' | 'provider' }) {
             </Text>
           </Pressable>
         </View>
+      </Card>
 
-        <View style={styles.statRow}>
-          <Stat label={t('commerce.hubStatOpen')} value={openCount} />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <Stat label={t('commerce.hubStatPending')} value={pendingCount} accent />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <Stat label={t('commerce.hubStatAccepted')} value={acceptedCount} />
+      <Card padded={false} style={[styles.lane, { borderLeftColor: colors.accent }]}>
+        <View style={[styles.laneHead, { borderBottomColor: colors.border }]}>
+          <Text variant="overline" style={{ color: colors.accent }}>
+            {t('commerce.hubYouOpened')}
+          </Text>
+          <Text variant="bodyStrong">{t('commerce.hubBuyLaneTitle')}</Text>
+          <Text variant="caption" tone="muted">
+            {t('commerce.hubBuyLaneHint')}
+          </Text>
+          <Text variant="caption" tone="muted">
+            {openCount} · {t('commerce.hubStatOpen')}
+          </Text>
+        </View>
+        <View style={styles.laneBody}>
+          {requestItems.length === 0 ? (
+            <EmptyState
+              icon="clipboard-outline"
+              title={t('commerce.hubRequestsEmptyTitle')}
+              description={t('commerce.hubRequestsEmptyBody')}
+              actionLabel={t('commerce.hubNewRequest')}
+              onAction={() => router.push('/customer/requests/new' as never)}
+            />
+          ) : (
+            <View style={styles.list}>
+              {requestItems.map((row) => (
+                <RequestRow key={row.id} request={row} direction="out" />
+              ))}
+            </View>
+          )}
+          <Text variant="bodyStrong" style={styles.laneSubhead}>
+            {t('commerce.hubOffersOnYoursTitle')}
+          </Text>
+          <Text variant="caption" tone="muted">
+            {t('commerce.hubOffersOnYoursHint')}
+          </Text>
+          {offerItems.length === 0 ? (
+            <Text variant="caption" tone="muted" style={styles.laneSubhead}>
+              {t('commerce.hubOffersEmptyBody')}
+            </Text>
+          ) : (
+            <View style={styles.list}>
+              {offerItems.map((row) => (
+                <OfferRow key={row.id} offer={row} locale={locale} variant={variant} />
+              ))}
+            </View>
+          )}
         </View>
       </Card>
 
-      <View style={styles.tabRow}>
-        {tabs.map((item) => {
-          const active = tab === item.id;
-          return (
-            <Pressable
-              key={item.id}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              onPress={() => setTab(item.id)}
-              style={[
-                styles.tab,
-                {
-                  backgroundColor: active ? colors.brandStrong : colors.surface,
-                  borderColor: active ? colors.brandStrong : colors.border,
-                },
-              ]}
-            >
-              <Text
-                variant="caption"
-                style={[styles.tabLabel, { color: active ? colors.onBrand : colors.foregroundMuted }]}
-              >
-                {item.label}
-              </Text>
-              <View
-                style={[
-                  styles.tabCount,
-                  { backgroundColor: active ? 'rgba(255,255,255,0.22)' : colors.surfaceMuted },
-                ]}
-              >
-                <Text
-                  variant="overline"
-                  style={{ color: active ? colors.onBrand : colors.foregroundMuted }}
-                >
-                  {item.count}
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {tab === 'requests' ? (
-        requestItems.length === 0 ? (
-          <EmptyState
-            icon="clipboard-outline"
-            title={t('commerce.hubRequestsEmptyTitle')}
-            description={t('commerce.hubRequestsEmptyBody')}
-            actionLabel={t('commerce.hubNewRequest')}
-            onAction={() => router.push('/customer/requests/new' as never)}
-          />
-        ) : (
-          <View style={styles.list}>
-            {requestItems.map((row) => (
-              <RequestRow key={row.id} request={row} />
-            ))}
-          </View>
-        )
-      ) : offerItems.length === 0 ? (
-        <EmptyState
-          icon="pricetags-outline"
-          title={t('commerce.hubOffersEmptyTitle')}
-          description={t('commerce.hubOffersEmptyBody')}
-        />
-      ) : (
-        <View style={styles.list}>
-          {offerItems.map((row) => (
-            <OfferRow key={row.id} offer={row} locale={locale} variant={variant} />
-          ))}
+      <Card padded={false} style={[styles.lane, { borderLeftColor: colors.info }]}>
+        <View style={[styles.laneHead, { borderBottomColor: colors.border }]}>
+          <Text variant="overline" style={{ color: colors.info }}>
+            {t('commerce.hubCameToYou')}
+          </Text>
+          <Text variant="bodyStrong">{t('commerce.hubSellLaneTitle')}</Text>
+          <Text variant="caption" tone="muted">
+            {t('commerce.hubSellLaneHint')}
+          </Text>
         </View>
-      )}
+        <View style={styles.laneBody}>
+          {incoming.isPending ? (
+            <ListSkeleton rows={2} />
+          ) : incomingItems.length === 0 ? (
+            <EmptyState
+              icon="download-outline"
+              title={t('commerce.hubIncomingEmptyTitle')}
+              description={t('commerce.hubIncomingEmptyBody')}
+            />
+          ) : (
+            <View style={styles.list}>
+              {incomingItems.map((row) => (
+                <RequestRow key={row.id} request={row} direction="in" />
+              ))}
+            </View>
+          )}
+        </View>
+      </Card>
     </View>
   );
 }
 
-function Stat({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) {
-  const colors = useColors();
-
-  return (
-    <View style={styles.stat}>
-      <Text
-        variant="displaySm"
-        style={{ color: accent && value > 0 ? colors.accent : colors.foreground }}
-      >
-        {value}
-      </Text>
-      <Text variant="caption" tone="muted" numberOfLines={2}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function RequestRow({ request }: { request: CommerceRequest }) {
+function RequestRow({
+  request,
+  direction,
+}: {
+  request: CommerceRequest;
+  direction: 'out' | 'in';
+}) {
   const { t } = useI18n();
   const colors = useColors();
   const router = useRouter();
@@ -200,10 +178,21 @@ function RequestRow({ request }: { request: CommerceRequest }) {
   return (
     <Card onPress={() => router.push(`/customer/requests/${request.id}` as never)}>
       <View style={styles.rowTop}>
-        <Text variant="bodyStrong" numberOfLines={2} style={styles.flex}>
-          {request.title}
-        </Text>
-        {pending > 0 ? (
+        <View style={styles.flex}>
+          <Chip
+            label={direction === 'out' ? t('commerce.hubYouOpened') : t('commerce.hubCameToYou')}
+          />
+          <Text variant="bodyStrong" numberOfLines={2} style={styles.laneSubhead}>
+            {request.title}
+          </Text>
+        </View>
+        {direction === 'in' ? (
+          <View style={[styles.pendingBadge, { backgroundColor: colors.info }]}>
+            <Text variant="overline" style={{ color: colors.onAccent }}>
+              {t('commerce.hubGiveOffer')}
+            </Text>
+          </View>
+        ) : pending > 0 ? (
           <View style={[styles.pendingBadge, { backgroundColor: colors.accent }]}>
             <Text variant="overline" style={{ color: colors.onAccent }}>
               {t('commerce.hubPendingBadge', { count: pending })}
@@ -218,7 +207,9 @@ function RequestRow({ request }: { request: CommerceRequest }) {
           <Chip label={t('commerce.hubPrivate')} icon="lock-closed-outline" />
         ) : null}
         <Text variant="caption" tone="muted">
-          {t('commerce.hubOfferCount', { count: total })}
+          {direction === 'out'
+            ? t('commerce.hubOfferCount', { count: total })
+            : t('commerce.hubAwaitingYourOffer')}
         </Text>
       </View>
     </Card>
@@ -359,9 +350,10 @@ const styles = StyleSheet.create({
   },
   newButtonLabel: { fontWeight: '700' },
 
-  statRow: { flexDirection: 'row', alignItems: 'stretch' },
-  stat: { flex: 1, gap: 2, paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
-  statDivider: { width: 1 },
+  lane: { borderLeftWidth: 4, overflow: 'hidden' },
+  laneHead: { gap: 4, padding: spacing.lg, borderBottomWidth: 1 },
+  laneBody: { gap: spacing.sm, padding: spacing.lg },
+  laneSubhead: { marginTop: spacing.sm },
 
   tabRow: { flexDirection: 'row', gap: spacing.sm },
   tab: {

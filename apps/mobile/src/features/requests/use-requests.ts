@@ -21,10 +21,12 @@ export function useMyRequestOffers(limit = 20) {
   });
 }
 
-export function useMatchedRequests() {
+export function useMatchedRequests(enabled = true) {
   return useQuery({
     queryKey: queryKeys.requests.matched(),
     queryFn: ({ signal }) => apiClient.requests.listMatched({}, signal),
+    enabled,
+    retry: false,
   });
 }
 
