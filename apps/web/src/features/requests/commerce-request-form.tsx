@@ -2,13 +2,15 @@
 
 import { ApiError } from '@talpio/api-client';
 import { RequestType } from '@talpio/types';
-import { Button, Field, Input, Select, Textarea } from '@talpio/ui';
+import { Button, Field, Input, Textarea } from '@talpio/ui';
 import { useMemo, useState } from 'react';
 
+import { SearchSelect } from '@/components/search-select';
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { COMMERCE_BRANDS, commerceUnitOptions } from '@/features/requests/commerce-options';
 import { useSocialProfile } from '@/features/social/use-social';
-import { categoryName, t } from '@/lib/i18n';
+import { categoryName, getLocale, t } from '@/lib/i18n';
 
 import {
   CategoryAttributeFields,
@@ -182,65 +184,58 @@ export function CommerceRequestForm({
       ) : null}
       <Field label={t('commerce.fieldType')} required>
         {(props) => (
-          <Select
-            {...props}
+          <SearchSelect
+            id={props.id}
             value={form.requestType}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, requestType: e.target.value as RequestType }))
-            }
-          >
-            {REQUEST_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
-              </option>
-            ))}
-          </Select>
+            onChange={(next) => setForm((f) => ({ ...f, requestType: next as RequestType }))}
+            placeholder={t('commerce.selectPlaceholder')}
+            required
+            options={REQUEST_TYPE_OPTIONS.map((opt) => ({
+              id: opt.value,
+              label: t(opt.labelKey),
+            }))}
+          />
         )}
       </Field>
 
       <Field label={t('commerce.fieldCategory')} required>
         {(props) => (
-          <Select
-            {...props}
+          <SearchSelect
+            id={props.id}
             value={categoryId}
-            onChange={(e) => {
-              // Alan şeması kategoriye bağlıdır; önceki kategorinin cevapları taşınmaz.
+            onChange={(next) => {
               setAttributeValues({});
               setAttributeErrors({});
               setForm((f) => ({
                 ...f,
-                categoryId: e.target.value,
+                categoryId: next,
                 categoryPicked: true,
                 subcategoryId: '',
               }));
             }}
             required
-          >
-            <option value="">{t('commerce.selectPlaceholder')}</option>
-            {(categories.data ?? []).map((category) => (
-              <option key={category.id} value={category.id}>
-                {categoryName(category)}
-              </option>
-            ))}
-          </Select>
+            placeholder={t('commerce.selectPlaceholder')}
+            options={(categories.data ?? []).map((category) => ({
+              id: category.id,
+              label: categoryName(category),
+            }))}
+          />
         )}
       </Field>
 
       {subcategories.length > 0 ? (
         <Field label={t('commerce.fieldSubcategory')}>
           {(props) => (
-            <Select
-              {...props}
+            <SearchSelect
+              id={props.id}
               value={form.subcategoryId}
-              onChange={(e) => setForm((f) => ({ ...f, subcategoryId: e.target.value }))}
-            >
-              <option value="">{t('commerce.selectPlaceholder')}</option>
-              {subcategories.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {categoryName(sub)}
-                </option>
-              ))}
-            </Select>
+              onChange={(next) => setForm((f) => ({ ...f, subcategoryId: next }))}
+              placeholder={t('commerce.selectPlaceholder')}
+              options={subcategories.map((sub) => ({
+                id: sub.id,
+                label: categoryName(sub),
+              }))}
+            />
           )}
         </Field>
       ) : null}
@@ -284,25 +279,25 @@ export function CommerceRequestForm({
         </Field>
         <Field label={t('commerce.fieldUnit')}>
           {(props) => (
-            <Select
-              {...props}
+            <SearchSelect
+              id={props.id}
               value={form.unit}
-              onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
-            >
-              <option value="adet">{t('commerce.unitPiece')}</option>
-              <option value="kg">{t('commerce.unitKg')}</option>
-              <option value="litre">{t('commerce.unitLitre')}</option>
-              <option value="paket">{t('commerce.unitPack')}</option>
-              <option value="metre">{t('commerce.unitMeter')}</option>
-            </Select>
+              onChange={(next) => setForm((f) => ({ ...f, unit: next }))}
+              allowCustom
+              placeholder={t('commerce.selectPlaceholder')}
+              options={commerceUnitOptions(getLocale())}
+            />
           )}
         </Field>
         <Field label={t('commerce.fieldBrand')}>
           {(props) => (
-            <Input
-              {...props}
+            <SearchSelect
+              id={props.id}
               value={form.brandPreference}
-              onChange={(e) => setForm((f) => ({ ...f, brandPreference: e.target.value }))}
+              onChange={(next) => setForm((f) => ({ ...f, brandPreference: next }))}
+              allowCustom
+              placeholder={t('commerce.brandPlaceholder')}
+              options={COMMERCE_BRANDS.map((brand) => ({ id: brand, label: brand }))}
             />
           )}
         </Field>
@@ -326,39 +321,31 @@ export function CommerceRequestForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('commerce.fieldCity')} required>
           {(props) => (
-            <Select
-              {...props}
+            <SearchSelect
+              id={props.id}
               value={cityId}
-              onChange={(e) => {
-                setCityId(e.target.value);
+              onChange={(next) => {
+                setCityId(next);
                 setForm((f) => ({ ...f, districtId: '' }));
               }}
               required
-            >
-              <option value="">{t('commerce.selectPlaceholder')}</option>
-              {(cities.data ?? []).map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}
-                </option>
-              ))}
-            </Select>
+              placeholder={t('commerce.selectPlaceholder')}
+              options={(cities.data ?? []).map((city) => ({ id: city.id, label: city.name }))}
+            />
           )}
         </Field>
         <Field label={t('commerce.fieldDistrict')} required>
           {(props) => (
-            <Select
-              {...props}
+            <SearchSelect
+              id={props.id}
               value={form.districtId}
-              onChange={(e) => setForm((f) => ({ ...f, districtId: e.target.value }))}
+              onChange={(next) => setForm((f) => ({ ...f, districtId: next }))}
               required
-            >
-              <option value="">{t('commerce.selectPlaceholder')}</option>
-              {(districts.data ?? []).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </Select>
+              disabled={!cityId}
+              placeholder={t('commerce.selectPlaceholder')}
+              emptyLabel={cityId ? undefined : t('job.selectCityFirst')}
+              options={(districts.data ?? []).map((d) => ({ id: d.id, label: d.name }))}
+            />
           )}
         </Field>
       </div>

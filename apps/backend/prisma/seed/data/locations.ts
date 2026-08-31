@@ -3,6 +3,8 @@
  * Yeni şehirler admin panelinden veya bu dosyaya eklenerek tanımlanabilir.
  */
 
+import { TR_CITIES_EXTRA } from './locations-tr-extra';
+
 export interface DistrictSeed {
   name: string;
   latitude?: number;
@@ -42,6 +44,22 @@ export const COUNTRIES: CountrySeed[] = [
         districts: [
           { name: 'Kadıköy', latitude: 40.9819, longitude: 29.0365 },
           { name: 'Beşiktaş', latitude: 41.0422, longitude: 29.0067 },
+          { name: 'Üsküdar', latitude: 41.0235, longitude: 29.0152 },
+          { name: 'Şişli', latitude: 41.0602, longitude: 28.9877 },
+          { name: 'Beyoğlu', latitude: 41.037, longitude: 28.9773 },
+          { name: 'Fatih', latitude: 41.0186, longitude: 28.9397 },
+          { name: 'Bakırköy', latitude: 40.9819, longitude: 28.8772 },
+          { name: 'Ataşehir', latitude: 40.9833, longitude: 29.1278 },
+          { name: 'Maltepe', latitude: 40.9357, longitude: 29.151 },
+          { name: 'Kartal', latitude: 40.888, longitude: 29.187 },
+          { name: 'Pendik', latitude: 40.8776, longitude: 29.251 },
+          { name: 'Ümraniye', latitude: 41.0165, longitude: 29.1215 },
+          { name: 'Sarıyer', latitude: 41.1664, longitude: 29.05 },
+          { name: 'Başakşehir', latitude: 41.0932, longitude: 28.8028 },
+          { name: 'Esenyurt', latitude: 41.0343, longitude: 28.6753 },
+          { name: 'Küçükçekmece', latitude: 41.0035, longitude: 28.775 },
+          { name: 'Beylikdüzü', latitude: 41.0011, longitude: 28.6419 },
+          { name: 'Bahçelievler', latitude: 41.002, longitude: 28.8598 },
         ],
       },
       {
@@ -49,7 +67,17 @@ export const COUNTRIES: CountrySeed[] = [
         code: '06',
         latitude: 39.9334,
         longitude: 32.8597,
-        districts: [{ name: 'Çankaya', latitude: 39.9179, longitude: 32.8627 }],
+        districts: [
+          { name: 'Çankaya', latitude: 39.9179, longitude: 32.8627 },
+          { name: 'Keçiören', latitude: 39.9847, longitude: 32.8626 },
+          { name: 'Yenimahalle', latitude: 39.9666, longitude: 32.753 },
+          { name: 'Mamak', latitude: 39.932, longitude: 32.912 },
+          { name: 'Etimesgut', latitude: 39.945, longitude: 32.669 },
+          { name: 'Sincan', latitude: 39.971, longitude: 32.58 },
+          { name: 'Altındağ', latitude: 39.947, longitude: 32.87 },
+          { name: 'Gölbaşı', latitude: 39.79, longitude: 32.81 },
+          { name: 'Polatlı', latitude: 39.584, longitude: 32.145 },
+        ],
       },
       {
         name: 'Gaziantep',
@@ -59,8 +87,10 @@ export const COUNTRIES: CountrySeed[] = [
         districts: [
           { name: 'Şahinbey', latitude: 37.0344, longitude: 37.3781 },
           { name: 'Şehitkamil', latitude: 37.1017, longitude: 37.3667 },
+          { name: 'Oğuzeli', latitude: 36.965, longitude: 37.513 },
         ],
       },
+      ...TR_CITIES_EXTRA,
     ],
   },
   {

@@ -1456,6 +1456,7 @@ export const tr = {
     unitLitre: 'Litre',
     unitPack: 'Paket',
     unitMeter: 'Metre',
+    brandPlaceholder: 'Örn. Samsung, Bosch, yerli üretim',
     selectPlaceholder: 'Seçiniz',
     titlePlaceholder: 'Örn. 50 adet LED TV tedarik',
     descriptionPlaceholder: 'İhtiyaç, marka, model, teslim koşulları…',

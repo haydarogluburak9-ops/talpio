@@ -1442,6 +1442,7 @@ export const en: Messages = {
     unitLitre: 'Litre',
     unitPack: 'Pack',
     unitMeter: 'Meter',
+    brandPlaceholder: 'e.g. Samsung, Bosch, local brand',
     selectPlaceholder: 'Select',
     titlePlaceholder: 'e.g. 50 LED TVs',
     descriptionPlaceholder: 'Need, brand, model, delivery terms…',
