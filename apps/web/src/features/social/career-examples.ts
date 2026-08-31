@@ -1,8 +1,22 @@
 import type { SupportedLocale } from '@talpio/config';
 
+import {
+  EXTRA_DEGREES_TR,
+  EXTRA_DISTRICTS_TR,
+  EXTRA_FIELDS_EN,
+  EXTRA_FIELDS_TR,
+  EXTRA_POSITIONS_EN,
+  EXTRA_POSITIONS_TR,
+  EXTRA_SCHOOLS,
+  EXTRA_SHARED_SKILLS,
+  EXTRA_SKILLS_EN,
+  EXTRA_SKILLS_TR,
+  EXTRA_WORLD_CITIES,
+} from './career-examples-extra';
+
 export type CareerExampleKind = 'skill' | 'position' | 'city' | 'school' | 'degree' | 'field';
 
-const LIST_LIMIT = 28;
+const LIST_LIMIT = 40;
 
 const SHARED_SKILLS = [
   'Microsoft Excel',
@@ -1074,21 +1088,85 @@ const FIELD_EXAMPLES: Record<SupportedLocale, string[]> = {
 };
 
 const CITY_EXAMPLES: Record<SupportedLocale, string[]> = {
-  tr: TR_CITIES,
-  en: ['Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', ...WORLD_CITIES],
-  de: ['Istanbul', 'Ankara', 'Izmir', 'Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln', 'Wien', 'Zürich', ...WORLD_CITIES],
-  es: ['Estambul', 'Ankara', 'Esmirna', 'Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Ciudad de México', 'Buenos Aires', ...WORLD_CITIES],
-  fr: ['Istanbul', 'Ankara', 'Izmir', 'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Bruxelles', 'Genève', ...WORLD_CITIES],
-  ar: ['إسطنبول', 'أنقرة', 'إزمير', 'دبي', 'الرياض', 'الدوحة', 'القاهرة', 'عمّان', 'بيروت', ...WORLD_CITIES],
+  tr: [...TR_CITIES, ...EXTRA_DISTRICTS_TR],
+  en: ['Istanbul', 'Ankara', 'Izmir', 'Bursa', 'Antalya', ...WORLD_CITIES, ...EXTRA_WORLD_CITIES],
+  de: [
+    'Istanbul',
+    'Ankara',
+    'Izmir',
+    'Berlin',
+    'München',
+    'Hamburg',
+    'Frankfurt',
+    'Köln',
+    'Wien',
+    'Zürich',
+    ...WORLD_CITIES,
+    ...EXTRA_WORLD_CITIES,
+  ],
+  es: [
+    'Estambul',
+    'Ankara',
+    'Esmirna',
+    'Madrid',
+    'Barcelona',
+    'Valencia',
+    'Sevilla',
+    'Ciudad de México',
+    'Buenos Aires',
+    ...WORLD_CITIES,
+    ...EXTRA_WORLD_CITIES,
+  ],
+  fr: [
+    'Istanbul',
+    'Ankara',
+    'Izmir',
+    'Paris',
+    'Lyon',
+    'Marseille',
+    'Toulouse',
+    'Bruxelles',
+    'Genève',
+    ...WORLD_CITIES,
+    ...EXTRA_WORLD_CITIES,
+  ],
+  ar: [
+    'إسطنبول',
+    'أنقرة',
+    'إزمير',
+    'دبي',
+    'الرياض',
+    'الدوحة',
+    'القاهرة',
+    'عمّان',
+    'بيروت',
+    ...WORLD_CITIES,
+    ...EXTRA_WORLD_CITIES,
+  ],
 };
 
 export function careerExamples(kind: CareerExampleKind, locale: SupportedLocale): string[] {
-  if (kind === 'position') return POSITION_EXAMPLES[locale];
-  if (kind === 'city') return uniqueNames(CITY_EXAMPLES[locale], locale, '', 200);
-  if (kind === 'school') return SCHOOLS;
-  if (kind === 'degree') return DEGREE_EXAMPLES[locale];
-  if (kind === 'field') return FIELD_EXAMPLES[locale];
-  return uniqueNames([...SHARED_SKILLS, ...LOCALE_SKILLS[locale]], locale, '', 200);
+  if (kind === 'position') {
+    const extras = locale === 'tr' ? EXTRA_POSITIONS_TR : EXTRA_POSITIONS_EN;
+    return uniqueNames([...POSITION_EXAMPLES[locale], ...extras], locale, '', 400);
+  }
+  if (kind === 'city') return uniqueNames(CITY_EXAMPLES[locale], locale, '', 400);
+  if (kind === 'school') return uniqueNames([...SCHOOLS, ...EXTRA_SCHOOLS], locale, '', 400);
+  if (kind === 'degree') {
+    const extras = locale === 'tr' ? EXTRA_DEGREES_TR : [];
+    return uniqueNames([...DEGREE_EXAMPLES[locale], ...extras], locale, '', 200);
+  }
+  if (kind === 'field') {
+    const extras = locale === 'tr' ? EXTRA_FIELDS_TR : EXTRA_FIELDS_EN;
+    return uniqueNames([...FIELD_EXAMPLES[locale], ...extras], locale, '', 400);
+  }
+  const localeSkills = locale === 'tr' ? EXTRA_SKILLS_TR : EXTRA_SKILLS_EN;
+  return uniqueNames(
+    [...SHARED_SKILLS, ...EXTRA_SHARED_SKILLS, ...LOCALE_SKILLS[locale], ...localeSkills],
+    locale,
+    '',
+    400,
+  );
 }
 
 export function filterSuggestions(items: string[], query: string, locale = 'tr', limit = LIST_LIMIT): string[] {

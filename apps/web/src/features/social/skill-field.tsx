@@ -55,7 +55,7 @@ export function SkillField({
           suggestions.data,
           careerExamples('skill', getLocale()),
           query,
-          28,
+          40,
           getLocale(),
         )}
       />

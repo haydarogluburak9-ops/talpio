@@ -1039,7 +1039,7 @@ function PositionSuggestField({
         suggestions.data,
         careerExamples('position', getLocale()),
         query,
-        28,
+        40,
         getLocale(),
       )}
     />
@@ -1063,7 +1063,7 @@ function CitySuggestField({
       onChange={onChange}
       placeholder={t('social.locationPlaceholder')}
       hint={t('social.locationSuggestHint')}
-      options={mergeSuggestions(names, careerExamples('city', getLocale()), value, 28, getLocale())}
+      options={mergeSuggestions(names, careerExamples('city', getLocale()), value, 40, getLocale())}
     />
   );
 }
@@ -1096,7 +1096,7 @@ function CatalogSuggestField({
       autoFocus={autoFocus}
       placeholder={placeholder}
       hint={hint}
-      options={mergeSuggestions(undefined, careerExamples(kind, getLocale()), value, 28, getLocale())}
+      options={mergeSuggestions(undefined, careerExamples(kind, getLocale()), value, 40, getLocale())}
     />
   );
 }
