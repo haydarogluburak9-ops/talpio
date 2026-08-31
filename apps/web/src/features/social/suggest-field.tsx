@@ -77,7 +77,7 @@ export function SuggestField({
       {showList ? (
         <ul
           role="listbox"
-          className="max-h-56 overflow-y-auto rounded-xl border border-border bg-surface py-1 shadow-lg"
+          className="max-h-72 overflow-y-auto rounded-xl border border-border bg-surface py-1 shadow-lg"
         >
           {options.map((option) => (
             <li key={option} role="option">

@@ -30,7 +30,7 @@ import { useCities } from '@/features/catalog/use-locations';
 import { apiClient } from '@/lib/api';
 import { getLocale, t } from '@/lib/i18n';
 
-import { careerExamples, mergeSuggestions } from './career-examples';
+import { careerExamples, mergeSuggestions, type CareerExampleKind } from './career-examples';
 import { formatCareerPeriod } from './career-format';
 import { MonthYearField } from './month-year-field';
 import { SkillField, skillLevelLabel } from './skill-field';
@@ -859,9 +859,32 @@ function EducationForm({
       tint="success"
       onClose={onClose}
     >
-      <FormField label={t('social.school')} value={school} onChange={setSchool} required />
-      <FormField label={t('social.degree')} value={degree} onChange={setDegree} />
-      <FormField label={t('social.fieldOfStudy')} value={fieldOfStudy} onChange={setFieldOfStudy} />
+      <CatalogSuggestField
+        kind="school"
+        label={t('social.school')}
+        value={school}
+        onChange={setSchool}
+        required
+        autoFocus
+        placeholder={t('social.schoolPlaceholder')}
+        hint={t('social.schoolSuggestHint')}
+      />
+      <CatalogSuggestField
+        kind="degree"
+        label={t('social.degree')}
+        value={degree}
+        onChange={setDegree}
+        placeholder={t('social.degreePlaceholder')}
+        hint={t('social.degreeSuggestHint')}
+      />
+      <CatalogSuggestField
+        kind="field"
+        label={t('social.fieldOfStudy')}
+        value={fieldOfStudy}
+        onChange={setFieldOfStudy}
+        placeholder={t('social.fieldOfStudyPlaceholder')}
+        hint={t('social.fieldOfStudySuggestHint')}
+      />
       <DateFields
         startYear={startYear}
         startMonth={startMonth}
@@ -1016,7 +1039,7 @@ function PositionSuggestField({
         suggestions.data,
         careerExamples('position', getLocale()),
         query,
-        16,
+        28,
         getLocale(),
       )}
     />
@@ -1040,7 +1063,40 @@ function CitySuggestField({
       onChange={onChange}
       placeholder={t('social.locationPlaceholder')}
       hint={t('social.locationSuggestHint')}
-      options={mergeSuggestions(names, careerExamples('city', getLocale()), value, 16, getLocale())}
+      options={mergeSuggestions(names, careerExamples('city', getLocale()), value, 28, getLocale())}
+    />
+  );
+}
+
+function CatalogSuggestField({
+  kind,
+  label,
+  value,
+  onChange,
+  required,
+  autoFocus,
+  placeholder,
+  hint,
+}: {
+  kind: CareerExampleKind;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  autoFocus?: boolean;
+  placeholder: string;
+  hint: string;
+}) {
+  return (
+    <SuggestField
+      label={label}
+      value={value}
+      onChange={onChange}
+      required={required}
+      autoFocus={autoFocus}
+      placeholder={placeholder}
+      hint={hint}
+      options={mergeSuggestions(undefined, careerExamples(kind, getLocale()), value, 28, getLocale())}
     />
   );
 }
