@@ -185,9 +185,17 @@ export function createSocialResource(http: HttpClient) {
       return http.delete<void>(API_ROUTES.social.profileSkill(id));
     },
 
-    /** Platformda kullanılan yetkinlik adlarından öneri; boş sorguda boş dizi. */
+    /** Platformda kullanılan yetkinlik adları; boş sorguda en sık kullanılanlar. */
     suggestSkills(query: string, signal?: AbortSignal): Promise<string[]> {
       return http.get<string[]>(API_ROUTES.social.skillSuggest, {
+        query: { q: query },
+        ...(signal ? { signal } : {}),
+      });
+    },
+
+    /** Platformda kullanılan pozisyon adları; boş sorguda en sık kullanılanlar. */
+    suggestPositions(query: string, signal?: AbortSignal): Promise<string[]> {
+      return http.get<string[]>(API_ROUTES.social.positionSuggest, {
         query: { q: query },
         ...(signal ? { signal } : {}),
       });

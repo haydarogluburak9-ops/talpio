@@ -815,7 +815,14 @@ export const fr: Messages = {
     skillLevelINTERMEDIATE: 'Intermédiaire',
     skillLevelADVANCED: 'Avancé',
     skillLevelEXPERT: 'Expert',
-    skillSuggestHint: 'Commencez à écrire pour voir les compétences utilisées sur la plateforme, ou ajoutez la vôtre.',
+    skillSuggestHint:
+      'Cliquez ou saisissez du texte : les compétences utilisées sur la plateforme apparaissent, ou ajoutez la vôtre.',
+    positionPlaceholder: 'ex. Directeur commercial, Développeur',
+    positionSuggestHint:
+      'Cliquez ou saisissez du texte : les postes utilisés sur la plateforme apparaissent, ou ajoutez le vôtre.',
+    location: 'Ville',
+    locationPlaceholder: 'ex. Istanbul, Ankara',
+    locationSuggestHint: 'Cliquez ou saisissez du texte : les villes apparaissent, ou saisissez une ville absente de la liste.',
     skillCustomOption: 'Ajouter « {name} »',
     datePick: 'Choisir une date',
     dateMonthOnlyYear: 'Année seule',

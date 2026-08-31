@@ -813,7 +813,14 @@ export const es: Messages = {
     skillLevelINTERMEDIATE: 'Intermedio',
     skillLevelADVANCED: 'Avanzado',
     skillLevelEXPERT: 'Experto',
-    skillSuggestHint: 'Empiece a escribir para ver competencias usadas en la plataforma, o añada la suya.',
+    skillSuggestHint:
+      'Pulse el campo o escriba; verá competencias usadas en la plataforma, o añada la suya.',
+    positionPlaceholder: 'p. ej. Director de ventas, Desarrollador',
+    positionSuggestHint:
+      'Pulse el campo o escriba; verá puestos usados en la plataforma, o añada el suyo.',
+    location: 'Ciudad',
+    locationPlaceholder: 'p. ej. Estambul, Ankara',
+    locationSuggestHint: 'Pulse el campo o escriba; verá ciudades, o escriba una que no esté en la lista.',
     skillCustomOption: 'Añadir «{name}»',
     datePick: 'Elegir fecha',
     dateMonthOnlyYear: 'Solo año',

@@ -1,5 +1,6 @@
 'use client';
 
+import { queryKeys } from '@talpio/config';
 import type {
   SocialProfile,
   SocialProfileEducation,
@@ -9,6 +10,7 @@ import type {
 } from '@talpio/types';
 import { SocialProfileKind } from '@talpio/types';
 import { Button, Input, cn } from '@talpio/ui';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
   Briefcase,
@@ -24,11 +26,15 @@ import {
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useCities } from '@/features/catalog/use-locations';
+import { apiClient } from '@/lib/api';
 import { getLocale, t } from '@/lib/i18n';
 
+import { careerExamples, mergeSuggestions } from './career-examples';
 import { formatCareerPeriod } from './career-format';
 import { MonthYearField } from './month-year-field';
 import { SkillField, skillLevelLabel } from './skill-field';
+import { SuggestField } from './suggest-field';
 import {
   useCreateEducation,
   useCreateExperience,
@@ -769,9 +775,9 @@ function ExperienceForm({
       tint="accent"
       onClose={onClose}
     >
-      <FormField label={t('social.position')} value={title} onChange={setTitle} required />
+      <PositionSuggestField value={title} onChange={setTitle} />
       <FormField label={t('social.company')} value={company} onChange={setCompany} required />
-      <FormField label={t('social.location')} value={locationText} onChange={setLocationText} />
+      <CitySuggestField value={locationText} onChange={setLocationText} />
       <DateFields
         startYear={startYear}
         startMonth={startMonth}
@@ -980,6 +986,61 @@ function CareerFormShell({
       </div>
     </div>,
     document.body,
+  );
+}
+
+function PositionSuggestField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const query = value.trim();
+  const suggestions = useQuery({
+    queryKey: queryKeys.social.positionSuggest(query),
+    queryFn: ({ signal }) => apiClient.social.suggestPositions(query, signal),
+    staleTime: 60_000,
+  });
+
+  return (
+    <SuggestField
+      label={t('social.position')}
+      value={value}
+      onChange={onChange}
+      required
+      placeholder={t('social.positionPlaceholder')}
+      hint={t('social.positionSuggestHint')}
+      options={mergeSuggestions(
+        suggestions.data,
+        careerExamples('position', getLocale()),
+        query,
+        16,
+        getLocale(),
+      )}
+    />
+  );
+}
+
+function CitySuggestField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const cities = useCities();
+  const names = (cities.data ?? []).map((city) => city.name);
+
+  return (
+    <SuggestField
+      label={t('social.location')}
+      value={value}
+      onChange={onChange}
+      placeholder={t('social.locationPlaceholder')}
+      hint={t('social.locationSuggestHint')}
+      options={mergeSuggestions(names, careerExamples('city', getLocale()), value, 16, getLocale())}
+    />
   );
 }
 

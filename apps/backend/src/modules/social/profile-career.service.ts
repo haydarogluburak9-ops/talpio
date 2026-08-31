@@ -31,9 +31,7 @@ const MAX_EXPERIENCES = 20;
 const MAX_EDUCATION = 20;
 const MAX_SKILLS = 50;
 
-/** Tek harfte tüm tabloyu taramak yerine kullanıcı biraz yazana kadar beklenir. */
-const SKILL_SUGGEST_MIN_LENGTH = 2;
-const SKILL_SUGGEST_LIMIT = 10;
+const CAREER_SUGGEST_LIMIT = 10;
 
 @Injectable()
 export class ProfileCareerService {
@@ -239,25 +237,35 @@ export class ProfileCareerService {
   /**
    * Yetkinlik adı önerileri.
    *
-   * Öneriler platformda halihazırda kullanılan adlardan gelir; sabit bir
-   * katalog tutulsaydı altı dile elle çevrilmesi gerekir ve kullanıcının kendi
-   * sektöründeki terimi yine listede bulunmazdı. Kullanım sayısına göre
-   * sıralanır, böylece yaygın yazım öne çıkar ve aynı yetkinliğin farklı
-   * varyasyonları zamanla tek biçimde toplanır.
+   * Boş sorguda en çok kullanılan adlar döner (tıklayınca örnek liste).
+   * Yazılınca contains ile süzülür. Sabit katalog tutulmaz; kullanıcı kendi
+   * terimini de yazabilir, yaygın yazım kullanım sayısına göre öne çıkar.
    */
   async suggestSkills(query: string): Promise<string[]> {
     const needle = query.trim();
-    if (needle.length < SKILL_SUGGEST_MIN_LENGTH) return [];
-
     const rows = await this.prisma.socialProfileSkill.groupBy({
       by: ['name'],
-      where: { name: { contains: needle, mode: 'insensitive' } },
+      where: needle ? { name: { contains: needle, mode: 'insensitive' } } : undefined,
       _count: { name: true },
       orderBy: { _count: { name: 'desc' } },
-      take: SKILL_SUGGEST_LIMIT,
+      take: CAREER_SUGGEST_LIMIT,
     });
 
     return rows.map((row) => row.name);
+  }
+
+  /** İş deneyimi pozisyon önerileri; boş sorguda en sık kullanılan unvanlar. */
+  async suggestPositions(query: string): Promise<string[]> {
+    const needle = query.trim();
+    const rows = await this.prisma.socialProfileExperience.groupBy({
+      by: ['title'],
+      where: needle ? { title: { contains: needle, mode: 'insensitive' } } : undefined,
+      _count: { title: true },
+      orderBy: { _count: { title: 'desc' } },
+      take: CAREER_SUGGEST_LIMIT,
+    });
+
+    return rows.map((row) => row.title);
   }
 
   async deleteSkill(user: AuthenticatedUser, id: string): Promise<void> {

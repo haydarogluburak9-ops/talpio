@@ -823,7 +823,14 @@ export const de: Messages = {
     skillLevelINTERMEDIATE: 'Fortgeschritten',
     skillLevelADVANCED: 'Sehr gut',
     skillLevelEXPERT: 'Experte',
-    skillSuggestHint: 'Tippen Sie los, um auf der Plattform verwendete Fähigkeiten zu sehen, oder fügen Sie eine eigene hinzu.',
+    skillSuggestHint:
+      'Klicken oder tippen Sie, um auf der Plattform verwendete Fähigkeiten zu sehen, oder fügen Sie eine eigene hinzu.',
+    positionPlaceholder: 'z. B. Vertriebsleiter, Softwareentwickler',
+    positionSuggestHint:
+      'Klicken oder tippen Sie, um verwendete Positionen zu sehen, oder fügen Sie Ihren eigenen Titel hinzu.',
+    location: 'Stadt',
+    locationPlaceholder: 'z. B. Istanbul, Ankara',
+    locationSuggestHint: 'Klicken oder tippen Sie, um Städte zu sehen, oder geben Sie eine eigene Stadt ein.',
     skillCustomOption: '„{name}“ hinzufügen',
     datePick: 'Datum wählen',
     dateMonthOnlyYear: 'Nur Jahr',

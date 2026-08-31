@@ -186,6 +186,12 @@ export class SocialController {
     return this.profileCareer.suggestSkills(query ?? '');
   }
 
+  @Get('positions/suggest')
+  @ApiOperation({ summary: 'İş deneyimi pozisyon adı önerir' })
+  suggestPositions(@Query('q') query?: string): Promise<string[]> {
+    return this.profileCareer.suggestPositions(query ?? '');
+  }
+
   @Post('profiles/me/skills')
   @RequirePermissions(Permission.SOCIAL_PROFILE_MANAGE)
   @ApiOperation({ summary: 'Yetkinlik ekler' })

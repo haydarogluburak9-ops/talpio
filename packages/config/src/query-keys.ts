@@ -105,6 +105,8 @@ export const queryKeys = {
     profileHighlight: (username: string, highlightId: string) =>
       ['social', 'profile-highlight', username, highlightId] as const,
     groups: () => ['social', 'groups'] as const,
+    skillSuggest: (query: string) => ['social', 'skill-suggest', query] as const,
+    positionSuggest: (query: string) => ['social', 'position-suggest', query] as const,
   },
   payments: {
     all: () => ['payments'] as const,

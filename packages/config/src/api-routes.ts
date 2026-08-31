@@ -151,6 +151,7 @@ export const API_ROUTES = {
     profileSkills: '/social/profiles/me/skills',
     profileSkill: (id: string) => `/social/profiles/me/skills/${id}`,
     skillSuggest: '/social/skills/suggest',
+    positionSuggest: '/social/positions/suggest',
     usernameAvailability: (username: string) =>
       `/social/profiles/availability/${encodeURIComponent(username)}`,
     profileSearch: '/social/profiles/search',

@@ -1070,7 +1070,8 @@ export const tr = {
     skillLevelINTERMEDIATE: 'Orta',
     skillLevelADVANCED: 'İleri',
     skillLevelEXPERT: 'Uzman',
-    skillSuggestHint: 'Yazmaya başlayın; platformda kullanılan yetkinlikler listelenir, kendi yetkinliğinizi de ekleyebilirsiniz.',
+    skillSuggestHint:
+      'Alana tıklayın veya yazın; platformda kullanılan yetkinlikler listelenir, kendi yetkinliğinizi de ekleyebilirsiniz.',
     skillCustomOption: '“{name}” ekle',
     datePick: 'Tarih seç',
     dateMonthOnlyYear: 'Yalnızca yıl',
@@ -1092,8 +1093,14 @@ export const tr = {
     profileStepEducation: 'Eğitim bilgini ekle',
     profileStepSkills: 'En az üç yetkinlik ekle',
     position: 'Pozisyon',
+    positionPlaceholder: 'Örn. Satış Müdürü, Yazılım Geliştirici',
+    positionSuggestHint:
+      'Alana tıklayın veya yazın; platformda kullanılan pozisyonlar listelenir, kendi unvanınızı da ekleyebilirsiniz.',
     company: 'Şirket',
-    location: 'Konum',
+    location: 'Şehir',
+    locationPlaceholder: 'Örn. İstanbul, Ankara',
+    locationSuggestHint:
+      'Alana tıklayın veya yazın; şehirler listelenir, listede yoksa kendi şehrinizi de yazabilirsiniz.',
     school: 'Okul',
     degree: 'Derece',
     fieldOfStudy: 'Bölüm',

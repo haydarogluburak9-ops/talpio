@@ -800,7 +800,14 @@ export const ar: Messages = {
     skillLevelINTERMEDIATE: 'متوسط',
     skillLevelADVANCED: 'متقدم',
     skillLevelEXPERT: 'خبير',
-    skillSuggestHint: 'ابدأ الكتابة لعرض المهارات المستخدمة على المنصة، أو أضف مهارتك.',
+    skillSuggestHint:
+      'انقر الحقل أو ابدأ الكتابة؛ تظهر المهارات المستخدمة على المنصة، أو أضف مهارتك.',
+    positionPlaceholder: 'مثال: مدير مبيعات، مطور برمجيات',
+    positionSuggestHint:
+      'انقر الحقل أو ابدأ الكتابة؛ تظهر المسميات المستخدمة على المنصة، أو أضف مسماك.',
+    location: 'المدينة',
+    locationPlaceholder: 'مثال: إسطنبول، أنقرة',
+    locationSuggestHint: 'انقر الحقل أو ابدأ الكتابة؛ تظهر المدن، أو اكتب مدينة غير مدرجة.',
     skillCustomOption: 'إضافة «{name}»',
     datePick: 'اختر تاريخا',
     dateMonthOnlyYear: 'السنة فقط',
