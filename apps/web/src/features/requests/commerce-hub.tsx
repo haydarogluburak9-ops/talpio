@@ -208,7 +208,7 @@ function RequestRow({
   return (
     <li>
       <Link
-        href={`/tedarik/${request.id}`}
+        href={direction === 'in' ? `/tedarik/${request.id}#teklif-ver` : `/tedarik/${request.id}`}
         className="block rounded-xl border border-border/80 bg-surface p-4 transition-colors hover:bg-surface-muted"
       >
         <div className="flex items-start justify-between gap-3">
@@ -316,6 +316,10 @@ function OfferRow({ offer }: { offer: RequestOffer }) {
             >
               {offer.request.title}
             </Link>
+          ) : null}
+
+          {offer.note ? (
+            <p className="mt-1.5 line-clamp-2 text-sm text-foreground">{offer.note}</p>
           ) : null}
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">

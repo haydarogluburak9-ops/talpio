@@ -63,6 +63,12 @@ export function MatchedRequestsPanel() {
                 </ul>
               ) : null}
               <p className="mt-1 text-sm text-foreground-muted">{request.description}</p>
+              {request.quantity ? (
+                <p className="mt-1 text-sm text-foreground">
+                  {t('commerce.fieldQuantity')}: {request.quantity}
+                  {request.unit ? ` ${request.unit}` : ''}
+                </p>
+              ) : null}
               {request.deliveryAddressText || request.deliveryCityId ? (
                 <p className="mt-1 text-xs text-foreground-muted">
                   {t('social.dealLocation')}:{' '}
@@ -78,7 +84,17 @@ export function MatchedRequestsPanel() {
             </Link>
           </div>
           {businessList[0] ? (
-            <OfferForm requestId={request.id} businessId={businessList[0].id} />
+            <OfferForm
+              requestId={request.id}
+              businessId={businessList[0].id}
+              request={{
+                title: request.title,
+                description: request.description,
+                quantity: request.quantity,
+                unit: request.unit,
+                deliveryAddressText: request.deliveryAddressText,
+              }}
+            />
           ) : (
             <p className="text-sm text-foreground-muted">{t('commerce.businessRequired')}</p>
           )}

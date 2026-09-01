@@ -81,11 +81,27 @@ export function CommerceRequestDetailScreen({ id }: { id: string }) {
               {formatMoneyMinor(offer.amountMinor, offer.currency, locale)}
             </Text>
             <Text variant="caption" tone="muted">
-              {t('commerce.delivery')}: {offer.deliveryDays ?? '—'}
+              {t('commerce.delivery')}:{' '}
+              {offer.deliveryDays != null
+                ? t('offer.validityDaysValue', { count: offer.deliveryDays })
+                : '—'}
             </Text>
+            {offer.shippingIncluded != null ? (
+              <Text variant="caption" tone="muted">
+                {t('commerce.shipping')}:{' '}
+                {offer.shippingIncluded
+                  ? t('social.shippingIncludedYes')
+                  : t('social.shippingIncludedNo')}
+              </Text>
+            ) : null}
             {offer.locationText ? (
               <Text variant="caption" tone="muted">
                 {t('commerce.location')}: {offer.locationText}
+              </Text>
+            ) : null}
+            {offer.note ? (
+              <Text variant="caption">
+                {t('commerce.contents')}: {offer.note}
               </Text>
             ) : null}
             {badges.map((badge) => (

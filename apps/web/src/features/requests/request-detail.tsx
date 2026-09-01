@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { OfferForm } from '@/features/offers/offer-form';
+import { OfferSummary } from '@/features/offers/offer-summary';
 import { useShareRequestToFeed } from '@/features/social/use-social';
 import { t, getLocale } from '@/lib/i18n';
 
@@ -76,6 +77,12 @@ export function RequestDetail({ id }: { id: string }) {
           {row.title}
         </h1>
         <p className="text-sm leading-relaxed text-foreground-muted">{row.description}</p>
+        {row.quantity ? (
+          <p className="text-sm text-foreground">
+            {t('commerce.fieldQuantity')}: {row.quantity}
+            {row.unit ? ` ${row.unit}` : ''}
+          </p>
+        ) : null}
         {row.deliveryAddressText ? (
           <p className="text-sm text-foreground-muted">
             {t('social.dealLocation')}: {row.deliveryAddressText}
@@ -120,7 +127,17 @@ export function RequestDetail({ id }: { id: string }) {
             {businesses.isPending ? (
               <ListSkeleton rows={1} />
             ) : myBusinesses[0] ? (
-              <OfferForm requestId={id} businessId={myBusinesses[0].id} />
+              <OfferForm
+                requestId={id}
+                businessId={myBusinesses[0].id}
+                request={{
+                  title: row.title,
+                  description: row.description,
+                  quantity: row.quantity,
+                  unit: row.unit,
+                  deliveryAddressText: row.deliveryAddressText,
+                }}
+              />
             ) : (
               <p className="text-sm text-foreground-muted">{t('commerce.businessRequired')}</p>
             )}
@@ -141,13 +158,15 @@ export function RequestDetail({ id }: { id: string }) {
             {(offers.data ?? []).length > 0 ? (
               <>
                 <div className="hidden overflow-x-auto lg:block">
-                  <table className="w-full min-w-[640px] text-left text-sm">
+                  <table className="w-full min-w-[760px] text-left text-sm">
                     <thead>
                       <tr className="border-b border-border text-xs uppercase tracking-wide text-foreground-muted">
                         <th className="py-2 pr-3 font-semibold">{t('commerce.seller')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.amount')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.delivery')}</th>
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.shipping')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.location')}</th>
+                        <th className="py-2 pr-3 font-semibold">{t('commerce.contents')}</th>
                         <th className="py-2 pr-3 font-semibold">{t('commerce.badge')}</th>
                         <th className="py-2 font-semibold" />
                       </tr>
@@ -162,17 +181,22 @@ export function RequestDetail({ id }: { id: string }) {
                             {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
                           </td>
                           <td className="py-3 pr-3 text-foreground-muted">
-                            {offer.deliveryDays != null ? `${offer.deliveryDays} gün` : '—'}
-                            {offer.shippingIncluded != null
-                              ? ` · ${
-                                  offer.shippingIncluded
-                                    ? t('social.shippingIncludedYes')
-                                    : t('social.shippingIncludedNo')
-                                }`
-                              : ''}
+                            {offer.deliveryDays != null
+                              ? t('offer.validityDaysValue', { count: offer.deliveryDays })
+                              : '—'}
+                          </td>
+                          <td className="py-3 pr-3 text-foreground-muted">
+                            {offer.shippingIncluded == null
+                              ? '—'
+                              : offer.shippingIncluded
+                                ? t('social.shippingIncludedYes')
+                                : t('social.shippingIncludedNo')}
                           </td>
                           <td className="py-3 pr-3 text-foreground-muted">
                             {offer.locationText ?? '—'}
+                          </td>
+                          <td className="max-w-[18rem] py-3 pr-3 whitespace-pre-wrap text-foreground">
+                            {offer.note?.trim() || '—'}
                           </td>
                           <td className="py-3 pr-3">
                             <OfferBadges
@@ -210,24 +234,7 @@ export function RequestDetail({ id }: { id: string }) {
                       className="flex flex-col gap-3 rounded-xl bg-surface-muted/60 px-4 py-3 ring-1 ring-border/70"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <SellerName offer={offer} />
-                          <p className="text-lg font-semibold text-accent-600">
-                            {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
-                          </p>
-                          <p className="text-sm text-foreground-muted">
-                            {t(`offerStatus.${offer.status}`)}
-                            {offer.deliveryDays != null ? ` · ${offer.deliveryDays} gün` : ''}
-                            {offer.locationText ? ` · ${offer.locationText}` : ''}
-                            {offer.shippingIncluded != null
-                              ? ` · ${
-                                  offer.shippingIncluded
-                                    ? t('social.shippingIncludedYes')
-                                    : t('social.shippingIncludedNo')
-                                }`
-                              : ''}
-                          </p>
-                        </div>
+                        <SellerName offer={offer} />
                         {isBuyer && offer.status === 'SUBMITTED' ? (
                           <Button
                             size="sm"
@@ -237,15 +244,19 @@ export function RequestDetail({ id }: { id: string }) {
                           >
                             {t('offer.accept')}
                           </Button>
-                        ) : null}
+                        ) : (
+                          <span className="text-xs text-foreground-muted">
+                            {t(`offerStatus.${offer.status}`)}
+                          </span>
+                        )}
                       </div>
+                      <OfferSummary offer={offer} />
                       <OfferBadges
                         badges={[
                           ...(offer.badges ?? []),
                           ...(comparison.badgesByOfferId[offer.id] ?? []),
                         ]}
                       />
-                      {offer.note ? <p className="text-sm">{offer.note}</p> : null}
                     </li>
                   ))}
                 </ul>

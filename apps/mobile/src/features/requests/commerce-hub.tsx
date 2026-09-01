@@ -270,6 +270,11 @@ function OfferRow({
                 {offer.request.title}
               </Text>
             ) : null}
+            {offer.note ? (
+              <Text variant="caption" numberOfLines={2}>
+                {offer.note}
+              </Text>
+            ) : null}
           </View>
         </Pressable>
 
