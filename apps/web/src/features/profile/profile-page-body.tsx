@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
+import { BusinessLetterheadForm } from '@/features/businesses/business-letterhead-form';
 import { t } from '@/lib/i18n';
 
 import { AccountProfileForm } from './account-profile-form';
@@ -71,6 +72,7 @@ function ProviderSections() {
   return (
     <>
       <ProviderProfileForm profile={profile.data} />
+      <BusinessLetterheadForm />
       <ProviderServicesForm services={services.data} />
       <ProviderAreasForm areas={profile.data.serviceAreas} />
     </>

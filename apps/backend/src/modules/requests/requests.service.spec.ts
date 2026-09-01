@@ -53,6 +53,9 @@ describe('RequestsService tenant isolation', () => {
   const outbox = { write: jest.fn() };
   const audit = { record: jest.fn() };
 
+  const files = { assertOwnedBy: jest.fn().mockResolvedValue(undefined) };
+  const config = { fileBaseUrl: 'http://cdn.test' };
+
   const service = new RequestsService(
     prisma as never,
     rbac as never,
@@ -60,6 +63,8 @@ describe('RequestsService tenant isolation', () => {
     outbox as never,
     audit as never,
     currencyDouble(),
+    files as never,
+    config as never,
   );
 
   const commerceRequest = prisma.commerceRequest as {

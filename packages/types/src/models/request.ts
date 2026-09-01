@@ -39,6 +39,14 @@ export interface CommerceRequest extends BaseEntity {
   offerCount?: number | null;
   /** listMine yanıtında doldurulur: henüz karara bağlanmamış teklif. */
   pendingOfferCount?: number | null;
+  /** Alıcının yüklediği ürün / ihtiyaç fotoğrafları. */
+  photos?: CommercePhoto[];
+}
+
+/** Talep veya teklife iliştirilmiş herkese açık görsel. */
+export interface CommercePhoto {
+  id: string;
+  url: string;
 }
 
 /** Teklif kartında satıcıyı tanıtan özet. */
@@ -60,6 +68,7 @@ export interface OfferLetterhead {
   address?: string | null;
   phone?: string | null;
   logoUrl?: string | null;
+  stampUrl?: string | null;
 }
 
 export interface RequestMatch {
@@ -93,6 +102,8 @@ export interface RequestOffer extends BaseEntity {
   seller?: RequestOfferSeller | null;
   /** Yalnızca listMyOffers yanıtında: teklifin ait olduğu talep. */
   request?: { id: string; title: string; status: RequestStatus } | null;
+  /** Satıcının verdiği ürünün fotoğrafları. */
+  photos?: CommercePhoto[];
 }
 
 export interface RequestOrderLink {

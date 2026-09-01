@@ -1,6 +1,7 @@
 import { formatMoneyMinor } from '@talpio/localization';
 import type { RequestOffer } from '@talpio/types';
 
+import { PhotoGallery } from '@/features/files/photo-gallery';
 import { getLocale, t } from '@/lib/i18n';
 
 export function OfferSummary({ offer }: { offer: RequestOffer }) {
@@ -32,21 +33,24 @@ export function OfferSummary({ offer }: { offer: RequestOffer }) {
   ];
 
   return (
-    <dl className="grid gap-2 text-sm">
-      {rows.map((row) => (
-        <div key={row.label} className="grid gap-0.5 sm:grid-cols-[8.5rem_1fr] sm:gap-3">
-          <dt className="text-xs font-medium text-foreground-muted">{row.label}</dt>
-          <dd
-            className={
-              row.emphasize
-                ? 'font-semibold text-accent-600'
-                : 'whitespace-pre-wrap text-foreground'
-            }
-          >
-            {row.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className="grid gap-3">
+      <dl className="grid gap-2 text-sm">
+        {rows.map((row) => (
+          <div key={row.label} className="grid gap-0.5 sm:grid-cols-[8.5rem_1fr] sm:gap-3">
+            <dt className="text-xs font-medium text-foreground-muted">{row.label}</dt>
+            <dd
+              className={
+                row.emphasize
+                  ? 'font-semibold text-accent-600'
+                  : 'whitespace-pre-wrap text-foreground'
+              }
+            >
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <PhotoGallery photos={offer.photos} label={t('offer.photosLabel')} />
+    </div>
   );
 }

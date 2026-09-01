@@ -8,6 +8,7 @@ import { Screen } from '@/components/screen';
 import { EmptyState, ErrorState, ListSkeleton } from '@/components/state-views';
 import { Text } from '@/components/text';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { JobPhotos } from '@/features/jobs/job-photos';
 import { useI18n } from '@/lib/i18n';
 import { spacing } from '@/theme/tokens';
 
@@ -65,6 +66,16 @@ export function CommerceRequestDetailScreen({ id }: { id: string }) {
           {t('commerce.fieldDelivery')}: {row.deliveryAddressText}
         </Text>
       ) : null}
+      <JobPhotos
+        attachments={(row.photos ?? []).map((photo) => ({
+          id: photo.id,
+          fileId: photo.id,
+          url: photo.url,
+          mimeType: 'image/jpeg',
+          sizeBytes: 0,
+          sortOrder: 0,
+        }))}
+      />
 
       <Text variant="bodyStrong" style={{ marginTop: spacing.lg }}>
         {t('offer.compareTitle')}
@@ -114,6 +125,16 @@ export function CommerceRequestDetailScreen({ id }: { id: string }) {
                 {t('commerce.contents')}: {offer.note}
               </Text>
             ) : null}
+            <JobPhotos
+              attachments={(offer.photos ?? []).map((photo) => ({
+                id: photo.id,
+                fileId: photo.id,
+                url: photo.url,
+                mimeType: 'image/jpeg',
+                sizeBytes: 0,
+                sortOrder: 0,
+              }))}
+            />
             {badges.map((badge) => (
               <Text key={badge} variant="caption">
                 {t(BADGE_KEYS[badge] ?? 'commerce.badge')}

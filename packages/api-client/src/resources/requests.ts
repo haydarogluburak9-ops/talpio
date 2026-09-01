@@ -92,6 +92,13 @@ export type BusinessLocaleSettings = {
   defaultCountryCode: string;
   defaultTimezone: string;
   taxId?: string | null;
+  legalName?: string | null;
+  invoiceTitle?: string | null;
+  taxOffice?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  logoUrl?: string | null;
+  stampUrl?: string | null;
 };
 
 export type CrmCustomerRow = {
@@ -129,7 +136,17 @@ export function createBusinessesResource(http: HttpClient) {
       body: Partial<
         Pick<
           BusinessLocaleSettings,
-          'defaultCurrency' | 'defaultCountryCode' | 'defaultTimezone' | 'taxId'
+          | 'defaultCurrency'
+          | 'defaultCountryCode'
+          | 'defaultTimezone'
+          | 'taxId'
+          | 'legalName'
+          | 'invoiceTitle'
+          | 'taxOffice'
+          | 'address'
+          | 'phone'
+          | 'logoUrl'
+          | 'stampUrl'
         >
       >,
     ): Promise<BusinessLocaleSettings> {

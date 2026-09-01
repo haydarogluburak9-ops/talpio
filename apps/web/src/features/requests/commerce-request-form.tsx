@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { SearchSelect } from '@/components/search-select';
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { PhotoUploader } from '@/features/files/photo-uploader';
 import { COMMERCE_BRANDS, commerceUnitOptions } from '@/features/requests/commerce-options';
 import { useSocialProfile } from '@/features/social/use-social';
 import { categoryName, getLocale, t } from '@/lib/i18n';
@@ -66,6 +67,7 @@ export function CommerceRequestForm({
   const [error, setError] = useState<string | null>(null);
   const [attributeValues, setAttributeValues] = useState<AttributeValues>({});
   const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({});
+  const [photoFileIds, setPhotoFileIds] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     requestType: RequestType.PRODUCT_SUPPLY as RequestType,
@@ -160,6 +162,7 @@ export function CommerceRequestForm({
         // Bir mağazadan teklif isteniyorsa talep yalnızca ona gider; mağazasız
         // açılan talep eşleşen satıcılara ve takipçilere dağıtılır.
         ...(targetBusinessId ? { businessId: targetBusinessId } : {}),
+        ...(photoFileIds.length > 0 ? { attachmentFileIds: photoFileIds } : {}),
         publish: true,
       });
     } catch (err) {
@@ -265,6 +268,10 @@ export function CommerceRequestForm({
             minLength={10}
           />
         )}
+      </Field>
+
+      <Field label={t('commerce.photosLabel')} hint={t('commerce.photosHint')}>
+        {() => <PhotoUploader value={photoFileIds} onChange={setPhotoFileIds} />}
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">

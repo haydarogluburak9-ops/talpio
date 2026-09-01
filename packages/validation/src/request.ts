@@ -1,7 +1,13 @@
+import { UPLOAD } from '@talpio/config';
 import { RequestSource, RequestType, RequestVisibility } from '@talpio/types';
 import { z } from 'zod';
 
 import { isoDateSchema, minorAmountSchema, uuidSchema } from './primitives';
+
+const attachmentFileIdsSchema = z
+  .array(uuidSchema)
+  .max(UPLOAD.maxJobAttachments, `En fazla ${UPLOAD.maxJobAttachments} dosya yükleyebilirsiniz`)
+  .optional();
 
 export const createCommerceRequestSchema = z.object({
   requestType: z.enum(RequestType),
@@ -22,6 +28,7 @@ export const createCommerceRequestSchema = z.object({
   visibility: z.enum(RequestVisibility).optional(),
   source: z.enum(RequestSource).optional(),
   publish: z.boolean().optional(),
+  attachmentFileIds: attachmentFileIdsSchema,
 });
 
 export type CreateCommerceRequestPayload = z.infer<typeof createCommerceRequestSchema>;
@@ -34,6 +41,7 @@ export const offerLetterheadSchema = z.object({
   address: z.string().trim().max(300).optional(),
   phone: z.string().trim().max(32).optional(),
   logoUrl: z.string().trim().max(500).optional(),
+  stampUrl: z.string().trim().max(500).optional(),
 });
 
 export const createRequestOfferSchema = z.object({
@@ -48,6 +56,7 @@ export const createRequestOfferSchema = z.object({
   model: z.string().trim().min(1).max(80).optional(),
   letterhead: offerLetterheadSchema.optional(),
   validUntil: isoDateSchema,
+  attachmentFileIds: attachmentFileIdsSchema,
 });
 
 export type CreateRequestOfferPayload = z.infer<typeof createRequestOfferSchema>;

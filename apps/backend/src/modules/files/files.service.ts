@@ -211,6 +211,8 @@ export class FilesService {
             messageAttachments: true,
             providerDocuments: true,
             postMedia: true,
+            requestAttachments: true,
+            requestOfferAttachments: true,
           },
         },
       },
@@ -226,7 +228,9 @@ export class FilesService {
       row._count.jobAttachments +
       row._count.messageAttachments +
       row._count.providerDocuments +
-      row._count.postMedia;
+      row._count.postMedia +
+      row._count.requestAttachments +
+      row._count.requestOfferAttachments;
 
     if (attachedCount > 0) {
       throw new AppException('CONFLICT', {

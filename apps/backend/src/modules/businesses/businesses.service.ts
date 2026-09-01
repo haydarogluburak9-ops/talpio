@@ -315,7 +315,14 @@ export class BusinessesService {
         defaultCurrency: dto.defaultCurrency?.toUpperCase() ?? defaults.defaultCurrency,
         defaultCountryCode: dto.defaultCountryCode?.toUpperCase() ?? defaults.defaultCountryCode,
         defaultTimezone: dto.defaultTimezone ?? defaults.defaultTimezone,
-        taxId: dto.taxId ?? null,
+        taxId: emptyToNull(dto.taxId) ?? null,
+        legalName: emptyToNull(dto.legalName) ?? null,
+        invoiceTitle: emptyToNull(dto.invoiceTitle) ?? null,
+        taxOffice: emptyToNull(dto.taxOffice) ?? null,
+        address: emptyToNull(dto.address) ?? null,
+        phone: emptyToNull(dto.phone) ?? null,
+        logoUrl: emptyToNull(dto.logoUrl) ?? null,
+        stampUrl: emptyToNull(dto.stampUrl) ?? null,
       },
       update: {
         ...(dto.defaultCurrency !== undefined
@@ -325,7 +332,14 @@ export class BusinessesService {
           ? { defaultCountryCode: dto.defaultCountryCode.toUpperCase() }
           : {}),
         ...(dto.defaultTimezone !== undefined ? { defaultTimezone: dto.defaultTimezone } : {}),
-        ...(dto.taxId !== undefined ? { taxId: dto.taxId } : {}),
+        ...(dto.taxId !== undefined ? { taxId: emptyToNull(dto.taxId) } : {}),
+        ...(dto.legalName !== undefined ? { legalName: emptyToNull(dto.legalName) } : {}),
+        ...(dto.invoiceTitle !== undefined ? { invoiceTitle: emptyToNull(dto.invoiceTitle) } : {}),
+        ...(dto.taxOffice !== undefined ? { taxOffice: emptyToNull(dto.taxOffice) } : {}),
+        ...(dto.address !== undefined ? { address: emptyToNull(dto.address) } : {}),
+        ...(dto.phone !== undefined ? { phone: emptyToNull(dto.phone) } : {}),
+        ...(dto.logoUrl !== undefined ? { logoUrl: emptyToNull(dto.logoUrl) } : {}),
+        ...(dto.stampUrl !== undefined ? { stampUrl: emptyToNull(dto.stampUrl) } : {}),
       },
     });
   }
@@ -349,4 +363,11 @@ export class BusinessesService {
       },
     });
   }
+}
+
+/** Boş string kayda yazılmaz; alan silinmiş sayılır. */
+function emptyToNull(value: string | null | undefined): string | null | undefined {
+  if (value === undefined) return undefined;
+  const trimmed = value?.trim() ?? '';
+  return trimmed.length > 0 ? trimmed : null;
 }

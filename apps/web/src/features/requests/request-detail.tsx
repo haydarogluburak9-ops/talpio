@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
+import { PhotoGallery } from '@/features/files/photo-gallery';
 import { OfferForm } from '@/features/offers/offer-form';
 import { openOfferPdf } from '@/features/offers/offer-document';
 import { OfferSummary } from '@/features/offers/offer-summary';
@@ -88,6 +89,7 @@ export function RequestDetail({ id }: { id: string }) {
             {t('social.dealLocation')}: {row.deliveryAddressText}
           </p>
         ) : null}
+        <PhotoGallery photos={row.photos} label={t('commerce.photosLabel')} />
         {isBuyer ? (
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <Button
@@ -184,7 +186,7 @@ export function RequestDetail({ id }: { id: string }) {
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        className="bg-accent-500 text-white hover:bg-accent-600"
                         onClick={() =>
                           openOfferPdf(offer, {
                             title: row.title,

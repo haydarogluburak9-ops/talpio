@@ -12,6 +12,8 @@ export interface PhotoUploaderProps {
   /** Yüklenmiş dosya kimlikleri. Form bu listeyi gövdeye taşır. */
   value: string[];
   onChange: (fileIds: string[]) => void;
+  /** Önizleme için URL'ler; kimlik listesinden türetilmez. */
+  onItemsChange?: (items: FileAsset[]) => void;
   purpose?: FilePurpose;
   max?: number;
 }
@@ -26,6 +28,7 @@ export interface PhotoUploaderProps {
 export function PhotoUploader({
   value,
   onChange,
+  onItemsChange,
   purpose = FilePurpose.JOB_PHOTO,
   max = UPLOAD.maxJobAttachments,
 }: PhotoUploaderProps) {
@@ -60,14 +63,22 @@ export function PhotoUploader({
       .map((result) => result.value);
 
     setPendingCount((count) => count - selected.length);
-    setItems((current) => [...current, ...uploaded]);
+    setItems((current) => {
+      const next = [...current, ...uploaded];
+      onItemsChange?.(next);
+      return next;
+    });
     onChange([...value, ...uploaded.map((file) => file.id)]);
 
     if (uploaded.length < selected.length) setError(t('upload.failed'));
   }
 
   function remove(fileId: string) {
-    setItems((current) => current.filter((file) => file.id !== fileId));
+    setItems((current) => {
+      const next = current.filter((file) => file.id !== fileId);
+      onItemsChange?.(next);
+      return next;
+    });
     onChange(value.filter((id) => id !== fileId));
     // Sunucudaki kaydın silinmesi beklenmez: henüz hiçbir talebe bağlı olmadığı
     // için artakalan dosya tutarsızlık üretmez ve kullanıcı beklemez.

@@ -492,6 +492,8 @@ export const en: Messages = {
     printHint: 'In the print dialog choose “Save as PDF”.',
     stamp: 'Stamp / signature',
     legalNameRequired: 'Enter the legal name.',
+    photosLabel: 'Product photos',
+    photosHint: 'Optional. Add photos of the product you are offering; the buyer sees them in the comparison.',
   },
   match: {
     score: 'Match {score}',
@@ -792,6 +794,14 @@ export const en: Messages = {
     loading: 'Loading profile',
     accountLoading: 'Loading account details',
     accountLoadFailed: 'Account details could not be loaded',
+    letterheadSection: 'Company letterhead',
+    letterheadHint:
+      'Legal name, tax details, and stamp appear on quote PDFs. Save once; every offer fills them in.',
+    letterheadBusiness: 'Business',
+    stamp: 'Stamp / signature',
+    stampHint: 'Company stamp or signature image. Printed at the bottom of the quote.',
+    stampUpload: 'Upload stamp',
+    noBusiness: 'Create a business first to save letterhead details.',
   },
   notifications: {
     title: 'Notifications',
@@ -1488,6 +1498,8 @@ export const en: Messages = {
     titlePlaceholder: 'e.g. 50 LED TVs',
     descriptionPlaceholder: 'Need, brand, model, delivery terms…',
     addressPlaceholder: 'Neighborhood, street, or full address',
+    photosLabel: 'Product photos',
+    photosHint: 'Optional. Add photos of the product you want; sellers use them to quote accurately.',
     requiredFields: 'Title, description, category, city, district, and delivery address are required.',
     attributeSectionTitle: 'Category-specific details',
     attributeSectionHint:

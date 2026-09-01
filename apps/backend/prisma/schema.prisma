@@ -1081,6 +1081,7 @@ model FileAsset {
   messageAttachments MessageAttachment[]
   providerDocuments  ProviderDocument[]
   requestAttachments RequestAttachment[]
+  requestOfferAttachments RequestOfferAttachment[]
   postMedia          PostMedia[]
   socialAvatars      SocialProfile[]     @relation("SocialAvatar")
   socialCovers       SocialProfile[]     @relation("SocialCover")
@@ -2021,6 +2022,14 @@ model BusinessLocaleSettings {
   defaultCountryCode String   @default("TR") @map("default_country_code") @db.Char(2)
   defaultTimezone    String   @default("Europe/Istanbul") @map("default_timezone")
   taxId              String?  @map("tax_id")
+  /// Teklif PDF anteti: ünvan, fatura başlığı, vergi dairesi, cari adres.
+  legalName          String?  @map("legal_name")
+  invoiceTitle       String?  @map("invoice_title")
+  taxOffice          String?  @map("tax_office")
+  address            String?
+  phone              String?
+  logoUrl            String?  @map("logo_url")
+  stampUrl           String?  @map("stamp_url")
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 
@@ -2311,12 +2320,27 @@ model RequestOffer {
   request       CommerceRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
   business      Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdBy     User              @relation("RequestOfferCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  attachments   RequestOfferAttachment[]
   orderLink     RequestOrderLink?
 
   @@unique([requestId, businessId])
   @@index([businessId, status])
   @@index([status, validUntil])
   @@map("request_offers")
+}
+
+model RequestOfferAttachment {
+  id        String   @id @default(uuid(7))
+  offerId   String   @map("offer_id")
+  fileId    String   @map("file_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  offer RequestOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  file  FileAsset    @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@unique([offerId, fileId])
+  @@map("request_offer_attachments")
 }
 
 model RequestOrderLink {

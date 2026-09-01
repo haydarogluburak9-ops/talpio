@@ -1,5 +1,36 @@
-import type { CommerceRequest, OfferLetterhead, RequestOffer } from '@talpio/types';
+import type { CommercePhoto, CommerceRequest, OfferLetterhead, RequestOffer } from '@talpio/types';
 import type { Prisma } from '@/generated/prisma/client';
+
+/** Talep / teklif fotoğraflarını çekerken ortak include. */
+export const commercePhotoInclude = {
+  attachments: {
+    orderBy: { createdAt: 'asc' as const },
+    include: { file: { select: { storageKey: true } } },
+  },
+};
+
+export const offerPhotoInclude = {
+  attachments: {
+    orderBy: { sortOrder: 'asc' as const },
+    include: { file: { select: { storageKey: true } } },
+  },
+};
+
+export type PhotoAttachmentRow = {
+  id: string;
+  file: { storageKey: string };
+};
+
+export function toPhotos(
+  attachments: PhotoAttachmentRow[] | undefined,
+  fileBaseUrl: string,
+): CommercePhoto[] {
+  if (!attachments?.length || !fileBaseUrl) return [];
+  return attachments.map((item) => ({
+    id: item.id,
+    url: `${fileBaseUrl}/${item.file.storageKey}`,
+  }));
+}
 
 export type CommerceRequestRow = Prisma.CommerceRequestGetPayload<{
   include: {
@@ -40,7 +71,8 @@ export function toCommerceRequest(row: {
   matchCount?: number | null;
   offerCount?: number | null;
   pendingOfferCount?: number | null;
-}): CommerceRequest {
+  attachments?: PhotoAttachmentRow[];
+}, fileBaseUrl = ''): CommerceRequest {
   return {
     id: row.id,
     requestType: row.requestType as CommerceRequest['requestType'],
@@ -73,6 +105,7 @@ export function toCommerceRequest(row: {
     matchCount: row.matchCount ?? null,
     offerCount: row.offerCount ?? null,
     pendingOfferCount: row.pendingOfferCount ?? null,
+    photos: toPhotos(row.attachments, fileBaseUrl),
   };
 }
 
@@ -108,8 +141,10 @@ export function toRequestOffer(
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date | null;
+    attachments?: PhotoAttachmentRow[];
   },
   seller?: RequestOfferSellerRow | null,
+  fileBaseUrl = '',
 ): RequestOffer {
   return {
     ...(seller
@@ -143,6 +178,7 @@ export function toRequestOffer(
     updatedAt: row.updatedAt.toISOString(),
     deletedAt: row.deletedAt?.toISOString() ?? null,
     amount: { amountMinor: row.amountMinor, currency: row.currency },
+    photos: toPhotos(row.attachments, fileBaseUrl),
   };
 }
 
@@ -161,6 +197,7 @@ function toOfferLetterhead(value: unknown): OfferLetterhead | null {
     address: pick('address'),
     phone: pick('phone'),
     logoUrl: pick('logoUrl'),
+    stampUrl: pick('stampUrl'),
   };
   return Object.values(letterhead).some(Boolean) ? letterhead : null;
 }

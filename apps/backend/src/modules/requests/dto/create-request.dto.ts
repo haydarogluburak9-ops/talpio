@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UPLOAD } from '@talpio/config';
+import { RequestSource, RequestType, RequestVisibility } from '@talpio/types';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -15,7 +18,6 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { RequestSource, RequestType, RequestVisibility } from '@talpio/types';
 
 export class CreateCommerceRequestDto {
   @ApiProperty({ enum: RequestType })
@@ -116,6 +118,12 @@ export class CreateCommerceRequestDto {
   @IsOptional()
   @IsBoolean()
   publish?: boolean;
+
+  @ApiPropertyOptional({ type: [String], maxItems: UPLOAD.maxJobAttachments })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('all', { each: true })
+  attachmentFileIds?: string[] = [];
 }
 
 export class CreateRequestOfferDto {
@@ -179,11 +187,18 @@ export class CreateRequestOfferDto {
     address?: string;
     phone?: string;
     logoUrl?: string;
+    stampUrl?: string;
   };
 
   @ApiProperty()
   @IsDateString()
   validUntil!: string;
+
+  @ApiPropertyOptional({ type: [String], maxItems: UPLOAD.maxJobAttachments })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('all', { each: true })
+  attachmentFileIds?: string[] = [];
 }
 
 export class ListRequestsQueryDto {

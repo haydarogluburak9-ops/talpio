@@ -496,6 +496,8 @@ export const tr = {
     printHint: 'Açılan pencerede “PDF olarak kaydet” seçin.',
     stamp: 'Kaşe / imza',
     legalNameRequired: 'Ünvanı yazın.',
+    photosLabel: 'Ürün fotoğrafları',
+    photosHint: 'İsteğe bağlı. Verdiğiniz ürünün fotoğrafını ekleyin; alıcı karşılaştırmada görür.',
   },
   match: {
     score: 'Eşleşme {score}',
@@ -798,6 +800,14 @@ export const tr = {
     loading: 'Profil yükleniyor',
     accountLoading: 'Hesap bilgileri yükleniyor',
     accountLoadFailed: 'Hesap bilgileri alınamadı',
+    letterheadSection: 'Firma cari ve antet',
+    letterheadHint:
+      'Ünvan, vergi ve kaşe bilgileri teklif PDF’inde görünür. Bir kez kaydedin; her teklifte otomatik dolar.',
+    letterheadBusiness: 'İşletme',
+    stamp: 'Kaşe / imza',
+    stampHint: 'Kaşe veya ıslak imza görseli. Teklif belgesinin altına basılır.',
+    stampUpload: 'Kaşe yükle',
+    noBusiness: 'Cari bilgileri için önce bir işletme oluşturun.',
   },
   notifications: {
     title: 'Bildirimler',
@@ -1502,6 +1512,8 @@ export const tr = {
     titlePlaceholder: 'Örn. 50 adet LED TV tedarik',
     descriptionPlaceholder: 'İhtiyaç, marka, model, teslim koşulları…',
     addressPlaceholder: 'Mahalle, sokak veya açık adres',
+    photosLabel: 'Ürün fotoğrafları',
+    photosHint: 'İsteğe bağlı. İstediğiniz ürünün fotoğrafını ekleyin; satıcılar buna bakarak teklif verir.',
     requiredFields: 'Başlık, açıklama, kategori, şehir, ilçe ve teslimat adresi zorunludur.',
     attributeSectionTitle: 'Kategoriye özel bilgiler',
     attributeSectionHint:

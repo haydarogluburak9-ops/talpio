@@ -1,7 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useMemo, useState } from 'react';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { ApiError } from '@talpio/api-client';
-import { RequestType } from '@talpio/types';
+import { UPLOAD } from '@talpio/config';
+import { FilePurpose, RequestType } from '@talpio/types';
 
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
@@ -11,9 +15,11 @@ import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { useCategories, useCategoryAttributeSchema } from '@/features/catalog/use-categories';
 import { useCities, useDistricts } from '@/features/catalog/use-locations';
+import { usePhotoUpload } from '@/features/files/use-upload';
 import { useSocialProfile } from '@/features/social/use-social';
 import { useI18n } from '@/lib/i18n';
-import { spacing } from '@/theme/tokens';
+import { useColors } from '@/theme/theme-provider';
+import { radius, spacing } from '@/theme/tokens';
 
 import {
   CategoryAttributeFields,
@@ -43,6 +49,8 @@ export function CommerceRequestFormScreen({
   storeUsername?: string;
 }) {
   const { t, categoryName } = useI18n();
+  const colors = useColors();
+  const photos = usePhotoUpload(FilePurpose.JOB_PHOTO);
   const categories = useCategories({ withSubcategories: true });
   const cities = useCities();
   const create = useCreateCommerceRequest();
@@ -82,6 +90,23 @@ export function CommerceRequestFormScreen({
   const attributeSchema = useCategoryAttributeSchema(categoryId || undefined);
   const attributeFields = attributeSchema.data?.fields ?? [];
   const attributeSchemaPending = Boolean(categoryId) && attributeSchema.isPending;
+
+  async function pickPhotos() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.7,
+      allowsMultipleSelection: true,
+    });
+    if (result.canceled) return;
+    await photos.add(
+      result.assets.map((asset) => ({
+        uri: asset.uri,
+        mimeType: asset.mimeType ?? null,
+        fileName: asset.fileName ?? null,
+      })),
+    );
+  }
 
   async function onSubmit() {
     setError(null);
@@ -131,6 +156,7 @@ export function CommerceRequestFormScreen({
         // Bir mağazadan teklif isteniyorsa talep yalnızca ona gider; mağazasız
         // açılan talep eşleşen satıcılara ve takipçilere dağıtılır.
         ...(targetBusinessId ? { businessId: targetBusinessId } : {}),
+        ...(photos.fileIds.length > 0 ? { attachmentFileIds: photos.fileIds } : {}),
         publish: true,
       });
     } catch (err) {
@@ -204,6 +230,44 @@ export function CommerceRequestFormScreen({
         placeholder={t('commerce.descriptionPlaceholder')}
         multiline
       />
+      <View style={styles.photos}>
+        <Text variant="caption" tone="muted">
+          {t('commerce.photosLabel')}
+        </Text>
+        <Text variant="caption" tone="muted">
+          {t('commerce.photosHint')}
+        </Text>
+        {photos.items.length > 0 ? (
+          <View style={styles.photoGrid}>
+            {photos.items.map((file) => (
+              <Pressable
+                key={file.id}
+                accessibilityRole="button"
+                accessibilityLabel={t('upload.remove')}
+                onPress={() => photos.remove(file.id)}
+              >
+                <Image source={{ uri: file.url }} style={styles.photo} />
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+        {photos.hasFailure ? (
+          <Text variant="caption" tone="danger">
+            {t('upload.failed')}
+          </Text>
+        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => void pickPhotos()}
+          disabled={photos.isUploading || photos.items.length >= UPLOAD.maxJobAttachments}
+          style={styles.addPhoto}
+        >
+          <Ionicons name="image-outline" size={20} color={colors.brand} />
+          <Text variant="caption" tone="brand">
+            {photos.isUploading ? t('upload.uploading') : t('upload.addPhoto')}
+          </Text>
+        </Pressable>
+      </View>
       <FormField
         label={t('commerce.fieldQuantity')}
         value={form.quantity}
@@ -264,10 +328,19 @@ export function CommerceRequestFormScreen({
         label={create.isPending ? t('commerce.submitting') : t('commerce.submit')}
         loading={create.isPending}
         // Mağaza kimliği gelmeden gönderilirse talep yanlışlıkla herkese açılır.
-        disabled={categories.isPending || attributeSchemaPending || storeProfilePending}
+        disabled={
+          categories.isPending || attributeSchemaPending || storeProfilePending || photos.isUploading
+        }
         block
         onPress={() => void onSubmit()}
       />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  photos: { gap: spacing.sm, marginBottom: spacing.md },
+  photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  photo: { width: 80, height: 80, borderRadius: radius.control },
+  addPhoto: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
+});

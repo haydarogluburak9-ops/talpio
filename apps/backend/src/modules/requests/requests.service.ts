@@ -22,11 +22,13 @@ import type { Prisma } from '@/generated/prisma/client';
 import { PaginatedResult } from '@common/dto/api-response.dto';
 import { AppException } from '@common/errors/app.exception';
 import { parseNameTranslations } from '@common/i18n/localized-text';
+import { AppConfigService } from '@config/app-config.service';
 import { CurrencyService } from '@infra/currency/currency.service';
 import { OutboxService } from '@infra/outbox/outbox.service';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { AuditLogService } from '@modules/admin/audit-log.service';
 import type { AuthenticatedUser } from '@modules/auth/jwt.strategy';
+import { FilesService } from '@modules/files/files.service';
 import { FraudService } from '@modules/fraud/fraud.service';
 import { NotificationsService } from '@modules/notifications/notifications.service';
 import { RbacService } from '@modules/rbac/rbac.service';
@@ -42,7 +44,12 @@ import type {
   CreateRequestOfferDto,
   ListRequestsQueryDto,
 } from './dto/create-request.dto';
-import { toCommerceRequest, toRequestOffer } from './request.mapper';
+import {
+  commercePhotoInclude,
+  offerPhotoInclude,
+  toCommerceRequest,
+  toRequestOffer,
+} from './request.mapper';
 
 /**
  * Kategorisiz talebin eşleşme bildiriminde kategori yuvası boş kalmasın. Gövde
@@ -62,8 +69,14 @@ export class RequestsService {
     private readonly outbox: OutboxService,
     private readonly audit: AuditLogService,
     private readonly currency: CurrencyService,
+    private readonly files: FilesService,
+    private readonly config: AppConfigService,
     @Optional() private readonly fraud?: FraudService,
   ) {}
+
+  private get fileBaseUrl(): string {
+    return this.config.fileBaseUrl;
+  }
 
   async create(user: AuthenticatedUser, dto: CreateCommerceRequestDto): Promise<CommerceRequest> {
     // Hedef işletme burada doğrulanır: yayında sessizce düşerse alıcı talebinin
@@ -75,6 +88,9 @@ export class RequestsService {
       });
       if (!target) throw AppException.notFound('İşletme', dto.businessId);
     }
+
+    const fileIds = dto.attachmentFileIds ?? [];
+    await this.files.assertOwnedBy(user.id, fileIds);
 
     const row = await this.prisma.commerceRequest.create({
       data: {
@@ -103,7 +119,15 @@ export class RequestsService {
         buyerUserId: user.id,
         status: RequestStatus.DRAFT,
         source: dto.source ?? RequestSource.WEB,
+        ...(fileIds.length > 0
+          ? {
+              attachments: {
+                create: fileIds.map((fileId) => ({ fileId, kind: 'photo' })),
+              },
+            }
+          : {}),
       },
+      include: commercePhotoInclude,
     });
 
     this.fraud?.observeRequests(user.id, row.id);
@@ -112,7 +136,7 @@ export class RequestsService {
       return this.publish(user, row.id);
     }
 
-    return toCommerceRequest(row);
+    return toCommerceRequest(row, this.fileBaseUrl);
   }
 
   async listMine(
@@ -189,6 +213,7 @@ export class RequestsService {
         request: { buyerUserId: user.id, deletedAt: null },
       },
       include: {
+        ...offerPhotoInclude,
         business: {
           select: {
             name: true,
@@ -204,7 +229,7 @@ export class RequestsService {
     });
 
     return rows.map((row) => ({
-      ...toRequestOffer(row, row.business),
+      ...toRequestOffer(row, row.business, this.fileBaseUrl),
       request: {
         id: row.request.id,
         title: row.request.title,
@@ -418,14 +443,17 @@ export class RequestsService {
   async getById(user: AuthenticatedUser, id: string): Promise<CommerceRequest> {
     const row = await this.prisma.commerceRequest.findFirst({
       where: { id, deletedAt: null },
-      include: { _count: { select: { matches: true } } },
+      include: { _count: { select: { matches: true } }, ...commercePhotoInclude },
     });
     if (!row) throw AppException.notFound('Talep', id);
 
     const canModerate = user.permissionCodes?.includes(Permission.ADMIN_REQUEST_MODERATE);
     if (row.buyerUserId === user.id || canModerate) {
       /** Dağıtım kapsamı yalnızca alıcıya/moderatöre gösterilir. */
-      return toCommerceRequest({ ...row, matchCount: row._count?.matches ?? null });
+      return toCommerceRequest(
+        { ...row, matchCount: row._count?.matches ?? null },
+        this.fileBaseUrl,
+      );
     }
 
     const businessIds = user.businessIds ?? [];
@@ -434,7 +462,7 @@ export class RequestsService {
         where: { requestId: id, businessId: { in: [...businessIds] } },
         select: { id: true },
       });
-      if (match) return toCommerceRequest(row);
+      if (match) return toCommerceRequest(row, this.fileBaseUrl);
     }
 
     throw AppException.forbiddenResource('Talep', { requestId: id });
@@ -543,6 +571,7 @@ export class RequestsService {
           aiClassification: classification,
           aiConfidence: 1,
         },
+        include: commercePhotoInclude,
       });
     });
 
@@ -554,7 +583,7 @@ export class RequestsService {
       changes: { matchCount: matches.length, classification },
     });
 
-    return toCommerceRequest({ ...updated, matchCount: matches.length });
+    return toCommerceRequest({ ...updated, matchCount: matches.length }, this.fileBaseUrl);
   }
 
   private async loadMatcherBusinesses(
@@ -744,6 +773,9 @@ export class RequestsService {
     const offerCurrency =
       this.currency.normalize(dto.currency) ?? (await this.currency.forBusiness(dto.businessId));
 
+    const fileIds = dto.attachmentFileIds ?? [];
+    await this.files.assertOwnedBy(user.id, fileIds);
+
     const offer = await this.prisma.$transaction(async (tx) => {
       const created = await tx.requestOffer.create({
         data: {
@@ -762,7 +794,15 @@ export class RequestsService {
           letterhead: (dto.letterhead ?? {}) as Prisma.InputJsonValue,
           validUntil: new Date(dto.validUntil),
           submittedAt: new Date(),
+          ...(fileIds.length > 0
+            ? {
+                attachments: {
+                  create: fileIds.map((fileId, index) => ({ fileId, sortOrder: index })),
+                },
+              }
+            : {}),
         },
+        include: offerPhotoInclude,
       });
 
       if (request.status === RequestStatus.MATCHING || request.status === RequestStatus.PUBLISHED) {
@@ -788,7 +828,7 @@ export class RequestsService {
     });
     this.fraud?.observeOffers(user.id, offer.id);
 
-    return toRequestOffer(offer);
+    return toRequestOffer(offer, null, this.fileBaseUrl);
   }
 
   async listOffers(user: AuthenticatedUser, requestId: string): Promise<RequestOffer[]> {
@@ -804,6 +844,7 @@ export class RequestsService {
     const rows = await this.prisma.requestOffer.findMany({
       where: { requestId, deletedAt: null },
       include: {
+        ...offerPhotoInclude,
         business: {
           select: {
             name: true,
@@ -837,7 +878,7 @@ export class RequestsService {
     );
 
     return rows.map((row) => ({
-      ...toRequestOffer(row, row.business),
+      ...toRequestOffer(row, row.business, this.fileBaseUrl),
       badges: comparison.badgesByOfferId[row.id] ?? [],
     }));
   }

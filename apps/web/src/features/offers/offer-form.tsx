@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 import { CurrencySelect } from '@/features/currency/currency-select';
 import { useMyCurrency } from '@/features/currency/use-currency';
+import { PhotoUploader } from '@/features/files/photo-uploader';
 import { useCreateRequestOffer, useMyBusinesses } from '@/features/requests/use-requests';
 import { apiClient } from '@/lib/api';
 import { t } from '@/lib/i18n';
@@ -63,33 +64,42 @@ export function OfferForm({
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [stampUrl, setStampUrl] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [stampUploading, setStampUploading] = useState(false);
+  const [photoFileIds, setPhotoFileIds] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Array<{ id: string; url: string }>>([]);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const loadedTax = localeSettings.data?.taxId ?? '';
-  const [taxSynced, setTaxSynced] = useState<string | null>(null);
-  const [nameSynced, setNameSynced] = useState(false);
-  if (loadedTax && taxSynced !== loadedTax && !taxId) {
-    setTaxSynced(loadedTax);
-    setTaxId(loadedTax);
+  const loadedSettings = localeSettings.data;
+  const [letterheadSynced, setLetterheadSynced] = useState(false);
+  if (loadedSettings && !letterheadSynced) {
+    setLetterheadSynced(true);
+    setLegalName((value) => value || loadedSettings.legalName || store?.name || '');
+    setInvoiceTitle((value) => value || loadedSettings.invoiceTitle || '');
+    setTaxOffice((value) => value || loadedSettings.taxOffice || '');
+    setTaxId((value) => value || loadedSettings.taxId || '');
+    setAddress((value) => value || loadedSettings.address || '');
+    setPhone((value) => value || loadedSettings.phone || '');
+    setLogoUrl((value) => value || loadedSettings.logoUrl || '');
+    setStampUrl((value) => value || loadedSettings.stampUrl || '');
   }
-  if (store?.name && !nameSynced) {
-    setNameSynced(true);
+  if (store?.name && !legalName) {
     setLegalName(store.name);
   }
 
-  async function onLogo(file: File | undefined) {
+  async function onAsset(file: File | undefined, setter: (url: string) => void, busy: (on: boolean) => void) {
     if (!file) return;
-    setLogoUploading(true);
+    busy(true);
     setError(null);
     try {
       const uploaded = await apiClient.files.upload(file, FilePurpose.AVATAR);
-      setLogoUrl(uploaded.url);
+      setter(uploaded.url);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('offer.submitFailed'));
     } finally {
-      setLogoUploading(false);
+      busy(false);
     }
   }
 
@@ -153,7 +163,9 @@ export function OfferForm({
           ...(address.trim() ? { address: address.trim() } : {}),
           ...(phone.trim() ? { phone: phone.trim() } : {}),
           ...(logoUrl.trim() ? { logoUrl: logoUrl.trim() } : {}),
+          ...(stampUrl.trim() ? { stampUrl: stampUrl.trim() } : {}),
         },
+        ...(photoFileIds.length > 0 ? { attachmentFileIds: photoFileIds } : {}),
         validUntil: new Date(Date.now() + validityDays * 86_400_000).toISOString(),
       });
       setSent(true);
@@ -186,7 +198,9 @@ export function OfferForm({
     address,
     phone,
     logoUrl,
+    stampUrl,
     sellerName: store?.name ?? legalName,
+    photos: photoUrls,
   });
 
   if (sent) {
@@ -251,6 +265,22 @@ export function OfferForm({
               rows={4}
               required
               minLength={NOTE_MIN}
+            />
+          )}
+        </Field>
+
+        <Field
+          label={t('offer.photosLabel')}
+          hint={t('offer.photosHint')}
+          className="sm:col-span-2"
+        >
+          {() => (
+            <PhotoUploader
+              value={photoFileIds}
+              onChange={setPhotoFileIds}
+              onItemsChange={(items) =>
+                setPhotoUrls(items.map((file) => ({ id: file.id, url: file.url })))
+              }
             />
           )}
         </Field>
@@ -351,7 +381,7 @@ export function OfferForm({
       <section className="grid gap-3 rounded-xl bg-surface-muted/50 p-4 ring-1 ring-border/70 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <h3 className="text-sm font-semibold text-foreground">{t('offer.letterheadTitle')}</h3>
-          <p className="mt-0.5 text-xs text-foreground-muted">{t('offer.letterheadHint')}</p>
+          <p className="mt-0.5 text-xs text-foreground-muted">{t('profile.letterheadHint')}</p>
         </div>
         <Field label={t('offer.legalName')} required>
           {(props) => (
@@ -394,7 +424,28 @@ export function OfferForm({
                   accept="image/png,image/jpeg,image/webp"
                   className="sr-only"
                   disabled={logoUploading}
-                  onChange={(e) => void onLogo(e.target.files?.[0])}
+                  onChange={(e) => void onAsset(e.target.files?.[0], setLogoUrl, setLogoUploading)}
+                />
+              </label>
+            </div>
+          )}
+        </Field>
+        <Field label={t('profile.stamp')} hint={t('profile.stampHint')}>
+          {(props) => (
+            <div className="flex items-center gap-3">
+              {stampUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={stampUrl} alt="" className="h-12 w-12 rounded-md object-contain ring-1 ring-border" />
+              ) : null}
+              <label className="cursor-pointer text-sm font-medium text-accent-600 hover:underline">
+                {stampUploading ? t('common.loading') : t('profile.stampUpload')}
+                <input
+                  {...props}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="sr-only"
+                  disabled={stampUploading}
+                  onChange={(e) => void onAsset(e.target.files?.[0], setStampUrl, setStampUploading)}
                 />
               </label>
             </div>
@@ -424,7 +475,7 @@ export function OfferForm({
         <Button
           type="submit"
           className="bg-accent-500 text-white hover:bg-accent-600"
-          disabled={create.isPending || logoUploading}
+          disabled={create.isPending || logoUploading || stampUploading}
         >
           {create.isPending ? t('offer.submitting') : t('offer.submit')}
         </Button>
@@ -452,7 +503,9 @@ function draftOffer(input: {
   address: string;
   phone: string;
   logoUrl: string;
+  stampUrl: string;
   sellerName: string;
+  photos: Array<{ id: string; url: string }>;
 }): RequestOffer {
   const amountMinor = Math.max(
     0,
@@ -483,6 +536,7 @@ function draftOffer(input: {
       address: input.address.trim() || null,
       phone: input.phone.trim() || null,
       logoUrl: input.logoUrl.trim() || null,
+      stampUrl: input.stampUrl.trim() || null,
     },
     validUntil: new Date(Date.now() + input.validityDays * 86_400_000).toISOString(),
     submittedAt: now,
@@ -493,5 +547,6 @@ function draftOffer(input: {
       name: input.sellerName || input.legalName,
       isVerified: false,
     },
+    photos: input.photos,
   };
 }

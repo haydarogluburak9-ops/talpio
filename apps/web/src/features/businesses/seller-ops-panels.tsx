@@ -11,6 +11,7 @@ import { Button, EmptyState, Input, ListSkeleton } from '@talpio/ui';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { BusinessLetterheadForm } from '@/features/businesses/business-letterhead-form';
 import { EmploymentClaimsPanel } from '@/features/businesses/employment-claims-panel';
 import { VerificationDocumentsPanel } from '@/features/businesses/verification-documents-panel';
 import { CurrencySelect } from '@/features/currency/currency-select';
@@ -75,6 +76,7 @@ export function SellerOpsPanels() {
 
       <VerificationDocumentsPanel />
       <EmploymentClaimsPanel businessId={selected.id} />
+      <BusinessLetterheadForm />
       <LocaleSettingsForm businessId={selected.id} />
       <DashboardV2 businessId={selected.id} />
       <CrmAnalyticsStrip businessId={selected.id} />
@@ -96,7 +98,6 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
   const [currency, setCurrency] = useState(myCurrency);
   const [country, setCountry] = useState(DEFAULT_COUNTRY_CODE);
   const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE);
-  const [taxId, setTaxId] = useState('');
 
   /**
    * Sunucudan gelen ayarları forma yansıtır. Effect yerine render sırasında
@@ -109,7 +110,6 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
     setCurrency(loaded.defaultCurrency);
     setCountry(loaded.defaultCountryCode);
     setTimezone(loaded.defaultTimezone);
-    setTaxId(loaded.taxId ?? '');
   }
 
   const save = useMutation({
@@ -118,7 +118,6 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
         defaultCurrency: currency.toUpperCase(),
         defaultCountryCode: country.toUpperCase(),
         defaultTimezone: timezone,
-        taxId: taxId.trim() || null,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.businesses.all() });
@@ -156,10 +155,6 @@ function LocaleSettingsForm({ businessId }: { businessId: string }) {
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-foreground-muted">{t('currency.timezoneLabel')}</span>
           <Input value={timezone} onChange={(e) => setTimezone(e.target.value)} />
-        </label>
-        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          <span className="text-foreground-muted">{t('currency.taxIdLabel')}</span>
-          <Input value={taxId} onChange={(e) => setTaxId(e.target.value)} />
         </label>
         <div className="sm:col-span-2">
           <Button

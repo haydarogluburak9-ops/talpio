@@ -91,6 +91,20 @@ export function OfferDocument({
 
       {offer.note ? <p className="mt-4 whitespace-pre-wrap text-sm">{offer.note}</p> : null}
 
+      {offer.photos?.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {offer.photos.map((photo) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={photo.id}
+              src={photo.url}
+              alt=""
+              className="h-24 w-24 rounded object-cover ring-1 ring-neutral-200"
+            />
+          ))}
+        </div>
+      ) : null}
+
       <dl className="mt-4 grid gap-1 text-sm text-neutral-700">
         <div>
           {t('commerce.shipping')}:{' '}
@@ -110,6 +124,14 @@ export function OfferDocument({
 
       <footer className="mt-10 flex justify-end">
         <div className="w-48 border-t border-neutral-400 pt-2 text-center text-xs text-neutral-500">
+          {head.stampUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={head.stampUrl}
+              alt=""
+              className="mx-auto mb-1 h-20 w-auto max-w-full object-contain"
+            />
+          ) : null}
           {t('offer.stamp')}
         </div>
       </footer>
@@ -185,12 +207,26 @@ ${
   </tr></tbody>
 </table>
 ${offer.note ? `<p>${escapeHtml(offer.note)}</p>` : ''}
+${
+  offer.photos?.length
+    ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">${offer.photos
+        .map(
+          (photo) =>
+            `<img src="${escapeHtml(photo.url)}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:6px;border:1px solid #e5e5e5" />`,
+        )
+        .join('')}</div>`
+    : ''
+}
 <p class="meta">
   ${escapeHtml(t('commerce.shipping'))}: ${escapeHtml(offer.shippingIncluded ? t('social.shippingIncludedYes') : t('social.shippingIncludedNo'))}<br/>
   ${offer.locationText ? `${escapeHtml(t('commerce.location'))}: ${escapeHtml(offer.locationText)}<br/>` : ''}
   ${escapeHtml(t('offer.validity'))}: ${new Date(offer.validUntil).toLocaleDateString(localeTag())}
 </p>
-<footer><div class="stamp">${escapeHtml(t('offer.stamp'))}</div></footer>
+<footer><div class="stamp">${
+  head.stampUrl
+    ? `<img src="${escapeHtml(head.stampUrl)}" alt="" style="max-height:80px;max-width:180px;object-fit:contain;margin:0 auto 6px" /><br/>`
+    : ''
+}${escapeHtml(t('offer.stamp'))}</div></footer>
 <script>window.onload=function(){window.print()}</script>
 </body></html>`;
 
