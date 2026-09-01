@@ -132,12 +132,12 @@ export class RequestOffersController {
 
   @Post(':id/accept')
   @RequirePermissions(Permission.REQUEST_OFFER_ACCEPT)
-  @ApiOperation({ summary: 'Tedarik teklifini kabul eder; Order köprüsü oluşturur' })
-  @ApiOkResponse({ description: 'Kabul edilen teklif ve sipariş' })
+  @ApiOperation({ summary: 'Tedarik teklifini kabul eder; sohbet ve sipariş köprüsü açar' })
+  @ApiOkResponse({ description: 'Kabul edilen teklif, sipariş ve sohbet' })
   accept(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ offer: RequestOffer; orderId: string }> {
+  ): Promise<{ offer: RequestOffer; orderId: string; conversationId: string }> {
     return this.requests.acceptOffer(user, id);
   }
 }

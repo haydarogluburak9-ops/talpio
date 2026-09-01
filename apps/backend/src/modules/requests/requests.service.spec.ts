@@ -35,6 +35,7 @@ describe('RequestsService tenant isolation', () => {
     commissionRule: { findMany: jest.fn() },
     order: { create: jest.fn() },
     requestOrderLink: { create: jest.fn() },
+    conversation: { create: jest.fn() },
     user: { findUnique: jest.fn() },
   };
   prisma.$transaction = jest.fn((fn: unknown) => {
@@ -430,6 +431,8 @@ describe('RequestsService tenant isolation', () => {
     });
     order.create.mockResolvedValue({ id: 'order-1' });
     requestOrderLink.create.mockResolvedValue({ id: 'link-1' });
+    const conversation = prisma.conversation as { create: jest.Mock };
+    conversation.create.mockResolvedValue({ id: 'conv-1' });
     user.findUnique.mockResolvedValue({ fullName: 'Alıcı A' });
 
     const result = await service.acceptOffer(
@@ -443,6 +446,7 @@ describe('RequestsService tenant isolation', () => {
     );
 
     expect(result.orderId).toBe('order-1');
+    expect(result.conversationId).toBe('conv-1');
     expect(order.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

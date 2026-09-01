@@ -423,7 +423,7 @@ export const tr = {
     listTitle: 'Verdiğim teklifler',
     submit: 'Teklifi gönder',
     submitting: 'Teklifiniz gönderiliyor…',
-    amountHint: 'Tutarı yazın. Komisyon kabul anında hesaplanır.',
+    amountHint: 'Tutarı yazın. Platform şimdilik komisyon almaz; bu bir teklif fiyatıdır.',
     validityHours: 'Kaç saat geçerli olsun?',
     durationMinutes: 'Tahmini süre (dakika)',
     noRating: 'Henüz değerlendirilmemiş',
@@ -437,7 +437,7 @@ export const tr = {
     earliestDate: 'En erken {date}',
     validityLine: 'Geçerlilik: {date}',
     acceptConfirm:
-      'Bu teklifi kabul ederseniz diğer teklifler kapanır ve açık adresiniz satıcıyla paylaşılır.',
+      'Kabul edince satıcıyla sohbet açılır. Platform ödeme almaz; fiyat ve teslimatı mesajda netleştirirsiniz. Diğer teklifler kapanır.',
     acceptConfirmAction: 'Evet, kabul et',
     withdrawConfirm: 'Teklifinizi geri çekmek istediğinize emin misiniz?',
     withdrawConfirmAction: 'Evet, geri çek',
@@ -496,6 +496,9 @@ export const tr = {
     approve: 'İşi onayla',
     cancel: 'Siparişi iptal et',
     payHint: 'Ödemeniz siz işi onaylayana kadar platformda bloke tutulur.',
+    meetOnlyHint:
+      'Platform şimdilik yalnızca alıcı ile satıcıyı buluşturur. Ödeme alınmaz; fiyat ve teslimatı mesajda konuşun.',
+    agreedAmountTitle: 'Anlaşılan tutar',
     startHint: 'İşe başladığınızı bildirin; alıcı süreci ekrandan takip eder.',
     completeHint: 'İşi tamamladığınızı bildirin; alıcı onayından sonra hakedişiniz serbest kalır.',
     approveHint: 'Onayladığınızda ödeme satıcıya aktarılır. Bu işlem geri alınamaz.',
@@ -1419,7 +1422,7 @@ export const tr = {
     pageTitle: 'Ödemeler',
     pageSubtitle: 'Ödeme geçmişiniz ve escrow / hakediş durumu (kontrollü yüzey).',
     featureOff:
-      'Ödeme şu an kapalı. Tahsilat ve iade bu sürümde açılmadı; sipariş listeniz duruyor. Bu bir hata ekranı değil.',
+      'Ödeme alınmıyor. 100.000 kullanıcıya kadar Talpio yalnızca alıcı ile satıcıyı buluşturur; tahsilat ve komisyon yok. Bu bir hata ekranı değil.',
   },
   commerce: {
     createTitle: 'Ürün / tedarik talebi',
@@ -1471,7 +1474,7 @@ export const tr = {
     seller: 'Satıcı',
     hubTitle: 'Ticaret',
     hubSubtitle:
-      'İki ayrı kutu: senin satın almak için açtığın talepler ve başkasının senden istediği talepler.',
+      'Alıcı ile satıcıyı buluştururuz. Ödeme alınmaz; teklifi kabul edince sohbet açılır.',
     hubRequestsTab: 'Taleplerim',
     hubOffersTab: 'Gelen teklifler',
     hubStatOpen: 'Açık talep',

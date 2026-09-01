@@ -126,7 +126,13 @@ export function useAcceptRequestOffer() {
     mutationFn: (offerId: string) => apiClient.requests.acceptOffer(offerId),
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.requests.all() });
-      router.push(`/siparislerim/${result.orderId}`);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.messages.all() });
+      // Tahsilat kapalı: kabul ödeme sayfasına değil sohbete gider.
+      router.push(
+        result.conversationId
+          ? `/mesajlar/${result.conversationId}`
+          : `/siparislerim/${result.orderId}`,
+      );
     },
   });
 }

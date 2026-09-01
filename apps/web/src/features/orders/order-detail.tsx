@@ -21,6 +21,7 @@ import { useSession } from '@/features/auth/use-session';
 import { useOpenConversation } from '@/features/messages/use-messages';
 import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
+import { publicEnv } from '@/lib/env';
 import { t, categoryName, getLocale } from '@/lib/i18n';
 
 import {
@@ -103,9 +104,11 @@ function OrderDetailView({ order }: { order: Order }) {
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <ProgressTrail status={order.status} />
+          {publicEnv.featurePayments ? <ProgressTrail status={order.status} /> : null}
           <p className="text-sm text-foreground-muted">
-            {waitingHint(order.status, isProviderSide)}
+            {publicEnv.featurePayments
+              ? waitingHint(order.status, isProviderSide)
+              : t('order.meetOnlyHint')}
           </p>
           {order.job && isCustomerSide ? (
             <Link
@@ -132,13 +135,17 @@ function OrderDetailView({ order }: { order: Order }) {
       <Card>
         <CardHeader>
           <CardTitle>
-            {isProviderSide ? t('order.payoutSectionTitle') : t('order.paymentSectionTitle')}
+            {publicEnv.featurePayments
+              ? isProviderSide
+                ? t('order.payoutSectionTitle')
+                : t('order.paymentSectionTitle')
+              : t('order.agreedAmountTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <DetailRow label={t('order.total')} value={formatMoney(order.total, locale)} />
-            {isProviderSide ? (
+            {publicEnv.featurePayments && isProviderSide ? (
               <>
                 <DetailRow
                   label={t('order.commission')}
@@ -196,7 +203,9 @@ function OrderDetailView({ order }: { order: Order }) {
             </p>
           ) : null}
 
-          {!isProviderSide && order.status === OrderStatus.PENDING_PAYMENT ? (
+          {publicEnv.featurePayments &&
+          !isProviderSide &&
+          order.status === OrderStatus.PENDING_PAYMENT ? (
             <Action
               hint={t('order.payHint')}
               label={t('order.pay')}
@@ -262,8 +271,7 @@ function OrderDetailView({ order }: { order: Order }) {
         </CardContent>
       </Card>
 
-      {/* Makbuz müşterinin ödemesini gösterir; satıcının karşılığı cüzdan özetidir. */}
-      {!isProviderSide ? <OrderPaymentSection order={order} /> : null}
+      {publicEnv.featurePayments && !isProviderSide ? <OrderPaymentSection order={order} /> : null}
 
       <OrderReviewSection order={order} isProvider={isProviderSide} />
     </div>
@@ -282,7 +290,7 @@ function OpenChatButton({ orderId }: { orderId: string }) {
 
   return (
     <Button
-      variant="outline"
+      variant={publicEnv.featurePayments ? 'outline' : 'primary'}
       size="sm"
       className="self-start"
       isLoading={open.isPending}

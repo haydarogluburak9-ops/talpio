@@ -98,7 +98,11 @@ export function useAcceptRequestOffer(requestId: string) {
     mutationFn: (offerId: string) => apiClient.requests.acceptOffer(offerId),
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.requests.all() });
-      router.push(`/customer/orders/${result.orderId}`);
+      router.push(
+        result.conversationId
+          ? `/customer/chat/${result.conversationId}`
+          : `/customer/orders/${result.orderId}`,
+      );
     },
   });
 }

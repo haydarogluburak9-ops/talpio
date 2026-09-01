@@ -419,7 +419,7 @@ export const en: Messages = {
     listTitle: 'My offers',
     submit: 'Send offer',
     submitting: 'Sending your offer…',
-    amountHint: 'Enter the amount. Commission is calculated on acceptance.',
+    amountHint: 'Enter the amount. Talpio does not take commission yet; this is a quote price.',
     validityHours: 'How many hours should it stay valid?',
     durationMinutes: 'Estimated duration (minutes)',
     noRating: 'Not rated yet',
@@ -433,7 +433,7 @@ export const en: Messages = {
     earliestDate: 'Earliest {date}',
     validityLine: 'Valid until: {date}',
     acceptConfirm:
-      'Accepting this offer closes the other offers and shares your full address with this seller.',
+      'Accepting opens a chat with the seller. Talpio does not take payment; you settle price and delivery in the conversation. Other offers close.',
     acceptConfirmAction: 'Yes, accept',
     withdrawConfirm: 'Are you sure you want to withdraw your offer?',
     withdrawConfirmAction: 'Yes, withdraw',
@@ -492,6 +492,9 @@ export const en: Messages = {
     approve: 'Approve the job',
     cancel: 'Cancel order',
     payHint: 'Your payment is held by the platform until you approve the job.',
+    meetOnlyHint:
+      'Talpio only introduces buyer and seller for now. No payment is taken; settle price and delivery in the chat.',
+    agreedAmountTitle: 'Agreed amount',
     startHint: 'Let the customer know you have started; they follow progress on screen.',
     completeHint: 'Mark the job as done; your payout is released after the customer approves.',
     approveHint: 'Approving transfers the payment to the seller. This cannot be undone.',
@@ -1405,7 +1408,7 @@ export const en: Messages = {
     pageTitle: 'Payments',
     pageSubtitle: 'Payment history and escrow / payout status (controlled surface).',
     featureOff:
-      'Payments are off in this release. Collection and refunds are not enabled; this is not a broken page.',
+      'Payments are off. Until 100,000 users, Talpio only introduces buyers and sellers — no collection or commission. This is not a broken page.',
   },
   commerce: {
     createTitle: 'Product / supply request',
@@ -1457,7 +1460,7 @@ export const en: Messages = {
     seller: 'Seller',
     hubTitle: 'Commerce',
     hubSubtitle:
-      'Two separate boxes: requests you opened to buy, and requests others sent to you.',
+      'We introduce buyer and seller. No payment is taken; accepting an offer opens a chat.',
     hubRequestsTab: 'My requests',
     hubOffersTab: 'Incoming offers',
     hubStatOpen: 'Open requests',

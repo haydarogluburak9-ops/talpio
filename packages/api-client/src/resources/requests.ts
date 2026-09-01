@@ -75,8 +75,10 @@ export function createRequestsResource(http: HttpClient) {
       return http.post<RequestOffer>(API_ROUTES.requests.offers(requestId), body);
     },
 
-    acceptOffer(offerId: string): Promise<{ offer: RequestOffer; orderId: string }> {
-      return http.post<{ offer: RequestOffer; orderId: string }>(
+    acceptOffer(
+      offerId: string,
+    ): Promise<{ offer: RequestOffer; orderId: string; conversationId: string }> {
+      return http.post<{ offer: RequestOffer; orderId: string; conversationId: string }>(
         API_ROUTES.requestOffers.accept(offerId),
       );
     },

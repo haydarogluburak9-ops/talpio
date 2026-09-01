@@ -845,6 +845,7 @@ export class RequestsService {
   ): Promise<{
     offer: RequestOffer;
     orderId: string;
+    conversationId: string;
   }> {
     const offer = await this.prisma.requestOffer.findFirst({
       where: { id: offerId, deletedAt: null },
@@ -951,7 +952,20 @@ export class RequestsService {
         occurredAt: now.toISOString(),
       });
 
-      return { accepted, orderId: order.id };
+      // Tahsilat kapalı: kabul, ödeme değil sohbet açar. Alıcı ile satıcı
+      // burada buluşur; para hareketi yoktur.
+      const conversation = await tx.conversation.create({
+        data: {
+          orderId: order.id,
+          status: 'ACTIVE',
+          participants: {
+            create: [{ userId: user.id }, { userId: offer.business.providerProfile.userId }],
+          },
+        },
+        select: { id: true },
+      });
+
+      return { accepted, orderId: order.id, conversationId: conversation.id };
     });
 
     const buyer = await this.prisma.user.findUnique({
@@ -965,7 +979,7 @@ export class RequestsService {
         requestTitle: offer.request.title,
         buyerName: buyer?.fullName ?? 'Alıcı',
       },
-      deepLink: deepLinks.order(result.orderId),
+      deepLink: deepLinks.conversation(result.conversationId),
     });
 
     await this.audit.record({
@@ -976,7 +990,11 @@ export class RequestsService {
       changes: { orderId: result.orderId, requestId: offer.requestId },
     });
 
-    return { offer: toRequestOffer(result.accepted), orderId: result.orderId };
+    return {
+      offer: toRequestOffer(result.accepted),
+      orderId: result.orderId,
+      conversationId: result.conversationId,
+    };
   }
 
   private async calculateCommissionFor(context: {

@@ -14,6 +14,7 @@ import { Text } from '@/components/text';
 import { useOpenConversation } from '@/features/messages/use-messages';
 import { OrderPaymentSection } from '@/features/payments/order-payment-section';
 import { OrderReviewSection } from '@/features/reviews/order-review-section';
+import { env } from '@/lib/env';
 import { useI18n } from '@/lib/i18n';
 import { useColors } from '@/theme/theme-provider';
 import { radius, spacing } from '@/theme/tokens';
@@ -126,10 +127,12 @@ function OrderDetailContent({
           </Text>
         ) : null}
 
-        <ProgressTrail status={order.status} />
+        {env.featurePayments ? <ProgressTrail status={order.status} /> : null}
 
         <Text variant="caption" tone="muted">
-          {waitingHint(order.status, isProvider, t)}
+          {env.featurePayments
+            ? waitingHint(order.status, isProvider, t)
+            : t('order.meetOnlyHint')}
         </Text>
 
         <OpenChatButton orderId={order.id} variant={variant} />
@@ -195,7 +198,7 @@ function OrderDetailContent({
           </Text>
         ) : null}
 
-        {!isProvider && order.status === OrderStatus.PENDING_PAYMENT ? (
+        {env.featurePayments && !isProvider && order.status === OrderStatus.PENDING_PAYMENT ? (
           <Button
             label={t('order.pay')}
             block
@@ -268,7 +271,7 @@ function OrderDetailContent({
       </Card>
 
       {/* Makbuz müşterinin ödemesini gösterir; satıcının karşılığı cüzdan ekranıdır. */}
-      {isProvider ? null : <OrderPaymentSection order={order} />}
+      {env.featurePayments && !isProvider ? <OrderPaymentSection order={order} /> : null}
 
       <OrderReviewSection order={order} isProvider={isProvider} />
     </Screen>
