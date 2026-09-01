@@ -1,7 +1,6 @@
 'use client';
 
 import { compareOffers } from '@talpio/business-logic';
-import { formatMoneyMinor } from '@talpio/localization';
 import type { RequestOffer } from '@talpio/types';
 import { Button, ListSkeleton, LoadingState } from '@talpio/ui';
 import { BadgeCheck } from 'lucide-react';
@@ -12,7 +11,7 @@ import { useSession } from '@/features/auth/use-session';
 import { OfferForm } from '@/features/offers/offer-form';
 import { OfferSummary } from '@/features/offers/offer-summary';
 import { useShareRequestToFeed } from '@/features/social/use-social';
-import { t, getLocale } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
 
 import {
   useAcceptRequestOffer,
@@ -156,111 +155,39 @@ export function RequestDetail({ id }: { id: string }) {
               <p className="text-sm text-foreground-muted">{t('commerce.noOffers')}</p>
             ) : null}
             {(offers.data ?? []).length > 0 ? (
-              <>
-                <div className="hidden overflow-x-auto lg:block">
-                  <table className="w-full min-w-[760px] text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-border text-xs uppercase tracking-wide text-foreground-muted">
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.seller')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.amount')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.delivery')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.shipping')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.location')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.contents')}</th>
-                        <th className="py-2 pr-3 font-semibold">{t('commerce.badge')}</th>
-                        <th className="py-2 font-semibold" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(offers.data ?? []).map((offer) => (
-                        <tr key={offer.id} className="border-b border-border/60 align-top">
-                          <td className="py-3 pr-3">
-                            <SellerName offer={offer} />
-                          </td>
-                          <td className="py-3 pr-3 font-semibold text-accent-600">
-                            {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
-                          </td>
-                          <td className="py-3 pr-3 text-foreground-muted">
-                            {offer.deliveryDays != null
-                              ? t('offer.validityDaysValue', { count: offer.deliveryDays })
-                              : '—'}
-                          </td>
-                          <td className="py-3 pr-3 text-foreground-muted">
-                            {offer.shippingIncluded == null
-                              ? '—'
-                              : offer.shippingIncluded
-                                ? t('social.shippingIncludedYes')
-                                : t('social.shippingIncludedNo')}
-                          </td>
-                          <td className="py-3 pr-3 text-foreground-muted">
-                            {offer.locationText ?? '—'}
-                          </td>
-                          <td className="max-w-[18rem] py-3 pr-3 whitespace-pre-wrap text-foreground">
-                            {offer.note?.trim() || '—'}
-                          </td>
-                          <td className="py-3 pr-3">
-                            <OfferBadges
-                              badges={[
-                                ...(offer.badges ?? []),
-                                ...(comparison.badgesByOfferId[offer.id] ?? []),
-                              ]}
-                            />
-                          </td>
-                          <td className="py-3 text-right">
-                            {isBuyer && offer.status === 'SUBMITTED' ? (
-                              <Button
-                                size="sm"
-                                className="bg-accent-500 text-white hover:bg-accent-600"
-                                disabled={accept.isPending}
-                                onClick={() => accept.mutate(offer.id)}
-                              >
-                                {t('offer.accept')}
-                              </Button>
-                            ) : (
-                              <span className="text-xs text-foreground-muted">
-                                {t(`offerStatus.${offer.status}`)}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <ul className="flex flex-col gap-3 lg:hidden">
-                  {(offers.data ?? []).map((offer) => (
-                    <li
-                      key={offer.id}
-                      className="flex flex-col gap-3 rounded-xl bg-surface-muted/60 px-4 py-3 ring-1 ring-border/70"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <SellerName offer={offer} />
-                        {isBuyer && offer.status === 'SUBMITTED' ? (
-                          <Button
-                            size="sm"
-                            className="bg-accent-500 text-white hover:bg-accent-600"
-                            disabled={accept.isPending}
-                            onClick={() => accept.mutate(offer.id)}
-                          >
-                            {t('offer.accept')}
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-foreground-muted">
-                            {t(`offerStatus.${offer.status}`)}
-                          </span>
-                        )}
-                      </div>
-                      <OfferSummary offer={offer} />
-                      <OfferBadges
-                        badges={[
-                          ...(offer.badges ?? []),
-                          ...(comparison.badgesByOfferId[offer.id] ?? []),
-                        ]}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </>
+              <ul className="flex flex-col gap-3">
+                {(offers.data ?? []).map((offer) => (
+                  <li
+                    key={offer.id}
+                    className="flex flex-col gap-3 rounded-xl bg-surface-muted/60 px-4 py-3 ring-1 ring-border/70"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <SellerName offer={offer} />
+                      {isBuyer && offer.status === 'SUBMITTED' ? (
+                        <Button
+                          size="sm"
+                          className="bg-accent-500 text-white hover:bg-accent-600"
+                          disabled={accept.isPending}
+                          onClick={() => accept.mutate(offer.id)}
+                        >
+                          {t('offer.accept')}
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-foreground-muted">
+                          {t(`offerStatus.${offer.status}`)}
+                        </span>
+                      )}
+                    </div>
+                    <OfferSummary offer={offer} />
+                    <OfferBadges
+                      badges={[
+                        ...(offer.badges ?? []),
+                        ...(comparison.badgesByOfferId[offer.id] ?? []),
+                      ]}
+                    />
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </div>
         </section>

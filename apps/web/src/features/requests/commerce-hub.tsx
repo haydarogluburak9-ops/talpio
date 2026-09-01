@@ -3,10 +3,11 @@
 import { formatMoneyMinor } from '@talpio/localization';
 import type { CommerceRequest, RequestOffer } from '@talpio/types';
 import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import { ArrowDownLeft, ArrowUpRight, BadgeCheck, Clock, Lock, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, BadgeCheck, Lock } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { OfferSummary } from '@/features/offers/offer-summary';
 import { getLocale, localeTag, t } from '@/lib/i18n';
 
 import { useMatchedRequests, useMyCommerceRequests, useMyRequestOffers } from './use-requests';
@@ -318,27 +319,12 @@ function OfferRow({ offer }: { offer: RequestOffer }) {
             </Link>
           ) : null}
 
-          {offer.note ? (
-            <p className="mt-1.5 line-clamp-2 text-sm text-foreground">{offer.note}</p>
-          ) : null}
+          <div className="mt-3">
+            <OfferSummary offer={offer} />
+          </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <StatusChip label={t(`offerStatus.${offer.status}`)} />
-            {offer.deliveryDays ? (
-              <Meta icon={<Truck className="size-3" aria-hidden />}>
-                {t('commerce.hubDeliveryDays', { count: offer.deliveryDays })}
-              </Meta>
-            ) : null}
-            {offer.shippingIncluded ? (
-              <Meta icon={<ShieldCheck className="size-3" aria-hidden />}>
-                {t('social.shippingIncludedYes')}
-              </Meta>
-            ) : null}
-            {offer.validUntil ? (
-              <Meta icon={<Clock className="size-3" aria-hidden />}>
-                {new Date(offer.validUntil).toLocaleDateString(localeTag())}
-              </Meta>
-            ) : null}
           </div>
         </div>
 
@@ -364,15 +350,6 @@ function StatusChip({ label }: { label: string }) {
   return (
     <span className="rounded-lg border border-border bg-surface px-2 py-0.5 text-xs font-medium text-foreground-muted">
       {label}
-    </span>
-  );
-}
-
-function Meta({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs text-foreground-muted">
-      {icon}
-      {children}
     </span>
   );
 }
