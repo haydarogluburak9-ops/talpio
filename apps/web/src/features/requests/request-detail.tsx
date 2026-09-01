@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 
 import { useSession } from '@/features/auth/use-session';
 import { OfferForm } from '@/features/offers/offer-form';
+import { openOfferPdf } from '@/features/offers/offer-document';
 import { OfferSummary } from '@/features/offers/offer-summary';
 import { useShareRequestToFeed } from '@/features/social/use-social';
 import { t } from '@/lib/i18n';
@@ -179,6 +180,22 @@ export function RequestDetail({ id }: { id: string }) {
                       )}
                     </div>
                     <OfferSummary offer={offer} />
+                    <div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          openOfferPdf(offer, {
+                            title: row.title,
+                            quantity: row.quantity,
+                            unit: row.unit,
+                          })
+                        }
+                      >
+                        {t('offer.openPdf')}
+                      </Button>
+                    </div>
                     <OfferBadges
                       badges={[
                         ...(offer.badges ?? []),

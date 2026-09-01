@@ -156,6 +156,31 @@ export class CreateRequestOfferDto {
   @MaxLength(2000)
   note?: string;
 
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  brand?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  model?: string;
+
+  @ApiPropertyOptional({ description: 'Teklif anındaki resmi antet kopyası' })
+  @IsOptional()
+  @IsObject()
+  letterhead?: {
+    legalName?: string;
+    invoiceTitle?: string;
+    taxOffice?: string;
+    taxId?: string;
+    address?: string;
+    phone?: string;
+    logoUrl?: string;
+  };
+
   @ApiProperty()
   @IsDateString()
   validUntil!: string;

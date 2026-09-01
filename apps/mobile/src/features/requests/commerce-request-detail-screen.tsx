@@ -80,6 +80,16 @@ export function CommerceRequestDetailScreen({ id }: { id: string }) {
             <Text variant="title">
               {formatMoneyMinor(offer.amountMinor, offer.currency, locale)}
             </Text>
+            {offer.brand ? (
+              <Text variant="caption" tone="muted">
+                {t('offer.brand')}: {offer.brand}
+              </Text>
+            ) : null}
+            {offer.model ? (
+              <Text variant="caption" tone="muted">
+                {t('offer.model')}: {offer.model}
+              </Text>
+            ) : null}
             <Text variant="caption" tone="muted">
               {t('commerce.delivery')}:{' '}
               {offer.deliveryDays != null

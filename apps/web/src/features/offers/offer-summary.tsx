@@ -12,6 +12,8 @@ export function OfferSummary({ offer }: { offer: RequestOffer }) {
         : t('social.shippingIncludedNo');
 
   const rows: Array<{ label: string; value: string; emphasize?: boolean }> = [
+    { label: t('offer.brand'), value: offer.brand?.trim() || '—' },
+    { label: t('offer.model'), value: offer.model?.trim() || '—' },
     {
       label: t('commerce.amount'),
       value: formatMoneyMinor(offer.amountMinor, offer.currency, getLocale()),

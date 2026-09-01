@@ -2297,6 +2297,11 @@ model RequestOffer {
   shippingIncluded Boolean?           @map("shipping_included")
   locationText     String?            @map("location_text")
   note             String?
+  brand            String?
+  model            String?
+  /// Teklif anındaki resmi antet: unvan, vergi, adres, logo. Alıcı PDF'i
+  /// sonradan değişen cari bilgilerle bozulmasın diye kopyalanır.
+  letterhead       Json               @default("{}")
   validUntil       DateTime           @map("valid_until")
   submittedAt      DateTime?          @map("submitted_at")
   createdAt        DateTime           @default(now()) @map("created_at")

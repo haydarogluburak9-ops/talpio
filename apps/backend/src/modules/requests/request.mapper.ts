@@ -1,4 +1,4 @@
-import type { CommerceRequest, RequestOffer } from '@talpio/types';
+import type { CommerceRequest, OfferLetterhead, RequestOffer } from '@talpio/types';
 import type { Prisma } from '@/generated/prisma/client';
 
 export type CommerceRequestRow = Prisma.CommerceRequestGetPayload<{
@@ -100,6 +100,9 @@ export function toRequestOffer(
     shippingIncluded: boolean | null;
     locationText: string | null;
     note: string | null;
+    brand?: string | null;
+    model?: string | null;
+    letterhead?: unknown;
     validUntil: Date;
     submittedAt: Date | null;
     createdAt: Date;
@@ -131,6 +134,9 @@ export function toRequestOffer(
     shippingIncluded: row.shippingIncluded,
     locationText: row.locationText,
     note: row.note,
+    brand: row.brand ?? null,
+    model: row.model ?? null,
+    letterhead: toOfferLetterhead(row.letterhead),
     validUntil: row.validUntil.toISOString(),
     submittedAt: row.submittedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
@@ -138,4 +144,23 @@ export function toRequestOffer(
     deletedAt: row.deletedAt?.toISOString() ?? null,
     amount: { amountMinor: row.amountMinor, currency: row.currency },
   };
+}
+
+function toOfferLetterhead(value: unknown): OfferLetterhead | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  const pick = (key: string) => {
+    const next = row[key];
+    return typeof next === 'string' && next.trim() ? next.trim() : null;
+  };
+  const letterhead: OfferLetterhead = {
+    legalName: pick('legalName'),
+    invoiceTitle: pick('invoiceTitle'),
+    taxOffice: pick('taxOffice'),
+    taxId: pick('taxId'),
+    address: pick('address'),
+    phone: pick('phone'),
+    logoUrl: pick('logoUrl'),
+  };
+  return Object.values(letterhead).some(Boolean) ? letterhead : null;
 }

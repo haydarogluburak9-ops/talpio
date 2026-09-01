@@ -51,6 +51,17 @@ export interface RequestOfferSeller {
   isVerified: boolean;
 }
 
+/** Teklif anında kilitlenen resmi antet (fatura başlığı / cari). */
+export interface OfferLetterhead {
+  legalName?: string | null;
+  invoiceTitle?: string | null;
+  taxOffice?: string | null;
+  taxId?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  logoUrl?: string | null;
+}
+
 export interface RequestMatch {
   id: string;
   requestId: string;
@@ -71,6 +82,9 @@ export interface RequestOffer extends BaseEntity {
   shippingIncluded?: boolean | null;
   locationText?: string | null;
   note?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  letterhead?: OfferLetterhead | null;
   validUntil: string;
   submittedAt?: string | null;
   amount?: Money;

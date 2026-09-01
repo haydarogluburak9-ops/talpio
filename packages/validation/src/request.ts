@@ -26,6 +26,16 @@ export const createCommerceRequestSchema = z.object({
 
 export type CreateCommerceRequestPayload = z.infer<typeof createCommerceRequestSchema>;
 
+export const offerLetterheadSchema = z.object({
+  legalName: z.string().trim().min(2).max(160).optional(),
+  invoiceTitle: z.string().trim().min(2).max(160).optional(),
+  taxOffice: z.string().trim().max(80).optional(),
+  taxId: z.string().trim().max(32).optional(),
+  address: z.string().trim().max(300).optional(),
+  phone: z.string().trim().max(32).optional(),
+  logoUrl: z.string().trim().max(500).optional(),
+});
+
 export const createRequestOfferSchema = z.object({
   businessId: uuidSchema,
   amountMinor: minorAmountSchema.positive(),
@@ -34,6 +44,9 @@ export const createRequestOfferSchema = z.object({
   shippingIncluded: z.boolean(),
   locationText: z.string().trim().min(2).max(200),
   note: z.string().trim().max(2000).optional(),
+  brand: z.string().trim().min(1).max(80).optional(),
+  model: z.string().trim().min(1).max(80).optional(),
+  letterhead: offerLetterheadSchema.optional(),
   validUntil: isoDateSchema,
 });
 
