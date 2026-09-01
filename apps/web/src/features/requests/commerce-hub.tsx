@@ -1,16 +1,14 @@
 'use client';
 
-import { formatMoneyMinor } from '@talpio/localization';
-import type { CommerceRequest, RequestOffer } from '@talpio/types';
+import type { CommerceRequest } from '@talpio/types';
 import { EmptyState, ErrorState, ListSkeleton, cn } from '@talpio/ui';
-import { ArrowDownLeft, ArrowUpRight, BadgeCheck, Lock } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Lock } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { OfferSummary } from '@/features/offers/offer-summary';
-import { getLocale, localeTag, t } from '@/lib/i18n';
+import { localeTag, t } from '@/lib/i18n';
 
-import { useMatchedRequests, useMyCommerceRequests, useMyRequestOffers } from './use-requests';
+import { useMatchedRequests, useMyCommerceRequests } from './use-requests';
 
 /** Alıcının hâlâ cevap beklediği talepler. */
 const OPEN_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'MATCHING', 'QUOTING']);
@@ -23,12 +21,11 @@ const OPEN_STATUSES = new Set(['DRAFT', 'PUBLISHED', 'MATCHING', 'QUOTING']);
  */
 export function CommerceHub() {
   const requests = useMyCommerceRequests();
-  const offers = useMyRequestOffers();
   const incoming = useMatchedRequests();
 
-  if (requests.isPending || offers.isPending) return <ListSkeleton rows={3} />;
+  if (requests.isPending) return <ListSkeleton rows={3} />;
 
-  if (requests.isError || offers.isError) {
+  if (requests.isError) {
     return (
       <div className="social-panel p-5">
         <ErrorState
@@ -37,7 +34,6 @@ export function CommerceHub() {
             label: t('common.retry'),
             onClick: () => {
               void requests.refetch();
-              void offers.refetch();
               void incoming.refetch();
             },
           }}
@@ -47,11 +43,9 @@ export function CommerceHub() {
   }
 
   const requestItems = requests.data?.items ?? [];
-  const offerItems = offers.data ?? [];
   const incomingItems = incoming.isError ? [] : (incoming.data?.items ?? []);
 
   const openCount = requestItems.filter((row) => OPEN_STATUSES.has(row.status)).length;
-  const pendingCount = offerItems.filter((row) => row.status === 'SUBMITTED').length;
 
   return (
     <div className="space-y-4">
@@ -92,25 +86,6 @@ export function CommerceHub() {
             ))}
           </ul>
         )}
-
-        <div className="mt-5 border-t border-border/70 pt-4">
-          <h3 className="text-sm font-semibold text-foreground">{t('commerce.hubOffersOnYoursTitle')}</h3>
-          <p className="mt-0.5 text-xs text-foreground-muted">{t('commerce.hubOffersOnYoursHint')}</p>
-          {offerItems.length === 0 ? (
-            <p className="mt-3 text-sm text-foreground-muted">{t('commerce.hubOffersEmptyBody')}</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {offerItems.map((row) => (
-                <OfferRow key={row.id} offer={row} />
-              ))}
-            </ul>
-          )}
-          {pendingCount > 0 ? (
-            <p className="mt-2 text-xs font-semibold text-accent-600">
-              {t('commerce.hubPendingBadge', { count: pendingCount })}
-            </p>
-          ) : null}
-        </div>
       </Lane>
 
       <Lane
@@ -270,78 +245,6 @@ function RequestRow({
           ) : null}
         </div>
       </Link>
-    </li>
-  );
-}
-
-function OfferRow({ offer }: { offer: RequestOffer }) {
-  const seller = offer.seller;
-  const initials = (seller?.name ?? '?')
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <li className="rounded-xl border border-border/80 bg-surface p-4">
-      <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-900/5 text-sm font-semibold text-brand-900 dark:bg-foreground/10 dark:text-foreground">
-          {initials}
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            {seller?.username ? (
-              <Link
-                href={`/u/${seller.username}`}
-                className="truncate font-semibold text-foreground hover:underline"
-              >
-                {seller.name}
-              </Link>
-            ) : (
-              <span className="truncate font-semibold text-foreground">{seller?.name}</span>
-            )}
-            {seller?.isVerified ? (
-              <BadgeCheck
-                className="size-4 shrink-0 text-info-600"
-                aria-label={t('commerce.hubVerified')}
-              />
-            ) : null}
-          </div>
-
-          {offer.request ? (
-            <Link
-              href={`/tedarik/${offer.request.id}`}
-              className="mt-0.5 block truncate text-xs text-foreground-muted hover:underline"
-            >
-              {offer.request.title}
-            </Link>
-          ) : null}
-
-          <div className="mt-3">
-            <OfferSummary offer={offer} />
-          </div>
-
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <StatusChip label={t(`offerStatus.${offer.status}`)} />
-          </div>
-        </div>
-
-        <div className="shrink-0 text-right">
-          <p className="font-display text-lg font-semibold tabular-nums text-brand-900 dark:text-foreground">
-            {formatMoneyMinor(offer.amountMinor, offer.currency, getLocale())}
-          </p>
-          {offer.request ? (
-            <Link
-              href={`/tedarik/${offer.request.id}`}
-              className="mt-1 inline-flex text-sm font-semibold text-accent-600 hover:text-accent-700"
-            >
-              {t('commerce.hubReview')}
-            </Link>
-          ) : null}
-        </div>
-      </div>
     </li>
   );
 }
