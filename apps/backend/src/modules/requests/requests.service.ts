@@ -876,7 +876,8 @@ export class RequestsService {
     }
 
     const providerProfileId = offer.business.providerProfileId;
-    if (!providerProfileId || !offer.business.providerProfile) {
+    const sellerUserId = offer.business.providerProfile?.userId;
+    if (!providerProfileId || !offer.business.providerProfile || !sellerUserId) {
       throw new AppException('PROVIDER_PROFILE_INCOMPLETE', {
         message: 'Tedarikçinin sipariş için sağlayıcı profili bağlı değil.',
       });
@@ -959,7 +960,7 @@ export class RequestsService {
           orderId: order.id,
           status: 'ACTIVE',
           participants: {
-            create: [{ userId: user.id }, { userId: offer.business.providerProfile.userId }],
+            create: [{ userId: user.id }, { userId: sellerUserId }],
           },
         },
         select: { id: true },
@@ -973,7 +974,7 @@ export class RequestsService {
       select: { fullName: true },
     });
     await this.notifications.dispatch({
-      userId: offer.business.providerProfile.userId,
+      userId: sellerUserId,
       type: NotificationType.REQUEST_OFFER_ACCEPTED,
       params: {
         requestTitle: offer.request.title,
